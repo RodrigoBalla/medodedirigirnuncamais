@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "@/styles/driving-app.css";
 import { PHASES, FUTURE_PHASES, ACHIEVEMENTS, CHECKLIST_TASKS, STEPS } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
@@ -14,6 +14,16 @@ import {
 type Screen = "dashboard" | "lesson" | "conquest";
 
 const DrivingApp = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("driving-dark-mode") === "true";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("driving-dark-mode", String(darkMode));
+  }, [darkMode]);
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [currentPhase, setCurrentPhase] = useState(0);
   const [lessonStep, setLessonStep] = useState(0);
@@ -141,7 +151,7 @@ const DrivingApp = () => {
   }
 
   return (
-    <div className="app">
+    <div className={`app ${darkMode ? "dark-mode" : ""}`}>
       {/* TOPBAR */}
       <div className="topbar">
         <div className="topbar-logo">
@@ -151,6 +161,14 @@ const DrivingApp = () => {
           <div className="stat-chip"><span className="icon">⚡</span>{totalXP} XP</div>
           <div className="stat-chip"><span className="icon">💙</span>{confidence}/5</div>
           <div className="stat-chip"><span className="icon">🏅</span>{completedPhases.length} fases</div>
+          <button
+            className="stat-chip"
+            onClick={() => setDarkMode(d => !d)}
+            style={{ cursor: "pointer", border: "none" }}
+            title={darkMode ? "Modo claro" : "Modo escuro"}
+          >
+            <span className="icon">{darkMode ? "☀️" : "🌙"}</span>
+          </button>
         </div>
       </div>
 
