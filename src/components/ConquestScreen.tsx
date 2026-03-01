@@ -142,7 +142,7 @@ export function ConquestScreen({
         {completedPhases.length < totalPhases ? (
           <button
             className="btn-secondary"
-            style={{ borderColor: "rgba(255,255,255,0.3)", color: "white" }}
+            style={{ borderColor: "hsl(var(--blue-300))", color: "hsl(var(--blue-800))", background: "white" }}
             onClick={onNextLesson}
           >
             Próxima Fase →
@@ -150,7 +150,7 @@ export function ConquestScreen({
         ) : (
           <button
             className="btn-secondary"
-            style={{ borderColor: "rgba(255,255,255,0.3)", color: "white" }}
+            style={{ borderColor: "hsl(var(--blue-300))", color: "hsl(var(--blue-800))", background: "white" }}
             onClick={onDashboard}
           >
             Voltar ao Dashboard 🏠
