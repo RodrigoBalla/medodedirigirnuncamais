@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "@/styles/driving-app.css";
 import { PHASES, FUTURE_PHASES, ACHIEVEMENTS, CHECKLIST_TASKS, STEPS } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
@@ -10,10 +10,13 @@ import {
   playAllDoneSound,
   playConquestSound,
 } from "@/lib/sounds";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Screen = "dashboard" | "lesson" | "conquest";
 
 const DrivingApp = () => {
+  const { user, signOut } = useAuth();
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("driving-dark-mode") === "true";
@@ -33,6 +36,7 @@ const DrivingApp = () => {
   const [completedPhases, setCompletedPhases] = useState<number[]>([]);
   const [totalXP, setTotalXP] = useState(120);
   const [confidence, setConfidence] = useState(3);
+  const [displayName, setDisplayName] = useState("");
   const [pressedPedal, setPressedPedal] = useState<string | null>(null);
   const [checkedTasks, setCheckedTasks] = useState<Record<string, boolean>>({});
   const [retryQueue, setRetryQueue] = useState<number[]>([]);
@@ -40,6 +44,40 @@ const DrivingApp = () => {
   const [emotionHistory] = useState([
     { conf: 2, tens: 4 }, { conf: 3, tens: 3 }, { conf: 3, tens: 2 }, { conf: 4, tens: 2 }, { conf: 4, tens: 1 }
   ]);
+
+  // Load progress from database
+  useEffect(() => {
+    if (!user) return;
+    const loadProgress = async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .single();
+      if (profile) setDisplayName(profile.display_name || user.user_metadata?.display_name || "");
+
+      const { data: progress } = await supabase
+        .from("user_progress")
+        .select("completed_phases, total_xp, confidence")
+        .eq("user_id", user.id)
+        .single();
+      if (progress) {
+        setCompletedPhases(progress.completed_phases || []);
+        setTotalXP(progress.total_xp || 120);
+        setConfidence(progress.confidence || 3);
+      }
+    };
+    loadProgress();
+  }, [user]);
+
+  // Save progress to database
+  const saveProgress = useCallback(async (phases: number[], xp: number, conf: number) => {
+    if (!user) return;
+    await supabase
+      .from("user_progress")
+      .update({ completed_phases: phases, total_xp: xp, confidence: conf })
+      .eq("user_id", user.id);
+  }, [user]);
 
   const phase = PHASES[currentPhase];
   const quizTotal = phase ? phase.quizzes.length : 0;
@@ -130,10 +168,14 @@ const DrivingApp = () => {
 
   function completePhase() {
     if (!completedPhases.includes(currentPhase)) {
-      setCompletedPhases(p => [...p, currentPhase]);
-      setTotalXP(x => x + phase.xp);
-      setConfidence(4);
+      const newPhases = [...completedPhases, currentPhase];
+      const newXP = totalXP + phase.xp;
+      const newConf = 4;
+      setCompletedPhases(newPhases);
+      setTotalXP(newXP);
+      setConfidence(newConf);
       playConquestSound();
+      saveProgress(newPhases, newXP, newConf);
     }
     setScreen("conquest");
   }
@@ -168,6 +210,19 @@ const DrivingApp = () => {
             title={darkMode ? "Modo claro" : "Modo escuro"}
           >
             <span className="icon">{darkMode ? "☀️" : "🌙"}</span>
+          </button>
+          {displayName && (
+            <div className="stat-chip" style={{ fontWeight: 700 }}>
+              <span className="icon">👤</span>{displayName}
+            </div>
+          )}
+          <button
+            className="stat-chip"
+            onClick={signOut}
+            style={{ cursor: "pointer", border: "none", color: "#ef4444" }}
+            title="Sair"
+          >
+            <span className="icon">🚪</span> Sair
           </button>
         </div>
       </div>
@@ -209,7 +264,7 @@ const DrivingApp = () => {
           {screen === "dashboard" && (
             <div>
               <div className="dashboard-header">
-                <h1>Olá, Motorista! 👋</h1>
+                <h1>Olá, {displayName || "Motorista"}! 👋</h1>
                 <p>Continue sua jornada rumo à confiança total ao volante.</p>
               </div>
 
