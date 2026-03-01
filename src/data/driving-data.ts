@@ -61,8 +61,8 @@ export const PHASES: Phase[] = [
         opts: ["Embreagem", "Acelerador", "Freio", "Nenhum deles"],
         correct: 2,
         explain: "O freio (pedal do meio) é responsável por desacelerar e parar o carro.",
-        gif: "3ohc15JPnJcyGLkZ68",
-        gifAlt: "Carro freando animado",
+        gif: "lbUsPYgPVEvwzVtO1r",
+        gifAlt: "Carro freando e parando completamente",
         emoji: "🛑"
       },
       {
@@ -70,8 +70,8 @@ export const PHASES: Phase[] = [
         opts: ["1 pedal", "2 pedais", "3 pedais", "4 pedais"],
         correct: 1,
         explain: "No automático há apenas 2 pedais: freio e acelerador. Muito mais simples!",
-        gif: "3oz8xyz53y9s8CCctq",
-        gifAlt: "Câmbio automático ilustrado",
+        gif: "J2PB4DG1vLbwGnkxVN",
+        gifAlt: "Aula de direção em carro automático",
         emoji: "🚗"
       }
     ],
@@ -100,8 +100,8 @@ export const PHASES: Phase[] = [
         opts: ["Controle do volante", "Olhar para o espelho", "Coordenação dos pés", "Acender os faróis"],
         correct: 2,
         explain: "Os pés vêm primeiro! Quando os pés são automáticos, o volante fica mais fácil.",
-        gif: "dfY3e4qb481v9Z3E9d",
-        gifAlt: "Animação de troca de marcha - foco nos pés",
+        gif: "l0HlRvbwQG5kWECSQ",
+        gifAlt: "Pé pressionando o pedal do acelerador",
         emoji: "🦶"
       },
       {
@@ -109,8 +109,8 @@ export const PHASES: Phase[] = [
         opts: ["Porque é mais rápido", "Para reduzir distrações e focar nos pés", "Por obrigação da lei", "Para economizar gasolina"],
         correct: 1,
         explain: "Menos estímulos = mais foco na coordenação. O cérebro aprende por camadas!",
-        gif: "W7BLZTSmCPjIWostvn",
-        gifAlt: "Carro em espaço aberto e tranquilo",
+        gif: "8PmbPHDRXTffCSeALj",
+        gifAlt: "Dirigindo com calma e consistência em espaço aberto",
         emoji: "🛣️"
       }
     ],
@@ -148,8 +148,8 @@ export const PHASES: Phase[] = [
         opts: ["Volta pra primeira", "Terceira marcha", "Quarta marcha direto", "Ré"],
         correct: 1,
         explain: "A progressão natural é 1ª → 2ª → 3ª. Cada marcha em seu momento!",
-        gif: "5FTe65sKNVfEc",
-        gifAlt: "Troca de marcha progressiva no câmbio",
+        gif: "AnoxuYKLDdKQ8",
+        gifAlt: "Mão trocando marchas sequencialmente no câmbio",
         emoji: "⚙️"
       }
     ],
