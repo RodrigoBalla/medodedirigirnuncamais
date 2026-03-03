@@ -1,0 +1,1 @@
+ALTER TABLE public.user_progress ADD COLUMN welcome_video_views integer NOT NULL DEFAULT 0;
