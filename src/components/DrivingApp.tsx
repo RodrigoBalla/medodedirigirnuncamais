@@ -13,8 +13,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
+import { WelcomeBackScreen } from "@/components/WelcomeBackScreen";
 
-type Screen = "welcome" | "dashboard" | "lesson" | "conquest";
+type Screen = "welcome" | "welcome-back" | "dashboard" | "lesson" | "conquest";
 
 const DrivingApp = () => {
   const { user, signOut } = useAuth();
@@ -71,6 +72,8 @@ const DrivingApp = () => {
         setWelcomeVideoViews(views);
         if (views === 0) {
           setScreen("welcome");
+        } else {
+          setScreen("welcome-back");
         }
       } else {
         setWelcomeVideoViews(0);
@@ -237,6 +240,16 @@ const DrivingApp = () => {
         displayName={displayName}
         videoViews={welcomeVideoViews}
         onComplete={handleWelcomeComplete}
+      />
+    );
+  }
+
+  if (screen === "welcome-back") {
+    return (
+      <WelcomeBackScreen
+        displayName={displayName}
+        onWatchVideo={() => setScreen("welcome")}
+        onContinue={() => setScreen("dashboard")}
       />
     );
   }
