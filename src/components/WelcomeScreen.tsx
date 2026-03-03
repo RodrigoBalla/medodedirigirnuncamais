@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Player from "@vimeo/player";
+import "@/styles/welcome-screen.css";
 
 interface WelcomeScreenProps {
   displayName: string;
@@ -46,7 +47,6 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
       setShowOverlay(false);
     });
 
-    // Autoplay
     player.play().catch(() => {});
 
     return () => {
@@ -64,221 +64,126 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
     playerRef.current?.setPlaybackRate(newSpeed);
   }
 
-  return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      zIndex: 9999,
-      background: "#000",
-      display: "flex",
-      flexDirection: "column",
-    }}>
-      {/* Video - full screen reels style */}
-      <div style={{
-        flex: 1,
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{ padding: "177.78% 0 0 0", position: "relative" }}>
-          <iframe
-            ref={iframeRef}
-            src="https://player.vimeo.com/video/1170037067?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&title=0&byline=0&portrait=0&autoplay=1&muted=0&background=0"
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-            title="Boas vindas"
-          />
-        </div>
+  /* ---- Phone mockup (the video container) ---- */
+  const phoneMockup = (
+    <div className="welcome-phone-mockup">
+      {/* Phone frame - only visible on desktop */}
+      <div className="welcome-phone-frame">
+        {/* Notch */}
+        <div className="welcome-phone-notch" />
 
-        {/* Gradient overlays */}
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 120,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)",
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 240,
-          background: "linear-gradient(to top, rgba(0,0,0,0.85), transparent)",
-          pointerEvents: "none",
-        }} />
-
-        {/* Welcome text overlay - bottom left like reels */}
-        <div style={{
-          position: "absolute",
-          bottom: 100,
-          left: 20,
-          right: 80,
-          color: "white",
-          zIndex: 10,
-        }}>
-          <h1 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.6rem",
-            fontWeight: 800,
-            marginBottom: 8,
-            lineHeight: 1.2,
-            textShadow: "0 2px 12px rgba(0,0,0,0.8)",
-          }}>
-            Bem vindo {displayName || "Motorista"}! 🚘
-          </h1>
-          <p style={{
-            fontSize: "1rem",
-            opacity: 0.9,
-            lineHeight: 1.5,
-            textShadow: "0 1px 8px rgba(0,0,0,0.8)",
-          }}>
-            Agora começa a sua jornada de motorista de sucesso!
-          </p>
-        </div>
-
-        {/* Right side controls like reels */}
-        <div style={{
-          position: "absolute",
-          right: 16,
-          bottom: 120,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 20,
-          zIndex: 10,
-        }}>
-          {/* Speed button */}
-          <button
-            onClick={cycleSpeed}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              border: "2px solid rgba(255,255,255,0.3)",
-              background: "rgba(0,0,0,0.5)",
-              backdropFilter: "blur(8px)",
-              color: "white",
-              fontSize: "0.75rem",
-              fontWeight: 800,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.2s",
-            }}
-            title="Velocidade do vídeo"
-          >
-            {speed}x
-          </button>
-        </div>
-
-        {/* Progress bar at bottom */}
-        <div style={{
-          position: "absolute",
-          bottom: 60,
-          left: 0,
-          right: 0,
-          height: 3,
-          background: "rgba(255,255,255,0.2)",
-          zIndex: 10,
-        }}>
-          <div style={{
-            height: "100%",
-            width: `${progress * 100}%`,
-            background: "white",
-            borderRadius: 2,
-            transition: "width 0.3s ease",
-          }} />
-        </div>
-
-        {/* Skip / Continue button */}
-        <div style={{
-          position: "absolute",
-          bottom: 12,
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "center",
-          zIndex: 10,
-        }}>
-          {canSkip ? (
-            <button
-              onClick={handleComplete}
+        {/* Video area */}
+        <div className="welcome-video-area">
+          <div style={{ padding: "177.78% 0 0 0", position: "relative" }}>
+            <iframe
+              ref={iframeRef}
+              src="https://player.vimeo.com/video/1170037067?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&title=0&byline=0&portrait=0&autoplay=1&muted=0&background=0"
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
               style={{
-                padding: "12px 32px",
-                fontSize: "0.95rem",
-                fontWeight: 700,
-                border: "none",
-                borderRadius: 24,
-                background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-                color: "white",
-                cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(59,130,246,0.5)",
-                transition: "transform 0.15s",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-            >
-              Começar minha jornada →
-            </button>
-          ) : (
-            <p style={{
-              fontSize: "0.8rem",
-              color: "rgba(255,255,255,0.5)",
-              fontStyle: "italic",
-              margin: 0,
-            }}>
-              Assista pelo menos metade do vídeo para continuar...
+              title="Boas vindas"
+            />
+          </div>
+
+          {/* Gradient overlays */}
+          <div className="welcome-gradient-top" />
+          <div className="welcome-gradient-bottom" />
+
+          {/* Welcome text */}
+          <div className="welcome-text-overlay">
+            <h1 className="welcome-title">
+              Bem vindo {displayName || "Motorista"}! 🚘
+            </h1>
+            <p className="welcome-subtitle">
+              Agora começa a sua jornada de motorista de sucesso!
             </p>
+          </div>
+
+          {/* Speed control */}
+          <div className="welcome-speed-area">
+            <button onClick={cycleSpeed} className="welcome-speed-btn" title="Velocidade do vídeo">
+              {speed}x
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          <div className="welcome-progress-track">
+            <div className="welcome-progress-fill" style={{ width: `${progress * 100}%` }} />
+          </div>
+
+          {/* Skip / Continue */}
+          <div className="welcome-action-area">
+            {canSkip ? (
+              <button onClick={handleComplete} className="welcome-cta-btn">
+                Começar minha jornada →
+              </button>
+            ) : (
+              <p className="welcome-hint">
+                Assista pelo menos metade do vídeo para continuar...
+              </p>
+            )}
+          </div>
+
+          {/* Play overlay */}
+          {showOverlay && (
+            <div
+              className="welcome-play-overlay"
+              onClick={() => {
+                playerRef.current?.play();
+                setShowOverlay(false);
+              }}
+            >
+              <div className="welcome-play-btn">▶</div>
+            </div>
           )}
         </div>
 
-        {/* Initial play overlay */}
-        {showOverlay && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(0,0,0,0.4)",
-              zIndex: 20,
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              playerRef.current?.play();
-              setShowOverlay(false);
-            }}
-          >
-            <div style={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.2)",
-              backdropFilter: "blur(12px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "2rem",
-            }}>
-              ▶
-            </div>
-          </div>
-        )}
+        {/* Home indicator */}
+        <div className="welcome-phone-home-indicator" />
       </div>
+    </div>
+  );
+
+  /* ---- Right side panel (desktop only) ---- */
+  const sidePanel = (
+    <div className="welcome-side-panel">
+      <div className="welcome-side-content">
+        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🚘</div>
+        <h2 className="welcome-side-title">
+          Sua jornada começa agora
+        </h2>
+        <p className="welcome-side-desc">
+          Assista o vídeo de boas-vindas e descubra como superar o medo de dirigir de uma vez por todas.
+        </p>
+        <div className="welcome-side-features">
+          <div className="welcome-feature-item">
+            <span className="welcome-feature-icon">🎯</span>
+            <span>Método comprovado e prático</span>
+          </div>
+          <div className="welcome-feature-item">
+            <span className="welcome-feature-icon">💪</span>
+            <span>Conquiste confiança ao volante</span>
+          </div>
+          <div className="welcome-feature-item">
+            <span className="welcome-feature-icon">📈</span>
+            <span>Acompanhe seu progresso</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="welcome-screen">
+      {phoneMockup}
+      {sidePanel}
     </div>
   );
 };
