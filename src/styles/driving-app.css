@@ -852,8 +852,38 @@
   .dashboard-grid { grid-template-columns: 1fr; }
   .achievements-grid { grid-template-columns: repeat(3, 1fr); }
   .content { padding: 16px; }
-  .topbar-stats { gap: 8px; }
-  .stat-chip { font-size: 0.75rem; padding: 3px 8px; }
+
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .topbar-logo {
+    font-size: 1rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .topbar-stats {
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 1;
+    min-width: 0;
+    padding: 4px 0;
+  }
+
+  .topbar-stats::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stat-chip {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }
 
 /* ============================================
