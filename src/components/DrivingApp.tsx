@@ -12,8 +12,9 @@ import {
 } from "@/lib/sounds";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { WelcomeScreen } from "@/components/WelcomeScreen";
 
-type Screen = "dashboard" | "lesson" | "conquest";
+type Screen = "welcome" | "dashboard" | "lesson" | "conquest";
 
 const DrivingApp = () => {
   const { user, signOut } = useAuth();
@@ -28,6 +29,7 @@ const DrivingApp = () => {
     localStorage.setItem("driving-dark-mode", String(darkMode));
   }, [darkMode]);
   const [screen, setScreen] = useState<Screen>("dashboard");
+  const [welcomeVideoViews, setWelcomeVideoViews] = useState<number | null>(null);
   const [currentPhase, setCurrentPhase] = useState(0);
   const [lessonStep, setLessonStep] = useState(0);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -58,13 +60,21 @@ const DrivingApp = () => {
 
       const { data: progress } = await supabase
         .from("user_progress")
-        .select("completed_phases, total_xp, confidence")
+        .select("completed_phases, total_xp, confidence, welcome_video_views")
         .eq("user_id", user.id)
         .single();
       if (progress) {
         setCompletedPhases(progress.completed_phases || []);
         setTotalXP(progress.total_xp || 120);
         setConfidence(progress.confidence || 3);
+        const views = progress.welcome_video_views ?? 0;
+        setWelcomeVideoViews(views);
+        if (views === 0) {
+          setScreen("welcome");
+        }
+      } else {
+        setWelcomeVideoViews(0);
+        setScreen("welcome");
       }
     };
     loadProgress();
@@ -184,12 +194,51 @@ const DrivingApp = () => {
     setConfidence(confVal || 4);
   }
 
+  async function handleWelcomeComplete() {
+    const newViews = (welcomeVideoViews ?? 0) + 1;
+    setWelcomeVideoViews(newViews);
+    setScreen("dashboard");
+    if (user) {
+      await supabase
+        .from("user_progress")
+        .update({ welcome_video_views: newViews })
+        .eq("user_id", user.id);
+    }
+  }
+
   function lessonProgress() {
     if (lessonStep === 0) return 5;
     if (lessonStep === 1) return 20 + (quizIndex / quizTotal) * 30;
     if (lessonStep === 2) return 60;
     if (lessonStep === 3) return 90;
     return 100;
+  }
+
+  if (welcomeVideoViews === null) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)",
+        color: "white",
+        fontSize: "1.2rem",
+        fontWeight: 700,
+      }}>
+        🚘 Carregando...
+      </div>
+    );
+  }
+
+  if (screen === "welcome") {
+    return (
+      <WelcomeScreen
+        displayName={displayName}
+        videoViews={welcomeVideoViews}
+        onComplete={handleWelcomeComplete}
+      />
+    );
   }
 
   return (

@@ -50,6 +50,7 @@ export type Database = {
           total_xp: number
           updated_at: string
           user_id: string
+          welcome_video_views: number
         }
         Insert: {
           completed_phases?: number[]
@@ -59,6 +60,7 @@ export type Database = {
           total_xp?: number
           updated_at?: string
           user_id: string
+          welcome_video_views?: number
         }
         Update: {
           completed_phases?: number[]
@@ -68,6 +70,7 @@ export type Database = {
           total_xp?: number
           updated_at?: string
           user_id?: string
+          welcome_video_views?: number
         }
         Relationships: []
       }
