@@ -144,16 +144,25 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
             )}
           </div>
 
-          {/* Play overlay */}
-          {showOverlay && (
+          {/* Play / Unmute overlay */}
+          {(showOverlay || isMuted) && (
             <div
               className="welcome-play-overlay"
               onClick={() => {
-                playerRef.current?.play();
-                setShowOverlay(false);
+                if (playerRef.current) {
+                  playerRef.current.setVolume(1);
+                  playerRef.current.play();
+                  setIsMuted(false);
+                  setShowOverlay(false);
+                }
               }}
             >
-              <div className="welcome-play-btn">▶</div>
+              <div className="welcome-play-btn">
+                {isMuted && !showOverlay ? "🔊" : "▶"}
+              </div>
+              {isMuted && !showOverlay && (
+                <p className="welcome-unmute-hint">Toque para ativar o som</p>
+              )}
             </div>
           )}
         </div>
