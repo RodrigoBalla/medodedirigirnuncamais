@@ -77,10 +77,11 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
           <div style={{ padding: "177.78% 0 0 0", position: "relative" }}>
             <iframe
               ref={iframeRef}
-              src="https://player.vimeo.com/video/1170037067?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&title=0&byline=0&portrait=0&autoplay=1&muted=0&background=0"
+              src="https://player.vimeo.com/video/1170037067?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&title=0&byline=0&portrait=0&autoplay=1&muted=0&background=0&dnt=1&quality=auto"
               frameBorder="0"
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
+              loading="eager"
               style={{
                 position: "absolute",
                 top: 0,
