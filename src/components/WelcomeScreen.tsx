@@ -10,6 +10,8 @@ interface WelcomeScreenProps {
 
 const SPEED_OPTIONS = [1, 1.25, 1.5, 2];
 
+const isMobile = () => window.innerWidth <= 768;
+
 export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeScreenProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<Player | null>(null);
@@ -17,6 +19,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
   const [canSkip, setCanSkip] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [showOverlay, setShowOverlay] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const isFirstView = videoViews === 0;
 
   const handleComplete = useCallback(() => {
@@ -25,6 +28,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
 
   useEffect(() => {
     if (!iframeRef.current) return;
+    const mobile = isMobile();
     const player = new Player(iframeRef.current);
     playerRef.current = player;
 
@@ -47,7 +51,15 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
       setShowOverlay(false);
     });
 
-    player.play().catch(() => {});
+    // On mobile: mute first to allow autoplay, then show unmute overlay
+    if (mobile) {
+      setIsMuted(true);
+      player.setVolume(0).then(() => {
+        player.play().catch(() => {});
+      });
+    } else {
+      player.play().catch(() => {});
+    }
 
     return () => {
       player.off("timeupdate");
@@ -132,16 +144,25 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
             )}
           </div>
 
-          {/* Play overlay */}
-          {showOverlay && (
+          {/* Play / Unmute overlay */}
+          {(showOverlay || isMuted) && (
             <div
               className="welcome-play-overlay"
               onClick={() => {
-                playerRef.current?.play();
-                setShowOverlay(false);
+                if (playerRef.current) {
+                  playerRef.current.setVolume(1);
+                  playerRef.current.play();
+                  setIsMuted(false);
+                  setShowOverlay(false);
+                }
               }}
             >
-              <div className="welcome-play-btn">▶</div>
+              <div className="welcome-play-btn">
+                {isMuted && !showOverlay ? "🔊" : "▶"}
+              </div>
+              {isMuted && !showOverlay && (
+                <p className="welcome-unmute-hint">Toque para ativar o som</p>
+              )}
             </div>
           )}
         </div>

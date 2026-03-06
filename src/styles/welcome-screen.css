@@ -213,6 +213,19 @@
   color: white;
 }
 
+.welcome-unmute-hint {
+  color: white;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+  animation: pulse-hint 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-hint {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
 /* ---- Side Panel (desktop) ---- */
 .welcome-side-panel {
   display: flex;
