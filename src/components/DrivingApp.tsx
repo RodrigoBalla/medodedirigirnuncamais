@@ -240,7 +240,7 @@ const DrivingApp = () => {
   async function handleWelcomeComplete() {
     const newViews = (welcomeVideoViews ?? 0) + 1;
     setWelcomeVideoViews(newViews);
-    setScreen("app");
+    navigate("/", { replace: true });
     if (user) {
       await supabase
         .from("user_progress")
