@@ -1,8 +1,65 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+// Hints from "Valtinho Uber" for each phase/quiz
+const UBER_HINTS: Record<string, string[]> = {
+  "0": [
+    "Ô meu parceiro, essa aí é moleza! O pedal da esquerda serve pra trocar de marcha, sabe? Sem ele o câmbio não funciona. Pensa assim: embreagem = passaporte pra trocar marcha!",
+    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três. É o do meio, meu chapa! Não confunde com o acelerador não!",
+    "E aí meu aluno, no automático a vida é mais fácil! Tem menos pedal que no manual. Pensa: sem embreagem, sobra o quê? Freio e acelerador, só dois!"
+  ],
+  "1": [
+    "Irmão, pra trocar de marcha você usa TUDO! Pé esquerdo na embreagem, pé direito sai do acelerador, mão no câmbio... é um combo! São várias partes do corpo.",
+    "Meu conselho de quem roda o dia todo: primeiro domina os pés! Quando os pés ficam automáticos, o resto vem naturalmente. Foca nos pés primeiro!",
+    "Olha, eu sempre treino meus alunos em lugar calmo primeiro. Menos coisa pra prestar atenção = mais foco no que importa! Pensa nisso."
+  ],
+  "2": [
+    "Parceiro, no volante a dica é: mão leve! Quanto mais relaxado você segura, mais suave fica a direção. Não aperta o volante como se tivesse com raiva não!",
+    "Fala meu aluno! O segredo é olhar LONGE, lá na frente. Quem olha pro capô do carro fica nervoso. Olha longe que o cérebro antecipa tudo!",
+    "Depois da segunda, qual vem? A terceira, né parceiro! É uma escadinha: primeira, segunda, terceira. Cada uma no seu tempo!"
+  ]
+};
+
+function getUberHint(phaseIndex: number, quizIdx: number): string {
+  const hints = UBER_HINTS[String(phaseIndex)];
+  return hints?.[quizIdx] || "Meu parceiro, pensa com calma que você acerta!";
+}
+
+// 24h cooldown key
+function getUberCooldownKey(phaseIndex: number, quizIdx: number) {
+  return `uber_cooldown_${phaseIndex}_${quizIdx}`;
+}
+
+function isUberOnCooldown(phaseIndex: number, quizIdx: number): { onCooldown: boolean; remainingMs: number } {
+  const key = getUberCooldownKey(phaseIndex, quizIdx);
+  const stored = localStorage.getItem(key);
+  if (!stored) return { onCooldown: false, remainingMs: 0 };
+  const expiresAt = parseInt(stored, 10);
+  const now = Date.now();
+  if (now >= expiresAt) {
+    localStorage.removeItem(key);
+    return { onCooldown: false, remainingMs: 0 };
+  }
+  return { onCooldown: true, remainingMs: expiresAt - now };
+}
+
+function startUberCooldown(phaseIndex: number, quizIdx: number) {
+  const key = getUberCooldownKey(phaseIndex, quizIdx);
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  localStorage.setItem(key, String(expiresAt));
+}
+
+function formatCountdown(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
 
 interface LessonScreenProps {
   phase: Phase;
@@ -54,6 +111,150 @@ export function LessonScreen({
   const allDone = tasks ? checkedCount === tasks.length : false;
   const [showCompletion, setShowCompletion] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+
+  // Quiz confirmation popup states
+  const [pendingSelection, setPendingSelection] = useState<number | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDoubtOptions, setShowDoubtOptions] = useState(false);
+  const [showUberChat, setShowUberChat] = useState(false);
+  const [uberAudioPlayed, setUberAudioPlayed] = useState(false);
+  const [uberAudioPlaying, setUberAudioPlaying] = useState(false);
+  const [uberAudioProgress, setUberAudioProgress] = useState(0);
+  const [uberReplayUsed, setUberReplayUsed] = useState(false);
+  const [uberUsedThisQuiz, setUberUsedThisQuiz] = useState(false);
+  const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
+  const [eliminateUsed, setEliminateUsed] = useState(false);
+
+  // Uber cooldown timer
+  const [uberCooldownRemaining, setUberCooldownRemaining] = useState(0);
+
+  useEffect(() => {
+    const { onCooldown, remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+    if (onCooldown) {
+      setUberUsedThisQuiz(true);
+      setUberCooldownRemaining(remainingMs);
+    } else {
+      setUberUsedThisQuiz(false);
+      setUberCooldownRemaining(0);
+    }
+  }, [currentPhase, quizIndex]);
+
+  useEffect(() => {
+    if (uberCooldownRemaining <= 0) return;
+    const interval = setInterval(() => {
+      const { onCooldown, remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+      if (!onCooldown) {
+        setUberUsedThisQuiz(false);
+        setUberCooldownRemaining(0);
+      } else {
+        setUberCooldownRemaining(remainingMs);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [uberCooldownRemaining, currentPhase, quizIndex]);
+
+  // Reset elimination and uber states on quiz change
+  useEffect(() => {
+    setEliminatedOptions([]);
+    setEliminateUsed(false);
+    setPendingSelection(null);
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setShowUberChat(false);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(false);
+    setUberAudioProgress(0);
+    setUberReplayUsed(false);
+  }, [quizIndex, currentPhase]);
+
+  // Handle quiz option click - show confirmation instead of answering directly
+  const handleOptionClick = useCallback((i: number) => {
+    if (answered || eliminatedOptions.includes(i)) return;
+    setPendingSelection(i);
+    setShowConfirmDialog(true);
+    setShowDoubtOptions(false);
+  }, [answered, eliminatedOptions]);
+
+  const handleConfirmSure = useCallback(() => {
+    if (pendingSelection === null) return;
+    setShowConfirmDialog(false);
+    onQuizSelect(pendingSelection);
+  }, [pendingSelection, onQuizSelect]);
+
+  const handleDoubt = useCallback(() => {
+    setShowDoubtOptions(true);
+  }, []);
+
+  const handleChooseAnother = useCallback(() => {
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setPendingSelection(null);
+  }, []);
+
+  const handleEliminateTwoWrong = useCallback(() => {
+    const quiz = phase.quizzes[quizIndex];
+    const wrongIndices = quiz.opts
+      .map((_, i) => i)
+      .filter(i => i !== quiz.correct && i !== pendingSelection);
+    // Shuffle and take 2
+    const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
+    const toEliminate = shuffled.slice(0, 2);
+    setEliminatedOptions(toEliminate);
+    setEliminateUsed(true);
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setPendingSelection(null);
+  }, [phase, quizIndex, pendingSelection]);
+
+  const handleConsultUber = useCallback(() => {
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setShowUberChat(true);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(false);
+    setUberAudioProgress(0);
+    setUberReplayUsed(false);
+    // Start audio animation after a short delay
+    setTimeout(() => {
+      setUberAudioPlaying(true);
+    }, 800);
+  }, []);
+
+  // Simulate audio playback progress
+  useEffect(() => {
+    if (!uberAudioPlaying) return;
+    const duration = 15000; // 15 seconds animation
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setUberAudioProgress(progress);
+      if (progress >= 1) {
+        clearInterval(interval);
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [uberAudioPlaying]);
+
+  const handleReplayUberAudio = useCallback(() => {
+    if (uberReplayUsed) return;
+    setUberReplayUsed(true);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(true);
+    setUberAudioProgress(0);
+  }, [uberReplayUsed]);
+
+  const handleCloseUberChat = useCallback(() => {
+    setShowUberChat(false);
+    setUberUsedThisQuiz(true);
+    startUberCooldown(currentPhase, quizIndex);
+    setPendingSelection(null);
+    // Update cooldown
+    const { remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+    setUberCooldownRemaining(remainingMs || 24 * 60 * 60 * 1000);
+  }, [currentPhase, quizIndex]);
 
   // Auto-advance slides every 1.5s
   useEffect(() => {
@@ -309,6 +510,8 @@ export function LessonScreen({
                 <div className="flex flex-col gap-3.5 flex-1">
                   <AnimatePresence mode="wait">
                     {phase.quizzes[quizIndex].opts.map((opt, i) => {
+                      const isEliminated = eliminatedOptions.includes(i);
+                      if (isEliminated && !answered) return null;
                       const isCorrect = answered && i === phase.quizzes[quizIndex].correct;
                       const isWrong = answered && selected === i && i !== phase.quizzes[quizIndex].correct;
                       const isSelected = selected === i && !answered;
@@ -330,7 +533,7 @@ export function LessonScreen({
                           }}
                           whileHover={!answered ? { scale: 1.02, y: -2 } : {}}
                           whileTap={!answered ? { scale: 0.97 } : {}}
-                          onClick={() => onQuizSelect(i)}
+                          onClick={() => handleOptionClick(i)}
                           disabled={answered}
                           className={`group flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
                             isCorrect
@@ -397,24 +600,6 @@ export function LessonScreen({
                   )}
                 </AnimatePresence>
 
-                {/* Confirm / Next button */}
-                <AnimatePresence>
-                  {!answered && selected !== null && (
-                    <motion.button
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => onQuizSelect(selected)}
-                      className="w-full mt-5 bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
-                    >
-                      Confirmar Escolha
-                      <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-
                 {answered && (
                   <motion.button
                     initial={{ opacity: 0, y: 10 }}
@@ -437,9 +622,274 @@ export function LessonScreen({
                 {!answered && selected === null && (
                   <p className="text-xs text-muted-foreground text-center mt-5 flex items-center justify-center gap-1.5">
                     <span className="material-symbols-outlined text-sm">touch_app</span>
-                    Sua resposta determinará o desfecho da situação no vídeo.
+                    Selecione uma resposta para continuar.
                   </p>
                 )}
+
+                {/* CONFIRMATION DIALOG */}
+                <Dialog open={showConfirmDialog} onOpenChange={(open) => {
+                  if (!open) { setShowConfirmDialog(false); setShowDoubtOptions(false); setPendingSelection(null); }
+                }}>
+                  <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden border-border">
+                    <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 border-b border-border">
+                      <DialogTitle className="text-lg font-extrabold text-foreground flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary filled-icon">pin_drop</span>
+                        Destino Selecionado
+                      </DialogTitle>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Você está certo da sua resposta{" "}
+                        <span className="font-bold text-foreground">
+                          "{pendingSelection !== null ? phase.quizzes[quizIndex].opts[pendingSelection] : ""}"
+                        </span>?
+                      </p>
+                    </div>
+
+                    <div className="p-5">
+                      {!showDoubtOptions ? (
+                        <div className="flex flex-col gap-3">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleConfirmSure}
+                            className="w-full bg-[hsl(var(--green))] text-primary-foreground font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg"
+                          >
+                            <span className="material-symbols-outlined text-lg">check_circle</span>
+                            Estou certo
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleDoubt}
+                            className="w-full bg-accent text-accent-foreground font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border border-border"
+                          >
+                            <span className="material-symbols-outlined text-lg">help_outline</span>
+                            Estou na dúvida
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex flex-col gap-3"
+                        >
+                          <p className="text-sm font-bold text-foreground mb-1">O que quer fazer?</p>
+
+                          {/* Consultar os Ubers */}
+                          <motion.button
+                            whileHover={!uberUsedThisQuiz ? { scale: 1.02 } : {}}
+                            whileTap={!uberUsedThisQuiz ? { scale: 0.97 } : {}}
+                            onClick={!uberUsedThisQuiz ? handleConsultUber : undefined}
+                            disabled={uberUsedThisQuiz}
+                            className={`w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border transition-all ${
+                              uberUsedThisQuiz
+                                ? "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60"
+                                : "bg-card text-foreground border-border hover:border-primary/60 hover:bg-primary/5"
+                            }`}
+                          >
+                            <span className="text-lg">🚗</span>
+                            {uberUsedThisQuiz ? (
+                              <span className="flex items-center gap-1.5">
+                                Consultar os Ubers
+                                <span className="text-xs font-mono bg-muted-foreground/20 px-2 py-0.5 rounded">
+                                  {formatCountdown(uberCooldownRemaining)}
+                                </span>
+                              </span>
+                            ) : (
+                              "Consultar os Ubers"
+                            )}
+                          </motion.button>
+
+                          {/* Eliminar duas respostas */}
+                          <motion.button
+                            whileHover={!eliminateUsed ? { scale: 1.02 } : {}}
+                            whileTap={!eliminateUsed ? { scale: 0.97 } : {}}
+                            onClick={!eliminateUsed ? handleEliminateTwoWrong : undefined}
+                            disabled={eliminateUsed}
+                            className={`w-full font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border transition-all ${
+                              eliminateUsed
+                                ? "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60"
+                                : "bg-card text-foreground border-border hover:border-primary/60 hover:bg-primary/5"
+                            }`}
+                          >
+                            <span className="material-symbols-outlined text-lg">cancel</span>
+                            Eliminar duas respostas erradas
+                          </motion.button>
+
+                          {/* Escolher outra resposta */}
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleChooseAnother}
+                            className="w-full bg-card text-foreground font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border border-border hover:border-primary/60 hover:bg-primary/5"
+                          >
+                            <span className="material-symbols-outlined text-lg">swap_horiz</span>
+                            Escolher outra resposta
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* UBER WHATSAPP CHAT DIALOG */}
+                <Dialog open={showUberChat} onOpenChange={(open) => {
+                  if (!open && (uberAudioPlayed || !uberAudioPlaying)) handleCloseUberChat();
+                }}>
+                  <DialogContent className="max-w-sm rounded-3xl p-0 overflow-hidden border-2 border-foreground/20 shadow-2xl">
+                    <DialogTitle className="sr-only">Consultar Valtinho Uber</DialogTitle>
+                    {/* Phone frame */}
+                    <div className="bg-[#075E54] flex flex-col" style={{ minHeight: 480 }}>
+                      {/* WhatsApp header */}
+                      <div className="flex items-center gap-3 px-4 py-3 bg-[#075E54]">
+                        <div className="size-10 rounded-full bg-[#128C7E] flex items-center justify-center text-white font-bold text-sm">
+                          VU
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white font-bold text-sm">Valtinho Uber</p>
+                          <p className="text-white/70 text-[11px]">online</p>
+                        </div>
+                        <span className="text-white/60 text-lg">📞</span>
+                      </div>
+
+                      {/* Chat area */}
+                      <div className="flex-1 bg-[#ECE5DD] p-4 flex flex-col gap-3" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23000000\" fill-opacity=\"0.03\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')" }}>
+                        {/* Initial message */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="self-start max-w-[85%]"
+                        >
+                          <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+                            <p className="text-[13px] text-gray-800">Fala meu aluno! 🚗 Vou te dar uma dica...</p>
+                            <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
+                          </div>
+                        </motion.div>
+
+                        {/* Audio message */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 }}
+                          className="self-start max-w-[85%]"
+                        >
+                          <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                            <div className="flex items-center gap-3">
+                              <div className="size-10 rounded-full bg-[#128C7E] flex items-center justify-center shrink-0">
+                                <span className="text-white text-sm">VU</span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  {uberAudioPlaying ? (
+                                    <div className="flex items-center gap-0.5 h-5">
+                                      {[...Array(20)].map((_, j) => (
+                                        <motion.div
+                                          key={j}
+                                          className="w-[3px] bg-[#128C7E] rounded-full"
+                                          animate={{
+                                            height: uberAudioPlaying
+                                              ? [4, Math.random() * 16 + 4, 4]
+                                              : 4,
+                                          }}
+                                          transition={{
+                                            repeat: Infinity,
+                                            duration: 0.4 + Math.random() * 0.3,
+                                            delay: j * 0.05,
+                                          }}
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-0.5 h-5">
+                                      {[...Array(20)].map((_, j) => (
+                                        <div
+                                          key={j}
+                                          className="w-[3px] rounded-full"
+                                          style={{
+                                            height: uberAudioPlayed ? Math.random() * 12 + 4 : 4,
+                                            backgroundColor: uberAudioPlayed
+                                              ? (j / 20 <= 1 ? "#128C7E" : "#ccc")
+                                              : "#ccc"
+                                          }}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="h-1 bg-gray-200 rounded-full mt-1.5 overflow-hidden">
+                                  <motion.div
+                                    className="h-full bg-[#128C7E] rounded-full"
+                                    style={{ width: `${uberAudioProgress * 100}%` }}
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="text-[10px] text-gray-500">
+                                    {uberAudioPlaying
+                                      ? `0:${String(Math.floor(uberAudioProgress * 15)).padStart(2, "0")}`
+                                      : uberAudioPlayed ? "0:15" : "0:15"}
+                                  </span>
+                                  <span className="text-[10px] text-gray-500">agora</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* Hint text bubble - appears after audio */}
+                        <AnimatePresence>
+                          {uberAudioPlayed && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="self-start max-w-[85%]"
+                            >
+                              <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+                                <p className="text-[13px] text-gray-800 italic">
+                                  "{getUberHint(currentPhase, quizIndex)}"
+                                </p>
+                                <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Bottom actions */}
+                      <div className="bg-[#F0F0F0] px-4 py-3 flex flex-col gap-2">
+                        {uberAudioPlayed && !uberReplayUsed && (
+                          <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleReplayUberAudio}
+                            className="w-full bg-white text-foreground font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm border border-border"
+                          >
+                            <span className="material-symbols-outlined text-base">replay</span>
+                            Ouvir novamente (1x)
+                          </motion.button>
+                        )}
+                        {uberAudioPlayed && (uberReplayUsed || true) && (
+                          <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleCloseUberChat}
+                            className="w-full bg-[#128C7E] text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm"
+                          >
+                            <span className="material-symbols-outlined text-base">arrow_back</span>
+                            Voltar para o Quiz
+                          </motion.button>
+                        )}
+                        {uberAudioPlaying && (
+                          <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
+                            <span className="material-symbols-outlined text-sm animate-pulse">graphic_eq</span>
+                            Ouvindo áudio do Valtinho...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* Right: Video sidebar — fills available height */}
