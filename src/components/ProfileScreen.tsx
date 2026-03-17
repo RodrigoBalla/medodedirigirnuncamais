@@ -69,6 +69,14 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
 
       {/* Settings */}
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 w-full px-5 py-4 hover:bg-muted/50 transition-colors text-left border-b border-border"
+        >
+          <span className="material-symbols-outlined text-muted-foreground">{isDark ? "light_mode" : "dark_mode"}</span>
+          <span className="font-medium text-sm">{isDark ? "Modo Claro" : "Modo Escuro"}</span>
+          <span className="material-symbols-outlined ml-auto text-muted-foreground text-lg">chevron_right</span>
+        </button>
         <button className="flex items-center gap-3 w-full px-5 py-4 hover:bg-muted/50 transition-colors text-left border-b border-border">
           <span className="material-symbols-outlined text-muted-foreground">settings</span>
           <span className="font-medium text-sm">Configurações</span>
