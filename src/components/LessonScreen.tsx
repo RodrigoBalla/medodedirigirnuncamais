@@ -1,8 +1,65 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+// Hints from "Valtinho Uber" for each phase/quiz
+const UBER_HINTS: Record<string, string[]> = {
+  "0": [
+    "Ô meu parceiro, essa aí é moleza! O pedal da esquerda serve pra trocar de marcha, sabe? Sem ele o câmbio não funciona. Pensa assim: embreagem = passaporte pra trocar marcha!",
+    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três. É o do meio, meu chapa! Não confunde com o acelerador não!",
+    "E aí meu aluno, no automático a vida é mais fácil! Tem menos pedal que no manual. Pensa: sem embreagem, sobra o quê? Freio e acelerador, só dois!"
+  ],
+  "1": [
+    "Irmão, pra trocar de marcha você usa TUDO! Pé esquerdo na embreagem, pé direito sai do acelerador, mão no câmbio... é um combo! São várias partes do corpo.",
+    "Meu conselho de quem roda o dia todo: primeiro domina os pés! Quando os pés ficam automáticos, o resto vem naturalmente. Foca nos pés primeiro!",
+    "Olha, eu sempre treino meus alunos em lugar calmo primeiro. Menos coisa pra prestar atenção = mais foco no que importa! Pensa nisso."
+  ],
+  "2": [
+    "Parceiro, no volante a dica é: mão leve! Quanto mais relaxado você segura, mais suave fica a direção. Não aperta o volante como se tivesse com raiva não!",
+    "Fala meu aluno! O segredo é olhar LONGE, lá na frente. Quem olha pro capô do carro fica nervoso. Olha longe que o cérebro antecipa tudo!",
+    "Depois da segunda, qual vem? A terceira, né parceiro! É uma escadinha: primeira, segunda, terceira. Cada uma no seu tempo!"
+  ]
+};
+
+function getUberHint(phaseIndex: number, quizIdx: number): string {
+  const hints = UBER_HINTS[String(phaseIndex)];
+  return hints?.[quizIdx] || "Meu parceiro, pensa com calma que você acerta!";
+}
+
+// 24h cooldown key
+function getUberCooldownKey(phaseIndex: number, quizIdx: number) {
+  return `uber_cooldown_${phaseIndex}_${quizIdx}`;
+}
+
+function isUberOnCooldown(phaseIndex: number, quizIdx: number): { onCooldown: boolean; remainingMs: number } {
+  const key = getUberCooldownKey(phaseIndex, quizIdx);
+  const stored = localStorage.getItem(key);
+  if (!stored) return { onCooldown: false, remainingMs: 0 };
+  const expiresAt = parseInt(stored, 10);
+  const now = Date.now();
+  if (now >= expiresAt) {
+    localStorage.removeItem(key);
+    return { onCooldown: false, remainingMs: 0 };
+  }
+  return { onCooldown: true, remainingMs: expiresAt - now };
+}
+
+function startUberCooldown(phaseIndex: number, quizIdx: number) {
+  const key = getUberCooldownKey(phaseIndex, quizIdx);
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  localStorage.setItem(key, String(expiresAt));
+}
+
+function formatCountdown(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
 
 interface LessonScreenProps {
   phase: Phase;
