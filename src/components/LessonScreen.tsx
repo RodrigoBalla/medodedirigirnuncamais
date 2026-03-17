@@ -442,50 +442,43 @@ export function LessonScreen({
                 )}
               </div>
 
-              {/* Right: Video sidebar */}
+              {/* Right: Video sidebar — fills available height */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
-                className="flex flex-col gap-4 lg:sticky lg:top-6 self-start"
+                className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col"
               >
-                <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                  <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
-                    {phase.quizzes[quizIndex].gif ? (
-                      <GifIllustration
-                        key={`${currentPhase}-${quizIndex}-${isRetry ? "r" : "n"}-${answered ? "a" : "q"}`}
-                        gifId={phase.quizzes[quizIndex].gif}
-                        alt={phase.quizzes[quizIndex].gifAlt}
-                        emoji={phase.quizzes[quizIndex].emoji || "🚗"}
-                      />
-                    ) : (
-                      <span className="text-6xl">🚗</span>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="size-14 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary-foreground text-2xl filled-icon">play_arrow</span>
-                      </div>
-                    </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
-                        Quiz
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-primary-foreground/80 font-medium">0:15 / 1:45</span>
-                        <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
-                          <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "14%" }} />
-                        </div>
-                      </div>
+                <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] flex-1 flex items-center justify-center relative min-h-[300px]">
+                  {phase.quizzes[quizIndex].gif ? (
+                    <GifIllustration
+                      key={`${currentPhase}-${quizIndex}-${isRetry ? "r" : "n"}-${answered ? "a" : "q"}`}
+                      gifId={phase.quizzes[quizIndex].gif}
+                      alt={phase.quizzes[quizIndex].gifAlt}
+                      emoji={phase.quizzes[quizIndex].emoji || "🚗"}
+                    />
+                  ) : (
+                    <span className="text-6xl">🚗</span>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="size-14 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
+                      <span className="material-symbols-outlined text-primary-foreground text-2xl filled-icon">play_arrow</span>
                     </div>
                   </div>
-                  <div className="p-3 border-t border-border">
-                    <p className="text-sm font-bold text-foreground mb-0.5">Vídeo interativo</p>
-                    <p className="text-xs text-muted-foreground">O vídeo reagirá à sua escolha</p>
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                      Quiz
+                    </span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-primary-foreground/80 font-medium">0:15 / 1:45</span>
+                      <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "14%" }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
-
               </motion.div>
             </div>
 
