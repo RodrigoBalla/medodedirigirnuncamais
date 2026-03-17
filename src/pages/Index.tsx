@@ -7,17 +7,8 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)",
-        color: "white",
-        fontSize: "1.2rem",
-        fontWeight: 700,
-      }}>
-        🚘 Carregando...
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-foreground text-lg font-bold">🚘 Carregando...</span>
       </div>
     );
   }
