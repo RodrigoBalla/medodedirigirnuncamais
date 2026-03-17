@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
@@ -172,101 +173,158 @@ export function LessonScreen({
               </div>
 
               {/* Quiz area */}
-              <div className="bg-card rounded-xl border border-border p-5 md:p-6 flex flex-col">
+              <div className="bg-card rounded-2xl border border-border p-6 md:p-8 flex flex-col shadow-sm">
                 {isRetry ? (
-                  <span className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-3 py-1 text-xs font-bold uppercase mb-4 self-start">
+                  <motion.span
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-xs font-bold uppercase mb-5 self-start"
+                  >
                     🔄 Revisão — {retryQueue.length} restante{retryQueue.length !== 1 ? "s" : ""}
-                  </span>
+                  </motion.span>
                 ) : (
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                  <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">
                     Pergunta {String(quizIndex + 1).padStart(2, "0")}
                   </p>
                 )}
 
-                <h2 className="text-xl font-bold tracking-tight mb-5 text-foreground">
+                <h2 className="text-2xl font-extrabold tracking-tight mb-6 text-foreground leading-snug">
                   {phase.quizzes[quizIndex].q}
                 </h2>
 
-                <div className="flex flex-col gap-3 flex-1">
-                  {phase.quizzes[quizIndex].opts.map((opt, i) => {
-                    const isCorrect = answered && i === phase.quizzes[quizIndex].correct;
-                    const isWrong = answered && selected === i && i !== phase.quizzes[quizIndex].correct;
+                <div className="flex flex-col gap-3.5 flex-1">
+                  <AnimatePresence mode="wait">
+                    {phase.quizzes[quizIndex].opts.map((opt, i) => {
+                      const isCorrect = answered && i === phase.quizzes[quizIndex].correct;
+                      const isWrong = answered && selected === i && i !== phase.quizzes[quizIndex].correct;
+                      const isSelected = selected === i && !answered;
+                      const isUnselected = answered && selected !== i && !isCorrect;
 
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => onQuizSelect(i)}
-                        className={`group flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left ${
-                          isCorrect
-                            ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))]"
-                            : isWrong
-                            ? "border-destructive bg-destructive/5"
-                            : selected === i && !answered
-                            ? "border-primary bg-primary/5"
-                            : "border-border bg-card hover:border-primary/50 hover:bg-primary/5"
-                        }`}
-                      >
-                        <div className={`size-9 shrink-0 flex items-center justify-center rounded-lg font-bold text-sm ${
-                          isCorrect
-                            ? "bg-[hsl(var(--green))] text-primary-foreground"
-                            : isWrong
-                            ? "bg-destructive text-destructive-foreground"
-                            : selected === i && !answered
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted border border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/30"
-                        }`}>
-                          {["A", "B", "C", "D"][i]}
-                        </div>
-                        <p className={`font-medium text-sm ${
-                          isCorrect ? "text-[hsl(var(--green-dark))] font-bold" : isWrong ? "text-destructive" : "text-foreground"
-                        }`}>
-                          {opt}
-                        </p>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <motion.button
+                          key={i}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{
+                            opacity: isUnselected ? 0.45 : 1,
+                            x: 0,
+                            scale: isCorrect ? [1, 1.03, 1] : isWrong ? [1, 0.97, 1] : 1,
+                          }}
+                          transition={{
+                            delay: i * 0.06,
+                            duration: 0.3,
+                            scale: { duration: 0.4, ease: "easeInOut" },
+                          }}
+                          whileHover={!answered ? { scale: 1.02, y: -2 } : {}}
+                          whileTap={!answered ? { scale: 0.97 } : {}}
+                          onClick={() => onQuizSelect(i)}
+                          disabled={answered}
+                          className={`group flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
+                            isCorrect
+                              ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))] shadow-[0_0_20px_hsl(var(--green)/0.2)]"
+                              : isWrong
+                              ? "border-destructive bg-destructive/5 shadow-[0_0_20px_hsl(var(--destructive)/0.15)]"
+                              : isSelected
+                              ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                              : "border-border bg-card hover:border-primary/60 hover:bg-primary/5 hover:shadow-md"
+                          }`}
+                        >
+                          <div className={`size-11 shrink-0 flex items-center justify-center rounded-xl font-extrabold text-base transition-all ${
+                            isCorrect
+                              ? "bg-[hsl(var(--green))] text-primary-foreground shadow-lg"
+                              : isWrong
+                              ? "bg-destructive text-destructive-foreground shadow-lg"
+                              : isSelected
+                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                              : "bg-muted border border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/30 group-hover:bg-primary/10"
+                          }`}>
+                            {isCorrect ? "✓" : isWrong ? "✗" : ["A", "B", "C", "D"][i]}
+                          </div>
+                          <p className={`font-semibold text-base flex-1 ${
+                            isCorrect ? "text-[hsl(var(--green-dark))] font-bold" : isWrong ? "text-destructive" : "text-foreground"
+                          }`}>
+                            {opt}
+                          </p>
+                          {isCorrect && (
+                            <motion.span
+                              initial={{ scale: 0, rotate: -180 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              className="text-2xl"
+                            >
+                              🎉
+                            </motion.span>
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </AnimatePresence>
                 </div>
 
                 {/* Explanation */}
-                {answered && (
-                  <div className={`mt-4 p-4 rounded-xl flex items-start gap-3 text-sm font-medium leading-relaxed ${
-                    selected === phase.quizzes[quizIndex].correct
-                      ? "bg-[hsl(var(--green-light))] text-[hsl(var(--green-dark))] border border-[hsl(var(--green))]/20"
-                      : "bg-destructive/5 text-destructive border border-destructive/20"
-                  }`}>
-                    <span className="text-lg">{selected === phase.quizzes[quizIndex].correct ? "🎉" : "💡"}</span>
-                    <div>
-                      <p>{phase.quizzes[quizIndex].explain}</p>
-                      {selected !== phase.quizzes[quizIndex].correct && (
-                        <p className="mt-1 text-xs font-bold opacity-80">🔄 Essa pergunta voltará para revisão!</p>
-                      )}
-                    </div>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {answered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className={`mt-5 p-5 rounded-2xl flex items-start gap-3 text-sm font-medium leading-relaxed ${
+                        selected === phase.quizzes[quizIndex].correct
+                          ? "bg-[hsl(var(--green-light))] text-[hsl(var(--green-dark))] border border-[hsl(var(--green))]/20"
+                          : "bg-destructive/5 text-destructive border border-destructive/20"
+                      }`}
+                    >
+                      <span className="text-xl">{selected === phase.quizzes[quizIndex].correct ? "🎉" : "💡"}</span>
+                      <div>
+                        <p className="text-[15px]">{phase.quizzes[quizIndex].explain}</p>
+                        {selected !== phase.quizzes[quizIndex].correct && (
+                          <p className="mt-1.5 text-xs font-bold opacity-80">🔄 Essa pergunta voltará para revisão!</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Confirm / Next button */}
-                {!answered && selected !== null && (
-                  <button onClick={() => onQuizSelect(selected)} className="w-full mt-4 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
-                    Confirmar Escolha
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
-                )}
+                <AnimatePresence>
+                  {!answered && selected !== null && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onQuizSelect(selected)}
+                      className="w-full mt-5 bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
+                    >
+                      Confirmar Escolha
+                      <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
 
                 {answered && (
-                  <button onClick={onNextQuiz} className="w-full mt-4 bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={onNextQuiz}
+                    className="w-full mt-5 bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
+                  >
                     <span>
                       {isRetry
                         ? (selected === phase.quizzes[quizIndex].correct
                             ? (retryQueue.filter(idx => idx !== quizIndex).length > 0 ? "Próxima Revisão" : "Concluir Revisão ✓")
                             : "Tentar Novamente 🔄")
-                        : (quizIndex < quizTotal - 1 ? "Próxima Pergunta" : "Ir para Simulação")}
+                        : (quizIndex < quizTotal - 1 ? "Próxima Pergunta →" : "Ir para Simulação →")}
                     </span>
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
+                  </motion.button>
                 )}
 
                 {!answered && selected === null && (
-                  <p className="text-xs text-muted-foreground text-center mt-4">Sua resposta determinará o desfecho da situação no vídeo.</p>
+                  <p className="text-xs text-muted-foreground text-center mt-5 flex items-center justify-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">touch_app</span>
+                    Sua resposta determinará o desfecho da situação no vídeo.
+                  </p>
                 )}
               </div>
             </div>
