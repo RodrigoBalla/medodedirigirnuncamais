@@ -550,7 +550,7 @@ const DrivingApp = () => {
         {/* Lesson topbar */}
         <div className="flex items-center gap-3 mb-6">
           <button
-            onClick={() => setLessonScreen("none")}
+            onClick={() => navigate("/")}
             className="bg-muted rounded-xl px-3 py-2 font-bold text-sm text-muted-foreground hover:bg-accent transition-colors"
           >
             ← Voltar
