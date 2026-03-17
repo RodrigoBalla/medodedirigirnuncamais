@@ -4,64 +4,60 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const BG_VIDEOS = [
-  "https://videos.pexels.com/video-files/3725914/3725914-uhd_2560_1440_24fps.mp4",
-  "https://videos.pexels.com/video-files/5951267/5951267-uhd_2560_1440_24fps.mp4",
-  "https://videos.pexels.com/video-files/7895815/7895815-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/11330907/11330907-uhd_2560_1440_24fps.mp4",
+  "https://videos.pexels.com/video-files/3725914/3725914-hd_1920_1080_24fps.mp4",
+  "https://videos.pexels.com/video-files/5951267/5951267-hd_1920_1080_24fps.mp4",
+  "https://videos.pexels.com/video-files/7895815/7895815-hd_1920_1080_25fps.mp4",
+  "https://videos.pexels.com/video-files/856078/856078-hd_1920_1080_30fps.mp4",
 ];
 
 const VideoBackground = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState(1);
-  const [transitioning, setTransitioning] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const [ready, setReady] = useState<boolean[]>(new Array(BG_VIDEOS.length).fill(false));
 
+  // When active video ends, crossfade to next
   const handleVideoEnd = useCallback(() => {
-    const next = (activeIndex + 1) % BG_VIDEOS.length;
-    setNextIndex(next);
-    setTransitioning(true);
+    setActiveIndex((prev) => (prev + 1) % BG_VIDEOS.length);
+  }, []);
 
-    // Start playing the next video
-    videoRefs.current[next]?.play();
-
-    // After crossfade completes, swap
-    setTimeout(() => {
-      setActiveIndex(next);
-      setTransitioning(false);
-    }, 1500);
-  }, [activeIndex]);
-
-  // Attach onended to active video
+  // Play active video when index changes
   useEffect(() => {
-    const activeVideo = videoRefs.current[activeIndex];
-    if (activeVideo) {
-      activeVideo.loop = false;
-      activeVideo.play();
-    }
+    videoRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === activeIndex) {
+        v.currentTime = 0;
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
   }, [activeIndex]);
+
+  const handleCanPlay = useCallback((i: number) => {
+    setReady((prev) => {
+      const next = [...prev];
+      next[i] = true;
+      return next;
+    });
+  }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {BG_VIDEOS.map((src, i) => {
-        const isActive = i === activeIndex;
-        const isNext = i === nextIndex && transitioning;
-        let opacityClass = "opacity-0";
-        if (isActive && !transitioning) opacityClass = "opacity-[0.15]";
-        if (isActive && transitioning) opacityClass = "opacity-0";
-        if (isNext) opacityClass = "opacity-[0.15]";
-
-        return (
-          <video
-            key={src}
-            ref={(el) => { videoRefs.current[i] = el; }}
-            src={src}
-            muted
-            playsInline
-            onEnded={isActive ? handleVideoEnd : undefined}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out ${opacityClass}`}
-          />
-        );
-      })}
+      {BG_VIDEOS.map((src, i) => (
+        <video
+          key={src}
+          ref={(el) => { videoRefs.current[i] = el; }}
+          src={src}
+          muted
+          playsInline
+          preload="auto"
+          onCanPlay={() => handleCanPlay(i)}
+          onEnded={handleVideoEnd}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
+            i === activeIndex && ready[i] ? "opacity-[0.15]" : "opacity-0"
+          }`}
+        />
+      ))}
     </div>
   );
 };
