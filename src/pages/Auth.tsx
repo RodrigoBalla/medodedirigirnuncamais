@@ -90,8 +90,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--blue-900))] px-4">
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 max-w-md w-full border border-white/10 shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--blue-900))] px-4 relative overflow-hidden">
+      <VideoBackground />
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center size-14 bg-primary/20 rounded-xl mb-4">
             <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
