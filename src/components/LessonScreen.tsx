@@ -112,6 +112,150 @@ export function LessonScreen({
   const [showCompletion, setShowCompletion] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
+  // Quiz confirmation popup states
+  const [pendingSelection, setPendingSelection] = useState<number | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDoubtOptions, setShowDoubtOptions] = useState(false);
+  const [showUberChat, setShowUberChat] = useState(false);
+  const [uberAudioPlayed, setUberAudioPlayed] = useState(false);
+  const [uberAudioPlaying, setUberAudioPlaying] = useState(false);
+  const [uberAudioProgress, setUberAudioProgress] = useState(0);
+  const [uberReplayUsed, setUberReplayUsed] = useState(false);
+  const [uberUsedThisQuiz, setUberUsedThisQuiz] = useState(false);
+  const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
+  const [eliminateUsed, setEliminateUsed] = useState(false);
+
+  // Uber cooldown timer
+  const [uberCooldownRemaining, setUberCooldownRemaining] = useState(0);
+
+  useEffect(() => {
+    const { onCooldown, remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+    if (onCooldown) {
+      setUberUsedThisQuiz(true);
+      setUberCooldownRemaining(remainingMs);
+    } else {
+      setUberUsedThisQuiz(false);
+      setUberCooldownRemaining(0);
+    }
+  }, [currentPhase, quizIndex]);
+
+  useEffect(() => {
+    if (uberCooldownRemaining <= 0) return;
+    const interval = setInterval(() => {
+      const { onCooldown, remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+      if (!onCooldown) {
+        setUberUsedThisQuiz(false);
+        setUberCooldownRemaining(0);
+      } else {
+        setUberCooldownRemaining(remainingMs);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [uberCooldownRemaining, currentPhase, quizIndex]);
+
+  // Reset elimination and uber states on quiz change
+  useEffect(() => {
+    setEliminatedOptions([]);
+    setEliminateUsed(false);
+    setPendingSelection(null);
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setShowUberChat(false);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(false);
+    setUberAudioProgress(0);
+    setUberReplayUsed(false);
+  }, [quizIndex, currentPhase]);
+
+  // Handle quiz option click - show confirmation instead of answering directly
+  const handleOptionClick = useCallback((i: number) => {
+    if (answered || eliminatedOptions.includes(i)) return;
+    setPendingSelection(i);
+    setShowConfirmDialog(true);
+    setShowDoubtOptions(false);
+  }, [answered, eliminatedOptions]);
+
+  const handleConfirmSure = useCallback(() => {
+    if (pendingSelection === null) return;
+    setShowConfirmDialog(false);
+    onQuizSelect(pendingSelection);
+  }, [pendingSelection, onQuizSelect]);
+
+  const handleDoubt = useCallback(() => {
+    setShowDoubtOptions(true);
+  }, []);
+
+  const handleChooseAnother = useCallback(() => {
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setPendingSelection(null);
+  }, []);
+
+  const handleEliminateTwoWrong = useCallback(() => {
+    const quiz = phase.quizzes[quizIndex];
+    const wrongIndices = quiz.opts
+      .map((_, i) => i)
+      .filter(i => i !== quiz.correct && i !== pendingSelection);
+    // Shuffle and take 2
+    const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
+    const toEliminate = shuffled.slice(0, 2);
+    setEliminatedOptions(toEliminate);
+    setEliminateUsed(true);
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setPendingSelection(null);
+  }, [phase, quizIndex, pendingSelection]);
+
+  const handleConsultUber = useCallback(() => {
+    setShowConfirmDialog(false);
+    setShowDoubtOptions(false);
+    setShowUberChat(true);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(false);
+    setUberAudioProgress(0);
+    setUberReplayUsed(false);
+    // Start audio animation after a short delay
+    setTimeout(() => {
+      setUberAudioPlaying(true);
+    }, 800);
+  }, []);
+
+  // Simulate audio playback progress
+  useEffect(() => {
+    if (!uberAudioPlaying) return;
+    const duration = 15000; // 15 seconds animation
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setUberAudioProgress(progress);
+      if (progress >= 1) {
+        clearInterval(interval);
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [uberAudioPlaying]);
+
+  const handleReplayUberAudio = useCallback(() => {
+    if (uberReplayUsed) return;
+    setUberReplayUsed(true);
+    setUberAudioPlayed(false);
+    setUberAudioPlaying(true);
+    setUberAudioProgress(0);
+  }, [uberReplayUsed]);
+
+  const handleCloseUberChat = useCallback(() => {
+    setShowUberChat(false);
+    setUberUsedThisQuiz(true);
+    startUberCooldown(currentPhase, quizIndex);
+    setPendingSelection(null);
+    // Update cooldown
+    const { remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
+    setUberCooldownRemaining(remainingMs || 24 * 60 * 60 * 1000);
+  }, [currentPhase, quizIndex]);
+
   // Auto-advance slides every 1.5s
   useEffect(() => {
     if (lessonStep !== 0) return;
