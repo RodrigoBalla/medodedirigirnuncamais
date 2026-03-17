@@ -105,6 +105,13 @@ export function AppLayout({
             {/* Bottom actions */}
             <div className="flex flex-col gap-2">
               <button
+                onClick={toggleTheme}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all font-medium"
+              >
+                <span className="material-symbols-outlined">{isDark ? "light_mode" : "dark_mode"}</span>
+                <span>{isDark ? "Modo Claro" : "Modo Escuro"}</span>
+              </button>
+              <button
                 onClick={signOut}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-all font-medium"
               >
