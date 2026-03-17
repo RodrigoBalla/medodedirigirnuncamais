@@ -358,12 +358,20 @@ export function LessonScreen({
 
         {/* SIMULATION */}
         {lessonStep === 2 && (
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
-            <p className="text-sm text-muted-foreground mb-6">Feche os olhos e imagine cada passo antes de executar.</p>
+          <div className="max-w-3xl">
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Simulação Mental</p>
+              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
+              <p className="text-sm text-muted-foreground mb-6">Feche os olhos e imagine cada passo antes de executar.</p>
+            </motion.div>
 
-            <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] rounded-xl p-6 text-primary-foreground mb-6">
-              <h3 className="text-lg font-bold mb-3">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] rounded-2xl p-6 md:p-8 text-primary-foreground mb-6"
+            >
+              <h3 className="text-lg font-extrabold mb-3">
                 {currentPhase === 0 && "🚗 Explorando os Pedais"}
                 {currentPhase === 1 && "⚙️ Sequência da Segunda Marcha"}
                 {currentPhase === 2 && "🏁 Controle do Volante"}
@@ -377,123 +385,215 @@ export function LessonScreen({
               {currentPhase === 0 && (
                 <div className="flex gap-3 justify-center">
                   {[{ icon: "🦵", name: "Embreagem", key: "e" }, { icon: "🛑", name: "Freio", key: "f" }, { icon: "▶️", name: "Acelerador", key: "a" }].map(p => (
-                    <button
+                    <motion.button
                       key={p.key}
-                      className={`bg-primary-foreground/10 border border-primary-foreground/20 rounded-xl p-3 text-center min-w-[70px] transition-all ${pressedPedal === p.key ? "bg-primary/50 scale-95" : "hover:bg-primary-foreground/20"}`}
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      className={`bg-primary-foreground/10 border border-primary-foreground/20 rounded-2xl p-4 text-center min-w-[80px] transition-all ${pressedPedal === p.key ? "bg-primary/50 scale-95" : "hover:bg-primary-foreground/20"}`}
                       onMouseDown={() => setPressedPedal(p.key)}
                       onMouseUp={() => setPressedPedal(null)}
                       onTouchStart={() => setPressedPedal(p.key)}
                       onTouchEnd={() => setPressedPedal(null)}
                     >
-                      <div className="text-2xl">{p.icon}</div>
-                      <div className="text-xs font-bold mt-1 opacity-90">{p.name}</div>
-                    </button>
+                      <div className="text-3xl">{p.icon}</div>
+                      <div className="text-xs font-bold mt-1.5 opacity-90">{p.name}</div>
+                    </motion.button>
                   ))}
                 </div>
               )}
 
               {currentPhase === 1 && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5">
                   {["1️⃣ Pé esquerdo na embreagem", "2️⃣ Mão na alavanca de câmbio", "3️⃣ Pé direito com aceleração suave", "4️⃣ Soltar embreagem devagar"].map((step, i) => (
-                    <div key={i} className="bg-primary-foreground/10 rounded-lg p-2.5 text-sm font-medium">{step}</div>
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
+                    >{step}</motion.div>
                   ))}
                 </div>
               )}
 
               {currentPhase === 2 && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5">
                   {["👀 Olhos para longe", "🤲 Mãos leves", "📍 Manter na faixa", "🛣️ Reduzir no quebra-mola"].map((step, i) => (
-                    <div key={i} className="bg-primary-foreground/10 rounded-lg p-2.5 text-sm font-medium">{step}</div>
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
+                    >{step}</motion.div>
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
 
-            <div className="bg-[hsl(var(--green-light))] rounded-xl p-4 text-sm text-[hsl(var(--green-dark))] font-medium leading-relaxed border border-[hsl(var(--green))]/20 mb-6">
-              💡 <strong>Por que visualizar?</strong> O cérebro não distingue entre simulação mental e ação real!
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-[hsl(var(--green-light))] rounded-2xl p-5 text-sm text-[hsl(var(--green-dark))] font-medium leading-relaxed border border-[hsl(var(--green))]/20 mb-6 flex items-start gap-3"
+            >
+              <span className="text-xl">💡</span>
+              <p><strong>Por que visualizar?</strong> O cérebro não distingue entre simulação mental e ação real!</p>
+            </motion.div>
 
-            <button onClick={() => setLessonStep(3)} className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setLessonStep(3)}
+              className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
+            >
               Ir para Prática Real
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </motion.button>
           </div>
         )}
 
         {/* PRACTICE */}
         {lessonStep === 3 && (
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold tracking-tight mb-2 text-foreground">
-              {currentPhase === 0 && "Com o carro ligado e parado"}
-              {currentPhase === 1 && "Em local aberto — andar poucos metros"}
-              {currentPhase === 2 && "Manter faixa e fazer curvas suaves"}
-            </h2>
-            <p className="text-sm text-muted-foreground mb-6">Complete todas as tarefas para concluir a fase.</p>
+          <div className="max-w-3xl">
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Prática Real</p>
+              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">
+                {currentPhase === 0 && "Com o carro ligado e parado"}
+                {currentPhase === 1 && "Em local aberto — andar poucos metros"}
+                {currentPhase === 2 && "Manter faixa e fazer curvas suaves"}
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">Complete todas as tarefas para concluir a fase.</p>
+            </motion.div>
 
-            <div className="mb-5">
-              <div className="flex justify-between text-xs font-bold mb-1.5">
-                <span className="text-muted-foreground">Progresso</span>
-                <span className={allDone ? "text-[hsl(var(--green))]" : "text-primary"}>{checkedCount}/{tasks.length}</span>
+            {/* Progress bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-card rounded-2xl border border-border p-5 mb-6"
+            >
+              <div className="flex justify-between text-sm font-bold mb-2">
+                <span className="text-foreground flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-primary text-lg">checklist</span>
+                  Progresso da Prática
+                </span>
+                <span className={`text-base font-extrabold ${allDone ? "text-[hsl(var(--green))]" : "text-primary"}`}>{checkedCount}/{tasks.length}</span>
               </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{
-                  width: `${(checkedCount / tasks.length) * 100}%`,
-                  background: allDone ? "hsl(var(--green))" : "hsl(var(--primary))"
-                }} />
+              <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(checkedCount / tasks.length) * 100}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  style={{ background: allDone ? "hsl(var(--green))" : "hsl(var(--primary))" }}
+                />
               </div>
-            </div>
+              {allDone && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs font-bold text-[hsl(var(--green))] mt-2 flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-sm">emoji_events</span>
+                  Todas as tarefas concluídas! Parabéns!
+                </motion.p>
+              )}
+            </motion.div>
 
-            <div className="flex flex-col gap-2.5 mb-5">
-              {tasks.map((task) => {
+            {/* Task list */}
+            <div className="flex flex-col gap-3 mb-6">
+              {tasks.map((task, i) => {
                 const isChecked = !!checkedTasks[task.id];
                 return (
-                  <button
+                  <motion.button
                     key={task.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => toggleTask(task.id)}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left w-full ${
-                      isChecked ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))]" : "border-border bg-card hover:border-primary/50"
+                    className={`group flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left w-full ${
+                      isChecked
+                        ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))] shadow-[0_0_16px_hsl(var(--green)/0.15)]"
+                        : "border-border bg-card hover:border-primary/50 hover:shadow-md"
                     }`}
                   >
-                    <div className={`size-6 shrink-0 rounded-lg border-2 flex items-center justify-center transition-all ${
-                      isChecked ? "bg-[hsl(var(--green))] border-[hsl(var(--green))]" : "border-muted-foreground/30"
+                    <div className={`size-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all ${
+                      isChecked ? "bg-[hsl(var(--green))] border-[hsl(var(--green))] shadow-lg" : "border-muted-foreground/30 group-hover:border-primary/50"
                     }`}>
-                      {isChecked && (
-                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                      {isChecked ? (
+                        <motion.svg
+                          initial={{ scale: 0, rotate: -90 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                          width="16" height="16" viewBox="0 0 14 14" fill="none"
+                        >
                           <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        </motion.svg>
+                      ) : (
+                        <span className="text-muted-foreground/50 text-xs font-bold">{i + 1}</span>
                       )}
                     </div>
-                    <span className="text-lg">{task.icon}</span>
-                    <span className={`flex-1 text-sm font-medium ${isChecked ? "line-through opacity-60 text-muted-foreground" : "text-foreground"}`}>{task.text}</span>
-                    {isChecked && <span className="text-xs font-bold text-[hsl(var(--green))] bg-[hsl(var(--green-light))] rounded px-1.5 py-0.5">+5 XP</span>}
-                  </button>
+                    <span className="text-2xl">{task.icon}</span>
+                    <span className={`flex-1 text-base font-semibold ${isChecked ? "line-through opacity-50 text-muted-foreground" : "text-foreground"}`}>{task.text}</span>
+                    {isChecked ? (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                        className="text-xs font-extrabold text-[hsl(var(--green))] bg-[hsl(var(--green-light))] rounded-lg px-2.5 py-1 shadow-sm"
+                      >
+                        +5 XP ✨
+                      </motion.span>
+                    ) : (
+                      <span className="material-symbols-outlined text-muted-foreground/30 text-xl group-hover:text-primary/50 transition-colors">radio_button_unchecked</span>
+                    )}
+                  </motion.button>
                 );
               })}
             </div>
 
-            {allDone && (
-              <div className="flex items-center gap-3 bg-[hsl(var(--green-light))] border border-[hsl(var(--green))]/20 rounded-xl p-4 mb-5">
-                <span className="text-2xl">🎉</span>
-                <div>
-                  <p className="font-bold text-sm text-foreground">Prática concluída!</p>
-                  <p className="text-xs text-muted-foreground">Todas as tarefas completadas.</p>
-                </div>
-              </div>
-            )}
+            {/* Complete celebration */}
+            <AnimatePresence>
+              {allDone && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="flex items-center gap-4 bg-[hsl(var(--green-light))] border-2 border-[hsl(var(--green))]/30 rounded-2xl p-5 mb-6 shadow-[0_0_24px_hsl(var(--green)/0.15)]"
+                >
+                  <motion.span
+                    animate={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                    className="text-3xl"
+                  >🎉</motion.span>
+                  <div>
+                    <p className="font-extrabold text-base text-foreground">Prática concluída!</p>
+                    <p className="text-sm text-muted-foreground">Você desbloqueou +25 XP de bônus! 🏆</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <button
+            {/* Action buttons */}
+            <motion.button
+              whileHover={allDone ? { scale: 1.02 } : {}}
+              whileTap={allDone ? { scale: 0.97 } : {}}
               onClick={onCompletePhase}
               disabled={!allDone}
-              className={`w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-primary/20 ${!allDone ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"}`}
+              className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
             >
               🎉 Concluir Fase!
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setLessonStep(2)}
-              className="w-full mt-2 bg-card text-primary border-2 border-primary/20 font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors"
+              className="w-full mt-3 bg-card text-primary border-2 border-primary/20 font-bold py-3.5 rounded-2xl hover:bg-primary/5 transition-colors text-sm"
             >
               ← Rever Simulação
-            </button>
+            </motion.button>
           </div>
         )}
       </div>
