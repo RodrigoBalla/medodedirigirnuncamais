@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "perfil";
@@ -32,6 +33,7 @@ export function AppLayout({
   completedPhases,
 }: AppLayoutProps) {
   const { signOut } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -57,6 +59,13 @@ export function AppLayout({
               <span className="text-sm font-bold">{totalXP} XP</span>
             </div>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="size-10 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            title={isDark ? "Modo Claro" : "Modo Escuro"}
+          >
+            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
+          </button>
           <div className="size-10 rounded-full border-2 border-primary/20 bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
             {displayName ? displayName.charAt(0).toUpperCase() : "?"}
           </div>
@@ -102,6 +111,13 @@ export function AppLayout({
 
             {/* Bottom actions */}
             <div className="flex flex-col gap-2">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all font-medium"
+              >
+                <span className="material-symbols-outlined">{isDark ? "light_mode" : "dark_mode"}</span>
+                <span>{isDark ? "Modo Claro" : "Modo Escuro"}</span>
+              </button>
               <button
                 onClick={signOut}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-all font-medium"
