@@ -1,8 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+
+const BG_VIDEOS = [
+  "https://videos.pexels.com/video-files/2053100/2053100-uhd_2560_1440_30fps.mp4",
+  "https://videos.pexels.com/video-files/3945585/3945585-uhd_2560_1440_25fps.mp4",
+  "https://videos.pexels.com/video-files/2795391/2795391-uhd_2560_1440_25fps.mp4",
+  "https://videos.pexels.com/video-files/1321208/1321208-uhd_2560_1440_25fps.mp4",
+];
+
+const VideoBackground = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [fadingOut, setFadingOut] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFadingOut(true);
+      setTimeout(() => {
+        setActiveIndex((prev) => (prev + 1) % BG_VIDEOS.length);
+        setFadingOut(false);
+      }, 1000);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {BG_VIDEOS.map((src, i) => (
+        <video
+          key={src}
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            i === activeIndex && !fadingOut ? "opacity-[0.15]" : "opacity-0"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
