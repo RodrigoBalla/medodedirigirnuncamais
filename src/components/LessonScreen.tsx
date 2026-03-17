@@ -213,8 +213,7 @@ export function LessonScreen({
                   <span className="text-xl">✅</span>
                   <span className="text-lg font-extrabold text-foreground">{CHECKLIST_TASKS[currentPhase]?.length || 0}</span>
                   <span className="text-[10px] text-muted-foreground font-medium">tarefas</span>
-                  </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* CTA with subtle pulse */}
