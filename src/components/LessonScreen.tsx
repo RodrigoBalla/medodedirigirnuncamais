@@ -486,24 +486,25 @@ export function LessonScreen({
                   </div>
                 </div>
 
-                {/* Info cards stacked */}
-                <div className="flex flex-col gap-2">
-                  <div className="bg-card rounded-xl border border-border p-3 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-primary text-lg">psychology</span>
-                    <div>
-                      <p className="text-xs font-bold text-foreground">Foco Cognitivo</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Memorização e associação mecânica.</p>
-                    </div>
-                  </div>
-                  <div className="bg-card rounded-xl border border-border p-3 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-primary text-lg">history_edu</span>
-                    <div>
-                      <p className="text-xs font-bold text-foreground">Base Mecânica</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Sistema de transmissão manual.</p>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
+            </div>
+
+            {/* Info cards below quiz */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <div className="bg-card rounded-xl border border-border p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary">psychology</span>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Foco Cognitivo</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Memorização e associação mecânica dos comandos do veículo.</p>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary">history_edu</span>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Base Mecânica</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Funcionamento básico do sistema de transmissão manual.</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
