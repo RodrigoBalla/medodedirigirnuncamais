@@ -278,11 +278,16 @@ const DrivingApp = () => {
   }
 
   // Tab change handler
+  const TAB_ROUTES: Record<AppTab, string> = {
+    home: "/",
+    treinos: "/treinos",
+    ranking: "/ranking",
+    comunidade: "/comunidade",
+    perfil: "/perfil",
+  };
+
   const handleTabChange = (tab: AppTab) => {
-    setActiveTab(tab);
-    if (tab === "home" || tab === "treinos") {
-      setLessonScreen("none");
-    }
+    navigate(TAB_ROUTES[tab]);
   };
 
   // Render tab content
