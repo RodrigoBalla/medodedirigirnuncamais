@@ -283,8 +283,8 @@ const DrivingApp = () => {
     return (
       <WelcomeBackScreen
         displayName={displayName}
-        onWatchVideo={() => setScreen("welcome")}
-        onContinue={() => setScreen("app")}
+        onWatchVideo={() => navigate("/boas-vindas", { replace: true })}
+        onContinue={() => navigate("/", { replace: true })}
       />
     );
   }
