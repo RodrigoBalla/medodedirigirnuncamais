@@ -510,13 +510,13 @@ export function LessonScreen({
 
         {/* SIMULATION */}
         {lessonStep === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 flex-1">
             {/* Left: Simulation content */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col"
+              className="flex flex-col flex-1 min-h-0"
             >
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Simulação Mental</p>
               <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
