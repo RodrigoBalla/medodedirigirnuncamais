@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const BG_VIDEOS = [
-  "https://videos.pexels.com/video-files/2053100/2053100-uhd_2560_1440_30fps.mp4",
-  "https://videos.pexels.com/video-files/3945585/3945585-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/2795391/2795391-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/1321208/1321208-uhd_2560_1440_25fps.mp4",
+  "https://videos.pexels.com/video-files/3725914/3725914-uhd_2560_1440_24fps.mp4",
+  "https://videos.pexels.com/video-files/5951267/5951267-uhd_2560_1440_24fps.mp4",
+  "https://videos.pexels.com/video-files/7895815/7895815-uhd_2560_1440_25fps.mp4",
+  "https://videos.pexels.com/video-files/11330907/11330907-uhd_2560_1440_24fps.mp4",
 ];
 
 const VideoBackground = () => {
