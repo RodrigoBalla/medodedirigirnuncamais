@@ -280,11 +280,13 @@ const DrivingApp = () => {
   }
 
   if (screen === "welcome-back") {
+    const progressPercent = Math.round((completedPhases.length / PHASES.length) * 100);
     return (
       <WelcomeBackScreen
         displayName={displayName}
         onWatchVideo={() => navigate("/boas-vindas", { replace: true })}
         onContinue={() => navigate("/", { replace: true })}
+        progressPercent={progressPercent}
       />
     );
   }
