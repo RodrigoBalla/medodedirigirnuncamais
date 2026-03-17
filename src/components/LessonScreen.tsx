@@ -92,51 +92,139 @@ export function LessonScreen({
 
         {/* MISSION */}
         {lessonStep === 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
             {/* Left: Mission info */}
-            <div>
-              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">{phase.title}</h2>
-              <p className="text-muted-foreground text-sm mb-6">Objetivo: {phase.subtitle}</p>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col"
+            >
+              {/* Phase badge */}
+              <div className="flex items-center gap-3 mb-5">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                  className="size-14 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-3xl"
+                >
+                  {phase.icon}
+                </motion.div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em]">Fase {currentPhase + 1}</p>
+                  <h2 className="text-2xl font-extrabold tracking-tight text-foreground leading-tight">{phase.title.replace(/Fase \d+ — /, "")}</h2>
+                </div>
+              </div>
 
-              <div className="flex flex-col gap-0 mb-6">
-                {STEPS.map((s, i) => (
-                  <div key={s.key} className="flex items-start gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={`size-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                        i < lessonStep ? "bg-primary text-primary-foreground" : i === lessonStep ? "bg-primary text-primary-foreground shadow-[0_0_0_3px_hsl(var(--blue-200))]" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {i < lessonStep ? "✓" : s.icon}
+              <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                Objetivo: <span className="font-semibold text-foreground">{phase.subtitle}</span>
+              </p>
+
+              {/* Steps roadmap */}
+              <div className="bg-card rounded-2xl border border-border p-5 mb-5">
+                <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-4 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm">route</span>
+                  Roteiro da Fase
+                </p>
+                <div className="flex flex-col gap-0">
+                  {STEPS.map((s, i) => (
+                    <motion.div
+                      key={s.key}
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.08 }}
+                      className="flex items-start gap-3"
+                    >
+                      <div className="flex flex-col items-center">
+                        <div className={`size-10 rounded-xl flex items-center justify-center text-base font-bold shrink-0 transition-all ${
+                          i === lessonStep
+                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                            : "bg-muted text-muted-foreground"
+                        }`}>
+                          {s.icon}
+                        </div>
+                        {i < STEPS.length - 1 && <div className="w-0.5 min-h-[16px] bg-border my-1" />}
                       </div>
-                      {i < STEPS.length - 1 && <div className="w-0.5 min-h-[20px] bg-border my-1" />}
-                    </div>
-                    <div className="pb-4">
-                      <p className="font-bold text-sm text-foreground">{s.label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {s.key === 0 && "Entenda o que vamos praticar"}
-                        {s.key === 1 && `${phase.quizzes.length} perguntas rápidas`}
-                        {s.key === 2 && "Visualize o movimento mental"}
-                        {s.key === 3 && "Execute no carro real"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                      <div className="pb-4">
+                        <p className={`font-bold text-sm ${i === lessonStep ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {s.key === 0 && "Entenda o que vamos praticar"}
+                          {s.key === 1 && `${phase.quizzes.length} perguntas rápidas`}
+                          {s.key === 2 && "Visualize o movimento mental"}
+                          {s.key === 3 && "Execute no carro real"}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
 
-              <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 text-sm text-primary font-medium leading-relaxed mb-6">
-                {currentPhase === 0 && "Nesta fase, o carro deixa de ser uma ameaça e se torna um objeto familiar. 🚗"}
-                {currentPhase === 1 && "Aqui está o gargalo da maioria dos alunos: a coordenação motora. ⚙️"}
-                {currentPhase === 2 && "Com os pés automatizados, chegou a hora do volante. 🏁"}
-              </div>
+              {/* Motivational card */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 rounded-2xl p-5 mb-6 flex items-start gap-3"
+              >
+                <motion.span
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 3, repeatDelay: 2 }}
+                  className="text-2xl"
+                >
+                  {currentPhase === 0 ? "🚗" : currentPhase === 1 ? "⚙️" : "🏁"}
+                </motion.span>
+                <div>
+                  <p className="text-sm font-bold text-primary mb-1">
+                    {currentPhase === 0 && "Hora de conhecer o carro!"}
+                    {currentPhase === 1 && "Domine a coordenação!"}
+                    {currentPhase === 2 && "Controle total!"}
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {currentPhase === 0 && "Nesta fase, o carro deixa de ser uma ameaça e se torna um objeto familiar."}
+                    {currentPhase === 1 && "Aqui está o gargalo da maioria dos alunos: a coordenação motora."}
+                    {currentPhase === 2 && "Com os pés automatizados, chegou a hora do volante."}
+                  </p>
+                </div>
+              </motion.div>
 
+              {/* XP reward preview */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex items-center gap-3 mb-6"
+              >
+                <div className="flex items-center gap-2 bg-accent rounded-xl px-4 py-2.5 border border-border">
+                  <span className="text-lg">⚡</span>
+                  <span className="text-sm font-extrabold text-primary">{phase.xp} XP</span>
+                  <span className="text-xs text-muted-foreground">disponíveis</span>
+                </div>
+                <div className="flex items-center gap-2 bg-accent rounded-xl px-4 py-2.5 border border-border">
+                  <span className="text-lg">❓</span>
+                  <span className="text-sm font-extrabold text-foreground">{phase.quizzes.length}</span>
+                  <span className="text-xs text-muted-foreground">perguntas</span>
+                </div>
+                <div className="flex items-center gap-2 bg-accent rounded-xl px-4 py-2.5 border border-border">
+                  <span className="text-lg">✅</span>
+                  <span className="text-sm font-extrabold text-foreground">{CHECKLIST_TASKS[currentPhase]?.length || 0}</span>
+                  <span className="text-xs text-muted-foreground">tarefas</span>
+                </div>
+              </motion.div>
+
+              {/* CTA */}
               <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setLessonStep(1)}
-                className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
+                className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base flex items-center justify-center gap-2"
               >
-                Começar Missão ▶
+                Começar Missão
+                <span className="material-symbols-outlined text-lg">arrow_forward</span>
               </motion.button>
-            </div>
+            </motion.div>
 
             {/* Right: Video 9:16 */}
             <motion.div
