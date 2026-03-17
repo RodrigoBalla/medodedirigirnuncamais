@@ -309,8 +309,29 @@ const DrivingApp = () => {
   const renderContent = () => {
     // If in lesson or conquest, show that regardless of tab
     if (lessonScreen === "lesson" && phase) {
-      return renderLesson();
-    }
+      return (
+        <LessonScreen
+          phase={phase}
+          currentPhase={currentPhase}
+          lessonStep={lessonStep}
+          setLessonStep={setLessonStep}
+          quizIndex={quizIndex}
+          quizTotal={quizTotal}
+          selected={selected}
+          answered={answered}
+          isRetry={isRetry}
+          retryQueue={retryQueue}
+          onQuizSelect={handleQuizSelect}
+          onNextQuiz={nextQuiz}
+          onBack={() => navigate("/")}
+          lessonProgress={lessonProgress()}
+          pressedPedal={pressedPedal}
+          setPressedPedal={setPressedPedal}
+          checkedTasks={checkedTasks}
+          toggleTask={toggleTask}
+          onCompletePhase={completePhase}
+        />
+      );
     if (lessonScreen === "conquest") {
       return (
         <div className="max-w-2xl mx-auto px-4 py-6">
