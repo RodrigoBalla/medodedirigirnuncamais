@@ -14,96 +14,31 @@ export const WelcomeBackScreen = ({ displayName, onWatchVideo, onContinue }: Wel
   }, []);
 
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      zIndex: 9999,
-      background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 24,
-      opacity: show ? 1 : 0,
-      transition: "opacity 0.5s ease",
-    }}>
-      <div style={{
-        maxWidth: 420,
-        width: "100%",
-        textAlign: "center",
-        color: "white",
-      }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: 16 }}>🚘</div>
+    <div
+      className={`fixed inset-0 z-[9999] bg-gradient-to-br from-[hsl(var(--blue-900))] via-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] flex items-center justify-center p-6 transition-opacity duration-500 ${show ? "opacity-100" : "opacity-0"}`}
+    >
+      <div className="max-w-[420px] w-full text-center text-primary-foreground">
+        <div className="text-6xl mb-4">🚘</div>
 
-        <h1 style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "1.8rem",
-          fontWeight: 800,
-          marginBottom: 8,
-          lineHeight: 1.2,
-        }}>
+        <h1 className="text-3xl font-extrabold leading-tight mb-2">
           Que bom te ver de volta, {displayName || "Motorista"}! 👋
         </h1>
 
-        <p style={{
-          fontSize: "1rem",
-          opacity: 0.7,
-          marginBottom: 40,
-          lineHeight: 1.5,
-        }}>
+        <p className="text-base opacity-70 mb-10 leading-relaxed">
           O que deseja fazer agora?
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="flex flex-col gap-4">
           <button
             onClick={onContinue}
-            style={{
-              padding: "16px 24px",
-              fontSize: "1.05rem",
-              fontWeight: 700,
-              border: "none",
-              borderRadius: 16,
-              background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-              color: "white",
-              cursor: "pointer",
-              boxShadow: "0 4px 24px rgba(59,130,246,0.4)",
-              transition: "transform 0.15s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.03)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+            className="flex items-center justify-center gap-2.5 py-4 px-6 text-lg font-bold rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/40 hover:scale-[1.03] transition-transform"
           >
             ▶ Continuar de onde parei
           </button>
 
           <button
             onClick={onWatchVideo}
-            style={{
-              padding: "16px 24px",
-              fontSize: "1rem",
-              fontWeight: 600,
-              border: "2px solid rgba(255,255,255,0.2)",
-              borderRadius: 16,
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(8px)",
-              color: "white",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.15)";
-              e.currentTarget.style.transform = "scale(1.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
+            className="flex items-center justify-center gap-2.5 py-4 px-6 text-base font-semibold rounded-2xl border-2 border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur-sm text-primary-foreground hover:bg-primary-foreground/15 hover:scale-[1.03] transition-all"
           >
             🎬 Assistir vídeo de boas-vindas
           </button>

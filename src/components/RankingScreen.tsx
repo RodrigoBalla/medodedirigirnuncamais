@@ -1,5 +1,3 @@
-import { useAuth } from "@/contexts/AuthContext";
-
 interface RankingScreenProps {
   displayName: string;
   totalXP: number;
@@ -62,15 +60,15 @@ export function RankingScreen({ displayName, totalXP }: RankingScreenProps) {
         {/* 3rd */}
         <div className="flex flex-col items-center flex-1">
           <div className="relative mb-2">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-amber-600/50 bg-amber-50 flex items-center justify-center text-xl font-bold text-amber-700">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-accent bg-accent flex items-center justify-center text-xl font-bold text-accent-foreground">
               {MOCK_RANKINGS[2].avatar}
             </div>
-            <div className="absolute -bottom-1 -right-1 bg-amber-700 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs">3</div>
+            <div className="absolute -bottom-1 -right-1 bg-accent-foreground text-accent rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs">3</div>
           </div>
           <p className="font-bold text-sm text-center">{MOCK_RANKINGS[2].name}</p>
           <p className="text-primary text-xs font-medium">{MOCK_RANKINGS[2].xp.toLocaleString()} XP</p>
-          <div className="w-full mt-3 h-16 bg-gradient-to-t from-amber-100 to-amber-50 rounded-t-xl border-x border-t border-amber-200 flex items-center justify-center">
-            <span className="material-symbols-outlined text-amber-700 opacity-60 text-2xl">emoji_events</span>
+          <div className="w-full mt-3 h-16 bg-gradient-to-t from-accent to-accent/50 rounded-t-xl border-x border-t border-border flex items-center justify-center">
+            <span className="material-symbols-outlined text-accent-foreground opacity-60 text-2xl">emoji_events</span>
           </div>
         </div>
       </div>

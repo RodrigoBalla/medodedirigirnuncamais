@@ -27,14 +27,14 @@ export function ConquestScreen({
 
   if (showEmotion) {
     return (
-      <div className="emotion-check" style={{ marginTop: 40 }}>
-        <div className="emotion-title">Como você se sente agora? 💭</div>
-        <div className="emotion-subtitle">
+      <div className="mt-10">
+        <h2 className="text-xl font-bold text-center mb-2">Como você se sente agora? 💭</h2>
+        <p className="text-sm text-muted-foreground text-center mb-6">
           Sua percepção emocional é parte do aprendizado. Responda com honestidade.
-        </div>
+        </p>
 
-        <div className="emotion-label">😰 Nível de tensão</div>
-        <div className="emotion-scale">
+        <p className="text-sm font-bold text-muted-foreground mb-2">😰 Nível de tensão</p>
+        <div className="flex gap-2 mb-6">
           {[
             { emoji: "😌", label: "Nada" },
             { emoji: "😐", label: "Pouca" },
@@ -44,17 +44,21 @@ export function ConquestScreen({
           ].map((item, i) => (
             <button
               key={i}
-              className={`scale-btn ${tensionVal === i ? "sel" : ""}`}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
+                tensionVal === i
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/40"
+              }`}
               onClick={() => setTensionVal(i)}
             >
-              {item.emoji}
-              <span className="s-label">{item.label}</span>
+              <span className="text-2xl">{item.emoji}</span>
+              <span className="text-[10px] font-bold text-muted-foreground">{item.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="emotion-label">💪 Nível de confiança</div>
-        <div className="emotion-scale">
+        <p className="text-sm font-bold text-muted-foreground mb-2">💪 Nível de confiança</p>
+        <div className="flex gap-2 mb-6">
           {[
             { emoji: "😟", label: "Nada" },
             { emoji: "😐", label: "Pouca" },
@@ -64,17 +68,21 @@ export function ConquestScreen({
           ].map((item, i) => (
             <button
               key={i}
-              className={`scale-btn ${confVal === i ? "sel" : ""}`}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
+                confVal === i
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/40"
+              }`}
               onClick={() => setConfVal(i)}
             >
-              {item.emoji}
-              <span className="s-label">{item.label}</span>
+              <span className="text-2xl">{item.emoji}</span>
+              <span className="text-[10px] font-bold text-muted-foreground">{item.label}</span>
             </button>
           ))}
         </div>
 
         <button
-          className="btn-primary"
+          className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={tensionVal === null || confVal === null}
           onClick={() => {
             if (tensionVal !== null && confVal !== null) {
@@ -91,9 +99,9 @@ export function ConquestScreen({
   }
 
   return (
-    <div style={{ position: "relative", overflow: "hidden", minHeight: 400 }}>
+    <div className="relative overflow-hidden min-h-[400px]">
       {/* Confetti */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", pointerEvents: "none", overflow: "hidden" }}>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
             key={i}
@@ -111,51 +119,39 @@ export function ConquestScreen({
         ))}
       </div>
 
-      <div className="conquest-card">
-        <div className="conquest-trophy" style={{ animation: "mascotBounce 1s ease-in-out" }}>
-          🏆
-        </div>
-        <div className="conquest-stars">
-          {"⭐".repeat(3)}
-        </div>
-        <div className="conquest-title">Fase Concluída!</div>
-        <div className="conquest-msg">{phase.conquest}</div>
-        <div style={{
-          background: "rgba(255,255,255,0.15)",
-          borderRadius: 16,
-          padding: "12px 20px",
-          marginBottom: 24,
-          fontSize: "1.1rem",
-          fontWeight: 800,
-        }}>
+      <div className="relative z-10 bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-8 text-center text-primary-foreground shadow-xl">
+        <div className="text-6xl mb-4" style={{ animation: "mascotBounce 1s ease-in-out" }}>🏆</div>
+        <div className="text-3xl mb-2">⭐⭐⭐</div>
+        <h2 className="text-2xl font-bold mb-2">Fase Concluída!</h2>
+        <p className="text-sm opacity-90 mb-4">{phase.conquest}</p>
+        <div className="bg-primary-foreground/15 rounded-2xl py-3 px-5 mb-6 text-lg font-extrabold inline-block">
           +{phase.xp} XP ganhos! ⚡
         </div>
 
-        <button
-          className="btn-primary"
-          style={{ background: "white", color: "#1d4ed8" }}
-          onClick={() => setShowEmotion(true)}
-        >
-          Como me sinto agora? 💭
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            className="w-full bg-card text-primary font-bold py-3.5 rounded-xl hover:bg-card/90 transition-colors shadow-md"
+            onClick={() => setShowEmotion(true)}
+          >
+            Como me sinto agora? 💭
+          </button>
 
-        {completedPhases.length < totalPhases ? (
-          <button
-            className="btn-secondary"
-            style={{ borderColor: "hsl(var(--blue-300))", color: "hsl(var(--blue-800))", background: "white" }}
-            onClick={onNextLesson}
-          >
-            Próxima Fase →
-          </button>
-        ) : (
-          <button
-            className="btn-secondary"
-            style={{ borderColor: "hsl(var(--blue-300))", color: "hsl(var(--blue-800))", background: "white" }}
-            onClick={onDashboard}
-          >
-            Voltar ao Dashboard 🏠
-          </button>
-        )}
+          {completedPhases.length < totalPhases ? (
+            <button
+              className="w-full bg-primary-foreground/20 text-primary-foreground border-2 border-primary-foreground/30 font-bold py-3 rounded-xl hover:bg-primary-foreground/30 transition-colors"
+              onClick={onNextLesson}
+            >
+              Próxima Fase →
+            </button>
+          ) : (
+            <button
+              className="w-full bg-primary-foreground/20 text-primary-foreground border-2 border-primary-foreground/30 font-bold py-3 rounded-xl hover:bg-primary-foreground/30 transition-colors"
+              onClick={onDashboard}
+            >
+              Voltar ao Dashboard 🏠
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
