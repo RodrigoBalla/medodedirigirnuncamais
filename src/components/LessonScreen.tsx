@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
@@ -53,6 +53,25 @@ export function LessonScreen({
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
   const [showCompletion, setShowCompletion] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  // Auto-advance slides every 1.5s
+  useEffect(() => {
+    if (lessonStep !== 0) return;
+    const timer = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % STEPS.length);
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [lessonStep]);
+
+  const slideDescriptions = [
+    "Entenda o que vamos praticar nesta fase",
+    `Responda ${phase.quizzes.length} perguntas rápidas`,
+    "Visualize o movimento antes de executar",
+    "Execute as tarefas no carro real",
+  ];
+
+  const slideIcons = ["🎯", "❓", "🧠", "🚗"];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -120,41 +139,58 @@ export function LessonScreen({
                 Objetivo: <span className="font-semibold text-foreground">{phase.subtitle}</span>
               </p>
 
-              {/* Steps roadmap */}
-              <div className="bg-card rounded-2xl border border-border p-5 mb-5">
+              {/* Steps roadmap carousel */}
+              <div className="bg-card rounded-2xl border border-border p-5 mb-5 overflow-hidden">
                 <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-4 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-sm">route</span>
                   Roteiro da Fase
                 </p>
-                <div className="flex flex-col gap-0">
-                  {STEPS.map((s, i) => (
+
+                {/* Auto-sliding card */}
+                <div className="relative h-[100px] mb-4">
+                  <AnimatePresence mode="wait">
                     <motion.div
-                      key={s.key}
-                      initial={{ opacity: 0, x: -15 }}
+                      key={activeSlide}
+                      initial={{ opacity: 0, x: 80 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + i * 0.08 }}
-                      className="flex items-start gap-3"
+                      exit={{ opacity: 0, x: -80 }}
+                      transition={{ duration: 0.35, ease: "easeInOut" }}
+                      className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 rounded-2xl p-5 flex items-center gap-4"
                     >
-                      <div className="flex flex-col items-center">
-                        <div className={`size-10 rounded-xl flex items-center justify-center text-base font-bold shrink-0 transition-all ${
-                          i === lessonStep
-                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                            : "bg-muted text-muted-foreground"
-                        }`}>
-                          {s.icon}
-                        </div>
-                        {i < STEPS.length - 1 && <div className="w-0.5 min-h-[16px] bg-border my-1" />}
+                      <div className="size-14 shrink-0 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-3xl shadow-lg shadow-primary/30">
+                        {slideIcons[activeSlide]}
                       </div>
-                      <div className="pb-4">
-                        <p className={`font-bold text-sm ${i === lessonStep ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {s.key === 0 && "Entenda o que vamos praticar"}
-                          {s.key === 1 && `${phase.quizzes.length} perguntas rápidas`}
-                          {s.key === 2 && "Visualize o movimento mental"}
-                          {s.key === 3 && "Execute no carro real"}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest mb-0.5">
+                          Etapa {activeSlide + 1} de {STEPS.length}
                         </p>
+                        <p className="text-lg font-extrabold text-foreground leading-tight">{STEPS[activeSlide].label}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">{slideDescriptions[activeSlide]}</p>
                       </div>
                     </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Dot indicators */}
+                <div className="flex items-center justify-center gap-2">
+                  {STEPS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveSlide(i)}
+                      className="relative h-1.5 rounded-full transition-all overflow-hidden"
+                      style={{ width: i === activeSlide ? 32 : 10 }}
+                    >
+                      <div className="absolute inset-0 bg-muted rounded-full" />
+                      {i === activeSlide && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary rounded-full"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ duration: 1.5, ease: "linear" }}
+                          style={{ transformOrigin: "left" }}
+                        />
+                      )}
+                    </button>
                   ))}
                 </div>
               </div>
