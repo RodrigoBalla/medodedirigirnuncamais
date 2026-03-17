@@ -469,7 +469,7 @@ const DrivingApp = () => {
               style={{ width: `${lessonProgress()}%` }}
             />
           </div>
-          <div className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1">
+          <div className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1">
             ⚡ {phase.xp} XP
           </div>
         </div>
