@@ -371,12 +371,12 @@ const DrivingApp = () => {
         </div>
 
         {/* Tips */}
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/40 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2 text-yellow-700 dark:text-yellow-400">
+        <div className="bg-accent border border-border rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2 text-accent-foreground">
             <span className="material-symbols-outlined text-lg">lightbulb</span>
             <span className="font-bold text-sm">Lembre-se</span>
           </div>
-          <div className="space-y-1.5 text-xs text-yellow-800 dark:text-yellow-200/80 leading-relaxed">
+          <div className="space-y-1.5 text-xs text-accent-foreground/80 leading-relaxed">
             <p>🔵 Medo = falta de previsibilidade</p>
             <p>🟢 Treino em etapas = cérebro cria mapa motor</p>
             <p>⭐ Mapa motor = confiança automática</p>
