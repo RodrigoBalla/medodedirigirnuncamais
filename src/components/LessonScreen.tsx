@@ -283,48 +283,10 @@ export function LessonScreen({
 
         {/* QUIZ */}
         {lessonStep === 1 && (
-          <div>
-            {/* Two-column: video left, quiz right */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mb-6 flex-1">
-              {/* Video area */}
-              <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
-                <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
-                  {phase.quizzes[quizIndex].gif ? (
-                    <GifIllustration
-                      key={`${currentPhase}-${quizIndex}-${isRetry ? "r" : "n"}-${answered ? "a" : "q"}`}
-                      gifId={phase.quizzes[quizIndex].gif}
-                      alt={phase.quizzes[quizIndex].gifAlt}
-                      emoji={phase.quizzes[quizIndex].emoji || "🚗"}
-                    />
-                  ) : (
-                    <span className="text-6xl">🚗</span>
-                  )}
-                  {/* Play button overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="size-16 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary-foreground text-3xl filled-icon">play_arrow</span>
-                    </div>
-                  </div>
-                  {/* Video progress bar */}
-                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-primary-foreground/80 font-medium">0:15 / 1:45</span>
-                      <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "14%" }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-3 flex items-center gap-2 border-t border-border">
-                  <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded">
-                    <span className="text-[10px]">FASE</span> APLICAR
-                  </span>
-                  <span className="material-symbols-outlined text-muted-foreground text-sm">info</span>
-                  <span className="text-xs text-muted-foreground">O vídeo reagirá à sua escolha</span>
-                </div>
-              </div>
-
-              {/* Quiz area */}
+          <div className="flex flex-col flex-1">
+            {/* Two-column: quiz left (main), video right (sidebar) */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 flex-1">
+              {/* Quiz area — main content */}
               <div className="bg-card rounded-2xl border border-border p-6 md:p-8 flex flex-col shadow-sm">
                 {isRetry ? (
                   <motion.span
@@ -479,31 +441,69 @@ export function LessonScreen({
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Info cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-card rounded-xl border border-border p-4 flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary">psychology</span>
-                <div>
-                  <p className="text-sm font-bold text-foreground">Foco Cognitivo</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Memorização e associação mecânica dos comandos do veículo.</p>
+              {/* Right: Video sidebar */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="flex flex-col gap-4 lg:sticky lg:top-6 self-start"
+              >
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                  <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
+                    {phase.quizzes[quizIndex].gif ? (
+                      <GifIllustration
+                        key={`${currentPhase}-${quizIndex}-${isRetry ? "r" : "n"}-${answered ? "a" : "q"}`}
+                        gifId={phase.quizzes[quizIndex].gif}
+                        alt={phase.quizzes[quizIndex].gifAlt}
+                        emoji={phase.quizzes[quizIndex].emoji || "🚗"}
+                      />
+                    ) : (
+                      <span className="text-6xl">🚗</span>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="size-14 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary-foreground text-2xl filled-icon">play_arrow</span>
+                      </div>
+                    </div>
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                        Quiz
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-primary-foreground/80 font-medium">0:15 / 1:45</span>
+                        <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "14%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 border-t border-border">
+                    <p className="text-sm font-bold text-foreground mb-0.5">Vídeo interativo</p>
+                    <p className="text-xs text-muted-foreground">O vídeo reagirá à sua escolha</p>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-card rounded-xl border border-border p-4 flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary">history_edu</span>
-                <div>
-                  <p className="text-sm font-bold text-foreground">Base Mecânica</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Funcionamento básico do sistema de transmissão manual.</p>
+
+                {/* Info cards stacked */}
+                <div className="flex flex-col gap-2">
+                  <div className="bg-card rounded-xl border border-border p-3 flex items-start gap-2.5">
+                    <span className="material-symbols-outlined text-primary text-lg">psychology</span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground">Foco Cognitivo</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Memorização e associação mecânica.</p>
+                    </div>
+                  </div>
+                  <div className="bg-card rounded-xl border border-border p-3 flex items-start gap-2.5">
+                    <span className="material-symbols-outlined text-primary text-lg">history_edu</span>
+                    <div>
+                      <p className="text-xs font-bold text-foreground">Base Mecânica</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Sistema de transmissão manual.</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-card rounded-xl border border-border p-4 flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary">videocam_off</span>
-                <div>
-                  <p className="text-sm font-bold text-foreground">Modo Interativo</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Vídeo pausado aguardando sua interação para continuar.</p>
-                </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         )}
