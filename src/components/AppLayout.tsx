@@ -59,6 +59,13 @@ export function AppLayout({
               <span className="text-sm font-bold">{totalXP} XP</span>
             </div>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="size-10 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            title={isDark ? "Modo Claro" : "Modo Escuro"}
+          >
+            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
+          </button>
           <div className="size-10 rounded-full border-2 border-primary/20 bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
             {displayName ? displayName.charAt(0).toUpperCase() : "?"}
           </div>
