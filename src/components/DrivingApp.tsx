@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { WelcomeBackScreen } from "@/components/WelcomeBackScreen";
 import { AppLayout, type AppTab } from "@/components/AppLayout";
+import { LessonScreen } from "@/components/LessonScreen";
 import { RankingScreen } from "@/components/RankingScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
