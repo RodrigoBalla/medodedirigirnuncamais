@@ -6,13 +6,14 @@ interface WelcomeScreenProps {
   displayName: string;
   videoViews: number;
   onComplete: () => void;
+  onWatchVideo?: () => void;
 }
 
 const SPEED_OPTIONS = [1, 1.25, 1.5, 2];
 
 const isMobile = () => window.innerWidth <= 768;
 
-export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeScreenProps) => {
+export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVideo }: WelcomeScreenProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<Player | null>(null);
   const [progress, setProgress] = useState(0);
@@ -51,7 +52,6 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
       setShowOverlay(false);
     });
 
-    // On mobile: mute first to allow autoplay, then show unmute overlay
     if (mobile) {
       setIsMuted(true);
       player.setVolume(0).then(() => {
@@ -76,15 +76,13 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
     playerRef.current?.setPlaybackRate(newSpeed);
   }
 
-  /* ---- Phone mockup (the video container) ---- */
+  const firstName = displayName?.split(" ")[0] || "Motorista";
+
+  /* ---- Phone mockup (the video container) — KEPT INTACT ---- */
   const phoneMockup = (
     <div className="welcome-phone-mockup">
-      {/* Phone frame - only visible on desktop */}
       <div className="welcome-phone-frame">
-        {/* Notch */}
         <div className="welcome-phone-notch" />
-
-        {/* Video area */}
         <div className="welcome-video-area">
           <div style={{ padding: "177.78% 0 0 0", position: "relative" }}>
             <iframe
@@ -94,44 +92,28 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               loading="eager"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-              }}
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
               title="Boas vindas"
             />
           </div>
-
-          {/* Gradient overlays */}
           <div className="welcome-gradient-top" />
           <div className="welcome-gradient-bottom" />
-
-          {/* Welcome text */}
           <div className="welcome-text-overlay">
             <h1 className="welcome-title">
-              Bem vindo {displayName || "Motorista"}! 🚘
+              Bem vindo {firstName}! 🚘
             </h1>
             <p className="welcome-subtitle">
               Agora começa a sua jornada de motorista de sucesso!
             </p>
           </div>
-
-          {/* Speed control */}
           <div className="welcome-speed-area">
             <button onClick={cycleSpeed} className="welcome-speed-btn" title="Velocidade do vídeo">
               {speed}x
             </button>
           </div>
-
-          {/* Progress bar */}
           <div className="welcome-progress-track">
             <div className="welcome-progress-fill" style={{ width: `${progress * 100}%` }} />
           </div>
-
-          {/* Skip / Continue */}
           <div className="welcome-action-area">
             {canSkip ? (
               <button onClick={handleComplete} className="welcome-cta-btn">
@@ -143,8 +125,6 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
               </p>
             )}
           </div>
-
-          {/* Play / Unmute overlay */}
           {(showOverlay || isMuted) && (
             <div
               className="welcome-play-overlay"
@@ -166,46 +146,121 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete }: WelcomeSc
             </div>
           )}
         </div>
-
-        {/* Home indicator */}
         <div className="welcome-phone-home-indicator" />
       </div>
     </div>
   );
 
-  /* ---- Right side panel (desktop only) ---- */
-  const sidePanel = (
-    <div className="welcome-side-panel">
-      <div className="welcome-side-content">
-        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🚘</div>
-        <h2 className="welcome-side-title">
-          Sua jornada começa agora
-        </h2>
-        <p className="welcome-side-desc">
-          Assista o vídeo de boas-vindas e descubra como superar o medo de dirigir de uma vez por todas.
-        </p>
-        <div className="welcome-side-features">
-          <div className="welcome-feature-item">
-            <span className="welcome-feature-icon">🎯</span>
-            <span>Método comprovado e prático</span>
-          </div>
-          <div className="welcome-feature-item">
-            <span className="welcome-feature-icon">💪</span>
-            <span>Conquiste confiança ao volante</span>
-          </div>
-          <div className="welcome-feature-item">
-            <span className="welcome-feature-icon">📈</span>
-            <span>Acompanhe seu progresso</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  /* ---- Features data ---- */
+  const features = [
+    {
+      icon: "verified",
+      title: "Método comprovado e prático",
+      desc: "Aulas estruturadas com foco em resultados rápidos e duradouros.",
+    },
+    {
+      icon: "directions_car",
+      title: "Conquiste confiança ao volante",
+      desc: "Aprenda a lidar com o trânsito e sinta-se segura em qualquer situação.",
+    },
+    {
+      icon: "trending_up",
+      title: "Acompanhe seu progresso",
+      desc: "Monitore cada etapa da sua evolução pessoal e celebre suas vitórias.",
+    },
+  ];
 
   return (
-    <div className="welcome-screen">
-      {phoneMockup}
-      {sidePanel}
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* ── Header ── */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-2xl">steering_wheel_heat</span>
+          <span className="font-bold text-foreground text-sm">Medo de Dirigir Nunca Mais</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-accent transition-colors">
+            <span className="material-symbols-outlined text-muted-foreground text-xl">notifications</span>
+          </button>
+          <button className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-accent transition-colors">
+            <span className="material-symbols-outlined text-muted-foreground text-xl">account_circle</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Main Content ── */}
+      <main className="flex-1 flex items-center justify-center gap-16 px-8 py-10 max-lg:flex-col max-lg:gap-8 max-lg:py-6">
+        {/* Left: Phone mockup */}
+        {phoneMockup}
+
+        {/* Right: Info panel */}
+        <div className="flex flex-col max-w-md max-lg:items-center max-lg:text-center">
+          {/* Mentor badge */}
+          <div className="flex items-center gap-3 mb-6 max-lg:justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">person</span>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground text-sm">Karla Margaretch</p>
+              <p className="text-xs text-muted-foreground">Sua mentora</p>
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-3xl font-extrabold text-foreground mb-1 leading-tight max-lg:text-2xl">
+            Bem-vinda à sua liberdade
+          </h2>
+          <p className="text-primary font-bold text-lg mb-3">Sua jornada começa agora</p>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+            Supere o medo de dirigir com um método focado na sua confiança e autonomia. Recupere o controle da sua vida e sinta o prazer de estar ao volante.
+          </p>
+
+          {/* Feature cards */}
+          <div className="flex flex-col gap-4 mb-8 w-full">
+            {features.map((f) => (
+              <div key={f.icon} className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-primary text-xl">{f.icon}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm mb-0.5">{f.title}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col gap-3 w-full">
+            {canSkip && (
+              <button
+                onClick={handleComplete}
+                className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity shadow-md"
+              >
+                Começar Agora
+              </button>
+            )}
+            <button
+              onClick={() => {
+                if (playerRef.current) {
+                  playerRef.current.play();
+                  setShowOverlay(false);
+                }
+              }}
+              className="w-full py-3.5 rounded-xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-accent transition-colors"
+            >
+              Continuar assistindo
+            </button>
+          </div>
+        </div>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="text-center py-4 border-t border-border">
+        <p className="text-xs text-muted-foreground">
+          © 2026 Medo de Dirigir Nunca Mais. Todos os direitos reservados.
+        </p>
+      </footer>
     </div>
   );
 };
