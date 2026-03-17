@@ -28,7 +28,7 @@ const App = () => (
               <Route path="/comunidade" element={<Index />} />
               <Route path="/perfil" element={<Index />} />
               <Route path="/aula/:id" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
