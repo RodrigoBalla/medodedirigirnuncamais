@@ -810,6 +810,7 @@ export function LessonScreen({
             </motion.div>
           </div>
         )}
+      </div>
 
       {/* Footer */}
       <footer className="bg-card border-t border-border px-4 py-3 text-center">
