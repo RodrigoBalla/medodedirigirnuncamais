@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,34 +12,56 @@ const BG_VIDEOS = [
 
 const VideoBackground = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [fadingOut, setFadingOut] = useState(false);
+  const [nextIndex, setNextIndex] = useState(1);
+  const [transitioning, setTransitioning] = useState(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
+  const handleVideoEnd = useCallback(() => {
+    const next = (activeIndex + 1) % BG_VIDEOS.length;
+    setNextIndex(next);
+    setTransitioning(true);
+
+    // Start playing the next video
+    videoRefs.current[next]?.play();
+
+    // After crossfade completes, swap
+    setTimeout(() => {
+      setActiveIndex(next);
+      setTransitioning(false);
+    }, 1500);
+  }, [activeIndex]);
+
+  // Attach onended to active video
   useEffect(() => {
-    const interval = setInterval(() => {
-      setFadingOut(true);
-      setTimeout(() => {
-        setActiveIndex((prev) => (prev + 1) % BG_VIDEOS.length);
-        setFadingOut(false);
-      }, 1000);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const activeVideo = videoRefs.current[activeIndex];
+    if (activeVideo) {
+      activeVideo.loop = false;
+      activeVideo.play();
+    }
+  }, [activeIndex]);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {BG_VIDEOS.map((src, i) => (
-        <video
-          key={src}
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            i === activeIndex && !fadingOut ? "opacity-[0.15]" : "opacity-0"
-          }`}
-        />
-      ))}
+      {BG_VIDEOS.map((src, i) => {
+        const isActive = i === activeIndex;
+        const isNext = i === nextIndex && transitioning;
+        let opacityClass = "opacity-0";
+        if (isActive && !transitioning) opacityClass = "opacity-[0.15]";
+        if (isActive && transitioning) opacityClass = "opacity-0";
+        if (isNext) opacityClass = "opacity-[0.15]";
+
+        return (
+          <video
+            key={src}
+            ref={(el) => { videoRefs.current[i] = el; }}
+            src={src}
+            muted
+            playsInline
+            onEnded={isActive ? handleVideoEnd : undefined}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out ${opacityClass}`}
+          />
+        );
+      })}
     </div>
   );
 };
