@@ -60,7 +60,7 @@ export function LessonScreen({
     if (lessonStep !== 0) return;
     const timer = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % STEPS.length);
-    }, 1500);
+    }, 2000);
     return () => clearInterval(timer);
   }, [lessonStep]);
 
