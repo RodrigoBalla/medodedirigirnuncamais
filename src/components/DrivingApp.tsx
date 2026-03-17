@@ -134,15 +134,7 @@ const DrivingApp = () => {
 
   function startLesson(idx: number) {
     if (idx > completedPhases.length) return;
-    setCurrentPhase(idx);
-    setLessonStep(0);
-    setQuizIndex(0);
-    setSelected(null);
-    setAnswered(false);
-    setCheckedTasks({});
-    setRetryQueue([]);
-    setIsRetry(false);
-    setLessonScreen("lesson");
+    navigate(`/aula/${idx + 1}`);
   }
 
   function toggleTask(taskId: string) {
