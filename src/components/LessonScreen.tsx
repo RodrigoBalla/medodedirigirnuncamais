@@ -455,7 +455,7 @@ export function LessonScreen({
 
         {/* PRACTICE */}
         {lessonStep === 3 && (
-          <div className="max-w-3xl">
+          <div>
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Prática Real</p>
               <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">
