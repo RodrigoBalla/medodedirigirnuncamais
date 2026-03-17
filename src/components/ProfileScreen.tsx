@@ -11,6 +11,7 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ displayName, totalXP, confidence, completedPhases, totalPhases }: ProfileScreenProps) {
   const { user, signOut } = useAuth();
+  const { toggleTheme, isDark } = useTheme();
   const progressPercent = Math.round((completedPhases / totalPhases) * 100);
 
   return (
