@@ -58,7 +58,12 @@ const DrivingApp = () => {
   useEffect(() => {
     const path = location.pathname;
     const aulaMatch = path.match(/^\/aula\/(\d+)$/);
-    if (aulaMatch) {
+    if (path === "/boas-vindas") {
+      setScreen("welcome");
+    } else if (path === "/bem-vindo") {
+      setScreen("welcome-back");
+    } else if (aulaMatch) {
+      setScreen("app");
       const idx = parseInt(aulaMatch[1], 10) - 1;
       if (idx >= 0 && idx < PHASES.length) {
         setCurrentPhase(idx);
@@ -72,15 +77,20 @@ const DrivingApp = () => {
         setIsRetry(false);
       }
     } else if (path === "/treinos") {
+      setScreen("app");
       setActiveTab("treinos");
       setLessonScreen("none");
     } else if (path === "/ranking") {
+      setScreen("app");
       setActiveTab("ranking");
     } else if (path === "/comunidade") {
+      setScreen("app");
       setActiveTab("comunidade");
     } else if (path === "/perfil") {
+      setScreen("app");
       setActiveTab("perfil");
     } else if (path === "/") {
+      setScreen("app");
       setActiveTab("home");
       setLessonScreen("none");
     }
