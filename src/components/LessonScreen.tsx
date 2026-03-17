@@ -65,7 +65,7 @@ export function LessonScreen({
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-4 md:px-8 py-6">
+      <div className="flex-1 flex flex-col w-full px-4 md:px-8 lg:px-12 py-6">
         {/* Module bar */}
         <div className="bg-card rounded-xl border border-border p-4 mb-6">
           <div className="flex items-center justify-between mb-2">
