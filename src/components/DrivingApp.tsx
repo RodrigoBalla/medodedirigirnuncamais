@@ -58,7 +58,12 @@ const DrivingApp = () => {
   useEffect(() => {
     const path = location.pathname;
     const aulaMatch = path.match(/^\/aula\/(\d+)$/);
-    if (aulaMatch) {
+    if (path === "/boas-vindas") {
+      setScreen("welcome");
+    } else if (path === "/bem-vindo") {
+      setScreen("welcome-back");
+    } else if (aulaMatch) {
+      setScreen("app");
       const idx = parseInt(aulaMatch[1], 10) - 1;
       if (idx >= 0 && idx < PHASES.length) {
         setCurrentPhase(idx);
@@ -72,15 +77,20 @@ const DrivingApp = () => {
         setIsRetry(false);
       }
     } else if (path === "/treinos") {
+      setScreen("app");
       setActiveTab("treinos");
       setLessonScreen("none");
     } else if (path === "/ranking") {
+      setScreen("app");
       setActiveTab("ranking");
     } else if (path === "/comunidade") {
+      setScreen("app");
       setActiveTab("comunidade");
     } else if (path === "/perfil") {
+      setScreen("app");
       setActiveTab("perfil");
     } else if (path === "/") {
+      setScreen("app");
       setActiveTab("home");
       setLessonScreen("none");
     }
@@ -107,14 +117,16 @@ const DrivingApp = () => {
         setConfidence(progress.confidence || 3);
         const views = progress.welcome_video_views ?? 0;
         setWelcomeVideoViews(views);
-        if (views === 0) {
-          setScreen("welcome");
-        } else {
-          setScreen("welcome-back");
+        if (views === 0 && location.pathname === "/") {
+          navigate("/boas-vindas", { replace: true });
+        } else if (views > 0 && location.pathname === "/") {
+          navigate("/bem-vindo", { replace: true });
         }
       } else {
         setWelcomeVideoViews(0);
-        setScreen("welcome");
+        if (location.pathname === "/") {
+          navigate("/boas-vindas", { replace: true });
+        }
       }
     };
     loadProgress();
@@ -228,7 +240,7 @@ const DrivingApp = () => {
   async function handleWelcomeComplete() {
     const newViews = (welcomeVideoViews ?? 0) + 1;
     setWelcomeVideoViews(newViews);
-    setScreen("app");
+    navigate("/", { replace: true });
     if (user) {
       await supabase
         .from("user_progress")
@@ -271,8 +283,8 @@ const DrivingApp = () => {
     return (
       <WelcomeBackScreen
         displayName={displayName}
-        onWatchVideo={() => setScreen("welcome")}
-        onContinue={() => setScreen("app")}
+        onWatchVideo={() => navigate("/boas-vindas", { replace: true })}
+        onContinue={() => navigate("/", { replace: true })}
       />
     );
   }
