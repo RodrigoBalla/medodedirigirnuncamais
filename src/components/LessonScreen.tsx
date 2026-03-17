@@ -52,6 +52,7 @@ export function LessonScreen({
   const tasks = CHECKLIST_TASKS[currentPhase];
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
+  const [showCompletion, setShowCompletion] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
