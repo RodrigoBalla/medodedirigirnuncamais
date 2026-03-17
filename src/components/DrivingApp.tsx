@@ -117,14 +117,16 @@ const DrivingApp = () => {
         setConfidence(progress.confidence || 3);
         const views = progress.welcome_video_views ?? 0;
         setWelcomeVideoViews(views);
-        if (views === 0) {
-          setScreen("welcome");
-        } else {
-          setScreen("welcome-back");
+        if (views === 0 && location.pathname === "/") {
+          navigate("/boas-vindas", { replace: true });
+        } else if (views > 0 && location.pathname === "/") {
+          navigate("/bem-vindo", { replace: true });
         }
       } else {
         setWelcomeVideoViews(0);
-        setScreen("welcome");
+        if (location.pathname === "/") {
+          navigate("/boas-vindas", { replace: true });
+        }
       }
     };
     loadProgress();
