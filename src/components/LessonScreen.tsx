@@ -848,7 +848,7 @@ export function LessonScreen({
 
         {/* COMPLETION SCREEN */}
         {showCompletion && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start flex-1">
             {/* Left: Celebration video 9:16 */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
