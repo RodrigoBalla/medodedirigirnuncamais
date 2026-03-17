@@ -290,96 +290,149 @@ const DrivingApp = () => {
   };
 
   function renderDashboard() {
+    const nextPhaseIdx = completedPhases.length;
+    const DAILY_MISSIONS = [
+      { text: "Acerte 10 placas", progress: "4/10", done: false, icon: "calendar_today" },
+      { text: "Leia 1 artigo técnico", progress: "", done: true, icon: "check_circle" },
+    ];
+
     return (
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        {/* Welcome */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Module Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Olá, {displayName || "Motorista"}! 👋</h1>
-          <p className="text-muted-foreground text-sm mt-1">Continue sua jornada rumo à confiança total ao volante.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Módulo 1</p>
+          <h1 className="text-2xl font-bold tracking-tight">Primeiros Quilômetros</h1>
+          <p className="text-muted-foreground text-sm mt-1">Domine os fundamentos do trânsito</p>
         </div>
 
-        {/* Progress card */}
-        <div className="bg-card rounded-xl p-5 border border-border shadow-sm mb-4">
-          <div className="flex justify-between items-end mb-3">
-            <div>
-              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Progresso Geral</p>
-              <p className="text-lg font-bold">{completedPhases.length} de {PHASES.length} fases</p>
-            </div>
-            <p className="text-primary text-sm font-bold">{overallProgress}%</p>
-          </div>
-          <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${overallProgress}%` }} />
-          </div>
-        </div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* LEFT: Learning Path */}
+          <div className="flex-1">
+            <div className="flex flex-col items-center gap-0 max-w-xs mx-auto">
+              {PHASES.map((p, i) => {
+                const done = completedPhases.includes(i);
+                const isCurrent = i === nextPhaseIdx;
+                const locked = i > nextPhaseIdx;
+                const isEven = i % 2 === 0;
 
-        {/* Emotion mini */}
-        <div className="bg-card rounded-xl p-5 border border-border shadow-sm mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Evolução Emocional</p>
-          <div className="flex items-end gap-1.5 h-14">
-            {emotionHistory.map((e, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                <div className="w-full rounded-t bg-primary/70" style={{ height: `${e.conf * 10}px` }} />
-                <div className="w-full rounded-t bg-destructive/50" style={{ height: `${e.tens * 10}px` }} />
+                return (
+                  <div key={p.id} className="relative flex flex-col items-center w-full">
+                    {i > 0 && (
+                      <div className={`w-0.5 h-8 ${completedPhases.includes(i - 1) ? "bg-primary" : "bg-border"}`} />
+                    )}
+                    <div className={`flex items-center gap-4 w-full ${isEven ? "flex-row" : "flex-row-reverse"}`}>
+                      <button
+                        onClick={() => !locked && startLesson(i)}
+                        disabled={locked}
+                        className={`relative z-10 size-[72px] rounded-full flex items-center justify-center border-4 transition-all shrink-0 ${
+                          locked
+                            ? "bg-muted border-border opacity-50 cursor-not-allowed"
+                            : done
+                            ? "bg-primary border-primary/30 shadow-lg shadow-primary/20"
+                            : "bg-primary border-primary/30 shadow-lg shadow-primary/20 hover:scale-105"
+                        }`}
+                      >
+                        {locked ? (
+                          <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>
+                        ) : done ? (
+                          <span className="material-symbols-outlined text-2xl text-primary-foreground filled-icon">check_circle</span>
+                        ) : (
+                          <span className="material-symbols-outlined text-2xl text-primary-foreground filled-icon">directions_car</span>
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        {isCurrent && (
+                          <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full mb-1.5 shadow-md shadow-primary/20">
+                            <span className="material-symbols-outlined text-xs">play_arrow</span>
+                            COMEÇAR
+                          </span>
+                        )}
+                        <p className={`text-sm font-bold ${locked ? "text-muted-foreground" : "text-foreground"}`}>
+                          {p.title.replace(/Fase \d+ — /, "")}
+                        </p>
+                        {!locked && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{p.subtitle}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {FUTURE_PHASES.map((f, i) => (
+                <div key={`future-${i}`} className="relative flex flex-col items-center w-full">
+                  <div className="w-0.5 h-8 bg-border" />
+                  <div className={`flex items-center gap-4 w-full ${(PHASES.length + i) % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
+                    <div className="size-[72px] rounded-full bg-muted border-4 border-border opacity-40 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-muted-foreground opacity-50">{f.title}</p>
+                      <p className="text-xs text-muted-foreground opacity-40">{f.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex flex-col items-center mt-2">
+                <div className="w-0.5 h-8 bg-border" />
+                <div className="size-[72px] rounded-full bg-muted border-4 border-border opacity-30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-2xl text-muted-foreground">flag_circle</span>
+                </div>
+                <p className="text-xs font-bold text-muted-foreground opacity-40 mt-2">Fim do Módulo</p>
               </div>
-            ))}
-            <div className="flex-1 flex flex-col items-center gap-0.5">
-              <div className="w-full rounded-t bg-primary" style={{ height: `${confidence * 10}px` }} />
             </div>
           </div>
-          <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <div className="w-2.5 h-2.5 rounded-full bg-primary" /> Confiança
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <div className="w-2.5 h-2.5 rounded-full bg-destructive/50" /> Tensão
-            </div>
-          </div>
-        </div>
 
-        {/* Next mission CTA */}
-        <div className="bg-gradient-to-br from-primary to-blue-700 rounded-xl p-5 text-primary-foreground shadow-lg shadow-primary/20 mb-6">
-          <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">Próxima Missão</p>
-          <p className="text-lg font-bold mb-1">
-            {completedPhases.length < PHASES.length
-              ? PHASES[completedPhases.length].title
-              : "🎉 Todas as fases concluídas!"}
-          </p>
-          {completedPhases.length < PHASES.length && (
-            <>
-              <p className="text-sm opacity-80 mb-3">{PHASES[completedPhases.length].subtitle}</p>
-              <button
-                onClick={() => startLesson(completedPhases.length)}
-                className="bg-white text-primary font-bold py-2.5 px-6 rounded-xl hover:bg-white/90 transition-all text-sm"
-              >
-                ▶ Continuar
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Achievements */}
-        <div className="bg-card rounded-xl p-5 border border-border shadow-sm mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">🏆 Conquistas</p>
-          <div className="grid grid-cols-3 gap-2">
-            {ACHIEVEMENTS.map((a, i) => (
-              <div key={i} className={`rounded-lg p-3 text-center border ${a.unlocked ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border opacity-40"}`}>
-                <div className="text-2xl mb-1">{a.icon}</div>
-                <p className="text-xs font-bold">{a.name}</p>
+          {/* RIGHT: Sidebar content */}
+          <div className="lg:w-72 flex flex-col gap-4">
+            <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+              <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-lg">target</span>
+                Missões Diárias
+              </h3>
+              <div className="flex flex-col gap-2.5">
+                {DAILY_MISSIONS.map((m, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className={`material-symbols-outlined text-lg ${m.done ? "text-primary filled-icon" : "text-muted-foreground"}`}>
+                      {m.done ? "check_circle" : m.icon}
+                    </span>
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium ${m.done ? "line-through text-muted-foreground" : ""}`}>{m.text}</p>
+                      {m.progress && <p className="text-xs text-muted-foreground">{m.progress}</p>}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Tips */}
-        <div className="bg-accent border border-border rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2 text-accent-foreground">
-            <span className="material-symbols-outlined text-lg">lightbulb</span>
-            <span className="font-bold text-sm">Lembre-se</span>
-          </div>
-          <div className="space-y-1.5 text-xs text-accent-foreground/80 leading-relaxed">
-            <p>🔵 Medo = falta de previsibilidade</p>
-            <p>🟢 Treino em etapas = cérebro cria mapa motor</p>
-            <p>⭐ Mapa motor = confiança automática</p>
+            <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
+              <h3 className="text-sm font-bold mb-3">Conquistas</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {ACHIEVEMENTS.map((a, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-xl p-2.5 flex flex-col items-center text-center border transition-all ${
+                      a.unlocked ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border opacity-30"
+                    }`}
+                  >
+                    <div className="text-xl mb-1">{a.icon}</div>
+                    <p className="text-[10px] font-bold leading-tight">{a.name}</p>
+                  </div>
+                ))}
+              </div>
+              <button className="w-full mt-3 text-xs text-primary font-bold hover:underline">Ver Todas</button>
+            </div>
+
+            <div className="bg-accent rounded-xl p-4 border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-primary text-lg">lightbulb</span>
+                <span className="font-bold text-sm text-foreground">Dica do Dia</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                A distância de segurança deve ser de aproximadamente dois segundos em relação ao veículo à frente.
+              </p>
+            </div>
           </div>
         </div>
       </div>
