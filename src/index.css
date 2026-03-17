@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,22 +7,22 @@
 
 @layer base {
   :root {
-    --background: 214 100% 97%;
-    --foreground: 215 50% 10%;
+    --background: 240 5% 97%;
+    --foreground: 215 28% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 50% 10%;
+    --card-foreground: 215 28% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 50% 10%;
+    --popover-foreground: 215 28% 17%;
 
-    --primary: 221 83% 53%;
+    --primary: 221 87% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 214 95% 93%;
     --secondary-foreground: 221 60% 30%;
 
-    --muted: 214 32% 91%;
+    --muted: 220 14% 96%;
     --muted-foreground: 215 16% 47%;
 
     --accent: 214 95% 93%;
@@ -30,27 +31,27 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 87% 50%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 16% 47%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 221 87% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 214 95% 93%;
     --sidebar-accent-foreground: 221 60% 30%;
-    --sidebar-border: 214 95% 93%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 221 87% 50%;
 
     /* Custom tokens */
     --blue-900: 216 60% 10%;
     --blue-800: 215 55% 15%;
     --blue-700: 218 52% 26%;
     --blue-600: 220 67% 37%;
-    --blue-500: 221 83% 53%;
+    --blue-500: 221 87% 50%;
     --blue-400: 217 91% 60%;
     --blue-300: 213 94% 68%;
     --blue-200: 213 97% 87%;
@@ -63,22 +64,22 @@
     --yellow: 38 92% 50%;
     --red: 0 84% 60%;
 
-    --shadow-blue: 0 4px 24px rgba(37,99,235,0.13);
-    --shadow-blue-lg: 0 8px 40px rgba(37,99,235,0.18);
+    --shadow-blue: 0 4px 24px rgba(19,91,236,0.1);
+    --shadow-blue-lg: 0 8px 40px rgba(19,91,236,0.15);
 
-    --font-display: 'Baloo 2', cursive;
-    --font-body: 'Nunito', sans-serif;
+    --font-display: 'Lexend', sans-serif;
+    --font-body: 'Lexend', sans-serif;
   }
 
   .dark {
-    --background: 216 60% 10%;
+    --background: 225 33% 10%;
     --foreground: 214 100% 97%;
-    --card: 215 55% 15%;
+    --card: 222 47% 11%;
     --card-foreground: 214 100% 97%;
-    --popover: 215 55% 15%;
+    --popover: 222 47% 11%;
     --popover-foreground: 214 100% 97%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 216 60% 10%;
+    --primary: 221 87% 56%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 218 52% 26%;
     --secondary-foreground: 214 100% 97%;
     --muted: 218 52% 26%;
@@ -87,8 +88,8 @@
     --accent-foreground: 214 100% 97%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
-    --border: 218 52% 26%;
-    --input: 218 52% 26%;
+    --border: 218 52% 20%;
+    --input: 218 52% 20%;
     --ring: 213 94% 68%;
   }
 }
@@ -102,4 +103,12 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
   }
+}
+
+/* Material Symbols config */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.filled-icon {
+  font-variation-settings: 'FILL' 1;
 }
