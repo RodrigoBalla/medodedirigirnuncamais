@@ -498,98 +498,145 @@ export function LessonScreen({
 
         {/* SIMULATION */}
         {lessonStep === 2 && (
-          <div className="max-w-3xl">
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-              <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Simulação Mental</p>
-              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
-              <p className="text-sm text-muted-foreground mb-6">Feche os olhos e imagine cada passo antes de executar.</p>
-            </motion.div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+            {/* Left: Simulation content */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] rounded-2xl p-6 md:p-8 text-primary-foreground mb-6"
+              transition={{ duration: 0.4 }}
+              className="flex flex-col"
             >
-              <h3 className="text-lg font-extrabold mb-3">
-                {currentPhase === 0 && "🚗 Explorando os Pedais"}
-                {currentPhase === 1 && "⚙️ Sequência da Segunda Marcha"}
-                {currentPhase === 2 && "🏁 Controle do Volante"}
-              </h3>
-              <p className="text-sm opacity-80 mb-5">
-                {currentPhase === 0 && "Toque em cada pedal. Diga a função em voz alta."}
-                {currentPhase === 1 && "Embreagem → marcha → aceleração → soltar embreagem."}
-                {currentPhase === 2 && "Carro reto, mãos leves, olhar longe."}
-              </p>
+              <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Simulação Mental</p>
+              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
+              <p className="text-sm text-muted-foreground mb-6">Feche os olhos e imagine cada passo antes de executar.</p>
 
-              {currentPhase === 0 && (
-                <div className="flex gap-3 justify-center">
-                  {[{ icon: "🦵", name: "Embreagem", key: "e" }, { icon: "🛑", name: "Freio", key: "f" }, { icon: "▶️", name: "Acelerador", key: "a" }].map(p => (
-                    <motion.button
-                      key={p.key}
-                      whileTap={{ scale: 0.9 }}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      className={`bg-primary-foreground/10 border border-primary-foreground/20 rounded-2xl p-4 text-center min-w-[80px] transition-all ${pressedPedal === p.key ? "bg-primary/50 scale-95" : "hover:bg-primary-foreground/20"}`}
-                      onMouseDown={() => setPressedPedal(p.key)}
-                      onMouseUp={() => setPressedPedal(null)}
-                      onTouchStart={() => setPressedPedal(p.key)}
-                      onTouchEnd={() => setPressedPedal(null)}
-                    >
-                      <div className="text-3xl">{p.icon}</div>
-                      <div className="text-xs font-bold mt-1.5 opacity-90">{p.name}</div>
-                    </motion.button>
-                  ))}
-                </div>
-              )}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] rounded-2xl p-6 md:p-8 text-primary-foreground mb-6"
+              >
+                <h3 className="text-lg font-extrabold mb-3">
+                  {currentPhase === 0 && "🚗 Explorando os Pedais"}
+                  {currentPhase === 1 && "⚙️ Sequência da Segunda Marcha"}
+                  {currentPhase === 2 && "🏁 Controle do Volante"}
+                </h3>
+                <p className="text-sm opacity-80 mb-5">
+                  {currentPhase === 0 && "Toque em cada pedal. Diga a função em voz alta."}
+                  {currentPhase === 1 && "Embreagem → marcha → aceleração → soltar embreagem."}
+                  {currentPhase === 2 && "Carro reto, mãos leves, olhar longe."}
+                </p>
 
-              {currentPhase === 1 && (
-                <div className="flex flex-col gap-2.5">
-                  {["1️⃣ Pé esquerdo na embreagem", "2️⃣ Mão na alavanca de câmbio", "3️⃣ Pé direito com aceleração suave", "4️⃣ Soltar embreagem devagar"].map((step, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
-                    >{step}</motion.div>
-                  ))}
-                </div>
-              )}
+                {currentPhase === 0 && (
+                  <div className="flex gap-3 justify-center">
+                    {[{ icon: "🦵", name: "Embreagem", key: "e" }, { icon: "🛑", name: "Freio", key: "f" }, { icon: "▶️", name: "Acelerador", key: "a" }].map(p => (
+                      <motion.button
+                        key={p.key}
+                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        className={`bg-primary-foreground/10 border border-primary-foreground/20 rounded-2xl p-4 text-center min-w-[80px] transition-all ${pressedPedal === p.key ? "bg-primary/50 scale-95" : "hover:bg-primary-foreground/20"}`}
+                        onMouseDown={() => setPressedPedal(p.key)}
+                        onMouseUp={() => setPressedPedal(null)}
+                        onTouchStart={() => setPressedPedal(p.key)}
+                        onTouchEnd={() => setPressedPedal(null)}
+                      >
+                        <div className="text-3xl">{p.icon}</div>
+                        <div className="text-xs font-bold mt-1.5 opacity-90">{p.name}</div>
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
 
-              {currentPhase === 2 && (
-                <div className="flex flex-col gap-2.5">
-                  {["👀 Olhos para longe", "🤲 Mãos leves", "📍 Manter na faixa", "🛣️ Reduzir no quebra-mola"].map((step, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
-                    >{step}</motion.div>
-                  ))}
-                </div>
-              )}
+                {currentPhase === 1 && (
+                  <div className="flex flex-col gap-2.5">
+                    {["1️⃣ Pé esquerdo na embreagem", "2️⃣ Mão na alavanca de câmbio", "3️⃣ Pé direito com aceleração suave", "4️⃣ Soltar embreagem devagar"].map((step, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
+                      >{step}</motion.div>
+                    ))}
+                  </div>
+                )}
+
+                {currentPhase === 2 && (
+                  <div className="flex flex-col gap-2.5">
+                    {["👀 Olhos para longe", "🤲 Mãos leves", "📍 Manter na faixa", "🛣️ Reduzir no quebra-mola"].map((step, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="bg-primary-foreground/10 rounded-xl p-3.5 text-sm font-semibold"
+                      >{step}</motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="bg-[hsl(var(--green-light))] rounded-2xl p-5 text-sm text-[hsl(var(--green-dark))] font-medium leading-relaxed border border-[hsl(var(--green))]/20 mb-6 flex items-start gap-3"
+              >
+                <span className="text-xl">💡</span>
+                <p><strong>Por que visualizar?</strong> O cérebro não distingue entre simulação mental e ação real!</p>
+              </motion.div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setLessonStep(3)}
+                className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
+              >
+                Ir para Prática Real
+                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+              </motion.button>
             </motion.div>
 
+            {/* Right: Video 9:16 */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-[hsl(var(--green-light))] rounded-2xl p-5 text-sm text-[hsl(var(--green-dark))] font-medium leading-relaxed border border-[hsl(var(--green))]/20 mb-6 flex items-start gap-3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col lg:sticky lg:top-6 self-start"
             >
-              <span className="text-xl">💡</span>
-              <p><strong>Por que visualizar?</strong> O cérebro não distingue entre simulação mental e ação real!</p>
+              <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="size-16 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-primary-foreground text-3xl filled-icon">play_arrow</span>
+                  </motion.div>
+                </div>
+                <div className="absolute top-3 left-3">
+                  <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                    Simulação
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-primary-foreground/80 font-medium">0:00 / 1:45</span>
+                    <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "0%" }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 border-t border-border">
+                <p className="text-sm font-bold text-foreground mb-1">
+                  {currentPhase === 0 && "Simulação: Pedais na prática"}
+                  {currentPhase === 1 && "Simulação: Troca de marcha"}
+                  {currentPhase === 2 && "Simulação: Controle do volante"}
+                </p>
+                <p className="text-xs text-muted-foreground">Visualize o exercício antes de praticar.</p>
+              </div>
             </motion.div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setLessonStep(3)}
-              className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-base"
-            >
-              Ir para Prática Real
-              <span className="material-symbols-outlined text-lg">arrow_forward</span>
-            </motion.button>
           </div>
         )}
 
