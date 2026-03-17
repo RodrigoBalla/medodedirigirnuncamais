@@ -92,43 +92,92 @@ export function LessonScreen({
 
         {/* MISSION */}
         {lessonStep === 0 && (
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold tracking-tight mb-2 text-foreground">{phase.title}</h2>
-            <p className="text-muted-foreground text-sm mb-6">Objetivo: {phase.subtitle}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left: Mission info */}
+            <div>
+              <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">{phase.title}</h2>
+              <p className="text-muted-foreground text-sm mb-6">Objetivo: {phase.subtitle}</p>
 
-            <div className="flex flex-col gap-0 mb-6">
-              {STEPS.map((s, i) => (
-                <div key={s.key} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center">
-                    <div className={`size-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                      i < lessonStep ? "bg-primary text-primary-foreground" : i === lessonStep ? "bg-primary text-primary-foreground shadow-[0_0_0_3px_hsl(var(--blue-200))]" : "bg-muted text-muted-foreground"
-                    }`}>
-                      {i < lessonStep ? "✓" : s.icon}
+              <div className="flex flex-col gap-0 mb-6">
+                {STEPS.map((s, i) => (
+                  <div key={s.key} className="flex items-start gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={`size-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                        i < lessonStep ? "bg-primary text-primary-foreground" : i === lessonStep ? "bg-primary text-primary-foreground shadow-[0_0_0_3px_hsl(var(--blue-200))]" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {i < lessonStep ? "✓" : s.icon}
+                      </div>
+                      {i < STEPS.length - 1 && <div className="w-0.5 min-h-[20px] bg-border my-1" />}
                     </div>
-                    {i < STEPS.length - 1 && <div className="w-0.5 min-h-[20px] bg-border my-1" />}
+                    <div className="pb-4">
+                      <p className="font-bold text-sm text-foreground">{s.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {s.key === 0 && "Entenda o que vamos praticar"}
+                        {s.key === 1 && `${phase.quizzes.length} perguntas rápidas`}
+                        {s.key === 2 && "Visualize o movimento mental"}
+                        {s.key === 3 && "Execute no carro real"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="pb-4">
-                    <p className="font-bold text-sm text-foreground">{s.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {s.key === 0 && "Entenda o que vamos praticar"}
-                      {s.key === 1 && `${phase.quizzes.length} perguntas rápidas`}
-                      {s.key === 2 && "Visualize o movimento mental"}
-                      {s.key === 3 && "Execute no carro real"}
-                    </p>
+                ))}
+              </div>
+
+              <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 text-sm text-primary font-medium leading-relaxed mb-6">
+                {currentPhase === 0 && "Nesta fase, o carro deixa de ser uma ameaça e se torna um objeto familiar. 🚗"}
+                {currentPhase === 1 && "Aqui está o gargalo da maioria dos alunos: a coordenação motora. ⚙️"}
+                {currentPhase === 2 && "Com os pés automatizados, chegou a hora do volante. 🏁"}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setLessonStep(1)}
+                className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
+              >
+                Começar Missão ▶
+              </motion.button>
+            </div>
+
+            {/* Right: Video 9:16 */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col lg:sticky lg:top-6 self-start"
+            >
+              <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="size-16 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-primary-foreground text-3xl filled-icon">play_arrow</span>
+                  </motion.div>
+                </div>
+                <div className="absolute top-3 left-3">
+                  <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                    Introdução
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-primary-foreground/80 font-medium">0:00 / 2:30</span>
+                    <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "0%" }} />
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 text-sm text-primary font-medium leading-relaxed mb-6">
-              {currentPhase === 0 && "Nesta fase, o carro deixa de ser uma ameaça e se torna um objeto familiar. 🚗"}
-              {currentPhase === 1 && "Aqui está o gargalo da maioria dos alunos: a coordenação motora. ⚙️"}
-              {currentPhase === 2 && "Com os pés automatizados, chegou a hora do volante. 🏁"}
-            </div>
-
-            <button onClick={() => setLessonStep(1)} className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-              Começar Missão ▶
-            </button>
+              </div>
+              <div className="p-4 border-t border-border">
+                <p className="text-sm font-bold text-foreground mb-1">
+                  {currentPhase === 0 && "Introdução: Conhecendo o carro"}
+                  {currentPhase === 1 && "Introdução: O jogo dos pés"}
+                  {currentPhase === 2 && "Introdução: Fluidez e direção"}
+                </p>
+                <p className="text-xs text-muted-foreground">Assista antes de começar a missão.</p>
+              </div>
+            </motion.div>
           </div>
         )}
 
