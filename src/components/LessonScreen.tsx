@@ -65,7 +65,7 @@ export function LessonScreen({
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-4 md:px-8 py-6">
+      <div className="flex-1 flex flex-col w-full px-4 md:px-8 lg:px-12 py-6">
         {/* Module bar */}
         <div className="bg-card rounded-xl border border-border p-4 mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -135,7 +135,7 @@ export function LessonScreen({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Video area */}
               <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
-                <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[4/5] lg:aspect-auto lg:flex-1 flex items-center justify-center relative min-h-[280px]">
+                <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
                   {phase.quizzes[quizIndex].gif ? (
                     <GifIllustration
                       key={`${currentPhase}-${quizIndex}-${isRetry ? "r" : "n"}-${answered ? "a" : "q"}`}
