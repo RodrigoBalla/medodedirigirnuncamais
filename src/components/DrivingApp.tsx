@@ -302,7 +302,7 @@ const DrivingApp = () => {
           <ConquestScreen
             phase={phase}
             completedPhases={completedPhases}
-            onDashboard={() => { setLessonScreen("none"); setActiveTab("home"); }}
+            onDashboard={() => navigate("/")}
             onNextLesson={() => startLesson(completedPhases.length)}
             totalPhases={PHASES.length}
             onEmotionSubmit={submitEmotion}
