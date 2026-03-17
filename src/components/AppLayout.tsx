@@ -33,6 +33,7 @@ export function AppLayout({
   completedPhases,
 }: AppLayoutProps) {
   const { signOut } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
