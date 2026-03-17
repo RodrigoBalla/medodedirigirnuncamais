@@ -666,7 +666,7 @@ export function LessonScreen({
             </motion.div>
 
             {/* Two-column: checklist left, video right */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 flex-1">
               {/* Left: checklist */}
               <div>
                 {/* Progress bar */}
