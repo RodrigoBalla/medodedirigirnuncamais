@@ -50,137 +50,67 @@ const Auth = () => {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)",
-      fontFamily: "'Inter', 'Segoe UI', sans-serif",
-      padding: 16,
-    }}>
-      <div style={{
-        background: "rgba(255,255,255,0.07)",
-        backdropFilter: "blur(20px)",
-        borderRadius: 24,
-        padding: "40px 36px",
-        maxWidth: 420,
-        width: "100%",
-        border: "1px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: 8 }}>🚘</div>
-          <h1 style={{
-            fontSize: "1.5rem",
-            fontWeight: 800,
-            color: "white",
-            margin: 0,
-            letterSpacing: "-0.5px",
-          }}>
+    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--blue-900))] px-4">
+      <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 max-w-md w-full border border-white/10 shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center size-14 bg-primary/20 rounded-xl mb-4">
+            <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
+          </div>
+          <h1 className="text-xl font-bold text-white tracking-tight">
             Medo de Dirigir Nunca Mais
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.9rem", margin: "8px 0 0" }}>
+          <p className="text-white/50 text-sm mt-2">
             {isLogin ? "Entre na sua conta para continuar" : "Crie sua conta de aluno"}
           </p>
         </div>
 
-        <div style={{
-          display: "flex",
-          background: "rgba(255,255,255,0.08)",
-          borderRadius: 12,
-          padding: 4,
-          marginBottom: 24,
-        }}>
+        {/* Tabs */}
+        <div className="flex bg-white/8 rounded-xl p-1 mb-6">
           <button
             onClick={() => { setIsLogin(true); setError(""); setSuccess(""); }}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              borderRadius: 10,
-              border: "none",
-              fontWeight: 700,
-              fontSize: "0.9rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              background: isLogin ? "rgba(59,130,246,0.9)" : "transparent",
-              color: isLogin ? "white" : "rgba(255,255,255,0.5)",
-            }}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              isLogin ? "bg-primary text-white shadow-md" : "text-white/40 hover:text-white/60"
+            }`}
           >
             Entrar
           </button>
           <button
             onClick={() => { setIsLogin(false); setError(""); setSuccess(""); }}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              borderRadius: 10,
-              border: "none",
-              fontWeight: 700,
-              fontSize: "0.9rem",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              background: !isLogin ? "rgba(59,130,246,0.9)" : "transparent",
-              color: !isLogin ? "white" : "rgba(255,255,255,0.5)",
-            }}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              !isLogin ? "bg-primary text-white shadow-md" : "text-white/40 hover:text-white/60"
+            }`}
           >
             Cadastrar
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {!isLogin && (
             <div>
-              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.82rem", fontWeight: 600, marginBottom: 6, display: "block" }}>
-                Nome completo
-              </label>
+              <label className="text-white/60 text-xs font-semibold mb-1.5 block">Nome completo</label>
               <input
                 type="text"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 required={!isLogin}
                 placeholder="Seu nome"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 12,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "rgba(255,255,255,0.06)",
-                  color: "white",
-                  fontSize: "0.95rem",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
+                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           )}
           <div>
-            <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.82rem", fontWeight: 600, marginBottom: 6, display: "block" }}>
-              Email
-            </label>
+            <label className="text-white/60 text-xs font-semibold mb-1.5 block">Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="seu@email.com"
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.06)",
-                color: "white",
-                fontSize: "0.95rem",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <div>
-            <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.82rem", fontWeight: 600, marginBottom: 6, display: "block" }}>
-              Senha
-            </label>
+            <label className="text-white/60 text-xs font-semibold mb-1.5 block">Senha</label>
             <input
               type="password"
               value={password}
@@ -188,44 +118,18 @@ const Auth = () => {
               required
               minLength={6}
               placeholder="Mínimo 6 caracteres"
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.06)",
-                color: "white",
-                fontSize: "0.95rem",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
           {error && (
-            <div style={{
-              background: "rgba(239,68,68,0.15)",
-              border: "1px solid rgba(239,68,68,0.3)",
-              borderRadius: 12,
-              padding: "10px 14px",
-              color: "#fca5a5",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-            }}>
+            <div className="bg-destructive/15 border border-destructive/30 rounded-xl px-4 py-3 text-red-300 text-sm font-medium">
               ⚠️ {error}
             </div>
           )}
 
           {success && (
-            <div style={{
-              background: "rgba(34,197,94,0.15)",
-              border: "1px solid rgba(34,197,94,0.3)",
-              borderRadius: 12,
-              padding: "10px 14px",
-              color: "#86efac",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-            }}>
+            <div className="bg-green-500/15 border border-green-500/30 rounded-xl px-4 py-3 text-green-300 text-sm font-medium">
               ✅ {success}
             </div>
           )}
@@ -233,19 +137,7 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              padding: "14px 0",
-              borderRadius: 14,
-              border: "none",
-              background: "linear-gradient(135deg, #3b82f6, #2563eb)",
-              color: "white",
-              fontSize: "1rem",
-              fontWeight: 800,
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.7 : 1,
-              transition: "all 0.2s",
-              marginTop: 4,
-            }}
+            className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
           >
             {loading ? "Aguarde..." : isLogin ? "Entrar 🚀" : "Criar Conta ✨"}
           </button>
