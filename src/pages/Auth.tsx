@@ -5,9 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const BG_VIDEOS = [
   "https://cdn.pixabay.com/video/2020/05/25/40130-424930032_large.mp4",
-  "https://cdn.pixabay.com/video/2016/09/05/5100-182168342_large.mp4",
-  "https://cdn.pixabay.com/video/2024/01/25/198058-906392399_large.mp4",
-  "https://cdn.pixabay.com/video/2019/07/28/25639-351722017_large.mp4",
+  "https://cdn.pixabay.com/video/2017/08/20/11490-230853032_large.mp4",
+  "https://cdn.pixabay.com/video/2023/10/12/184734-873923034_large.mp4",
+  "https://cdn.pixabay.com/video/2020/10/31/53902-476396222_large.mp4",
 ];
 
 const VideoBackground = () => {
