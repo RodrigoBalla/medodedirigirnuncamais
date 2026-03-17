@@ -24,9 +24,18 @@ type LessonScreen = "none" | "lesson" | "conquest";
 
 const DrivingApp = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [screen, setScreen] = useState<Screen>("app");
   const [lessonScreen, setLessonScreen] = useState<LessonScreen>("none");
-  const [activeTab, setActiveTab] = useState<AppTab>("home");
+  const [activeTab, setActiveTab] = useState<AppTab>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith("/treinos")) return "treinos";
+    if (path.startsWith("/ranking")) return "ranking";
+    if (path.startsWith("/comunidade")) return "comunidade";
+    if (path.startsWith("/perfil")) return "perfil";
+    return "home";
+  });
   const [welcomeVideoViews, setWelcomeVideoViews] = useState<number | null>(null);
   const [currentPhase, setCurrentPhase] = useState(0);
   const [lessonStep, setLessonStep] = useState(0);
@@ -44,6 +53,38 @@ const DrivingApp = () => {
   const [emotionHistory] = useState([
     { conf: 2, tens: 4 }, { conf: 3, tens: 3 }, { conf: 3, tens: 2 }, { conf: 4, tens: 2 }, { conf: 4, tens: 1 }
   ]);
+
+  // Sync URL → state on mount/navigation
+  useEffect(() => {
+    const path = location.pathname;
+    const aulaMatch = path.match(/^\/aula\/(\d+)$/);
+    if (aulaMatch) {
+      const idx = parseInt(aulaMatch[1], 10) - 1;
+      if (idx >= 0 && idx < PHASES.length) {
+        setCurrentPhase(idx);
+        setLessonScreen("lesson");
+        setLessonStep(0);
+        setQuizIndex(0);
+        setSelected(null);
+        setAnswered(false);
+        setCheckedTasks({});
+        setRetryQueue([]);
+        setIsRetry(false);
+      }
+    } else if (path === "/treinos") {
+      setActiveTab("treinos");
+      setLessonScreen("none");
+    } else if (path === "/ranking") {
+      setActiveTab("ranking");
+    } else if (path === "/comunidade") {
+      setActiveTab("comunidade");
+    } else if (path === "/perfil") {
+      setActiveTab("perfil");
+    } else if (path === "/") {
+      setActiveTab("home");
+      setLessonScreen("none");
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!user) return;
