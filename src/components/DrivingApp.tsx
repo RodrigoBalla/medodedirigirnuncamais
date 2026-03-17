@@ -556,6 +556,34 @@ const DrivingApp = () => {
   }
 
   // renderLesson removed — now using LessonScreen component
+
+  // If in lesson mode, render LessonScreen full-page (outside AppLayout)
+  if (lessonScreen === "lesson" && phase) {
+    return (
+      <LessonScreen
+        phase={phase}
+        currentPhase={currentPhase}
+        lessonStep={lessonStep}
+        setLessonStep={setLessonStep}
+        quizIndex={quizIndex}
+        quizTotal={quizTotal}
+        selected={selected}
+        answered={answered}
+        isRetry={isRetry}
+        retryQueue={retryQueue}
+        onQuizSelect={handleQuizSelect}
+        onNextQuiz={nextQuiz}
+        onBack={() => navigate("/")}
+        lessonProgress={lessonProgress()}
+        pressedPedal={pressedPedal}
+        setPressedPedal={setPressedPedal}
+        checkedTasks={checkedTasks}
+        toggleTask={toggleTask}
+        onCompletePhase={completePhase}
+      />
+    );
+  }
+
   return (
     <AppLayout
       activeTab={activeTab}
