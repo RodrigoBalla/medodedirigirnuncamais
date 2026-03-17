@@ -216,61 +216,7 @@
   50% { opacity: 1; }
 }
 
-/* ---- Side Panel (desktop) ---- */
-.welcome-side-panel {
-  display: flex;
-  align-items: center;
-  max-width: 400px;
-}
-
-.welcome-side-content {
-  color: white;
-}
-
-.welcome-side-title {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 12px;
-  line-height: 1.2;
-  background: linear-gradient(135deg, hsl(213 97% 87%), white);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.welcome-side-desc {
-  font-size: 1.05rem;
-  opacity: 0.6;
-  line-height: 1.6;
-  margin-bottom: 32px;
-}
-
-.welcome-side-features {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.welcome-feature-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.8);
-}
-
-.welcome-feature-icon {
-  font-size: 1.3rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.06);
-  border-radius: 12px;
-  flex-shrink: 0;
-}
+/* Side panel styles removed — now handled via Tailwind in the component */
 
 /* ---- Mobile: fullscreen video ---- */
 @media (max-width: 768px) {
