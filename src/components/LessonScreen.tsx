@@ -455,7 +455,7 @@ export function LessonScreen({
 
         {/* PRACTICE */}
         {lessonStep === 3 && (
-          <div className="max-w-3xl">
+          <div>
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Prática Real</p>
               <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">
@@ -466,134 +466,184 @@ export function LessonScreen({
               <p className="text-sm text-muted-foreground mb-6">Complete todas as tarefas para concluir a fase.</p>
             </motion.div>
 
-            {/* Progress bar */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-card rounded-2xl border border-border p-5 mb-6"
-            >
-              <div className="flex justify-between text-sm font-bold mb-2">
-                <span className="text-foreground flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-primary text-lg">checklist</span>
-                  Progresso da Prática
-                </span>
-                <span className={`text-base font-extrabold ${allDone ? "text-[hsl(var(--green))]" : "text-primary"}`}>{checkedCount}/{tasks.length}</span>
-              </div>
-              <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+            {/* Two-column: checklist left, video right */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left: checklist */}
+              <div>
+                {/* Progress bar */}
                 <motion.div
-                  className="h-full rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(checkedCount / tasks.length) * 100}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  style={{ background: allDone ? "hsl(var(--green))" : "hsl(var(--primary))" }}
-                />
-              </div>
-              {allDone && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-xs font-bold text-[hsl(var(--green))] mt-2 flex items-center gap-1"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-card rounded-2xl border border-border p-5 mb-6"
                 >
-                  <span className="material-symbols-outlined text-sm">emoji_events</span>
-                  Todas as tarefas concluídas! Parabéns!
-                </motion.p>
-              )}
-            </motion.div>
-
-            {/* Task list */}
-            <div className="flex flex-col gap-3 mb-6">
-              {tasks.map((task, i) => {
-                const isChecked = !!checkedTasks[task.id];
-                return (
-                  <motion.button
-                    key={task.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => toggleTask(task.id)}
-                    className={`group flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left w-full ${
-                      isChecked
-                        ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))] shadow-[0_0_16px_hsl(var(--green)/0.15)]"
-                        : "border-border bg-card hover:border-primary/50 hover:shadow-md"
-                    }`}
-                  >
-                    <div className={`size-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all ${
-                      isChecked ? "bg-[hsl(var(--green))] border-[hsl(var(--green))] shadow-lg" : "border-muted-foreground/30 group-hover:border-primary/50"
-                    }`}>
-                      {isChecked ? (
-                        <motion.svg
-                          initial={{ scale: 0, rotate: -90 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                          width="16" height="16" viewBox="0 0 14 14" fill="none"
-                        >
-                          <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </motion.svg>
-                      ) : (
-                        <span className="text-muted-foreground/50 text-xs font-bold">{i + 1}</span>
-                      )}
-                    </div>
-                    <span className="text-2xl">{task.icon}</span>
-                    <span className={`flex-1 text-base font-semibold ${isChecked ? "line-through opacity-50 text-muted-foreground" : "text-foreground"}`}>{task.text}</span>
-                    {isChecked ? (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                        className="text-xs font-extrabold text-[hsl(var(--green))] bg-[hsl(var(--green-light))] rounded-lg px-2.5 py-1 shadow-sm"
-                      >
-                        +5 XP ✨
-                      </motion.span>
-                    ) : (
-                      <span className="material-symbols-outlined text-muted-foreground/30 text-xl group-hover:text-primary/50 transition-colors">radio_button_unchecked</span>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Complete celebration */}
-            <AnimatePresence>
-              {allDone && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="flex items-center gap-4 bg-[hsl(var(--green-light))] border-2 border-[hsl(var(--green))]/30 rounded-2xl p-5 mb-6 shadow-[0_0_24px_hsl(var(--green)/0.15)]"
-                >
-                  <motion.span
-                    animate={{ rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
-                    className="text-3xl"
-                  >🎉</motion.span>
-                  <div>
-                    <p className="font-extrabold text-base text-foreground">Prática concluída!</p>
-                    <p className="text-sm text-muted-foreground">Você desbloqueou +25 XP de bônus! 🏆</p>
+                  <div className="flex justify-between text-sm font-bold mb-2">
+                    <span className="text-foreground flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-primary text-lg">checklist</span>
+                      Progresso da Prática
+                    </span>
+                    <span className={`text-base font-extrabold ${allDone ? "text-[hsl(var(--green))]" : "text-primary"}`}>{checkedCount}/{tasks.length}</span>
                   </div>
+                  <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(checkedCount / tasks.length) * 100}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      style={{ background: allDone ? "hsl(var(--green))" : "hsl(var(--primary))" }}
+                    />
+                  </div>
+                  {allDone && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-xs font-bold text-[hsl(var(--green))] mt-2 flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">emoji_events</span>
+                      Todas as tarefas concluídas! Parabéns!
+                    </motion.p>
+                  )}
                 </motion.div>
-              )}
-            </AnimatePresence>
 
-            {/* Action buttons */}
-            <motion.button
-              whileHover={allDone ? { scale: 1.02 } : {}}
-              whileTap={allDone ? { scale: 0.97 } : {}}
-              onClick={onCompletePhase}
-              disabled={!allDone}
-              className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
-            >
-              🎉 Concluir Fase!
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setLessonStep(2)}
-              className="w-full mt-3 bg-card text-primary border-2 border-primary/20 font-bold py-3.5 rounded-2xl hover:bg-primary/5 transition-colors text-sm"
-            >
-              ← Rever Simulação
-            </motion.button>
+                {/* Task list */}
+                <div className="flex flex-col gap-3 mb-6">
+                  {tasks.map((task, i) => {
+                    const isChecked = !!checkedTasks[task.id];
+                    return (
+                      <motion.button
+                        key={task.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.06 }}
+                        whileHover={{ scale: 1.02, y: -1 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => toggleTask(task.id)}
+                        className={`group flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left w-full ${
+                          isChecked
+                            ? "border-[hsl(var(--green))] bg-[hsl(var(--green-light))] shadow-[0_0_16px_hsl(var(--green)/0.15)]"
+                            : "border-border bg-card hover:border-primary/50 hover:shadow-md"
+                        }`}
+                      >
+                        <div className={`size-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all ${
+                          isChecked ? "bg-[hsl(var(--green))] border-[hsl(var(--green))] shadow-lg" : "border-muted-foreground/30 group-hover:border-primary/50"
+                        }`}>
+                          {isChecked ? (
+                            <motion.svg
+                              initial={{ scale: 0, rotate: -90 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                              width="16" height="16" viewBox="0 0 14 14" fill="none"
+                            >
+                              <path d="M2 7L5.5 10.5L12 3.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </motion.svg>
+                          ) : (
+                            <span className="text-muted-foreground/50 text-xs font-bold">{i + 1}</span>
+                          )}
+                        </div>
+                        <span className="text-2xl">{task.icon}</span>
+                        <span className={`flex-1 text-base font-semibold ${isChecked ? "line-through opacity-50 text-muted-foreground" : "text-foreground"}`}>{task.text}</span>
+                        {isChecked ? (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                            className="text-xs font-extrabold text-[hsl(var(--green))] bg-[hsl(var(--green-light))] rounded-lg px-2.5 py-1 shadow-sm"
+                          >
+                            +5 XP ✨
+                          </motion.span>
+                        ) : (
+                          <span className="material-symbols-outlined text-muted-foreground/30 text-xl group-hover:text-primary/50 transition-colors">radio_button_unchecked</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Complete celebration */}
+                <AnimatePresence>
+                  {allDone && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="flex items-center gap-4 bg-[hsl(var(--green-light))] border-2 border-[hsl(var(--green))]/30 rounded-2xl p-5 mb-6 shadow-[0_0_24px_hsl(var(--green)/0.15)]"
+                    >
+                      <motion.span
+                        animate={{ rotate: [0, -10, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+                        className="text-3xl"
+                      >🎉</motion.span>
+                      <div>
+                        <p className="font-extrabold text-base text-foreground">Prática concluída!</p>
+                        <p className="text-sm text-muted-foreground">Você desbloqueou +25 XP de bônus! 🏆</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Action buttons */}
+                <motion.button
+                  whileHover={allDone ? { scale: 1.02 } : {}}
+                  whileTap={allDone ? { scale: 0.97 } : {}}
+                  onClick={onCompletePhase}
+                  disabled={!allDone}
+                  className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
+                >
+                  🎉 Concluir Fase!
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setLessonStep(2)}
+                  className="w-full mt-3 bg-card text-primary border-2 border-primary/20 font-bold py-3.5 rounded-2xl hover:bg-primary/5 transition-colors text-sm"
+                >
+                  ← Rever Simulação
+                </motion.button>
+              </div>
+
+              {/* Right: Video 9:16 */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col lg:sticky lg:top-6 self-start"
+              >
+                <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
+                  {/* Play button */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="size-16 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-primary-foreground text-3xl filled-icon">play_arrow</span>
+                    </motion.div>
+                  </div>
+                  {/* Video label */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                      Aula Prática
+                    </span>
+                  </div>
+                  {/* Video progress */}
+                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-primary-foreground/80 font-medium">0:00 / 3:20</span>
+                      <div className="flex-1 h-1 bg-primary-foreground/20 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary-foreground/80 rounded-full" style={{ width: "0%" }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 border-t border-border">
+                  <p className="text-sm font-bold text-foreground mb-1">
+                    {currentPhase === 0 && "Demonstração: Conhecendo os pedais"}
+                    {currentPhase === 1 && "Demonstração: Troca de marcha"}
+                    {currentPhase === 2 && "Demonstração: Controle do volante"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Assista enquanto completa as tarefas ao lado.</p>
+                </div>
+              </motion.div>
+            </div>
           </div>
         )}
       </div>
