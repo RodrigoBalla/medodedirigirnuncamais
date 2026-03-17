@@ -285,7 +285,7 @@ export function LessonScreen({
         {lessonStep === 1 && (
           <div>
             {/* Two-column: video left, quiz right */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mb-6 flex-1">
               {/* Video area */}
               <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
                 <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
@@ -510,13 +510,13 @@ export function LessonScreen({
 
         {/* SIMULATION */}
         {lessonStep === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 flex-1">
             {/* Left: Simulation content */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col"
+              className="flex flex-col flex-1 min-h-0"
             >
               <p className="text-[11px] font-extrabold text-primary uppercase tracking-[0.2em] mb-1">Simulação Mental</p>
               <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-foreground">Visualize o movimento</h2>
@@ -666,7 +666,7 @@ export function LessonScreen({
             </motion.div>
 
             {/* Two-column: checklist left, video right */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 flex-1">
               {/* Left: checklist */}
               <div>
                 {/* Progress bar */}
@@ -848,7 +848,7 @@ export function LessonScreen({
 
         {/* COMPLETION SCREEN */}
         {showCompletion && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start flex-1">
             {/* Left: Celebration video 9:16 */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
