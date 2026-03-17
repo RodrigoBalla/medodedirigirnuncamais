@@ -285,7 +285,7 @@ export function LessonScreen({
         {lessonStep === 1 && (
           <div>
             {/* Two-column: video left, quiz right */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mb-6 flex-1">
               {/* Video area */}
               <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
                 <div className="bg-gradient-to-br from-[hsl(var(--blue-800))] to-[hsl(var(--blue-900))] aspect-[9/16] flex items-center justify-center relative">
