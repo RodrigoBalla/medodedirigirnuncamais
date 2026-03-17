@@ -53,6 +53,25 @@ export function LessonScreen({
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
   const [showCompletion, setShowCompletion] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  // Auto-advance slides every 1.5s
+  useEffect(() => {
+    if (lessonStep !== 0) return;
+    const timer = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % STEPS.length);
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [lessonStep]);
+
+  const slideDescriptions = [
+    "Entenda o que vamos praticar nesta fase",
+    `Responda ${phase.quizzes.length} perguntas rápidas`,
+    "Visualize o movimento antes de executar",
+    "Execute as tarefas no carro real",
+  ];
+
+  const slideIcons = ["🎯", "❓", "🧠", "🚗"];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
