@@ -1,32 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Hints from "Valtinho Uber" for each phase/quiz
-const UBER_HINTS: Record<string, string[]> = {
+// Fallback hints if AI fails
+const UBER_HINTS_FALLBACK: Record<string, string[]> = {
   "0": [
-    "Ô meu parceiro, essa aí é moleza! O pedal da esquerda serve pra trocar de marcha, sabe? Sem ele o câmbio não funciona. Pensa assim: embreagem = passaporte pra trocar marcha!",
-    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três. É o do meio, meu chapa! Não confunde com o acelerador não!",
-    "E aí meu aluno, no automático a vida é mais fácil! Tem menos pedal que no manual. Pensa: sem embreagem, sobra o quê? Freio e acelerador, só dois!"
+    "Ô meu parceiro, essa aí é moleza! Pensa assim: qual pedal desconecta o motor pra trocar de marcha?",
+    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três!",
+    "No automático a vida é mais fácil! Tem menos pedal que no manual."
   ],
   "1": [
-    "Irmão, pra trocar de marcha você usa TUDO! Pé esquerdo na embreagem, pé direito sai do acelerador, mão no câmbio... é um combo! São várias partes do corpo.",
-    "Meu conselho de quem roda o dia todo: primeiro domina os pés! Quando os pés ficam automáticos, o resto vem naturalmente. Foca nos pés primeiro!",
-    "Olha, eu sempre treino meus alunos em lugar calmo primeiro. Menos coisa pra prestar atenção = mais foco no que importa! Pensa nisso."
+    "Pra trocar de marcha você usa TUDO! Pé esquerdo, pé direito, mão no câmbio...",
+    "Primeiro domina os pés! Quando os pés ficam automáticos, o resto vem!",
+    "Treina em lugar calmo primeiro. Menos distração = mais foco!"
   ],
   "2": [
-    "Parceiro, no volante a dica é: mão leve! Quanto mais relaxado você segura, mais suave fica a direção. Não aperta o volante como se tivesse com raiva não!",
-    "Fala meu aluno! O segredo é olhar LONGE, lá na frente. Quem olha pro capô do carro fica nervoso. Olha longe que o cérebro antecipa tudo!",
-    "Depois da segunda, qual vem? A terceira, né parceiro! É uma escadinha: primeira, segunda, terceira. Cada uma no seu tempo!"
+    "No volante a dica é: mão leve! Relaxa os braços!",
+    "O segredo é olhar LONGE, lá na frente. Quem olha pro capô fica nervoso!",
+    "Depois da segunda, qual vem? Pensa na escadinha!"
   ]
 };
 
-function getUberHint(phaseIndex: number, quizIdx: number): string {
-  const hints = UBER_HINTS[String(phaseIndex)];
+function getFallbackHint(phaseIndex: number, quizIdx: number): string {
+  const hints = UBER_HINTS_FALLBACK[String(phaseIndex)];
   return hints?.[quizIdx] || "Meu parceiro, pensa com calma que você acerta!";
+}
+
+// Speak text using browser SpeechSynthesis in pt-BR
+function speakText(text: string, onEnd?: () => void): SpeechSynthesisUtterance | null {
+  if (!window.speechSynthesis) return null;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "pt-BR";
+  utterance.rate = 1.05;
+  utterance.pitch = 1.1;
+  // Try to find a pt-BR voice
+  const voices = window.speechSynthesis.getVoices();
+  const ptVoice = voices.find(v => v.lang.startsWith("pt")) || null;
+  if (ptVoice) utterance.voice = ptVoice;
+  if (onEnd) utterance.onend = onEnd;
+  window.speechSynthesis.speak(utterance);
+  return utterance;
 }
 
 // 24h cooldown key
