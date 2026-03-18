@@ -1,32 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
 import { GifIllustration } from "@/components/GifIllustration";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Hints from "Valtinho Uber" for each phase/quiz
-const UBER_HINTS: Record<string, string[]> = {
+// Fallback hints if AI fails
+const UBER_HINTS_FALLBACK: Record<string, string[]> = {
   "0": [
-    "Ô meu parceiro, essa aí é moleza! O pedal da esquerda serve pra trocar de marcha, sabe? Sem ele o câmbio não funciona. Pensa assim: embreagem = passaporte pra trocar marcha!",
-    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três. É o do meio, meu chapa! Não confunde com o acelerador não!",
-    "E aí meu aluno, no automático a vida é mais fácil! Tem menos pedal que no manual. Pensa: sem embreagem, sobra o quê? Freio e acelerador, só dois!"
+    "Ô meu parceiro, essa aí é moleza! Pensa assim: qual pedal desconecta o motor pra trocar de marcha?",
+    "Fala comigo! Pra parar o carro tem um pedal especial, fica no meio dos três!",
+    "No automático a vida é mais fácil! Tem menos pedal que no manual."
   ],
   "1": [
-    "Irmão, pra trocar de marcha você usa TUDO! Pé esquerdo na embreagem, pé direito sai do acelerador, mão no câmbio... é um combo! São várias partes do corpo.",
-    "Meu conselho de quem roda o dia todo: primeiro domina os pés! Quando os pés ficam automáticos, o resto vem naturalmente. Foca nos pés primeiro!",
-    "Olha, eu sempre treino meus alunos em lugar calmo primeiro. Menos coisa pra prestar atenção = mais foco no que importa! Pensa nisso."
+    "Pra trocar de marcha você usa TUDO! Pé esquerdo, pé direito, mão no câmbio...",
+    "Primeiro domina os pés! Quando os pés ficam automáticos, o resto vem!",
+    "Treina em lugar calmo primeiro. Menos distração = mais foco!"
   ],
   "2": [
-    "Parceiro, no volante a dica é: mão leve! Quanto mais relaxado você segura, mais suave fica a direção. Não aperta o volante como se tivesse com raiva não!",
-    "Fala meu aluno! O segredo é olhar LONGE, lá na frente. Quem olha pro capô do carro fica nervoso. Olha longe que o cérebro antecipa tudo!",
-    "Depois da segunda, qual vem? A terceira, né parceiro! É uma escadinha: primeira, segunda, terceira. Cada uma no seu tempo!"
+    "No volante a dica é: mão leve! Relaxa os braços!",
+    "O segredo é olhar LONGE, lá na frente. Quem olha pro capô fica nervoso!",
+    "Depois da segunda, qual vem? Pensa na escadinha!"
   ]
 };
 
-function getUberHint(phaseIndex: number, quizIdx: number): string {
-  const hints = UBER_HINTS[String(phaseIndex)];
+function getFallbackHint(phaseIndex: number, quizIdx: number): string {
+  const hints = UBER_HINTS_FALLBACK[String(phaseIndex)];
   return hints?.[quizIdx] || "Meu parceiro, pensa com calma que você acerta!";
+}
+
+// Speak text using browser SpeechSynthesis in pt-BR
+function speakText(text: string, onEnd?: () => void): SpeechSynthesisUtterance | null {
+  if (!window.speechSynthesis) return null;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "pt-BR";
+  utterance.rate = 1.05;
+  utterance.pitch = 1.1;
+  // Try to find a pt-BR voice
+  const voices = window.speechSynthesis.getVoices();
+  const ptVoice = voices.find(v => v.lang.startsWith("pt")) || null;
+  if (ptVoice) utterance.voice = ptVoice;
+  if (onEnd) utterance.onend = onEnd;
+  window.speechSynthesis.speak(utterance);
+  return utterance;
 }
 
 // 24h cooldown key
@@ -125,6 +144,12 @@ export function LessonScreen({
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   const [eliminateUsed, setEliminateUsed] = useState(false);
 
+  // AI hint state
+  const [aiHint, setAiHint] = useState<string>("");
+  const [aiHintLoading, setAiHintLoading] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const ttsStartedRef = useRef(false);
+
   // Uber cooldown timer
   const [uberCooldownRemaining, setUberCooldownRemaining] = useState(0);
 
@@ -165,7 +190,82 @@ export function LessonScreen({
     setUberAudioPlaying(false);
     setUberAudioProgress(0);
     setUberReplayUsed(false);
+    setAiHint("");
+    ttsStartedRef.current = false;
+    window.speechSynthesis?.cancel();
   }, [quizIndex, currentPhase]);
+
+  // Cleanup TTS on unmount
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
+
+  // Fetch AI hint from edge function
+  const fetchAiHint = useCallback(async () => {
+    const quiz = phase.quizzes[quizIndex];
+    setAiHintLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-uber-hint", {
+        body: {
+          question: quiz.q,
+          options: quiz.opts,
+          correctIndex: quiz.correct,
+        },
+      });
+      if (error) throw error;
+      const hint = data?.hint || getFallbackHint(currentPhase, quizIndex);
+      setAiHint(hint);
+      return hint;
+    } catch (e) {
+      console.error("Failed to fetch AI hint:", e);
+      toast.error("Não foi possível gerar a dica. Usando dica padrão.");
+      const fallback = getFallbackHint(currentPhase, quizIndex);
+      setAiHint(fallback);
+      return fallback;
+    } finally {
+      setAiHintLoading(false);
+    }
+  }, [phase, quizIndex, currentPhase]);
+
+  // Play TTS for hint text
+  const playHintTTS = useCallback((text: string) => {
+    setUberAudioPlaying(true);
+    setUberAudioProgress(0);
+    ttsStartedRef.current = true;
+
+    // Ensure voices are loaded
+    const doSpeak = () => {
+      const utt = speakText(text, () => {
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+        setUberAudioProgress(1);
+      });
+      utteranceRef.current = utt;
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => { doSpeak(); };
+    } else {
+      doSpeak();
+    }
+
+    // Animate progress based on estimated duration
+    const estimatedDuration = Math.max(text.length * 65, 5000); // ~65ms per char
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / estimatedDuration, 0.95);
+      setUberAudioProgress(progress);
+      if (!window.speechSynthesis.speaking && ttsStartedRef.current) {
+        clearInterval(interval);
+        setUberAudioProgress(1);
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle quiz option click - show confirmation instead of answering directly
   const handleOptionClick = useCallback((i: number) => {
@@ -196,7 +296,6 @@ export function LessonScreen({
     const wrongIndices = quiz.opts
       .map((_, i) => i)
       .filter(i => i !== quiz.correct && i !== pendingSelection);
-    // Shuffle and take 2
     const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
     const toEliminate = shuffled.slice(0, 2);
     setEliminatedOptions(toEliminate);
@@ -206,7 +305,7 @@ export function LessonScreen({
     setPendingSelection(null);
   }, [phase, quizIndex, pendingSelection]);
 
-  const handleConsultUber = useCallback(() => {
+  const handleConsultUber = useCallback(async () => {
     setShowConfirmDialog(false);
     setShowDoubtOptions(false);
     setShowUberChat(true);
@@ -214,44 +313,28 @@ export function LessonScreen({
     setUberAudioPlaying(false);
     setUberAudioProgress(0);
     setUberReplayUsed(false);
-    // Start audio animation after a short delay
-    setTimeout(() => {
-      setUberAudioPlaying(true);
-    }, 800);
-  }, []);
+    ttsStartedRef.current = false;
 
-  // Simulate audio playback progress
-  useEffect(() => {
-    if (!uberAudioPlaying) return;
-    const duration = 15000; // 15 seconds animation
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      setUberAudioProgress(progress);
-      if (progress >= 1) {
-        clearInterval(interval);
-        setUberAudioPlaying(false);
-        setUberAudioPlayed(true);
-      }
-    }, 50);
-    return () => clearInterval(interval);
-  }, [uberAudioPlaying]);
+    // Fetch AI hint then play TTS
+    const hint = await fetchAiHint();
+    setTimeout(() => {
+      playHintTTS(hint);
+    }, 800);
+  }, [fetchAiHint, playHintTTS]);
 
   const handleReplayUberAudio = useCallback(() => {
-    if (uberReplayUsed) return;
+    if (uberReplayUsed || !aiHint) return;
     setUberReplayUsed(true);
     setUberAudioPlayed(false);
-    setUberAudioPlaying(true);
-    setUberAudioProgress(0);
-  }, [uberReplayUsed]);
+    playHintTTS(aiHint);
+  }, [uberReplayUsed, aiHint, playHintTTS]);
 
   const handleCloseUberChat = useCallback(() => {
+    window.speechSynthesis?.cancel();
     setShowUberChat(false);
     setUberUsedThisQuiz(true);
     startUberCooldown(currentPhase, quizIndex);
     setPendingSelection(null);
-    // Update cooldown
     const { remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
     setUberCooldownRemaining(remainingMs || 24 * 60 * 60 * 1000);
   }, [currentPhase, quizIndex]);
@@ -761,7 +844,9 @@ export function LessonScreen({
                           className="self-start max-w-[85%]"
                         >
                           <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
-                            <p className="text-[13px] text-gray-800">Fala meu aluno! 🚗 Vou te dar uma dica...</p>
+                            <p className="text-[13px] text-gray-800">
+                              {aiHintLoading ? "Fala meu aluno! 🚗 Deixa eu pensar aqui..." : "Fala meu aluno! 🚗 Vou te dar uma dica..."}
+                            </p>
                             <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
                           </div>
                         </motion.div>
@@ -845,7 +930,7 @@ export function LessonScreen({
                             >
                               <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
                                 <p className="text-[13px] text-gray-800 italic">
-                                  "{getUberHint(currentPhase, quizIndex)}"
+                                  "{aiHint || getFallbackHint(currentPhase, quizIndex)}"
                                 </p>
                                 <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
                               </div>
@@ -880,10 +965,10 @@ export function LessonScreen({
                             Voltar para o Quiz
                           </motion.button>
                         )}
-                        {uberAudioPlaying && (
+                        {(uberAudioPlaying || aiHintLoading) && (
                           <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
                             <span className="material-symbols-outlined text-sm animate-pulse">graphic_eq</span>
-                            Ouvindo áudio do Valtinho...
+                            {aiHintLoading ? "Gerando dica do Valtinho..." : "Ouvindo áudio do Valtinho..."}
                           </p>
                         )}
                       </div>
