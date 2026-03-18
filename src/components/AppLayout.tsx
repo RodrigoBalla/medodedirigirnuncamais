@@ -81,6 +81,16 @@ export function AppLayout({
             <span className="material-symbols-outlined text-primary text-base filled-icon">database</span>
             <span className="text-xs font-bold text-foreground">{totalXP}</span>
           </div>
+          {/* Admin button - only visible for admins */}
+          {isAdmin && (
+            <button
+              onClick={() => nav("/admin")}
+              className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Painel Admin"
+            >
+              <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+            </button>
+          )}
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
