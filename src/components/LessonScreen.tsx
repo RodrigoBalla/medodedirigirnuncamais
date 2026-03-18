@@ -330,11 +330,11 @@ export function LessonScreen({
   }, [uberReplayUsed, aiHint, playHintTTS]);
 
   const handleCloseUberChat = useCallback(() => {
+    window.speechSynthesis?.cancel();
     setShowUberChat(false);
     setUberUsedThisQuiz(true);
     startUberCooldown(currentPhase, quizIndex);
     setPendingSelection(null);
-    // Update cooldown
     const { remainingMs } = isUberOnCooldown(currentPhase, quizIndex);
     setUberCooldownRemaining(remainingMs || 24 * 60 * 60 * 1000);
   }, [currentPhase, quizIndex]);
