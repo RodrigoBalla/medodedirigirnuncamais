@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      page_views: {
+        Row: {
+          click_count: number
+          created_at: string
+          duration_seconds: number
+          entered_at: string
+          id: string
+          page_name: string
+          page_path: string
+          referrer_path: string | null
+          user_id: string
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          duration_seconds?: number
+          entered_at?: string
+          id?: string
+          page_name?: string
+          page_path: string
+          referrer_path?: string | null
+          user_id: string
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          duration_seconds?: number
+          entered_at?: string
+          id?: string
+          page_name?: string
+          page_path?: string
+          referrer_path?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
