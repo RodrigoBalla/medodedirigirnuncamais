@@ -84,9 +84,10 @@ const DrivingApp = () => {
       setScreen("app");
       setActiveTab("treinos");
       setLessonScreen("none");
-    } else if (path === "/ranking") {
+    } else if (path === "/treinos" || path.startsWith("/treinos")) {
       setScreen("app");
-      setActiveTab("ranking");
+      setActiveTab("treinos");
+      setLessonScreen("none");
     } else if (path === "/comunidade") {
       setScreen("app");
       setActiveTab("comunidade");
