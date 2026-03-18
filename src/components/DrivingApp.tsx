@@ -382,43 +382,103 @@ const DrivingApp = () => {
                 const isCurrent = i === nextPhaseIdx;
                 const locked = i > nextPhaseIdx;
                 const isEven = i % 2 === 0;
+                const justCompleted = unlockedPhase === i;
+                const justUnlocked = unlockedPhase !== null && i === unlockedPhase + 1 && !done;
 
                 return (
                   <div key={p.id} className="relative flex flex-col items-center w-full">
                     {i > 0 && (
-                      <div className={`w-0.5 h-8 ${completedPhases.includes(i - 1) ? "bg-primary" : "bg-border"}`} />
+                      <motion.div
+                        className="w-0.5 h-8"
+                        initial={justCompleted || justUnlocked ? { backgroundColor: "hsl(var(--border))" } : undefined}
+                        animate={{
+                          backgroundColor: completedPhases.includes(i - 1)
+                            ? "hsl(var(--primary))"
+                            : "hsl(var(--border))"
+                        }}
+                        transition={justCompleted ? { delay: 0.3, duration: 0.6 } : { duration: 0 }}
+                      />
                     )}
                     <div className={`flex items-center gap-4 w-full ${isEven ? "flex-row" : "flex-row-reverse"}`}>
-                      <button
+                      <motion.button
                         onClick={() => !locked && startLesson(i)}
-                        disabled={locked}
-                        className={`relative z-10 size-[72px] rounded-full flex items-center justify-center border-4 transition-all shrink-0 ${
-                          locked
+                        disabled={locked && !justUnlocked}
+                        initial={
+                          justCompleted
+                            ? { scale: 1 }
+                            : justUnlocked
+                            ? { scale: 0.8, opacity: 0.5 }
+                            : undefined
+                        }
+                        animate={
+                          justCompleted
+                            ? {
+                                scale: [1, 1.25, 1],
+                                boxShadow: [
+                                  "0 0 0 0 hsl(var(--primary) / 0)",
+                                  "0 0 0 16px hsl(var(--primary) / 0.3)",
+                                  "0 0 0 0 hsl(var(--primary) / 0)",
+                                ],
+                              }
+                            : justUnlocked
+                            ? { scale: [0.8, 1.15, 1], opacity: [0.5, 1, 1] }
+                            : undefined
+                        }
+                        transition={
+                          justCompleted
+                            ? { duration: 1.2, delay: 0.2, ease: "easeOut" }
+                            : justUnlocked
+                            ? { duration: 0.8, delay: 1.2, ease: "easeOut" }
+                            : undefined
+                        }
+                        className={`relative z-10 size-[72px] rounded-full flex items-center justify-center border-4 transition-colors shrink-0 ${
+                          locked && !justUnlocked
                             ? "bg-muted border-border opacity-50 cursor-not-allowed"
-                            : done
+                            : done || justCompleted
                             ? "bg-primary border-primary/30 shadow-lg shadow-primary/20"
                             : "bg-primary border-primary/30 shadow-lg shadow-primary/20 hover:scale-105"
                         }`}
                       >
-                        {locked ? (
+                        {locked && !justUnlocked ? (
                           <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>
-                        ) : done ? (
-                          <span className="material-symbols-outlined text-2xl text-primary-foreground filled-icon">check_circle</span>
+                        ) : done || justCompleted ? (
+                          <motion.span
+                            className="material-symbols-outlined text-2xl text-primary-foreground filled-icon"
+                            initial={justCompleted ? { rotate: 0, scale: 0 } : undefined}
+                            animate={justCompleted ? { rotate: [0, 360], scale: [0, 1.3, 1] } : undefined}
+                            transition={justCompleted ? { duration: 0.8, delay: 0.5 } : undefined}
+                          >
+                            check_circle
+                          </motion.span>
+                        ) : justUnlocked ? (
+                          <motion.span
+                            className="material-symbols-outlined text-2xl text-primary-foreground filled-icon"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [0, 1.3, 1] }}
+                            transition={{ duration: 0.6, delay: 1.5 }}
+                          >
+                            directions_car
+                          </motion.span>
                         ) : (
                           <span className="material-symbols-outlined text-2xl text-primary-foreground filled-icon">directions_car</span>
                         )}
-                      </button>
+                      </motion.button>
                       <div className="flex-1">
-                        {isCurrent && (
-                          <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full mb-1.5 shadow-md shadow-primary/20">
+                        {(isCurrent || justUnlocked) && (
+                          <motion.span
+                            initial={justUnlocked ? { opacity: 0, scale: 0.5, y: -10 } : undefined}
+                            animate={justUnlocked ? { opacity: 1, scale: 1, y: 0 } : undefined}
+                            transition={justUnlocked ? { delay: 1.8, duration: 0.5, type: "spring" } : undefined}
+                            className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full mb-1.5 shadow-md shadow-primary/20"
+                          >
                             <span className="material-symbols-outlined text-xs">play_arrow</span>
-                            COMEÇAR
-                          </span>
+                            {justUnlocked ? "DESBLOQUEADA!" : "COMEÇAR"}
+                          </motion.span>
                         )}
-                        <p className={`text-sm font-bold ${locked ? "text-muted-foreground" : "text-foreground"}`}>
+                        <p className={`text-sm font-bold ${locked && !justUnlocked ? "text-muted-foreground" : "text-foreground"}`}>
                           {p.title.replace(/Fase \d+ — /, "")}
                         </p>
-                        {!locked && (
+                        {(!locked || justUnlocked) && (
                           <p className="text-xs text-muted-foreground mt-0.5">{p.subtitle}</p>
                         )}
                       </div>
