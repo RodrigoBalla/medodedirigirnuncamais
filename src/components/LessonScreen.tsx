@@ -1345,6 +1345,7 @@ export function LessonScreen({
                     setShowCompletion(true);
                     setPopupMinimized(false);
                     playCelebrationSound();
+                    setTimeout(() => playHornSound(), 600);
                   }}
                   disabled={!allDone}
                   className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
