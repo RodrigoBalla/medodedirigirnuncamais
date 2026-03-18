@@ -55,6 +55,8 @@ const DrivingApp = () => {
   const [emotionHistory] = useState([
     { conf: 2, tens: 4 }, { conf: 3, tens: 3 }, { conf: 3, tens: 2 }, { conf: 4, tens: 2 }, { conf: 4, tens: 1 }
   ]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [unlockedPhase, setUnlockedPhase] = useState<number | null>(null);
 
   // Sync URL → state on mount/navigation
   useEffect(() => {
