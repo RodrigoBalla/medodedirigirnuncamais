@@ -6,6 +6,7 @@ import { GifIllustration } from "@/components/GifIllustration";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { playCelebrationSound } from "@/lib/sounds";
 
 // Fallback hints if AI fails
 const UBER_HINTS_FALLBACK: Record<string, string[]> = {
