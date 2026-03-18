@@ -1409,9 +1409,9 @@ export function LessonScreen({
           </div>
         )}
 
-        {/* COMPLETION SCREEN */}
+        {/* COMPLETION SCREEN - Full new page view */}
         {showCompletion && (
-          <div className="relative flex-1">
+          <>
             {/* Full-screen celebration popup overlay */}
             <AnimatePresence>
               {!popupMinimized && (
@@ -1422,7 +1422,6 @@ export function LessonScreen({
                   transition={{ duration: 0.5 }}
                   className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
                   onAnimationComplete={(def: any) => {
-                    // Auto-minimize after 5 seconds
                     if (def?.opacity === 1) {
                       setTimeout(() => setPopupMinimized(true), 5000);
                     }
@@ -1494,7 +1493,6 @@ export function LessonScreen({
                     transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
                     className="relative z-10 bg-gradient-to-br from-primary via-primary/90 to-primary/70 rounded-3xl p-8 md:p-12 text-center text-primary-foreground shadow-2xl max-w-md mx-4"
                   >
-                    {/* Trophy */}
                     <motion.div
                       initial={{ scale: 0, rotate: -30 }}
                       animate={{ scale: 1, rotate: 0 }}
@@ -1504,7 +1502,6 @@ export function LessonScreen({
                       🏆
                     </motion.div>
 
-                    {/* Stars */}
                     <motion.div
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1559,7 +1556,6 @@ export function LessonScreen({
                       <span className="text-2xl font-extrabold">+{phase.xp} XP ganhos!</span>
                     </motion.div>
 
-                    {/* Clapping animation row */}
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -1596,91 +1592,92 @@ export function LessonScreen({
               )}
             </AnimatePresence>
 
-            {/* Video + action buttons (always visible when minimized, or below popup) */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: popupMinimized ? 1 : 0.3 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start"
-            >
-              {/* Left: Celebration video 9:16 */}
+            {/* After popup minimizes: full new page with video + buttons */}
+            {popupMinimized && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: popupMinimized ? 0.2 : 0 }}
-                className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6 }}
+                className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto w-full"
               >
-                <div className="bg-gradient-to-br from-primary/20 to-primary/5 aspect-[9/16] flex items-center justify-center relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="size-16 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-primary text-3xl filled-icon">play_arrow</span>
-                    </motion.div>
+                {/* Mini celebration badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-6 py-3 mb-6 flex items-center gap-3 text-primary-foreground"
+                >
+                  <span className="text-2xl">🏆</span>
+                  <div>
+                    <p className="font-extrabold text-sm">Fase Concluída!</p>
+                    <p className="text-xs opacity-80">+{phase.xp} XP ganhos ⚡</p>
                   </div>
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
-                      Parabéns!
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground font-medium">0:00 / 2:00</span>
-                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full" style={{ width: "0%" }} />
+                </motion.div>
+
+                {/* Video area — centered and prominent */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="bg-card rounded-2xl border border-border overflow-hidden w-full max-w-sm mb-6"
+                >
+                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 aspect-[9/16] flex items-center justify-center relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="size-16 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-primary text-3xl filled-icon">play_arrow</span>
+                      </motion.div>
+                    </div>
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                        Mensagem da Mentora
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground font-medium">0:00 / 2:00</span>
+                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: "0%" }} />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-4 border-t border-border">
-                  <p className="text-sm font-bold text-foreground mb-1">Mensagem da mentora</p>
-                  <p className="text-xs text-muted-foreground">Karla tem uma mensagem especial para você!</p>
-                </div>
-              </motion.div>
-
-              {/* Right: Buttons + mini celebration summary */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: popupMinimized ? 0.3 : 0 }}
-                className="flex flex-col gap-4"
-              >
-                {/* Mini celebration card */}
-                <div className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 text-center text-primary-foreground">
-                  <div className="flex justify-center gap-2 mb-2">
-                    <span className="text-3xl">🏆</span>
-                    <span className="text-3xl">⭐</span>
+                  <div className="p-4 border-t border-border">
+                    <p className="text-sm font-bold text-foreground mb-1">Mensagem da mentora Karla</p>
+                    <p className="text-xs text-muted-foreground">Ela tem uma mensagem especial para você!</p>
                   </div>
-                  <p className="font-extrabold text-lg mb-1">Fase Concluída!</p>
-                  <p className="text-sm opacity-80 mb-3">{phase.conquest}</p>
-                  <div className="bg-primary-foreground/15 rounded-xl py-2 px-4 inline-flex items-center gap-1.5">
-                    <span className="text-lg">⚡</span>
-                    <span className="text-lg font-extrabold">+{phase.xp} XP</span>
-                  </div>
-                </div>
+                </motion.div>
 
                 {/* Action buttons */}
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={onCompletePhase}
-                  className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="w-full max-w-sm flex flex-col gap-3"
                 >
-                  Continuar →
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={onBack}
-                  className="w-full bg-card text-foreground border-2 border-border font-bold py-3.5 rounded-2xl hover:bg-muted transition-colors text-sm"
-                >
-                  Voltar ao Dashboard 🏠
-                </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={onCompletePhase}
+                    className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
+                  >
+                    Continuar →
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={onBack}
+                    className="w-full bg-card text-foreground border-2 border-border font-bold py-3.5 rounded-2xl hover:bg-muted transition-colors text-sm"
+                  >
+                    Voltar ao Dashboard 🏠
+                  </motion.button>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </div>
+            )}
+          </>
         )}
       </div>
 
