@@ -144,6 +144,12 @@ export function LessonScreen({
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   const [eliminateUsed, setEliminateUsed] = useState(false);
 
+  // AI hint state
+  const [aiHint, setAiHint] = useState<string>("");
+  const [aiHintLoading, setAiHintLoading] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const ttsStartedRef = useRef(false);
+
   // Uber cooldown timer
   const [uberCooldownRemaining, setUberCooldownRemaining] = useState(0);
 
@@ -184,7 +190,82 @@ export function LessonScreen({
     setUberAudioPlaying(false);
     setUberAudioProgress(0);
     setUberReplayUsed(false);
+    setAiHint("");
+    ttsStartedRef.current = false;
+    window.speechSynthesis?.cancel();
   }, [quizIndex, currentPhase]);
+
+  // Cleanup TTS on unmount
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
+
+  // Fetch AI hint from edge function
+  const fetchAiHint = useCallback(async () => {
+    const quiz = phase.quizzes[quizIndex];
+    setAiHintLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-uber-hint", {
+        body: {
+          question: quiz.q,
+          options: quiz.opts,
+          correctIndex: quiz.correct,
+        },
+      });
+      if (error) throw error;
+      const hint = data?.hint || getFallbackHint(currentPhase, quizIndex);
+      setAiHint(hint);
+      return hint;
+    } catch (e) {
+      console.error("Failed to fetch AI hint:", e);
+      toast.error("Não foi possível gerar a dica. Usando dica padrão.");
+      const fallback = getFallbackHint(currentPhase, quizIndex);
+      setAiHint(fallback);
+      return fallback;
+    } finally {
+      setAiHintLoading(false);
+    }
+  }, [phase, quizIndex, currentPhase]);
+
+  // Play TTS for hint text
+  const playHintTTS = useCallback((text: string) => {
+    setUberAudioPlaying(true);
+    setUberAudioProgress(0);
+    ttsStartedRef.current = true;
+
+    // Ensure voices are loaded
+    const doSpeak = () => {
+      const utt = speakText(text, () => {
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+        setUberAudioProgress(1);
+      });
+      utteranceRef.current = utt;
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => { doSpeak(); };
+    } else {
+      doSpeak();
+    }
+
+    // Animate progress based on estimated duration
+    const estimatedDuration = Math.max(text.length * 65, 5000); // ~65ms per char
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / estimatedDuration, 0.95);
+      setUberAudioProgress(progress);
+      if (!window.speechSynthesis.speaking && ttsStartedRef.current) {
+        clearInterval(interval);
+        setUberAudioProgress(1);
+        setUberAudioPlaying(false);
+        setUberAudioPlayed(true);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle quiz option click - show confirmation instead of answering directly
   const handleOptionClick = useCallback((i: number) => {
@@ -215,7 +296,6 @@ export function LessonScreen({
     const wrongIndices = quiz.opts
       .map((_, i) => i)
       .filter(i => i !== quiz.correct && i !== pendingSelection);
-    // Shuffle and take 2
     const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
     const toEliminate = shuffled.slice(0, 2);
     setEliminatedOptions(toEliminate);
@@ -225,7 +305,7 @@ export function LessonScreen({
     setPendingSelection(null);
   }, [phase, quizIndex, pendingSelection]);
 
-  const handleConsultUber = useCallback(() => {
+  const handleConsultUber = useCallback(async () => {
     setShowConfirmDialog(false);
     setShowDoubtOptions(false);
     setShowUberChat(true);
@@ -233,29 +313,14 @@ export function LessonScreen({
     setUberAudioPlaying(false);
     setUberAudioProgress(0);
     setUberReplayUsed(false);
-    // Start audio animation after a short delay
-    setTimeout(() => {
-      setUberAudioPlaying(true);
-    }, 800);
-  }, []);
+    ttsStartedRef.current = false;
 
-  // Simulate audio playback progress
-  useEffect(() => {
-    if (!uberAudioPlaying) return;
-    const duration = 15000; // 15 seconds animation
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      setUberAudioProgress(progress);
-      if (progress >= 1) {
-        clearInterval(interval);
-        setUberAudioPlaying(false);
-        setUberAudioPlayed(true);
-      }
-    }, 50);
-    return () => clearInterval(interval);
-  }, [uberAudioPlaying]);
+    // Fetch AI hint then play TTS
+    const hint = await fetchAiHint();
+    setTimeout(() => {
+      playHintTTS(hint);
+    }, 800);
+  }, [fetchAiHint, playHintTTS]);
 
   const handleReplayUberAudio = useCallback(() => {
     if (uberReplayUsed) return;
