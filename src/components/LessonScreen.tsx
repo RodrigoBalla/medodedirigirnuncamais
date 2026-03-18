@@ -965,10 +965,10 @@ export function LessonScreen({
                             Voltar para o Quiz
                           </motion.button>
                         )}
-                        {uberAudioPlaying && (
+                        {(uberAudioPlaying || aiHintLoading) && (
                           <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
                             <span className="material-symbols-outlined text-sm animate-pulse">graphic_eq</span>
-                            Ouvindo áudio do Valtinho...
+                            {aiHintLoading ? "Gerando dica do Valtinho..." : "Ouvindo áudio do Valtinho..."}
                           </p>
                         )}
                       </div>
