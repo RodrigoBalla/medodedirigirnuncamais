@@ -928,7 +928,7 @@ export function LessonScreen({
                             >
                               <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
                                 <p className="text-[13px] text-gray-800 italic">
-                                  "{getUberHint(currentPhase, quizIndex)}"
+                                  "{aiHint || getFallbackHint(currentPhase, quizIndex)}"
                                 </p>
                                 <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
                               </div>
