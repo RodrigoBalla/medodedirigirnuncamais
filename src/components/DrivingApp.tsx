@@ -105,6 +105,22 @@ const DrivingApp = () => {
     const unlocked = searchParams.get("unlocked");
     if (unlocked !== null) {
       const idx = parseInt(unlocked, 10);
+      // Mark the phase as completed if not already
+      setCompletedPhases(prev => {
+        if (!prev.includes(idx)) {
+          const updated = [...prev, idx];
+          // Persist to database
+          if (user) {
+            supabase
+              .from("user_progress")
+              .update({ completed_phases: updated, updated_at: new Date().toISOString() })
+              .eq("user_id", user.id)
+              .then(() => {});
+          }
+          return updated;
+        }
+        return prev;
+      });
       // Small delay so the dashboard renders first, then animate
       setTimeout(() => setUnlockedPhase(idx), 400);
       // Clean up the URL param
