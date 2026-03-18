@@ -623,9 +623,9 @@ const DrivingApp = () => {
                       ? {
                           scale: [1, 1.3, 1],
                           boxShadow: [
-                            "0 0 0 0 hsl(var(--primary) / 0)",
-                            "0 0 0 20px hsl(var(--primary) / 0.4)",
-                            "0 0 0 0 hsl(var(--primary) / 0)",
+                            "0 0 0 0 hsl(var(--success) / 0)",
+                            "0 0 0 20px hsl(var(--success) / 0.4)",
+                            "0 0 0 0 hsl(var(--success) / 0)",
                           ],
                         }
                       : justUnlocked
@@ -643,9 +643,14 @@ const DrivingApp = () => {
                     locked && !justUnlocked
                       ? "bg-muted border-border/50 opacity-60 cursor-not-allowed"
                       : done || justCompleted
-                      ? "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--primary)/0.4)]"
+                      ? "border-[hsl(var(--success)/0.2)] shadow-[0_6px_0_0_hsl(var(--success)/0.4)]"
                       : "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--primary)/0.4)] hover:translate-y-0.5"
                   }`}
+                  style={
+                    done || justCompleted
+                      ? { backgroundColor: "hsl(var(--success))" }
+                      : undefined
+                  }
                 >
                   {locked && !justUnlocked ? (
                     <span className="material-symbols-outlined text-3xl text-muted-foreground">lock</span>
