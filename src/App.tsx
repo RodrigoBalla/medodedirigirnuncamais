@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { CompletionScreen } from "./components/CompletionScreen";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/comunidade" element={<Index />} />
               <Route path="/perfil" element={<Index />} />
               <Route path="/aula/:id" element={<Index />} />
+              <Route path="/conclusao" element={<CompletionScreen />} />
               <Route path="/login" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
