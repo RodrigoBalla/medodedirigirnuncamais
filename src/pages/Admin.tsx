@@ -459,6 +459,8 @@ export default function Admin() {
             </div>
           )}
 
+          {tab === "analytics" && <AnalyticsTab />}
+
           {tab === "reports" && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold">Relatórios</h2>
