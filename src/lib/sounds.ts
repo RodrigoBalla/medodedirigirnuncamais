@@ -70,6 +70,39 @@ export function playConquestSound() {
   } catch {}
 }
 
+export function playHornSound() {
+  try {
+    const ctx = new AudioContext();
+    // First BI
+    const osc1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    osc1.connect(g1);
+    g1.connect(ctx.destination);
+    osc1.type = "square";
+    osc1.frequency.setValueAtTime(480, ctx.currentTime);
+    g1.gain.setValueAtTime(0, ctx.currentTime);
+    g1.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+    g1.gain.setValueAtTime(0.25, ctx.currentTime + 0.25);
+    g1.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.4);
+
+    // Second BI (higher pitch)
+    const osc2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    osc2.connect(g2);
+    g2.connect(ctx.destination);
+    osc2.type = "square";
+    osc2.frequency.setValueAtTime(520, ctx.currentTime + 0.35);
+    g2.gain.setValueAtTime(0, ctx.currentTime + 0.35);
+    g2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.37);
+    g2.gain.setValueAtTime(0.25, ctx.currentTime + 0.7);
+    g2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.85);
+    osc2.start(ctx.currentTime + 0.35);
+    osc2.stop(ctx.currentTime + 0.9);
+  } catch {}
+}
+
 export function playCelebrationSound() {
   try {
     const ctx = new AudioContext();
