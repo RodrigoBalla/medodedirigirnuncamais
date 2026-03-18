@@ -323,12 +323,11 @@ export function LessonScreen({
   }, [fetchAiHint, playHintTTS]);
 
   const handleReplayUberAudio = useCallback(() => {
-    if (uberReplayUsed) return;
+    if (uberReplayUsed || !aiHint) return;
     setUberReplayUsed(true);
     setUberAudioPlayed(false);
-    setUberAudioPlaying(true);
-    setUberAudioProgress(0);
-  }, [uberReplayUsed]);
+    playHintTTS(aiHint);
+  }, [uberReplayUsed, aiHint, playHintTTS]);
 
   const handleCloseUberChat = useCallback(() => {
     setShowUberChat(false);
