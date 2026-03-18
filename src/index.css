@@ -93,7 +93,8 @@
     --destructive-foreground: 0 0% 100%;
     --border: 218 40% 20%;
     --input: 218 40% 20%;
-    --ring: 221 87% 60%;
+    --success: 160 84% 44%;
+    --success-foreground: 0 0% 100%;
   }
 }
 

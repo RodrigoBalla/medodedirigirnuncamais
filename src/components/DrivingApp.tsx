@@ -409,7 +409,7 @@ const DrivingApp = () => {
                         initial={justCompleted || justUnlocked ? { backgroundColor: "hsl(var(--border))" } : undefined}
                         animate={{
                           backgroundColor: completedPhases.includes(i - 1)
-                            ? "hsl(var(--primary))"
+                            ? "hsl(var(--success))"
                             : "hsl(var(--border))"
                         }}
                         transition={justCompleted ? { delay: 0.3, duration: 0.6 } : { duration: 0 }}
