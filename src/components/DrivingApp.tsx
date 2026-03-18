@@ -584,6 +584,8 @@ const DrivingApp = () => {
   }
 
   function renderTreinos() {
+    const nextPhaseIdx = completedPhases.length;
+
     return (
       <div className="max-w-3xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold tracking-tight mb-2">Trilha de Aprendizado</h1>
@@ -593,41 +595,114 @@ const DrivingApp = () => {
         <div className="flex flex-col items-center gap-6 max-w-xs mx-auto mb-8">
           {PHASES.map((p, i) => {
             const done = completedPhases.includes(i);
-            const isCurrent = i === completedPhases.length;
-            const locked = i > completedPhases.length;
+            const isCurrent = i === nextPhaseIdx;
+            const locked = i > nextPhaseIdx;
             const offset = i % 2 === 0 ? "" : "ml-20";
+            const justCompleted = unlockedPhase === i;
+            const justUnlocked = unlockedPhase !== null && i === unlockedPhase + 1 && !done;
 
             return (
               <div key={p.id} className={`relative flex flex-col items-center ${offset}`}>
-                <button
+                <motion.button
                   onClick={() => !locked && startLesson(i)}
-                  disabled={locked}
+                  disabled={locked && !justUnlocked}
+                  initial={
+                    justCompleted
+                      ? { scale: 1 }
+                      : justUnlocked
+                      ? { scale: 0.6, opacity: 0 }
+                      : undefined
+                  }
+                  animate={
+                    justCompleted
+                      ? {
+                          scale: [1, 1.3, 1],
+                          boxShadow: [
+                            "0 0 0 0 hsl(var(--primary) / 0)",
+                            "0 0 0 20px hsl(var(--primary) / 0.4)",
+                            "0 0 0 0 hsl(var(--primary) / 0)",
+                          ],
+                        }
+                      : justUnlocked
+                      ? { scale: [0.6, 1.2, 1], opacity: [0, 1, 1] }
+                      : undefined
+                  }
+                  transition={
+                    justCompleted
+                      ? { duration: 1.2, delay: 0.3, ease: "easeOut" }
+                      : justUnlocked
+                      ? { duration: 0.8, delay: 1.4, ease: "easeOut" }
+                      : undefined
+                  }
                   className={`relative z-10 size-20 rounded-full flex items-center justify-center border-4 transition-all ${
-                    locked
+                    locked && !justUnlocked
                       ? "bg-muted border-border/50 opacity-60 cursor-not-allowed"
-                      : done
-                      ? "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--blue-800))] hover:translate-y-0.5 hover:shadow-[0_3px_0_0_hsl(var(--blue-800))]"
-                      : "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--blue-800))] hover:translate-y-0.5 hover:shadow-[0_3px_0_0_hsl(var(--blue-800))]"
+                      : done || justCompleted
+                      ? "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--primary)/0.4)]"
+                      : "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--primary)/0.4)] hover:translate-y-0.5"
                   }`}
                 >
-                  {locked ? (
+                  {locked && !justUnlocked ? (
                     <span className="material-symbols-outlined text-3xl text-muted-foreground">lock</span>
-                  ) : done ? (
-                    <span className="material-symbols-outlined text-3xl text-primary-foreground filled-icon">check_circle</span>
+                  ) : done || justCompleted ? (
+                    <motion.span
+                      className="material-symbols-outlined text-3xl text-primary-foreground filled-icon"
+                      initial={justCompleted ? { rotate: 0, scale: 0 } : undefined}
+                      animate={justCompleted ? { rotate: [0, 360], scale: [0, 1.4, 1] } : undefined}
+                      transition={justCompleted ? { duration: 0.8, delay: 0.6 } : undefined}
+                    >
+                      check_circle
+                    </motion.span>
+                  ) : justUnlocked ? (
+                    <motion.span
+                      className="material-symbols-outlined text-3xl text-primary-foreground filled-icon"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: [0, 1.4, 1], rotate: [- 180, 0] }}
+                      transition={{ duration: 0.7, delay: 1.7 }}
+                    >
+                      directions_car
+                    </motion.span>
                   ) : (
                     <span className="text-3xl">{p.icon}</span>
                   )}
-                  {isCurrent && (
+                  {isCurrent && !justUnlocked && (
                     <div className="absolute -top-10 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-lg animate-bounce shadow-lg">
                       COMEÇAR
                     </div>
                   )}
-                </button>
-                <div className="mt-3 bg-card px-3 py-1.5 rounded-xl shadow-sm border border-border">
-                  <span className={`text-sm font-bold ${locked ? "text-muted-foreground" : ""}`}>{p.title.replace(/Fase \d+ — /, "")}</span>
-                </div>
+                  {justUnlocked && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 2.2, duration: 0.5, type: "spring" }}
+                      className="absolute -top-12 bg-accent text-accent-foreground text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg"
+                    >
+                      🔓 DESBLOQUEADA!
+                    </motion.div>
+                  )}
+                </motion.button>
+                <motion.div
+                  className="mt-3 bg-card px-3 py-1.5 rounded-xl shadow-sm border border-border"
+                  initial={justUnlocked ? { opacity: 0, y: 10 } : undefined}
+                  animate={justUnlocked ? { opacity: 1, y: 0 } : undefined}
+                  transition={justUnlocked ? { delay: 1.8, duration: 0.4 } : undefined}
+                >
+                  <span className={`text-sm font-bold ${locked && !justUnlocked ? "text-muted-foreground" : "text-foreground"}`}>{p.title.replace(/Fase \d+ — /, "")}</span>
+                </motion.div>
                 {i < PHASES.length - 1 && (
-                  <div className={`absolute top-20 h-10 w-0.5 ${done ? "bg-primary" : "bg-border"}`} style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 8px)` }} />
+                  <motion.div
+                    className="absolute top-20 h-10 w-0.5"
+                    initial={justCompleted || justUnlocked ? { backgroundColor: "hsl(var(--border))" } : undefined}
+                    animate={{
+                      backgroundColor: done || justCompleted
+                        ? "hsl(var(--primary))"
+                        : "hsl(var(--border))"
+                    }}
+                    transition={justCompleted ? { delay: 0.4, duration: 0.6 } : { duration: 0 }}
+                    style={!(justCompleted || justUnlocked) ? {
+                      backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 8px)`
+                    } : undefined}
+                  />
                 )}
               </div>
             );
