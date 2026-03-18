@@ -126,6 +126,7 @@ export default function Admin() {
 
   const TABS: { key: AdminTab; icon: string; label: string }[] = [
     { key: "dashboard", icon: "dashboard", label: "Dashboard" },
+    { key: "analytics", icon: "monitoring", label: "Analytics" },
     { key: "students", icon: "group", label: "Alunos" },
     { key: "modules", icon: "school", label: "Módulos" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
