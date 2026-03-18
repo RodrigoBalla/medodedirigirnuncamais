@@ -1341,7 +1341,11 @@ export function LessonScreen({
                 <motion.button
                   whileHover={allDone ? { scale: 1.02 } : {}}
                   whileTap={allDone ? { scale: 0.97 } : {}}
-                  onClick={() => setShowCompletion(true)}
+                  onClick={() => {
+                    setShowCompletion(true);
+                    setPopupMinimized(false);
+                    playCelebrationSound();
+                  }}
                   disabled={!allDone}
                   className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
                 >
