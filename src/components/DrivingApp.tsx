@@ -100,6 +100,21 @@ const DrivingApp = () => {
     }
   }, [location.pathname]);
 
+  // Detect unlock animation trigger from completion screen
+  useEffect(() => {
+    const unlocked = searchParams.get("unlocked");
+    if (unlocked !== null) {
+      const idx = parseInt(unlocked, 10);
+      // Small delay so the dashboard renders first, then animate
+      setTimeout(() => setUnlockedPhase(idx), 400);
+      // Clean up the URL param
+      searchParams.delete("unlocked");
+      setSearchParams(searchParams, { replace: true });
+      // Clear animation after it plays
+      setTimeout(() => setUnlockedPhase(null), 3500);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!user) return;
     const loadProgress = async () => {
