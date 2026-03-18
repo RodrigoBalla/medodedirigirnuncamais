@@ -6,8 +6,9 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PHASES } from "@/data/driving-data";
 import { toast } from "sonner";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
-type AdminTab = "dashboard" | "students" | "modules" | "reports";
+type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics";
 
 interface StudentData {
   user_id: string;
