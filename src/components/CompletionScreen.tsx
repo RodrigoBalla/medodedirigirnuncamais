@@ -217,7 +217,7 @@ export function CompletionScreen() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/")}
+              onClick={() => navigate(`/?unlocked=${phaseIndex}`)}
               className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
             >
               Continuar →
@@ -225,7 +225,7 @@ export function CompletionScreen() {
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/")}
+              onClick={() => navigate(`/?unlocked=${phaseIndex}`)}
               className="w-full bg-card text-foreground border-2 border-border font-bold py-3.5 rounded-2xl hover:bg-muted transition-colors text-sm"
             >
               Voltar ao Dashboard 🏠
