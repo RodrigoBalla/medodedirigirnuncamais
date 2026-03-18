@@ -69,3 +69,51 @@ export function playConquestSound() {
     createTone(ctx, "sine", 2093, 0.58, 0.5, 0.06);
   } catch {}
 }
+
+export function playCelebrationSound() {
+  try {
+    const ctx = new AudioContext();
+    // Firework rising whistle
+    const whistle = ctx.createOscillator();
+    const whistleGain = ctx.createGain();
+    whistle.connect(whistleGain);
+    whistleGain.connect(ctx.destination);
+    whistle.type = "sine";
+    whistle.frequency.setValueAtTime(400, ctx.currentTime);
+    whistle.frequency.exponentialRampToValueAtTime(2500, ctx.currentTime + 0.4);
+    whistleGain.gain.setValueAtTime(0.12, ctx.currentTime);
+    whistleGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
+    whistle.start(ctx.currentTime);
+    whistle.stop(ctx.currentTime + 0.5);
+
+    // Firework burst - noise simulation with multiple tones
+    const burstFreqs = [1200, 1800, 2400, 3000, 800, 1500];
+    burstFreqs.forEach((freq, i) => {
+      createTone(ctx, "sine", freq, 0.4 + i * 0.03, 0.3, 0.08);
+      createTone(ctx, "triangle", freq * 0.5, 0.42 + i * 0.04, 0.25, 0.05);
+    });
+
+    // Fanfare melody
+    const fanfare = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.5];
+    fanfare.forEach((freq, i) => {
+      createTone(ctx, "sine", freq, 0.7 + i * 0.12, 0.25, 0.15);
+      createTone(ctx, "triangle", freq, 0.72 + i * 0.12, 0.2, 0.06);
+    });
+
+    // Sustained chord (crowd feel)
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq) => {
+      createTone(ctx, "sine", freq, 1.5, 1.5, 0.08);
+      createTone(ctx, "triangle", freq * 2, 1.6, 1.2, 0.03);
+    });
+
+    // Second burst
+    [1600, 2200, 2800, 1000].forEach((freq, i) => {
+      createTone(ctx, "sine", freq, 2.0 + i * 0.04, 0.35, 0.06);
+    });
+
+    // Final triumphant chord
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq) => {
+      createTone(ctx, "sine", freq, 2.5, 1.8, 0.10);
+    });
+  } catch {}
+}
