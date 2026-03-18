@@ -844,7 +844,9 @@ export function LessonScreen({
                           className="self-start max-w-[85%]"
                         >
                           <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
-                            <p className="text-[13px] text-gray-800">Fala meu aluno! 🚗 Vou te dar uma dica...</p>
+                            <p className="text-[13px] text-gray-800">
+                              {aiHintLoading ? "Fala meu aluno! 🚗 Deixa eu pensar aqui..." : "Fala meu aluno! 🚗 Vou te dar uma dica..."}
+                            </p>
                             <p className="text-[10px] text-gray-500 text-right mt-1">agora</p>
                           </div>
                         </motion.div>
