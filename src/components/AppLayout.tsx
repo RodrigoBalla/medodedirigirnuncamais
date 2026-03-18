@@ -51,6 +51,8 @@ export function AppLayout({
 }: AppLayoutProps) {
   const { signOut } = useAuth();
   const { toggleTheme, isDark } = useTheme();
+  const { isAdmin } = useAdmin();
+  const nav = useNavigate();
   const { level, title, current, next } = getLevel(totalXP);
 
   return (
