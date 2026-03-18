@@ -174,6 +174,7 @@ export function LessonScreen({
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
   const [showCompletion, setShowCompletion] = useState(false);
+  const [popupMinimized, setPopupMinimized] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Quiz confirmation popup states
