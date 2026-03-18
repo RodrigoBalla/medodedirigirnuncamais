@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAdmin } from "@/hooks/useAdmin";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "perfil";
 
@@ -49,6 +51,8 @@ export function AppLayout({
 }: AppLayoutProps) {
   const { signOut } = useAuth();
   const { toggleTheme, isDark } = useTheme();
+  const { isAdmin } = useAdmin();
+  const nav = useNavigate();
   const { level, title, current, next } = getLevel(totalXP);
 
   return (
@@ -77,6 +81,16 @@ export function AppLayout({
             <span className="material-symbols-outlined text-primary text-base filled-icon">database</span>
             <span className="text-xs font-bold text-foreground">{totalXP}</span>
           </div>
+          {/* Admin button - only visible for admins */}
+          {isAdmin && (
+            <button
+              onClick={() => nav("/admin")}
+              className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Painel Admin"
+            >
+              <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+            </button>
+          )}
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
