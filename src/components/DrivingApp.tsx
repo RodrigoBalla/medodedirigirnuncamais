@@ -451,9 +451,14 @@ const DrivingApp = () => {
                           locked && !justUnlocked
                             ? "bg-muted border-border opacity-50 cursor-not-allowed"
                             : done || justCompleted
-                            ? "bg-primary border-primary/30 shadow-lg shadow-primary/20"
+                            ? "border-[hsl(var(--success)/0.3)] shadow-lg"
                             : "bg-primary border-primary/30 shadow-lg shadow-primary/20 hover:scale-105"
                         }`}
+                        style={
+                          done || justCompleted
+                            ? { backgroundColor: "hsl(var(--success))", boxShadow: "0 10px 15px -3px hsl(var(--success) / 0.2)" }
+                            : undefined
+                        }
                       >
                         {locked && !justUnlocked ? (
                           <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>

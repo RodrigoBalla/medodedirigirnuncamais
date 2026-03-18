@@ -64,6 +64,9 @@
     --yellow: 38 92% 50%;
     --red: 0 84% 60%;
 
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
     --shadow-blue: 0 4px 24px rgba(19,91,236,0.1);
     --shadow-blue-lg: 0 8px 40px rgba(19,91,236,0.15);
 
