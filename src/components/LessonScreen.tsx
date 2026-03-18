@@ -32,20 +32,64 @@ function getFallbackHint(phaseIndex: number, quizIdx: number): string {
 }
 
 // Speak text using browser SpeechSynthesis in pt-BR
+// Mobile fix: voices load async, so we wait for them if needed
 function speakText(text: string, onEnd?: () => void): SpeechSynthesisUtterance | null {
-  if (!window.speechSynthesis) return null;
+  if (!window.speechSynthesis) {
+    onEnd?.();
+    return null;
+  }
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "pt-BR";
-  utterance.rate = 1.05;
-  utterance.pitch = 1.1;
-  // Try to find a pt-BR voice
+
+  const doSpeak = () => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "pt-BR";
+    utterance.rate = 1.05;
+    utterance.pitch = 1.1;
+    const voices = window.speechSynthesis.getVoices();
+    const ptVoice = voices.find(v => v.lang.startsWith("pt")) || null;
+    if (ptVoice) utterance.voice = ptVoice;
+    if (onEnd) {
+      utterance.onend = onEnd;
+      utterance.onerror = () => onEnd();
+    }
+    // iOS fix: resume speechSynthesis in case it's paused
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utterance);
+    
+    // iOS workaround: keep synthesis alive with periodic resume
+    const keepAlive = setInterval(() => {
+      if (!window.speechSynthesis.speaking) {
+        clearInterval(keepAlive);
+        return;
+      }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 5000);
+    
+    utterance.onend = () => {
+      clearInterval(keepAlive);
+      onEnd?.();
+    };
+    utterance.onerror = () => {
+      clearInterval(keepAlive);
+      onEnd?.();
+    };
+    return utterance;
+  };
+
   const voices = window.speechSynthesis.getVoices();
-  const ptVoice = voices.find(v => v.lang.startsWith("pt")) || null;
-  if (ptVoice) utterance.voice = ptVoice;
-  if (onEnd) utterance.onend = onEnd;
-  window.speechSynthesis.speak(utterance);
-  return utterance;
+  if (voices.length > 0) {
+    return doSpeak();
+  }
+  // Wait for voices to load (mobile browsers)
+  window.speechSynthesis.onvoiceschanged = () => {
+    doSpeak();
+  };
+  // Fallback: try anyway after 500ms
+  setTimeout(() => {
+    doSpeak();
+  }, 500);
+  return null;
 }
 
 // 24h cooldown key
