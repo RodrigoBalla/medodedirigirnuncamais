@@ -6,8 +6,9 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useTheme } from "@/contexts/ThemeContext";
 import { PHASES } from "@/data/driving-data";
 import { toast } from "sonner";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
-type AdminTab = "dashboard" | "students" | "modules" | "reports";
+type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics";
 
 interface StudentData {
   user_id: string;
@@ -125,6 +126,7 @@ export default function Admin() {
 
   const TABS: { key: AdminTab; icon: string; label: string }[] = [
     { key: "dashboard", icon: "dashboard", label: "Dashboard" },
+    { key: "analytics", icon: "monitoring", label: "Analytics" },
     { key: "students", icon: "group", label: "Alunos" },
     { key: "modules", icon: "school", label: "Módulos" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
@@ -456,6 +458,8 @@ export default function Admin() {
               </div>
             </div>
           )}
+
+          {tab === "analytics" && <AnalyticsTab />}
 
           {tab === "reports" && (
             <div className="space-y-6">
