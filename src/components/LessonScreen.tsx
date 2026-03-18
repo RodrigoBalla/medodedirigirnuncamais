@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { STEPS, CHECKLIST_TASKS } from "@/data/driving-data";
 import type { Phase } from "@/data/driving-data";
@@ -6,7 +7,6 @@ import { GifIllustration } from "@/components/GifIllustration";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { playCelebrationSound, playHornSound } from "@/lib/sounds";
 
 // Fallback hints if AI fails
 const UBER_HINTS_FALLBACK: Record<string, string[]> = {
@@ -170,11 +170,10 @@ export function LessonScreen({
   toggleTask,
   onCompletePhase,
 }: LessonScreenProps) {
+  const navigate = useNavigate();
   const tasks = CHECKLIST_TASKS[currentPhase];
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
-  const [showCompletion, setShowCompletion] = useState(false);
-  const [popupMinimized, setPopupMinimized] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Quiz confirmation popup states
@@ -1342,10 +1341,7 @@ export function LessonScreen({
                   whileHover={allDone ? { scale: 1.02 } : {}}
                   whileTap={allDone ? { scale: 0.97 } : {}}
                   onClick={() => {
-                    setShowCompletion(true);
-                    setPopupMinimized(false);
-                    playCelebrationSound();
-                    setTimeout(() => playHornSound(), 600);
+                    navigate(`/conclusao?xp=${phase.xp}&phase=${currentPhase}&name=${encodeURIComponent(phase.title)}`);
                   }}
                   disabled={!allDone}
                   className={`w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl transition-colors shadow-lg shadow-primary/25 text-base ${!allDone ? "opacity-40 cursor-not-allowed" : "hover:bg-primary/90"}`}
@@ -1409,276 +1405,6 @@ export function LessonScreen({
           </div>
         )}
 
-        {/* COMPLETION SCREEN - Full new page view */}
-        {showCompletion && (
-          <>
-            {/* Full-screen celebration popup overlay */}
-            <AnimatePresence>
-              {!popupMinimized && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, scale: 0.8, y: -100 }}
-                  transition={{ duration: 0.5 }}
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-                  onAnimationComplete={(def: any) => {
-                    if (def?.opacity === 1) {
-                      setTimeout(() => setPopupMinimized(true), 5000);
-                    }
-                  }}
-                >
-                  {/* Confetti layer */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {Array.from({ length: 50 }).map((_, i) => (
-                      <motion.div
-                        key={`confetti-${i}`}
-                        initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 1, rotate: 0 }}
-                        animate={{
-                          y: "100vh",
-                          rotate: Math.random() * 720 - 360,
-                          opacity: [1, 1, 1, 0],
-                        }}
-                        transition={{
-                          duration: 3 + Math.random() * 3,
-                          delay: Math.random() * 2,
-                          ease: "easeIn",
-                          repeat: 1,
-                          repeatDelay: Math.random() * 2,
-                        }}
-                        style={{
-                          position: "absolute",
-                          width: Math.random() > 0.5 ? 12 : 8,
-                          height: Math.random() > 0.5 ? 12 : 8,
-                          borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-                          background: confettiColors[i % confettiColors.length],
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Floating clapping emojis */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {["👏", "👏🏻", "👏🏽", "👏🏿", "🎉", "🥳", "👏", "🎊", "👏🏼", "👏🏾"].map((emoji, i) => (
-                      <motion.span
-                        key={`clap-${i}`}
-                        initial={{
-                          opacity: 0,
-                          scale: 0,
-                          x: `${15 + Math.random() * 70}%`,
-                          y: `${20 + Math.random() * 60}%`,
-                        }}
-                        animate={{
-                          opacity: [0, 1, 1, 0],
-                          scale: [0, 1.2, 1, 0.8],
-                          y: `${Math.random() * 30}%`,
-                        }}
-                        transition={{
-                          duration: 2.5,
-                          delay: 0.3 + i * 0.25,
-                          ease: "easeOut",
-                          repeat: 1,
-                          repeatDelay: 1 + Math.random(),
-                        }}
-                        className="absolute text-4xl md:text-5xl"
-                      >
-                        {emoji}
-                      </motion.span>
-                    ))}
-                  </div>
-
-                  {/* Main celebration card */}
-                  <motion.div
-                    initial={{ scale: 0.5, opacity: 0, y: 40 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-                    className="relative z-10 bg-gradient-to-br from-primary via-primary/90 to-primary/70 rounded-3xl p-8 md:p-12 text-center text-primary-foreground shadow-2xl max-w-md mx-4"
-                  >
-                    <motion.div
-                      initial={{ scale: 0, rotate: -30 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: "spring", stiffness: 250, damping: 12, delay: 0.4 }}
-                      className="text-7xl md:text-8xl mb-4"
-                    >
-                      🏆
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.6 }}
-                      className="flex justify-center gap-3 mb-4"
-                    >
-                      {[0, 1, 2].map(i => (
-                        <motion.span
-                          key={i}
-                          initial={{ opacity: 0, y: -30, rotate: -180 }}
-                          animate={{ opacity: 1, y: 0, rotate: 0 }}
-                          transition={{ delay: 0.7 + i * 0.15, type: "spring", stiffness: 300 }}
-                          className="text-4xl md:text-5xl"
-                        >⭐</motion.span>
-                      ))}
-                    </motion.div>
-
-                    <motion.h2
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 1 }}
-                      className="text-3xl md:text-4xl font-extrabold mb-2"
-                    >
-                      Parabéns! 🎉
-                    </motion.h2>
-
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.1 }}
-                      className="text-lg font-bold opacity-90 mb-2"
-                    >
-                      Fase Concluída!
-                    </motion.p>
-
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.2 }}
-                      className="text-sm opacity-80 mb-6"
-                    >
-                      {phase.conquest}
-                    </motion.p>
-
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.3, type: "spring" }}
-                      className="bg-primary-foreground/15 rounded-2xl py-4 px-6 mb-6 inline-flex items-center gap-2"
-                    >
-                      <span className="text-2xl">⚡</span>
-                      <span className="text-2xl font-extrabold">+{phase.xp} XP ganhos!</span>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.5 }}
-                      className="flex justify-center gap-1 mb-6"
-                    >
-                      {["👏", "👏", "👏", "👏", "👏"].map((e, i) => (
-                        <motion.span
-                          key={i}
-                          animate={{ scale: [1, 1.3, 1], rotate: [0, -10, 10, 0] }}
-                          transition={{
-                            duration: 0.6,
-                            delay: i * 0.1,
-                            repeat: Infinity,
-                            repeatDelay: 1.5,
-                          }}
-                          className="text-3xl"
-                        >
-                          {e}
-                        </motion.span>
-                      ))}
-                    </motion.div>
-
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 0.7, 0.4, 0.7] }}
-                      transition={{ delay: 2, duration: 2, repeat: Infinity }}
-                      className="text-xs opacity-60"
-                    >
-                      O vídeo aparecerá em instantes...
-                    </motion.p>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* After popup minimizes: full new page with video + buttons */}
-            {popupMinimized && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-                className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto w-full"
-              >
-                {/* Mini celebration badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-6 py-3 mb-6 flex items-center gap-3 text-primary-foreground"
-                >
-                  <span className="text-2xl">🏆</span>
-                  <div>
-                    <p className="font-extrabold text-sm">Fase Concluída!</p>
-                    <p className="text-xs opacity-80">+{phase.xp} XP ganhos ⚡</p>
-                  </div>
-                </motion.div>
-
-                {/* Video area — centered and prominent */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                  className="bg-card rounded-2xl border border-border overflow-hidden w-full max-w-sm mb-6"
-                >
-                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 aspect-[9/16] flex items-center justify-center relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="size-16 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-primary text-3xl filled-icon">play_arrow</span>
-                      </motion.div>
-                    </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg">
-                        Mensagem da Mentora
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground font-medium">0:00 / 2:00</span>
-                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary rounded-full" style={{ width: "0%" }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 border-t border-border">
-                    <p className="text-sm font-bold text-foreground mb-1">Mensagem da mentora Karla</p>
-                    <p className="text-xs text-muted-foreground">Ela tem uma mensagem especial para você!</p>
-                  </div>
-                </motion.div>
-
-                {/* Action buttons */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="w-full max-w-sm flex flex-col gap-3"
-                >
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={onCompletePhase}
-                    className="w-full bg-primary text-primary-foreground font-extrabold py-4 rounded-2xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-base"
-                  >
-                    Continuar →
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={onBack}
-                    className="w-full bg-card text-foreground border-2 border-border font-bold py-3.5 rounded-2xl hover:bg-muted transition-colors text-sm"
-                  >
-                    Voltar ao Dashboard 🏠
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </>
-        )}
       </div>
 
       {/* Footer */}
