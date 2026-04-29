@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Player from "@vimeo/player";
+import { useTheme } from "@/contexts/ThemeContext";
 import "@/styles/welcome-screen.css";
 
 interface WelcomeScreenProps {
@@ -21,6 +22,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
   const [speed, setSpeed] = useState(1);
   const [showOverlay, setShowOverlay] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const isFirstView = videoViews === 0;
 
   const handleComplete = useCallback(() => {
@@ -179,6 +181,9 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
           <span className="font-bold text-foreground text-sm">Medo de Dirigir Nunca Mais</span>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={toggleTheme} className="w-9 h-9 rounded-full flex items-center justify-center border border-border bg-card text-muted-foreground hover:bg-accent transition-colors">
+            <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
+          </button>
           <button className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-accent transition-colors">
             <span className="material-symbols-outlined text-muted-foreground text-xl">notifications</span>
           </button>

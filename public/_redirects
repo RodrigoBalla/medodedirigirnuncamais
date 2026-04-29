@@ -1,0 +1,4 @@
+# Single Page App fallback — sem isso, o Netlify retorna 404 quando o aluno
+# atualiza a página numa rota interna (ex: /biblioteca, /perfil) ou clica
+# no link de confirmação de email (/login?confirmed=true).
+/*    /index.html   200

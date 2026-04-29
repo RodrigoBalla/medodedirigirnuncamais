@@ -24,21 +24,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
+    // Check is_blocked DEFERRED (setTimeout 0) to avoid Supabase auth lock deadlock
+    // See: https://supabase.com/docs/reference/javascript/auth-onauthstatechange (warning section)
+    const checkBlockedDeferred = (currentSession: Session | null) => {
+      if (!currentSession?.user) return;
+      setTimeout(async () => {
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('is_blocked')
+            .eq('user_id', currentSession.user.id)
+            .maybeSingle();
+          if (data?.is_blocked && mounted) {
+            await supabase.auth.signOut();
+            window.location.href = "/login?blocked=true";
+          }
+        } catch (e) {
+          console.warn("checkBlocked error (non-fatal):", e);
+        }
+      }, 0);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+      (_event, currentSession) => {
+        if (mounted) {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setLoading(false);
+        }
+        checkBlockedDeferred(currentSession);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (mounted) {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      }
+      checkBlockedDeferred(currentSession);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

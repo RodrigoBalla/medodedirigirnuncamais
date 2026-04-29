@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { PHASES, FUTURE_PHASES, ACHIEVEMENTS, CHECKLIST_TASKS, STEPS } from "@/data/driving-data";
-import { GifIllustration } from "@/components/GifIllustration";
+import { PHASES, FUTURE_PHASES, ACHIEVEMENTS, CHECKLIST_TASKS } from "@/data/driving-data";
 import { ConquestScreen } from "@/components/ConquestScreen";
 import {
   playCorrectSound,
@@ -10,6 +10,7 @@ import {
   playCheckSound,
   playAllDoneSound,
   playConquestSound,
+  playHornSound,
 } from "@/lib/sounds";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,21 +21,65 @@ import { LessonScreen } from "@/components/LessonScreen";
 import { RankingScreen } from "@/components/RankingScreen";
 import { CommunityScreen } from "@/components/CommunityScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
+import { LibraryScreen } from "@/components/lms/LibraryScreen";
+import { CoursePlayerScreen } from "@/components/lms/CoursePlayerScreen";
+import { useUserProgress } from "@/contexts/UserProgressContext";
+import { LevelUpOverlay } from "@/components/lms/LevelUpOverlay";
+import { DrivingMap } from "@/components/lms/DrivingMap";
+import { DailyBonusGrid } from "@/components/lms/DailyBonusGrid";
+import { DailyMissions } from "@/components/lms/DailyMissions";
+import { OnboardingGuide } from "@/components/lms/OnboardingGuide";
 
-type Screen = "welcome" | "welcome-back" | "app";
-type LessonScreen = "none" | "lesson" | "conquest";
+type Screen = "welcome" | "welcome-back" | "app" | "course-player";
+type LessonScreenState = "none" | "lesson" | "conquest";
 
 const DrivingApp = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { 
+    lives, 
+    coins, 
+    totalXP, 
+    completedPhases, 
+    confidence, 
+    addXP, 
+    addCoins,
+    updateConfidence, 
+    completePhase: markPhaseComplete,
+    streak,
+    level: globalLevel,
+    dailyXP,
+    dailyLessons,
+    addBadge,
+    badges,
+    spendCoins
+  } = useUserProgress();
+  
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [lastLevel, setLastLevel] = useState<number | null>(null);
+
+  // Level Up Detection
+  useEffect(() => {
+    if (lastLevel === null) {
+      setLastLevel(globalLevel);
+      return;
+    }
+    if (globalLevel > lastLevel) {
+      setShowLevelUp(true);
+      setLastLevel(globalLevel);
+      if (globalLevel >= 2) addBadge("primeiros_km");
+    }
+  }, [globalLevel, lastLevel, addBadge]);
+  
   const navigate = useNavigate();
   const location = useLocation();
   const [screen, setScreen] = useState<Screen>("app");
-  const [lessonScreen, setLessonScreen] = useState<LessonScreen>("none");
+  const [lessonScreen, setLessonScreen] = useState<LessonScreenState>("none");
   const [activeTab, setActiveTab] = useState<AppTab>(() => {
     const path = window.location.pathname;
     if (path.startsWith("/treinos")) return "treinos";
     if (path.startsWith("/ranking")) return "ranking";
     if (path.startsWith("/comunidade")) return "comunidade";
+    if (path.startsWith("/biblioteca")) return "biblioteca";
     if (path.startsWith("/perfil")) return "perfil";
     return "home";
   });
@@ -44,28 +89,66 @@ const DrivingApp = () => {
   const [quizIndex, setQuizIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
-  const [completedPhases, setCompletedPhases] = useState<number[]>([]);
-  const [totalXP, setTotalXP] = useState(120);
-  const [confidence, setConfidence] = useState(3);
   const [displayName, setDisplayName] = useState("");
   const [pressedPedal, setPressedPedal] = useState<string | null>(null);
   const [checkedTasks, setCheckedTasks] = useState<Record<string, boolean>>({});
   const [retryQueue, setRetryQueue] = useState<number[]>([]);
   const [isRetry, setIsRetry] = useState(false);
-  const [emotionHistory] = useState([
-    { conf: 2, tens: 4 }, { conf: 3, tens: 3 }, { conf: 3, tens: 2 }, { conf: 4, tens: 2 }, { conf: 4, tens: 1 }
-  ]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [unlockedPhase, setUnlockedPhase] = useState<number | null>(null);
+  const [mapChallenge, setMapChallenge] = useState<any>(null);
+  const [comboCount, setComboCount] = useState(0);
+  const [comboText, setComboText] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Sync URL → state on mount/navigation
+  // MVP: tutorial só dispara quando o aluno entra no módulo de Missões (aba Treinos)
+  // pela primeira vez, e nunca antes — em "Meus Cursos" ou outras abas, fica oculto.
+  useEffect(() => {
+    if (activeTab === "treinos" && lessonScreen === "none") {
+      const done = localStorage.getItem("onboarding_completed");
+      if (!done) {
+        // Small delay so the screen renders first
+        const timer = setTimeout(() => setShowOnboarding(true), 800);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      // Garante que sai de overlay se trocar de aba
+      setShowOnboarding(false);
+    }
+  }, [activeTab, lessonScreen]);
+
+  // Premium courses from Supabase
+  const [premiumCourses, setPremiumCourses] = useState<any[]>([]);
+  const [unlockedCourses, setUnlockedCourses] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("unlocked_courses") || "[]"); } catch { return []; }
+  });
+  const [purchaseModal, setPurchaseModal] = useState<{ id: string; title: string; price: number } | null>(null);
+
+  // Fetch premium courses
+  useEffect(() => {
+    async function fetchCourses() {
+      const { data } = await supabase
+        .from("products")
+        .select("id, title, description, image_url, status")
+        .eq("status", "published")
+        .order("created_at", { ascending: true });
+      setPremiumCourses(data || []);
+    }
+    fetchCourses();
+  }, []);
+
+  // Sync URL -> state on mount/navigation
   useEffect(() => {
     const path = location.pathname;
     const aulaMatch = path.match(/^\/aula\/(\d+)$/);
+    const cursoMatch = path.match(/^\/curso\/([a-zA-Z0-9-]+)$/);
+
     if (path === "/boas-vindas") {
       setScreen("welcome");
     } else if (path === "/bem-vindo") {
       setScreen("welcome-back");
+    } else if (cursoMatch) {
+      setScreen("course-player");
     } else if (aulaMatch) {
       setScreen("app");
       const idx = parseInt(aulaMatch[1], 10) - 1;
@@ -90,6 +173,9 @@ const DrivingApp = () => {
     } else if (path === "/comunidade") {
       setScreen("app");
       setActiveTab("comunidade");
+    } else if (path.startsWith("/biblioteca")) {
+      setScreen("app");
+      setActiveTab("biblioteca");
     } else if (path === "/perfil") {
       setScreen("app");
       setActiveTab("perfil");
@@ -105,35 +191,19 @@ const DrivingApp = () => {
     const unlocked = searchParams.get("unlocked");
     if (unlocked !== null) {
       const idx = parseInt(unlocked, 10);
-      // Mark the phase as completed if not already
-      setCompletedPhases(prev => {
-        if (!prev.includes(idx)) {
-          const updated = [...prev, idx];
-          // Persist to database
-          if (user) {
-            supabase
-              .from("user_progress")
-              .update({ completed_phases: updated, updated_at: new Date().toISOString() })
-              .eq("user_id", user.id)
-              .then(() => {});
-          }
-          return updated;
-        }
-        return prev;
-      });
-      // Small delay so the dashboard renders first, then animate
+      if (!completedPhases.includes(idx)) {
+        markPhaseComplete(idx);
+      }
       setTimeout(() => setUnlockedPhase(idx), 400);
-      // Clean up the URL param
       searchParams.delete("unlocked");
       setSearchParams(searchParams, { replace: true });
-      // Clear animation after it plays
       setTimeout(() => setUnlockedPhase(null), 3500);
     }
-  }, [searchParams]);
+  }, [searchParams, completedPhases]);
 
   useEffect(() => {
     if (!user) return;
-    const loadProgress = async () => {
+    const loadProfile = async () => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("display_name")
@@ -143,44 +213,35 @@ const DrivingApp = () => {
 
       const { data: progress } = await supabase
         .from("user_progress")
-        .select("completed_phases, total_xp, confidence, welcome_video_views")
+        .select("welcome_video_views")
         .eq("user_id", user.id)
         .single();
+      
       if (progress) {
-        setCompletedPhases(progress.completed_phases || []);
-        setTotalXP(progress.total_xp || 120);
-        setConfidence(progress.confidence || 3);
         const views = progress.welcome_video_views ?? 0;
         setWelcomeVideoViews(views);
-        if (views === 0 && location.pathname === "/") {
-          navigate("/boas-vindas", { replace: true });
-        } else if (views > 0 && location.pathname === "/") {
-          navigate("/bem-vindo", { replace: true });
-        }
       } else {
         setWelcomeVideoViews(0);
-        if (location.pathname === "/") {
-          navigate("/boas-vindas", { replace: true });
-        }
+      }
+      // MVP: ao entrar na área de membros, sempre cair em "Meus Cursos".
+      // Vídeo de boas-vindas e tela "bem-vindo de volta" continuam acessíveis,
+      // mas não são mais redirecionamentos automáticos.
+      if (location.pathname === "/") {
+        navigate("/biblioteca", { replace: true });
       }
     };
-    loadProgress();
-  }, [user]);
-
-  const saveProgress = useCallback(async (phases: number[], xp: number, conf: number) => {
-    if (!user) return;
-    await supabase
-      .from("user_progress")
-      .update({ completed_phases: phases, total_xp: xp, confidence: conf })
-      .eq("user_id", user.id);
+    loadProfile();
   }, [user]);
 
   const phase = PHASES[currentPhase];
   const quizTotal = phase ? phase.quizzes.length : 0;
-  const overallProgress = Math.round((completedPhases.length / PHASES.length) * 100);
 
   function startLesson(idx: number) {
     if (idx > completedPhases.length) return;
+    if (lives <= 0) {
+      toast.error("Você está sem vidas! ❤️", { description: "Espere regenerar ou compre na loja." });
+      return;
+    }
     navigate(`/aula/${idx + 1}`);
   }
 
@@ -201,7 +262,7 @@ const DrivingApp = () => {
     setSelected(i);
     setAnswered(true);
     if (i === phase.quizzes[quizIndex].correct) {
-      if (!isRetry) setTotalXP(x => x + 10);
+      if (!isRetry) addXP(10);
       playCorrectSound();
     } else {
       playWrongSound();
@@ -244,8 +305,7 @@ const DrivingApp = () => {
           setLessonStep(2);
         }
       } else {
-        const remaining = retryQueue.filter(idx => idx !== quizIndex);
-        const reQueued = [...remaining, quizIndex];
+        const reQueued = [...retryQueue.filter(idx => idx !== quizIndex), quizIndex];
         setRetryQueue(reQueued);
         setQuizIndex(reQueued[0]);
         setSelected(null);
@@ -256,20 +316,43 @@ const DrivingApp = () => {
 
   function completePhase() {
     if (!completedPhases.includes(currentPhase)) {
-      const newPhases = [...completedPhases, currentPhase];
-      const newXP = totalXP + phase.xp;
-      const newConf = 4;
-      setCompletedPhases(newPhases);
-      setTotalXP(newXP);
-      setConfidence(newConf);
+      markPhaseComplete(currentPhase);
+      addXP(phase.xp);
+      updateConfidence(4);
       playConquestSound();
-      saveProgress(newPhases, newXP, newConf);
     }
     setLessonScreen("conquest");
   }
 
+  function handleStartMapTraining(pin: any) {
+    // Generate theme-based questions for the location
+    const questions = pin.type === "parking" ? [
+      { q: "Qual a distância ideal do meio-fio na baliza?", options: ["10-30cm", "50-80cm", "1m"], correct: 0 },
+      { q: "Onde você deve olhar primeiro ao dar ré?", options: ["Retrovisor interno", "Janela lateral", "Todos os retrovisores"], correct: 2 }
+    ] : pin.type === "hills" ? [
+      { q: "Qual o pé que controla a 'altura' da embreagem?", options: ["Direito", "Esquerdo", "Ambos"], correct: 1 },
+      { q: "Sentiu o carro tremer na subida, o que fazer?", options: ["Soltar o freio", "Acelerar fundo", "Pisar na embreagem"], correct: 0 }
+    ] : [
+      { q: "Qual a preferência em um cruzamento sem sinalização?", options: ["Quem vem da direita", "Quem vem mais rápido", "Quem está na via maior"], correct: 0 }
+    ];
+
+    setMapChallenge({
+      ...pin,
+      quizzes: questions.map((q, i) => ({ ...q, id: `map-${pin.id}-${i}` }))
+    });
+  }
+
+  function handleMapChallengeComplete() {
+    addXP(mapChallenge.xp);
+    addCoins(15);
+    setMapChallenge(null);
+    toast.success("Treino Concluído! 🚗💨", {
+      description: `Você ganhou +${mapChallenge.xp} XP e +15 moedas!`
+    });
+  }
+
   function submitEmotion(_tensionVal: number, confVal: number) {
-    setConfidence(confVal || 4);
+    updateConfidence(confVal || 4);
   }
 
   async function handleWelcomeComplete() {
@@ -292,7 +375,6 @@ const DrivingApp = () => {
     return 100;
   }
 
-  // Loading
   if (welcomeVideoViews === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -305,41 +387,37 @@ const DrivingApp = () => {
   }
 
   if (screen === "welcome") {
-    return (
-      <WelcomeScreen
-        displayName={displayName}
-        videoViews={welcomeVideoViews}
-        onComplete={handleWelcomeComplete}
-      />
-    );
+    return <WelcomeScreen displayName={displayName} videoViews={welcomeVideoViews} onComplete={handleWelcomeComplete} />;
   }
 
   if (screen === "welcome-back") {
-    const progressPercent = Math.round((completedPhases.length / PHASES.length) * 100);
     return (
       <WelcomeBackScreen
         displayName={displayName}
         onWatchVideo={() => navigate("/boas-vindas", { replace: true })}
         onContinue={() => navigate("/", { replace: true })}
-        progressPercent={progressPercent}
+        progressPercent={Math.round((completedPhases.length / PHASES.length) * 100)}
       />
     );
   }
 
-  // Tab change handler
-  const TAB_ROUTES: Record<AppTab, string> = {
-    home: "/",
-    treinos: "/treinos",
-    ranking: "/ranking",
-    comunidade: "/comunidade",
-    perfil: "/perfil",
-  };
+  if (screen === "course-player") {
+    const cursoId = location.pathname.split("/")[2];
+    return <CoursePlayerScreen productId={cursoId} onBack={() => navigate("/biblioteca")} />;
+  }
 
   const handleTabChange = (tab: AppTab) => {
+    const TAB_ROUTES: Record<AppTab, string> = {
+      home: "/",
+      treinos: "/treinos",
+      ranking: "/ranking",
+      comunidade: "/comunidade",
+      biblioteca: "/biblioteca",
+      perfil: "/perfil",
+    };
     navigate(TAB_ROUTES[tab]);
   };
 
-  // Render tab content
   const renderContent = () => {
     if (lessonScreen === "conquest") {
       return (
@@ -358,230 +436,213 @@ const DrivingApp = () => {
     }
 
     switch (activeTab) {
-      case "home":
-        return renderDashboard();
-      case "treinos":
-        return renderTreinos();
-      case "ranking":
-        return <RankingScreen displayName={displayName} totalXP={totalXP} />;
-      case "comunidade":
-        return <CommunityScreen />;
-      case "perfil":
-        return <ProfileScreen displayName={displayName} totalXP={totalXP} confidence={confidence} completedPhases={completedPhases.length} totalPhases={PHASES.length} />;
-      default:
-        return renderDashboard();
+      case "ranking": return <RankingScreen displayName={displayName} totalXP={totalXP} />;
+      case "comunidade": return <CommunityScreen />;
+      case "biblioteca": return <LibraryScreen />;
+      case "perfil": return <ProfileScreen displayName={displayName} totalXP={totalXP} confidence={confidence} completedPhases={completedPhases.length} totalPhases={PHASES.length} />;
+      case "treinos": return renderTreinos();
+      default: return renderDashboard();
     }
+  };
+
+  const renderChallenge = () => {
+    if (mapChallenge) {
+      return (
+        <div className="fixed inset-0 z-[150] bg-background">
+          <div className="p-4 flex items-center justify-between border-b border-border">
+             <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary">location_on</span>
+                <h3 className="font-black uppercase italic">{mapChallenge.name}</h3>
+             </div>
+             <button onClick={() => setMapChallenge(null)} className="size-10 rounded-full bg-accent flex items-center justify-center">
+                <span className="material-symbols-outlined">close</span>
+             </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+              {comboText && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200]">
+                  <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-3 rounded-full shadow-2xl text-xl font-black uppercase italic tracking-wider animate-bounce">
+                    {comboText} x{comboCount}
+                  </div>
+                </div>
+              )}
+              {comboCount > 0 && (
+                <div className="text-center py-2 bg-gradient-to-r from-orange-500/5 to-red-500/5 border-b border-orange-500/10">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">
+                    🔥 Combo: {comboCount} {comboCount >= 3 ? "• Bônus de XP Ativo!" : ""}
+                  </p>
+                </div>
+              )}
+             <div className="max-w-xl mx-auto p-6 pt-12">
+                <div className="bg-primary/5 border border-primary/20 p-6 rounded-[32px] mb-8 text-center">
+                   <p className="text-xs font-black uppercase tracking-widest text-primary mb-2">Simulação Prática</p>
+                   <h2 className="text-xl font-bold italic leading-tight">Prepare-se para o desafio de {mapChallenge.name}!</h2>
+                </div>
+                
+                {/* Simple Challenge Logic using the existing InteractiveChallenge if possible, 
+                    but for brevity here we'll just show a special card OR reuse it */}
+                <div className="space-y-4">
+                   {mapChallenge.quizzes.map((quiz: any, idx: number) => (
+                      <div key={idx} className="p-6 bg-card border border-border rounded-3xl shadow-sm">
+                         <p className="font-bold text-lg mb-4">{quiz.q}</p>
+                         <div className="grid grid-cols-1 gap-2">
+                            {quiz.options.map((opt: string, i: number) => (
+                               <button 
+                                 key={i}
+                                 onClick={() => {
+                                    if (i === quiz.correct) {
+                                       const newCombo = comboCount + 1;
+                                       setComboCount(newCombo);
+                                       playCorrectSound();
+                                       
+                                       if (newCombo === 3) {
+                                          setComboText("FOGO! 🔥");
+                                          setTimeout(() => setComboText(""), 2000);
+                                          addXP(5);
+                                       } else if (newCombo === 5) {
+                                          setComboText("IMPARÁVEL! 🏎️");
+                                          setTimeout(() => setComboText(""), 2000);
+                                          addXP(15);
+                                       } else if (newCombo >= 7) {
+                                          setComboText("LENDÁRIO! 👑");
+                                          setTimeout(() => setComboText(""), 2000);
+                                          addXP(25);
+                                       }
+                                       
+                                       if (idx === mapChallenge.quizzes.length - 1) handleMapChallengeComplete();
+                                    } else {
+                                       setComboCount(0);
+                                       setComboText("");
+                                       playWrongSound();
+                                    }
+                                 }}
+                                 className="w-full p-4 rounded-2xl border border-border hover:border-primary hover:bg-primary/5 transition-all text-left font-medium"
+                               >
+                                  {opt}
+                               </button>
+                            ))}
+                         </div>
+                      </div>
+                   ))}
+                </div>
+             </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   function renderDashboard() {
     const nextPhaseIdx = completedPhases.length;
-    const DAILY_MISSIONS = [
-      { text: "Acerte 10 placas", progress: "4/10", done: false, icon: "calendar_today" },
-      { text: "Leia 1 artigo técnico", progress: "", done: true, icon: "check_circle" },
-    ];
 
     return (
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Module Header */}
+        {/* Daily Bonus Grid */}
+        <div id="onboarding-daily-bonus" className="mb-6">
+          <DailyBonusGrid 
+            currentStreak={streak} 
+            onClaimBonus={(day, reward) => {
+              if (reward.type === "coins") addCoins(reward.amount);
+              if (reward.type === "xp") addXP(reward.amount);
+            }}
+          />
+        </div>
+
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Módulo 1</p>
           <h1 className="text-2xl font-bold tracking-tight">Primeiros Quilômetros</h1>
-          <p className="text-muted-foreground text-sm mt-1">Domine os fundamentos do trânsito</p>
         </div>
-
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT: Learning Path */}
-          <div className="flex-1">
-            <div className="flex flex-col items-center gap-0 max-w-xs mx-auto">
-              {PHASES.map((p, i) => {
-                const done = completedPhases.includes(i);
-                const isCurrent = i === nextPhaseIdx;
-                const locked = i > nextPhaseIdx;
-                const isEven = i % 2 === 0;
-                const justCompleted = unlockedPhase === i;
-                const justUnlocked = unlockedPhase !== null && i === unlockedPhase + 1 && !done;
-
-                return (
-                  <div key={p.id} className="relative flex flex-col items-center w-full">
-                    {i > 0 && (
-                      <motion.div
-                        className="w-0.5 h-8"
-                        initial={justCompleted || justUnlocked ? { backgroundColor: "hsl(var(--border))" } : undefined}
-                        animate={{
-                          backgroundColor: completedPhases.includes(i - 1)
-                            ? "hsl(var(--success))"
-                            : "hsl(var(--border))"
-                        }}
-                        transition={justCompleted ? { delay: 0.3, duration: 0.6 } : { duration: 0 }}
-                      />
-                    )}
-                    <div className={`flex items-center gap-4 w-full ${isEven ? "flex-row" : "flex-row-reverse"}`}>
-                      <motion.button
-                        onClick={() => !locked && startLesson(i)}
-                        disabled={locked && !justUnlocked}
-                        initial={
-                          justCompleted
-                            ? { scale: 1 }
-                            : justUnlocked
-                            ? { scale: 0.8, opacity: 0.5 }
-                            : undefined
-                        }
-                        animate={
-                          justCompleted
-                            ? {
-                                scale: [1, 1.25, 1],
-                                boxShadow: [
-                                  "0 0 0 0 hsl(var(--primary) / 0)",
-                                  "0 0 0 16px hsl(var(--primary) / 0.3)",
-                                  "0 0 0 0 hsl(var(--primary) / 0)",
-                                ],
-                              }
-                            : justUnlocked
-                            ? { scale: [0.8, 1.15, 1], opacity: [0.5, 1, 1] }
-                            : undefined
-                        }
-                        transition={
-                          justCompleted
-                            ? { duration: 1.2, delay: 0.2, ease: "easeOut" }
-                            : justUnlocked
-                            ? { duration: 0.8, delay: 1.2, ease: "easeOut" }
-                            : undefined
-                        }
-                        className={`relative z-10 size-[72px] rounded-full flex items-center justify-center border-4 transition-colors shrink-0 ${
-                          locked && !justUnlocked
-                            ? "bg-muted border-border opacity-50 cursor-not-allowed"
-                            : done || justCompleted
-                            ? "border-[hsl(var(--success)/0.3)] shadow-lg"
-                            : "bg-primary border-primary/30 shadow-lg shadow-primary/20 hover:scale-105"
-                        }`}
-                        style={
-                          done || justCompleted
-                            ? { backgroundColor: "hsl(var(--success))", boxShadow: "0 10px 15px -3px hsl(var(--success) / 0.2)" }
-                            : undefined
-                        }
-                      >
-                        {locked && !justUnlocked ? (
-                          <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>
-                        ) : done || justCompleted ? (
-                          <motion.span
-                            className="material-symbols-outlined text-2xl text-primary-foreground filled-icon"
-                            initial={justCompleted ? { rotate: 0, scale: 0 } : undefined}
-                            animate={justCompleted ? { rotate: [0, 360], scale: [0, 1.3, 1] } : undefined}
-                            transition={justCompleted ? { duration: 0.8, delay: 0.5 } : undefined}
-                          >
-                            check_circle
-                          </motion.span>
-                        ) : justUnlocked ? (
-                          <motion.span
-                            className="material-symbols-outlined text-2xl text-primary-foreground filled-icon"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: [0, 1.3, 1] }}
-                            transition={{ duration: 0.6, delay: 1.5 }}
-                          >
-                            directions_car
-                          </motion.span>
-                        ) : (
-                          <span className="material-symbols-outlined text-2xl text-primary-foreground filled-icon">directions_car</span>
-                        )}
-                      </motion.button>
-                      <div className="flex-1">
-                        {(isCurrent || justUnlocked) && (
-                          <motion.span
-                            initial={justUnlocked ? { opacity: 0, scale: 0.5, y: -10 } : undefined}
-                            animate={justUnlocked ? { opacity: 1, scale: 1, y: 0 } : undefined}
-                            transition={justUnlocked ? { delay: 1.8, duration: 0.5, type: "spring" } : undefined}
-                            className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full mb-1.5 shadow-md shadow-primary/20"
-                          >
-                            <span className="material-symbols-outlined text-xs">play_arrow</span>
-                            {justUnlocked ? "DESBLOQUEADA!" : "COMEÇAR"}
-                          </motion.span>
-                        )}
-                        <p className={`text-sm font-bold ${locked && !justUnlocked ? "text-muted-foreground" : "text-foreground"}`}>
-                          {p.title.replace(/Fase \d+ — /, "")}
-                        </p>
-                        {(!locked || justUnlocked) && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{p.subtitle}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {FUTURE_PHASES.map((f, i) => (
-                <div key={`future-${i}`} className="relative flex flex-col items-center w-full">
-                  <div className="w-0.5 h-8 bg-border" />
-                  <div className={`flex items-center gap-4 w-full ${(PHASES.length + i) % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
-                    <div className="size-[72px] rounded-full bg-muted border-4 border-border opacity-40 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-2xl text-muted-foreground">lock</span>
-                    </div>
+          <div className="flex-1 flex flex-col items-center gap-0 max-w-xs mx-auto">
+            {PHASES.map((p, i) => {
+              const done = completedPhases.includes(i);
+              const locked = i > nextPhaseIdx;
+              const isEven = i % 2 === 0;
+              const justCompleted = unlockedPhase === i;
+              const justUnlocked = unlockedPhase !== null && i === unlockedPhase + 1 && !done;
+              return (
+                <div key={p.id} className="relative flex flex-col items-center w-full">
+                  {i > 0 && <div className={`w-0.5 h-8 ${completedPhases.includes(i - 1) ? "bg-success" : "bg-border"}`} />}
+                  <div className={`flex items-center gap-4 w-full ${isEven ? "flex-row" : "flex-row-reverse"}`}>
+                    <button
+                      id={i === 0 ? "onboarding-first-lesson" : undefined}
+                      onClick={() => !locked && startLesson(i)}
+                      className={`size-16 rounded-full flex items-center justify-center border-4 ${locked && !justUnlocked ? "bg-muted opacity-50" : done || justCompleted ? "bg-success text-white" : "bg-primary text-white"}`}
+                    >
+                      <span className="material-symbols-outlined">{locked && !justUnlocked ? "lock" : done || justCompleted ? "check" : "directions_car"}</span>
+                    </button>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-muted-foreground opacity-50">{f.title}</p>
-                      <p className="text-xs text-muted-foreground opacity-40">{f.desc}</p>
+                      <p className="text-sm font-bold">{p.title}</p>
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
 
-              <div className="flex flex-col items-center mt-2">
+            {/* Premium courses from admin */}
+            {premiumCourses.length > 0 && (
+              <>
                 <div className="w-0.5 h-8 bg-border" />
-                <div className="size-[72px] rounded-full bg-muted border-4 border-border opacity-30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-2xl text-muted-foreground">flag_circle</span>
+                <div className="w-full flex items-center gap-3 px-2 py-2">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-yellow-500/30" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-yellow-500 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs filled-icon">diamond</span>
+                    Conteúdo Premium
+                  </span>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-yellow-500/30" />
                 </div>
-                <p className="text-xs font-bold text-muted-foreground opacity-40 mt-2">Fim do Módulo</p>
-              </div>
-            </div>
-          </div>
+              </>
+            )}
 
-          {/* RIGHT: Sidebar content */}
-          <div className="lg:w-72 flex flex-col gap-4">
-            <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
-              <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-lg">target</span>
-                Missões Diárias
-              </h3>
-              <div className="flex flex-col gap-2.5">
-                {DAILY_MISSIONS.map((m, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className={`material-symbols-outlined text-lg ${m.done ? "text-primary filled-icon" : "text-muted-foreground"}`}>
-                      {m.done ? "check_circle" : m.icon}
-                    </span>
+            {premiumCourses.map((course, i) => {
+              const isUnlocked = unlockedCourses.includes(course.id);
+              const price = 100 + (i * 50); // Escalating prices
+              const isEven = (PHASES.length + i) % 2 === 0;
+              return (
+                <div key={course.id} className="relative flex flex-col items-center w-full">
+                  <div className="w-0.5 h-8 bg-border" />
+                  <div className={`flex items-center gap-4 w-full ${isEven ? "flex-row" : "flex-row-reverse"}`}>
+                    <button
+                      onClick={() => {
+                        if (isUnlocked) {
+                          navigate(`/curso/${course.id}`);
+                        } else {
+                          setPurchaseModal({ id: course.id, title: course.title, price });
+                        }
+                      }}
+                      className={`size-16 rounded-full flex items-center justify-center border-4 transition-all ${
+                        isUnlocked
+                          ? "bg-yellow-500 text-white border-yellow-400 shadow-lg shadow-yellow-500/30"
+                          : "bg-gradient-to-br from-yellow-600 to-amber-700 text-white border-yellow-500/50 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined">
+                        {isUnlocked ? "play_arrow" : "lock"}
+                      </span>
+                    </button>
                     <div className="flex-1">
-                      <p className={`text-sm font-medium ${m.done ? "line-through text-muted-foreground" : ""}`}>{m.text}</p>
-                      {m.progress && <p className="text-xs text-muted-foreground">{m.progress}</p>}
+                      <p className="text-sm font-bold">{course.title}</p>
+                      {!isUnlocked && (
+                        <p className="text-xs text-yellow-500 font-black flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-xs filled-icon">paid</span>
+                          {price} moedas
+                        </p>
+                      )}
+                      {isUnlocked && (
+                        <p className="text-xs text-green-500 font-bold flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-xs filled-icon">check_circle</span>
+                          Desbloqueado
+                        </p>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-card rounded-xl p-5 border border-border shadow-sm">
-              <h3 className="text-sm font-bold mb-3">Conquistas</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {ACHIEVEMENTS.map((a, i) => (
-                  <div
-                    key={i}
-                    className={`rounded-xl p-2.5 flex flex-col items-center text-center border transition-all ${
-                      a.unlocked ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border opacity-30"
-                    }`}
-                  >
-                    <div className="text-xl mb-1">{a.icon}</div>
-                    <p className="text-[10px] font-bold leading-tight">{a.name}</p>
-                  </div>
-                ))}
-              </div>
-              <button className="w-full mt-3 text-xs text-primary font-bold hover:underline">Ver Todas</button>
-            </div>
-
-            <div className="bg-accent rounded-xl p-4 border border-border">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-primary text-lg">lightbulb</span>
-                <span className="font-bold text-sm text-foreground">Dica do Dia</span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                A distância de segurança deve ser de aproximadamente dois segundos em relação ao veículo à frente.
-              </p>
-            </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="lg:w-64">
+            <DailyMissions />
           </div>
         </div>
       </div>
@@ -589,191 +650,192 @@ const DrivingApp = () => {
   }
 
   function renderTreinos() {
-    const nextPhaseIdx = completedPhases.length;
-
     return (
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold tracking-tight mb-2">Trilha de Aprendizado</h1>
-        <p className="text-muted-foreground text-sm mb-6">Domine os fundamentos do trânsito</p>
-
-        {/* Gamified path */}
-        <div className="flex flex-col items-center gap-6 max-w-xs mx-auto mb-8">
-          {PHASES.map((p, i) => {
-            const done = completedPhases.includes(i);
-            const isCurrent = i === nextPhaseIdx;
-            const locked = i > nextPhaseIdx;
-            const offset = i % 2 === 0 ? "" : "ml-20";
-            const justCompleted = unlockedPhase === i;
-            const justUnlocked = unlockedPhase !== null && i === unlockedPhase + 1 && !done;
-
-            return (
-              <div key={p.id} className={`relative flex flex-col items-center ${offset}`}>
-                <motion.button
-                  onClick={() => !locked && startLesson(i)}
-                  disabled={locked && !justUnlocked}
-                  initial={
-                    justCompleted
-                      ? { scale: 1 }
-                      : justUnlocked
-                      ? { scale: 0.6, opacity: 0 }
-                      : undefined
-                  }
-                  animate={
-                    justCompleted
-                      ? {
-                          scale: [1, 1.3, 1],
-                          boxShadow: [
-                            "0 0 0 0 hsl(var(--success) / 0)",
-                            "0 0 0 20px hsl(var(--success) / 0.4)",
-                            "0 0 0 0 hsl(var(--success) / 0)",
-                          ],
-                        }
-                      : justUnlocked
-                      ? { scale: [0.6, 1.2, 1], opacity: [0, 1, 1] }
-                      : undefined
-                  }
-                  transition={
-                    justCompleted
-                      ? { duration: 1.2, delay: 0.3, ease: "easeOut" }
-                      : justUnlocked
-                      ? { duration: 0.8, delay: 1.4, ease: "easeOut" }
-                      : undefined
-                  }
-                  className={`relative z-10 size-20 rounded-full flex items-center justify-center border-4 transition-all ${
-                    locked && !justUnlocked
-                      ? "bg-muted border-border/50 opacity-60 cursor-not-allowed"
-                      : done || justCompleted
-                      ? "border-[hsl(var(--success)/0.2)] shadow-[0_6px_0_0_hsl(var(--success)/0.4)]"
-                      : "bg-primary border-primary-foreground/20 shadow-[0_6px_0_0_hsl(var(--primary)/0.4)] hover:translate-y-0.5"
-                  }`}
-                  style={
-                    done || justCompleted
-                      ? { backgroundColor: "hsl(var(--success))" }
-                      : undefined
-                  }
-                >
-                  {locked && !justUnlocked ? (
-                    <span className="material-symbols-outlined text-3xl text-muted-foreground">lock</span>
-                  ) : done || justCompleted ? (
-                    <motion.span
-                      className="material-symbols-outlined text-3xl text-primary-foreground filled-icon"
-                      initial={justCompleted ? { rotate: 0, scale: 0 } : undefined}
-                      animate={justCompleted ? { rotate: [0, 360], scale: [0, 1.4, 1] } : undefined}
-                      transition={justCompleted ? { duration: 0.8, delay: 0.6 } : undefined}
-                    >
-                      check_circle
-                    </motion.span>
-                  ) : justUnlocked ? (
-                    <motion.span
-                      className="material-symbols-outlined text-3xl text-primary-foreground filled-icon"
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: [0, 1.4, 1], rotate: [- 180, 0] }}
-                      transition={{ duration: 0.7, delay: 1.7 }}
-                    >
-                      directions_car
-                    </motion.span>
-                  ) : (
-                    <span className="text-3xl">{p.icon}</span>
-                  )}
-                  {isCurrent && !justUnlocked && (
-                    <div className="absolute -top-10 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-lg animate-bounce shadow-lg">
-                      COMEÇAR
-                    </div>
-                  )}
-                  {justUnlocked && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ delay: 2.2, duration: 0.5, type: "spring" }}
-                      className="absolute -top-12 bg-accent text-accent-foreground text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg"
-                    >
-                      🔓 DESBLOQUEADA!
-                    </motion.div>
-                  )}
-                </motion.button>
-                <motion.div
-                  className="mt-3 bg-card px-3 py-1.5 rounded-xl shadow-sm border border-border"
-                  initial={justUnlocked ? { opacity: 0, y: 10 } : undefined}
-                  animate={justUnlocked ? { opacity: 1, y: 0 } : undefined}
-                  transition={justUnlocked ? { delay: 1.8, duration: 0.4 } : undefined}
-                >
-                  <span className={`text-sm font-bold ${locked && !justUnlocked ? "text-muted-foreground" : "text-foreground"}`}>{p.title.replace(/Fase \d+ — /, "")}</span>
-                </motion.div>
-                {i < PHASES.length - 1 && (
-                  <motion.div
-                    className="absolute top-20 h-10 w-0.5"
-                    initial={justCompleted || justUnlocked ? { backgroundColor: "hsl(var(--border))" } : undefined}
-                    animate={{
-                      backgroundColor: done || justCompleted
-                        ? "hsl(var(--primary))"
-                        : "hsl(var(--border))"
-                    }}
-                    transition={justCompleted ? { delay: 0.4, duration: 0.6 } : { duration: 0 }}
-                    style={!(justCompleted || justUnlocked) ? {
-                      backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 4px, ${done ? "hsl(var(--primary))" : "hsl(var(--border))"} 8px)`
-                    } : undefined}
-                  />
-                )}
+        <div className="mb-6 flex items-center justify-between">
+           <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Mapa da Cidade</p>
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Treinos Práticos</h2>
+           </div>
+           <div className="flex items-center gap-2 bg-accent px-4 py-2 rounded-2xl border border-border">
+              <span className="material-symbols-outlined text-primary text-xl">map</span>
+              <span className="text-xs font-bold uppercase tracking-tight">4 Locais Disponíveis</span>
+           </div>
+        </div>
+        
+        <DrivingMap onStartTraining={handleStartMapTraining} />
+        
+        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+           {['Estacionamento', 'Ladeiras', 'Rodovias', 'Urbano'].map((t) => (
+              <div key={t} className="p-4 rounded-2xl bg-card border border-border text-center">
+                 <p className="text-[10px] font-black uppercase text-muted-foreground">{t}</p>
+                 <div className="mt-2 h-1 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: '0%' }} />
+                 </div>
               </div>
-            );
-          })}
-
-          {/* Future phases */}
-          {FUTURE_PHASES.map((f, i) => (
-            <div key={i} className="relative flex flex-col items-center opacity-40">
-              <div className="size-20 rounded-full bg-muted border-4 border-border/50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-3xl text-muted-foreground">lock</span>
-              </div>
-              <div className="mt-3 bg-card px-3 py-1.5 rounded-xl shadow-sm border border-border">
-                <span className="text-sm font-bold text-muted-foreground">{f.title}</span>
-              </div>
-            </div>
-          ))}
+           ))}
         </div>
       </div>
     );
   }
 
-  // renderLesson removed — now using LessonScreen component
+  const overlays = (
+    <>
+      <AnimatePresence>
+        {showLevelUp && <LevelUpOverlay level={globalLevel} onClose={() => setShowLevelUp(false)} />}
+      </AnimatePresence>
+      {showOnboarding && (
+        <OnboardingGuide
+          onComplete={() => {
+            setShowOnboarding(false);
+            localStorage.setItem("onboarding_completed", "true");
+          }}
+          lessonScreen={lessonScreen}
+          lessonStep={lessonStep}
+          quizAnswered={answered}
+        />
+      )}
+    </>
+  );
 
-  // If in lesson mode, render LessonScreen full-page (outside AppLayout)
   if (lessonScreen === "lesson" && phase) {
     return (
-      <LessonScreen
-        phase={phase}
-        currentPhase={currentPhase}
-        lessonStep={lessonStep}
-        setLessonStep={setLessonStep}
-        quizIndex={quizIndex}
-        quizTotal={quizTotal}
-        selected={selected}
-        answered={answered}
-        isRetry={isRetry}
-        retryQueue={retryQueue}
-        onQuizSelect={handleQuizSelect}
-        onNextQuiz={nextQuiz}
-        onBack={() => navigate("/")}
-        lessonProgress={lessonProgress()}
-        pressedPedal={pressedPedal}
-        setPressedPedal={setPressedPedal}
-        checkedTasks={checkedTasks}
-        toggleTask={toggleTask}
-        onCompletePhase={completePhase}
-      />
+      <>
+        {overlays}
+        <LessonScreen
+          phase={phase}
+          currentPhase={currentPhase}
+          lessonStep={lessonStep}
+          setLessonStep={setLessonStep}
+          quizIndex={quizIndex}
+          quizTotal={quizTotal}
+          selected={selected}
+          answered={answered}
+          isRetry={isRetry}
+          retryQueue={retryQueue}
+          onQuizSelect={handleQuizSelect}
+          onNextQuiz={nextQuiz}
+          onBack={() => navigate("/")}
+          lessonProgress={lessonProgress()}
+          pressedPedal={pressedPedal}
+          setPressedPedal={setPressedPedal}
+          checkedTasks={checkedTasks}
+          toggleTask={toggleTask}
+          onCompletePhase={completePhase}
+        />
+      </>
+    );
+  }
+
+  if (lessonScreen === "conquest" && phase) {
+    return (
+      <>
+        {overlays}
+        <ConquestScreen
+          phase={phase}
+          unlockedPhase={unlockedPhase}
+          coinsEarned={50}
+          xpEarned={phase.xp}
+          comboHits={comboCount}
+          onContinue={handleReturnToDashboard}
+        />
+      </>
     );
   }
 
   return (
-    <AppLayout
-      activeTab={activeTab}
-      onTabChange={handleTabChange}
-      displayName={displayName}
-      totalXP={totalXP}
-      confidence={confidence}
-      completedPhases={completedPhases.length}
-    >
-      {renderContent()}
-    </AppLayout>
+    <>
+      {overlays}
+      <AppLayout
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        displayName={displayName}
+        confidence={confidence}
+        completedPhases={completedPhases.length}
+      >
+        {renderContent()}
+      </AppLayout>
+      {renderChallenge()}
+
+
+      {/* Purchase Modal for Premium Courses */}
+      <AnimatePresence>
+        {purchaseModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-card border border-border rounded-[32px] p-8 w-full max-w-sm shadow-2xl text-center"
+            >
+              <div className="size-20 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center mx-auto mb-5 shadow-xl shadow-yellow-500/20">
+                <span className="material-symbols-outlined text-white text-4xl">lock_open</span>
+              </div>
+              <h3 className="text-xl font-black uppercase italic tracking-tight mb-1">Desbloquear Aula</h3>
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                <strong className="text-foreground">{purchaseModal.title}</strong>
+              </p>
+
+              <div className="bg-accent/50 rounded-2xl p-4 mb-6 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Preço</span>
+                  <span className="text-lg font-black text-yellow-500 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base filled-icon">paid</span>
+                    {purchaseModal.price}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Seu saldo</span>
+                  <span className={`text-lg font-black flex items-center gap-1 ${coins >= purchaseModal.price ? "text-green-500" : "text-destructive"}`}>
+                    <span className="material-symbols-outlined text-base filled-icon">account_balance_wallet</span>
+                    {coins}
+                  </span>
+                </div>
+              </div>
+
+              {coins < purchaseModal.price && (
+                <p className="text-xs text-destructive font-bold mb-4">
+                  ⚠️ Você precisa de mais {purchaseModal.price - coins} moedas!
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPurchaseModal(null)}
+                  className="flex-1 py-3.5 rounded-2xl font-bold text-sm border border-border hover:bg-muted transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    const success = await spendCoins(purchaseModal.price);
+                    if (success) {
+                      const newList = [...unlockedCourses, purchaseModal.id];
+                      setUnlockedCourses(newList);
+                      localStorage.setItem("unlocked_courses", JSON.stringify(newList));
+                      toast.success("Aula desbloqueada! 🎉", { description: purchaseModal.title });
+                      playConquestSound();
+                      setPurchaseModal(null);
+                      navigate(`/curso/${purchaseModal.id}`);
+                    }
+                  }}
+                  disabled={coins < purchaseModal.price}
+                  className="flex-1 py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg shadow-yellow-500/20 hover:opacity-90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-base">lock_open</span>
+                  Desbloquear
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

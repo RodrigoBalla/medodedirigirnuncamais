@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6;
+      font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      table-layout: fixed;
+      background-color: #f3f4f6;
+      padding-bottom: 40px;
+    }
+    .main {
+      background-color: #ffffff;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 600px;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .header {
+      background-color: #1e1b4b; /* dark blue */
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.5px;
+    }
+    .content {
+      padding: 40px 30px;
+      color: #374151;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+    .content h2 {
+      color: #111827;
+      font-size: 20px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .button-container {
+      text-align: center;
+      margin: 35px 0;
+    }
+    .button {
+      background-color: #f97316; /* primary orange */
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      display: inline-block;
+      box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 24px 30px;
+      text-align: center;
+      font-size: 13px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+    .highlight {
+      color: #f97316;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <center class="wrapper">
+    <table class="main" width="100%">
+      <!-- Header -->
+      <tr>
+        <td class="header">
+          <h1>🚘 Medo de Dirigir <span style="color: #f97316;">Nunca Mais</span></h1>
+        </td>
+      </tr>
+      
+      <!-- Content -->
+      <tr>
+        <td class="content">
+          <h2>Olá! Falta só mais um passo.</h2>
+          <p>Ficamos muito felizes em ter você a bordo. Nossa missão é te ajudar a conquistar sua independência no trânsito com total segurança e confiança.</p>
+          <p>Para liberar o seu acesso à plataforma, aulas e painel de progresso, precisamos apenas que você <span class="highlight">valide o seu e-mail</span> clicando no botão abaixo:</p>
+          
+          <div class="button-container">
+            <a href="{{ .ConfirmationURL }}" class="button">Ativar Minha Conta</a>
+          </div>
+          
+          <p>Chegou a sua vez de assumir a direção sem medo. Bons estudos!</p>
+          <p style="margin-bottom: 0;">Um abraço,<br><strong>Equipe MDNM</strong></p>
+        </td>
+      </tr>
+      
+      <!-- Footer -->
+      <tr>
+        <td class="footer">
+          <p style="margin: 0;">Você recebeu este e-mail porque se cadastrou na nossa plataforma.</p>
+          <p style="margin: 5px 0 0 0;">Se não foi você, basta ignorar esta mensagem.</p>
+        </td>
+      </tr>
+    </table>
+  </center>
+</body>
+</html>

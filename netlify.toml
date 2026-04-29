@@ -1,0 +1,34 @@
+[build]
+  command   = "npm run build"
+  publish   = "dist"
+
+# Fallback SPA (mesmo objetivo do public/_redirects, redundância proposital).
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Headers globais de segurança (aplicados a todas as respostas).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Força HTTPS por 2 anos, incluindo subdomínios.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # Bloqueia o app em iframes (anti clickjacking).
+    X-Frame-Options           = "DENY"
+    # Não tenta adivinhar Content-Type.
+    X-Content-Type-Options    = "nosniff"
+    # Política de referrer conservadora.
+    Referrer-Policy           = "strict-origin-when-cross-origin"
+    # Limita o que browsers modernos liberam por padrão.
+    Permissions-Policy        = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    # CSP — permitindo origens reais usadas pelo app:
+    # Supabase (auth, REST, realtime), Vimeo (vídeo welcome), Pexels (galeria
+    # de fundo no login), Google Fonts, Pixabay (assets antigos), R2 (OG image).
+    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pexels.com; frame-src https://player.vimeo.com; media-src 'self' https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co; worker-src 'self' blob:;"
+
+# Cache agressivo para assets versionados (com hash no nome).
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

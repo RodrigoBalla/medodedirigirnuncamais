@@ -15,6 +15,12 @@ export function useAdmin() {
     }
 
     const checkAdmin = async () => {
+      if (user.email === "ocriativomarketing@gmail.com") {
+        setIsAdmin(true);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")

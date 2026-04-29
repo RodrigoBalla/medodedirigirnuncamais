@@ -7,6 +7,7 @@ import { GifIllustration } from "@/components/GifIllustration";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Fallback hints if AI fails
 const UBER_HINTS_FALLBACK: Record<string, string[]> = {
@@ -175,6 +176,7 @@ export function LessonScreen({
   const checkedCount = tasks ? tasks.filter(t => checkedTasks[t.id]).length : 0;
   const allDone = tasks ? checkedCount === tasks.length : false;
   const [activeSlide, setActiveSlide] = useState(0);
+  const { isDark, toggleTheme } = useTheme();
 
   // Quiz confirmation popup states
   const [pendingSelection, setPendingSelection] = useState<number | null>(null);
@@ -410,7 +412,10 @@ export function LessonScreen({
           <span className="material-symbols-outlined text-primary filled-icon text-xl">directions_car</span>
           <span className="font-bold text-sm text-foreground">Medo de dirigir nunca mais</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <button onClick={toggleTheme} className="material-symbols-outlined text-muted-foreground hover:text-foreground transition-colors text-xl">
+            {isDark ? "light_mode" : "dark_mode"}
+          </button>
           <button onClick={onBack} className="material-symbols-outlined text-muted-foreground hover:text-foreground transition-colors text-xl">
             menu
           </button>
@@ -547,6 +552,7 @@ export function LessonScreen({
 
               {/* CTA with subtle pulse */}
               <motion.button
+                id="onboarding-start-mission"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -648,6 +654,7 @@ export function LessonScreen({
                       return (
                         <motion.button
                           key={i}
+                          id={i === phase.quizzes[quizIndex].correct ? "onboarding-quiz-correct" : undefined}
                           initial={{ opacity: 0, x: 20 }}
                           animate={{
                             opacity: isUnselected ? 0.45 : 1,
@@ -730,6 +737,7 @@ export function LessonScreen({
 
                 {answered && (
                   <motion.button
+                    id="onboarding-next-quiz"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     whileHover={{ scale: 1.02 }}
@@ -776,6 +784,7 @@ export function LessonScreen({
                       {!showDoubtOptions ? (
                         <div className="flex flex-col gap-3">
                           <motion.button
+                            id="onboarding-confirm-sure"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={handleConfirmSure}
@@ -1156,6 +1165,7 @@ export function LessonScreen({
               </motion.div>
 
               <motion.button
+                id="onboarding-sim-next"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setLessonStep(3)}
@@ -1262,7 +1272,7 @@ export function LessonScreen({
                 </motion.div>
 
                 {/* Task list */}
-                <div className="flex flex-col gap-3 mb-6">
+                <div id="onboarding-task-list" className="flex flex-col gap-3 mb-6">
                   {tasks.map((task, i) => {
                     const isChecked = !!checkedTasks[task.id];
                     return (
@@ -1338,6 +1348,7 @@ export function LessonScreen({
 
                 {/* Action buttons */}
                 <motion.button
+                  id="onboarding-finish-btn"
                   whileHover={allDone ? { scale: 1.02 } : {}}
                   whileTap={allDone ? { scale: 0.97 } : {}}
                   onClick={() => {

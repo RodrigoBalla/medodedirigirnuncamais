@@ -1,12 +1,71 @@
-// Sound utilities for the driving app
-export function createTone(
-  ctx: AudioContext,
-  type: OscillatorType,
-  freq: number,
-  startTime: number,
-  duration: number,
-  gainPeak = 0.28
-) {
+// Sound utilities - Professional audio with preloading and fallbacks
+const SOUND_URLS = {
+  correct: "https://www.soundjay.com/buttons/sounds/button-3.mp3",
+  wrong: "https://www.soundjay.com/buttons/sounds/button-10.mp3",
+  check: "https://www.soundjay.com/buttons/sounds/button-4.mp3",
+  allDone: "https://www.soundjay.com/misc/sounds/success-fanfare-trumpet-1.mp3",
+  conquest: "https://www.soundjay.com/misc/sounds/bell-ring-01.mp3",
+  cash: "https://www.soundjay.com/misc/sounds/cash-register-05.mp3",
+  fanfare: "https://www.soundjay.com/misc/sounds/magic-chime-01.mp3",
+  horn: "https://www.soundjay.com/mechanical/sounds/car-horn-1.mp3",
+  combo: "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3",
+  chestOpen: "https://www.soundjay.com/misc/sounds/magic-chime-02.mp3",
+  levelUp: "https://www.soundjay.com/misc/sounds/success-fanfare-trumpet-2.mp3",
+  streak: "https://www.soundjay.com/misc/sounds/bell-ring-01.mp3",
+};
+
+const audioCache: Record<string, HTMLAudioElement> = {};
+
+Object.entries(SOUND_URLS).forEach(([key, url]) => {
+  try {
+    const audio = new Audio(url);
+    audio.preload = "auto";
+    audioCache[key] = audio;
+  } catch (e) {}
+});
+
+const playSound = (key: keyof typeof SOUND_URLS, volume = 0.5, fallbackFreq?: number) => {
+  try {
+    const cached = audioCache[key];
+    if (cached) {
+      const clone = cached.cloneNode() as HTMLAudioElement;
+      clone.volume = volume;
+      clone.play().catch(() => { if (fallbackFreq) playSynthetic(fallbackFreq); });
+    } else if (fallbackFreq) {
+      playSynthetic(fallbackFreq);
+    }
+  } catch (e) {
+    if (fallbackFreq) playSynthetic(fallbackFreq);
+  }
+};
+
+function playSynthetic(freq: number) {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    g.gain.setValueAtTime(0.2, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+    osc.start(); osc.stop(ctx.currentTime + 0.35);
+  } catch {}
+}
+
+export const playCorrectSound = () => playSound("correct", 0.4, 880);
+export const playWrongSound = () => playSound("wrong", 0.4, 220);
+export const playCheckSound = () => playSound("check", 0.3, 440);
+export const playAllDoneSound = () => playSound("allDone", 0.5, 1320);
+export const playConquestSound = () => playSound("conquest", 0.5, 1760);
+export const playHornSound = () => playSound("horn", 0.4, 400);
+export const playCelebrationSound = () => playSound("fanfare", 0.6, 2200);
+export const playCoinSound = () => playSound("cash", 0.5, 3300);
+export const playComboSound = () => playSound("combo", 0.5, 1500);
+export const playChestSound = () => playSound("chestOpen", 0.6, 1800);
+export const playLevelUpSound = () => playSound("levelUp", 0.6, 2000);
+export const playStreakSound = () => playSound("streak", 0.5, 1200);
+
+export function createTone(ctx: AudioContext, type: OscillatorType, freq: number, startTime: number, duration: number, gainPeak = 0.28) {
   const osc = ctx.createOscillator();
   const gainNode = ctx.createGain();
   osc.connect(gainNode);
@@ -18,135 +77,4 @@ export function createTone(
   gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
   osc.start(ctx.currentTime + startTime);
   osc.stop(ctx.currentTime + startTime + duration + 0.05);
-}
-
-export function playCorrectSound() {
-  try {
-    const ctx = new AudioContext();
-    createTone(ctx, "sine", 659.25, 0, 0.14, 0.22);
-    createTone(ctx, "sine", 830.61, 0.11, 0.22, 0.20);
-    createTone(ctx, "triangle", 1046.5, 0.20, 0.35, 0.15);
-  } catch {}
-}
-
-export function playWrongSound() {
-  try {
-    const ctx = new AudioContext();
-    createTone(ctx, "sine", 220, 0, 0.18, 0.18);
-    createTone(ctx, "sine", 185, 0.12, 0.22, 0.12);
-  } catch {}
-}
-
-export function playCheckSound() {
-  try {
-    const ctx = new AudioContext();
-    createTone(ctx, "sine", 523.25, 0, 0.10, 0.18);
-    createTone(ctx, "sine", 659.25, 0.07, 0.16, 0.15);
-  } catch {}
-}
-
-export function playAllDoneSound() {
-  try {
-    const ctx = new AudioContext();
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((freq, i) => {
-      createTone(ctx, "sine", freq, i * 0.09, 0.28, 0.20);
-    });
-    createTone(ctx, "triangle", 2093, 0.30, 0.4, 0.07);
-  } catch {}
-}
-
-export function playConquestSound() {
-  try {
-    const ctx = new AudioContext();
-    const arp = [523.25, 659.25, 783.99, 1046.5, 1318.5];
-    arp.forEach((freq, i) => {
-      createTone(ctx, "sine", freq, i * 0.08, 0.35, 0.18);
-    });
-    [523.25, 659.25, 783.99].forEach((freq) => {
-      createTone(ctx, "triangle", freq, 0.42, 0.8, 0.10);
-    });
-    createTone(ctx, "sine", 2093, 0.58, 0.5, 0.06);
-  } catch {}
-}
-
-export function playHornSound() {
-  try {
-    const ctx = new AudioContext();
-    // First BI
-    const osc1 = ctx.createOscillator();
-    const g1 = ctx.createGain();
-    osc1.connect(g1);
-    g1.connect(ctx.destination);
-    osc1.type = "square";
-    osc1.frequency.setValueAtTime(480, ctx.currentTime);
-    g1.gain.setValueAtTime(0, ctx.currentTime);
-    g1.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.02);
-    g1.gain.setValueAtTime(0.25, ctx.currentTime + 0.25);
-    g1.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-    osc1.start(ctx.currentTime);
-    osc1.stop(ctx.currentTime + 0.4);
-
-    // Second BI (higher pitch)
-    const osc2 = ctx.createOscillator();
-    const g2 = ctx.createGain();
-    osc2.connect(g2);
-    g2.connect(ctx.destination);
-    osc2.type = "square";
-    osc2.frequency.setValueAtTime(520, ctx.currentTime + 0.35);
-    g2.gain.setValueAtTime(0, ctx.currentTime + 0.35);
-    g2.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.37);
-    g2.gain.setValueAtTime(0.25, ctx.currentTime + 0.7);
-    g2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.85);
-    osc2.start(ctx.currentTime + 0.35);
-    osc2.stop(ctx.currentTime + 0.9);
-  } catch {}
-}
-
-export function playCelebrationSound() {
-  try {
-    const ctx = new AudioContext();
-    // Firework rising whistle
-    const whistle = ctx.createOscillator();
-    const whistleGain = ctx.createGain();
-    whistle.connect(whistleGain);
-    whistleGain.connect(ctx.destination);
-    whistle.type = "sine";
-    whistle.frequency.setValueAtTime(400, ctx.currentTime);
-    whistle.frequency.exponentialRampToValueAtTime(2500, ctx.currentTime + 0.4);
-    whistleGain.gain.setValueAtTime(0.12, ctx.currentTime);
-    whistleGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
-    whistle.start(ctx.currentTime);
-    whistle.stop(ctx.currentTime + 0.5);
-
-    // Firework burst - noise simulation with multiple tones
-    const burstFreqs = [1200, 1800, 2400, 3000, 800, 1500];
-    burstFreqs.forEach((freq, i) => {
-      createTone(ctx, "sine", freq, 0.4 + i * 0.03, 0.3, 0.08);
-      createTone(ctx, "triangle", freq * 0.5, 0.42 + i * 0.04, 0.25, 0.05);
-    });
-
-    // Fanfare melody
-    const fanfare = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.5];
-    fanfare.forEach((freq, i) => {
-      createTone(ctx, "sine", freq, 0.7 + i * 0.12, 0.25, 0.15);
-      createTone(ctx, "triangle", freq, 0.72 + i * 0.12, 0.2, 0.06);
-    });
-
-    // Sustained chord (crowd feel)
-    [523.25, 659.25, 783.99, 1046.5].forEach((freq) => {
-      createTone(ctx, "sine", freq, 1.5, 1.5, 0.08);
-      createTone(ctx, "triangle", freq * 2, 1.6, 1.2, 0.03);
-    });
-
-    // Second burst
-    [1600, 2200, 2800, 1000].forEach((freq, i) => {
-      createTone(ctx, "sine", freq, 2.0 + i * 0.04, 0.35, 0.06);
-    });
-
-    // Final triumphant chord
-    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq) => {
-      createTone(ctx, "sine", freq, 2.5, 1.8, 0.10);
-    });
-  } catch {}
 }

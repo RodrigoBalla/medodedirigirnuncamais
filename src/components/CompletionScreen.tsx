@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { playCelebrationSound, playHornSound } from "@/lib/sounds";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const confettiColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
@@ -13,6 +14,7 @@ export function CompletionScreen() {
   const phaseName = searchParams.get("name") || "Fase";
 
   const [showCelebration, setShowCelebration] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     playCelebrationSound();
@@ -23,6 +25,13 @@ export function CompletionScreen() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 z-[10000] size-10 rounded-full border border-border bg-card/80 backdrop-blur-md flex items-center justify-center text-foreground hover:bg-accent transition-colors shadow-lg"
+        title={isDark ? "Modo Claro" : "Modo Escuro"}
+      >
+        <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
+      </button>
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (

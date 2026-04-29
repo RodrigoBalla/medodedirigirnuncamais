@@ -15,7 +15,7 @@ export const WelcomeBackScreen = ({
   progressPercent = 65,
 }: WelcomeBackScreenProps) => {
   const [show, setShow] = useState(false);
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     requestAnimationFrame(() => setShow(true));
@@ -35,9 +35,14 @@ export const WelcomeBackScreen = ({
             Medo de dirigir nunca mais
           </h2>
         </div>
-        <button className="relative size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-          <span className="material-symbols-outlined text-lg">notifications</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={toggleTheme} className="relative size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
+          </button>
+          <button className="relative size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+            <span className="material-symbols-outlined text-lg">notifications</span>
+          </button>
+        </div>
       </header>
 
       {/* Main content */}
