@@ -81,10 +81,10 @@ const VideoBackground = () => {
   );
 };
 
-// URL de vendas — temporariamente apontando pro WhatsApp do suporte.
-// TODO: trocar pela URL da página de vendas (Hotmart/Kiwify/site próprio) quando estiver no ar.
-const SALES_URL =
-  "https://wa.me/5521993685289?text=Ol%C3%A1!%20Quero%20saber%20sobre%20o%20curso%20Medo%20de%20Dirigir%20Nunca%20Mais.";
+// URL da página de vendas — servida estaticamente em /sales.html (public/sales.html).
+// Quando você plugar checkout final (Eduzz), atualize o link de "IR PARA O CHECKOUT"
+// dentro de public/sales.html — não precisa mexer aqui.
+const SALES_URL = "/sales.html";
 
 // Frases motivacionais aleatórias mostradas ao aluno que retorna pro login.
 // Trocadas a cada visita pra a saudação não cansar.

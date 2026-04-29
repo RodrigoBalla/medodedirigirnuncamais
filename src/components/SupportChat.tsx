@@ -19,10 +19,8 @@ import { motion, AnimatePresence } from "framer-motion";
 //   }
 const LEAD_WEBHOOK_URL = ""; // ex.: "https://hooks.zapier.com/hooks/catch/123/abc"
 
-// URL da página de vendas (mesma constante do Auth.tsx).
-// TODO: trocar pela URL definitiva quando a página de vendas estiver no ar.
-const SALES_URL =
-  "https://wa.me/5521993685289?text=Ol%C3%A1!%20Quero%20saber%20sobre%20o%20curso%20Medo%20de%20Dirigir%20Nunca%20Mais.";
+// URL da página de vendas (servida estaticamente em /sales.html).
+const SALES_URL = "/sales.html";
 
 // =============================================================================
 // TIPOS
