@@ -7,7 +7,9 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    // Respeita PORT do ambiente (ex.: dev tools que injetam porta livre).
+    // Cai pra 8080 quando rodando localmente sem env var.
+    port: Number(process.env.PORT) || 8080,
     hmr: {
       overlay: false,
     },

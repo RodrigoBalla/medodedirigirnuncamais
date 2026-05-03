@@ -1,36 +1,35 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 
-type Theme = "light" | "dark";
+// Tema travado em dark — paleta navy + amarelo. O contexto continua existindo
+// pra não quebrar componentes que importam useTheme(), mas isDark é sempre
+// true e toggleTheme é no-op.
 
 interface ThemeContextType {
-  theme: Theme;
+  theme: "dark";
   toggleTheme: () => void;
-  isDark: boolean;
+  isDark: true;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
-  isDark: false,
+  isDark: true,
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem("app-theme");
-    return (stored === "dark" || stored === "light") ? stored : "light";
-  });
-
   useEffect(() => {
-    localStorage.setItem("app-theme", theme);
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
-
-  const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
+    // Garante a classe `dark` no <html> em todo render — defensivo.
+    document.documentElement.classList.add("dark");
+    // Remove qualquer preferência antiga salva (sem mais opção de claro)
+    try {
+      localStorage.removeItem("app-theme");
+    } catch {}
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark" }}>
+    <ThemeContext.Provider value={{ theme: "dark", toggleTheme: () => {}, isDark: true }}>
       {children}
     </ThemeContext.Provider>
   );

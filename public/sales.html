@@ -8,17 +8,24 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
   <style>
     /* ─── THEME TOKENS ──────────────────────────────────── */
+    /* Paleta nova:
+       Azul-marinho #0A1F5C — dominante (fundo)
+       Amarelo      #FFD60A — destaque (títulos, logo, CTAs)
+       Branco       #FFFFFF — apoio (textos secundários)
+       Preto        #000000 — detalhe (contornos)
+       Os nomes das vars (--primary, --bg etc.) ficam pra não quebrar o resto. */
     :root {
-      --primary:       #2563eb;
-      --primary-2:     #3b82f6;
-      --primary-dark:  #1d4ed8;
-      --primary-soft:  rgba(37, 99, 235, .12);
-      --primary-glow:  rgba(37, 99, 235, .35);
+      --primary:       #FFD60A; /* amarelo de destaque */
+      --primary-2:     #FFC700; /* amarelo um tom mais quente, p/ gradients */
+      --primary-dark:  #C9A800;
+      --primary-soft:  rgba(255, 214, 10, .14);
+      --primary-glow:  rgba(255, 214, 10, .38);
+      --on-primary:    #0A1F5C; /* texto sobre amarelo (alto contraste) */
       --success:       #10b981;
       --danger:        #ef4444;
       --warning:       #f59e0b;
@@ -26,33 +33,20 @@
       --font-b:        'Inter', sans-serif;
       --radius:        14px;
     }
-    [data-theme="dark"] {
-      --bg:            #0A1020;
-      --bg-2:          #0F1730;
-      --bg-3:          #141C3A;
-      --surface:       #1A2347;
-      --text:          #F1F5F9;
-      --text-mute:     #94A3B8;
-      --text-subtle:   #64748B;
-      --border:        rgba(148, 163, 184, .12);
-      --border-strong: rgba(148, 163, 184, .25);
-      --shadow-1:      0 4px 18px rgba(0, 0, 0, .35);
-      --shadow-2:      0 12px 40px rgba(0, 0, 0, .55);
-      --hero-grad:     linear-gradient(155deg, #0A1020 0%, #0F1730 50%, #0A1020 100%);
-    }
-    [data-theme="light"] {
-      --bg:            #F8FAFC;
-      --bg-2:          #FFFFFF;
-      --bg-3:          #F1F5F9;
-      --surface:       #FFFFFF;
-      --text:          #0F172A;
-      --text-mute:     #475569;
-      --text-subtle:   #94A3B8;
-      --border:        rgba(15, 23, 42, .08);
-      --border-strong: rgba(15, 23, 42, .15);
-      --shadow-1:      0 4px 18px rgba(15, 23, 42, .06);
-      --shadow-2:      0 16px 50px rgba(37, 99, 235, .12);
-      --hero-grad:     linear-gradient(155deg, #FFFFFF 0%, #F8FAFC 50%, #EFF6FF 100%);
+    /* Tema único — paleta navy + amarelo. Sem alternativa clara. */
+    [data-theme="dark"], :root {
+      --bg:            #0A1F5C;
+      --bg-2:          #0D2675;
+      --bg-3:          #112D85;
+      --surface:       #143598;
+      --text:          #FFFFFF;
+      --text-mute:     rgba(255, 255, 255, .72);
+      --text-subtle:   rgba(255, 255, 255, .5);
+      --border:        rgba(0, 0, 0, .35);
+      --border-strong: rgba(0, 0, 0, .55);
+      --shadow-1:      0 4px 18px rgba(0, 0, 0, .45);
+      --shadow-2:      0 12px 40px rgba(0, 0, 0, .65);
+      --hero-grad:     linear-gradient(155deg, #0A1F5C 0%, #0D2675 50%, #0A1F5C 100%);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,7 +114,7 @@
     .btn:active { transform: translateY(0); }
     .btn--primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: #FFF;
+      color: var(--on-primary);  /* texto navy sobre amarelo p/ contraste AAA */
       font-size: 1.05rem;
       padding: 18px 36px;
       box-shadow: 0 10px 30px var(--primary-glow);
@@ -159,12 +153,12 @@
       padding: 8px 0;
       font-family: var(--font-h);
       font-size: .8rem;
-      font-weight: 600;
-      color: #FFF;
+      font-weight: 700;
+      color: var(--on-primary);  /* navy sobre amarelo */
       letter-spacing: .04em;
       overflow: hidden;
       white-space: nowrap;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .25);
       height: 36px;
       display: flex; align-items: center;
     }
@@ -186,6 +180,7 @@
       display: flex; align-items: center; justify-content: center;
       gap: 10px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
       opacity: 0; visibility: hidden;
       transition: opacity .35s ease;
       z-index: 2;
@@ -193,76 +188,18 @@
     .topbar__viewers.is-visible { opacity: 1; visibility: visible; }
     .topbar__viewers-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: #FFF;
+      background: var(--on-primary);  /* navy sobre amarelo */
       animation: viewersPulse 1.6s infinite;
     }
     @keyframes viewersPulse {
-      0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); }
-      70%  { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+      0%   { box-shadow: 0 0 0 0 rgba(10, 31, 92, .55); }
+      70%  { box-shadow: 0 0 0 10px rgba(10, 31, 92, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(10, 31, 92, 0); }
     }
     @keyframes topbarMarquee {
       from { transform: translateX(0); }
       to   { transform: translateX(-100%); }
     }
-
-    /* ─── THEME TOGGLE ──────────────────────────────────── */
-    .theme-toggle {
-      position: fixed;
-      top: 50px; right: 20px;
-      z-index: 9999;
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      border: 1px solid var(--border-strong);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-1);
-      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-    }
-    .theme-toggle:hover {
-      transform: scale(1.08) rotate(15deg);
-      box-shadow: var(--shadow-2);
-    }
-    .theme-toggle .material-symbols-outlined { font-size: 22px; }
-    [data-theme="dark"] .theme-toggle__sun  { display: block; }
-    [data-theme="dark"] .theme-toggle__moon { display: none; }
-    [data-theme="light"] .theme-toggle__sun  { display: none; }
-    [data-theme="light"] .theme-toggle__moon { display: block; }
-
-    /* ─── COUNTDOWN ─────────────────────────────────────── */
-    .countdown-bar {
-      background: var(--bg-2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px; text-align: center;
-    }
-    .countdown-bar__label {
-      font-family: var(--font-h);
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: var(--primary);
-      margin-bottom: 8px;
-    }
-    .countdown-digits { display: inline-flex; gap: 8px; align-items: center; }
-    .cd-unit {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: 10px;
-      padding: 6px 14px; min-width: 56px;
-    }
-    .cd-num {
-      font-family: var(--font-h); font-weight: 700; font-size: 1.5rem;
-      color: var(--primary); line-height: 1;
-    }
-    .cd-lbl {
-      font-size: .58rem; color: var(--text-mute);
-      text-transform: uppercase; letter-spacing: .08em;
-    }
-    .cd-sep { font-family: var(--font-h); font-weight: 700; font-size: 1.5rem; color: var(--primary); }
 
     /* ─── HERO ──────────────────────────────────────────── */
     .hero {
@@ -271,12 +208,376 @@
       background: var(--hero-grad);
       transition: background .35s ease;
     }
+    /* Foto 1 (Carla solo) como detalhe sutil de fundo — opacity baixa pra não competir com a Carla protagonista */
+    .hero__bg-photo {
+      position: absolute; inset: 0; z-index: 0;
+      background-image: url('/hero/instrutora.jpg');
+      background-size: cover;
+      background-position: 75% center;
+      opacity: .12;
+      filter: saturate(.85) blur(2px);
+      pointer-events: none;
+    }
     .hero__overlay {
       position: absolute; inset: 0; z-index: 1;
       background:
-        radial-gradient(ellipse at 70% 40%, rgba(37, 99, 235, .08) 0%, transparent 50%),
-        radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, .06) 0%, transparent 60%);
+        radial-gradient(ellipse at 70% 40%, rgba(255, 214, 10, .12) 0%, transparent 50%),
+        radial-gradient(ellipse at 20% 80%, rgba(255, 214, 10, .06) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, transparent 25%, transparent 75%, var(--bg) 100%);
       pointer-events: none;
+    }
+
+    /* ── Composição visual do hero (Carla como protagonista) ── */
+    .hero__visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 540px;
+      padding: 20px 0;
+    }
+    .hero__visual::before {
+      content: '';
+      position: absolute;
+      inset: -10% -5%;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 65%);
+      filter: blur(50px);
+      opacity: .55;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Foto principal da Carla (instrutora) */
+    .hero-instructor {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 460px;
+      aspect-ratio: 4 / 5;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 40px 100px rgba(0, 0, 0, .55),
+        0 0 0 1px rgba(255, 255, 255, .06);
+    }
+    .hero-instructor img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 100% center;
+      display: block;
+    }
+    /* Vinheta inferior pra integrar com o conteúdo */
+    .hero-instructor::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        transparent 50%,
+        rgba(10, 16, 32, .5) 100%
+      );
+      pointer-events: none;
+    }
+    /* Etiqueta com o nome da Carla sobreposta — alinhada à DIREITA pra não conflitar com phone mockup à esquerda */
+    .hero-instructor__name {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      z-index: 3;
+      color: #FFF;
+      text-align: right;
+      max-width: 60%;
+    }
+    .hero-instructor__name-label {
+      font-family: var(--font-h);
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      opacity: .85;
+      margin-bottom: 4px;
+    }
+    .hero-instructor__name-value {
+      font-family: 'Caveat', cursive;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .hero-instructor__name-role {
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 600;
+      opacity: .75;
+      margin-top: 4px;
+    }
+
+    /* Phone mockup MENOR, sobreposto à esquerda da Carla */
+    .hero__visual .phone-mockup {
+      position: absolute;
+      z-index: 4;
+      width: 210px;
+      height: 460px;
+      bottom: -20px;
+      left: -10px;
+      transform: perspective(1000px) rotateY(-8deg) rotateX(2deg);
+      box-shadow:
+        0 30px 70px rgba(0, 0, 0, .55),
+        0 0 0 2px rgba(255, 255, 255, .1);
+    }
+    .hero__visual .phone-mockup .phone-bottom { height: 44px; padding: 6px 4px; }
+    .hero__visual .phone-mockup .phone-bottom__item span:not(.material-symbols-outlined) { font-size: .42rem; }
+    .hero__visual .phone-mockup .phone-bottom__item .material-symbols-outlined { font-size: 14px; }
+    .hero__visual .phone-mockup .phone-slides { bottom: 44px; }
+    /* Slide compacto + scroll de segurança pra slides longos (Ranking) */
+    .hero__visual .phone-mockup .phone-slide {
+      padding: 22px 12px 10px;
+      gap: 8px;
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .hero__visual .phone-mockup .phone-slide::-webkit-scrollbar { display: none; }
+    .hero__visual .phone-mockup .phone-card { padding: 10px 12px; margin-bottom: 0; }
+    .hero__visual .phone-mockup .phone-card__title { font-size: .78rem; }
+    .hero__visual .phone-mockup .phone-step__text { font-size: .65rem; }
+    .hero__visual .phone-mockup .phone-step__text small { font-size: .55rem; }
+    .hero__visual .phone-mockup .phone-step__dot { width: 22px; height: 22px; }
+    .hero__visual .phone-mockup .phone-step__dot .material-symbols-outlined { font-size: 12px; }
+    .hero__visual .phone-mockup .phone-trail { gap: 6px; }
+    .hero__visual .phone-mockup .phone-greeting { font-size: .58rem; }
+    .hero__visual .phone-mockup .phone-header { margin-bottom: 6px; }
+    /* Garante que containers flex:1 não colapsem em alturas pequenas */
+    .hero__visual .phone-mockup .phone-map { min-height: 130px; }
+    .hero__visual .phone-mockup .phone-catalog { min-height: 130px; padding: 18px 14px; }
+    .hero__visual .phone-mockup .phone-catalog__icon { width: 42px; height: 42px; margin-bottom: 8px; }
+    .hero__visual .phone-mockup .phone-catalog__icon .material-symbols-outlined { font-size: 22px; }
+    .hero__visual .phone-mockup .phone-catalog__title { font-size: .62rem; margin-bottom: 4px; }
+    .hero__visual .phone-mockup .phone-catalog__desc { font-size: .6rem; }
+    /* Map header e pins reduzidos */
+    .hero__visual .phone-mockup .phone-map-title { font-size: .82rem; }
+    .hero__visual .phone-mockup .phone-map-eyebrow { font-size: .5rem; }
+    .hero__visual .phone-mockup .phone-map-counter { font-size: .5rem; padding: 2px 8px; }
+    .hero__visual .phone-mockup .phone-pin { width: 24px; height: 24px; }
+    .hero__visual .phone-mockup .phone-pin .material-symbols-outlined { font-size: 13px; }
+    .hero__visual .phone-mockup .phone-event { font-size: .52rem; padding: 5px 8px; margin-bottom: 6px; }
+    /* Ranking compacto */
+    .hero__visual .phone-mockup .phone-league-header { padding: 8px; margin-bottom: 8px; }
+    .hero__visual .phone-mockup .phone-league-header .material-symbols-outlined { font-size: 20px; }
+    .hero__visual .phone-mockup .phone-league-name { font-size: .72rem; }
+    .hero__visual .phone-mockup .phone-podium { margin-bottom: 8px; }
+    .hero__visual .phone-mockup .phone-podium-avatar { width: 28px; height: 28px; font-size: .65rem; }
+    .hero__visual .phone-mockup .phone-podium-item--1 .phone-podium-avatar { width: 34px; height: 34px; }
+    .hero__visual .phone-mockup .phone-podium-name { font-size: .55rem; }
+    .hero__visual .phone-mockup .phone-podium-xp { font-size: .5rem; }
+    .hero__visual .phone-mockup .phone-podium-item--1 .phone-podium-bar { height: 22px; }
+    .hero__visual .phone-mockup .phone-podium-item--2 .phone-podium-bar { height: 16px; }
+    .hero__visual .phone-mockup .phone-podium-item--3 .phone-podium-bar { height: 10px; }
+    .hero__visual .phone-mockup .phone-rank-row { padding: 4px 8px; }
+    .hero__visual .phone-mockup .phone-rank-row__avatar { width: 18px; height: 18px; font-size: .52rem; }
+    .hero__visual .phone-mockup .phone-rank-row__name { font-size: .6rem; }
+    .hero__visual .phone-mockup .phone-rank-row__xp { font-size: .58rem; }
+    .hero__visual .phone-mockup .phone-rank-row__pos { font-size: .62rem; }
+    /* Perfil compacto */
+    .hero__visual .phone-mockup .phone-profile { padding: 4px 0 10px; margin-bottom: 10px; }
+    .hero__visual .phone-mockup .phone-profile__avatar { width: 50px; height: 50px; font-size: 1.2rem; margin-bottom: 6px; }
+    .hero__visual .phone-mockup .phone-profile__name { font-size: .8rem; }
+    .hero__visual .phone-mockup .phone-profile__league { font-size: .5rem; }
+    .hero__visual .phone-mockup .phone-profile__email { font-size: .55rem; }
+    .hero__visual .phone-mockup .phone-profile-stat { padding: 7px 6px; }
+    .hero__visual .phone-mockup .phone-profile-stat__val { font-size: .9rem; }
+    .hero__visual .phone-mockup .phone-profile-stat__lbl { font-size: .5rem; }
+    .hero__visual .phone-mockup .phone-profile-stat .material-symbols-outlined { font-size: 16px; }
+    .hero__visual .phone-mockup .phone-page-title { font-size: .9rem; }
+    .hero__visual .phone-mockup .phone-page-sub { font-size: .58rem; margin-bottom: 8px; }
+    /* Comunidade compacta — caber no phone reduzido do hero */
+    .hero__visual .phone-mockup .phone-stories { gap: 6px; margin-bottom: 8px; padding-bottom: 2px; }
+    .hero__visual .phone-mockup .phone-story__avatar { width: 28px; height: 28px; font-size: .58rem; border-width: 1.5px; }
+    .hero__visual .phone-mockup .phone-story__name { font-size: .42rem; max-width: 34px; }
+    .hero__visual .phone-mockup .phone-post { padding: 6px 8px; margin-bottom: 5px; }
+    .hero__visual .phone-mockup .phone-post__avatar { width: 18px; height: 18px; font-size: .48rem; }
+    .hero__visual .phone-mockup .phone-post__author { font-size: .55rem; gap: 3px; }
+    .hero__visual .phone-mockup .phone-post__role { font-size: .4rem; padding: 1px 4px; }
+    .hero__visual .phone-mockup .phone-post__time { font-size: .44rem; }
+    .hero__visual .phone-mockup .phone-post__body { font-size: .54rem; margin-bottom: 4px; line-height: 1.35; }
+    .hero__visual .phone-mockup .phone-post__actions { font-size: .48rem; gap: 10px; }
+    .hero__visual .phone-mockup .phone-post__actions .material-symbols-outlined { font-size: 10px; }
+
+    /* === Balão de conversa que descreve o slide ativo === */
+    .phone-bubble {
+      position: absolute;
+      z-index: 5;
+      bottom: 30px;
+      left: 215px;
+      max-width: 200px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #FFF;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border-bottom-left-radius: 4px;
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .78rem;
+      line-height: 1.35;
+      box-shadow:
+        0 12px 28px rgba(255, 214, 10, .45),
+        0 0 0 1px rgba(255, 255, 255, .08) inset;
+      animation: bubbleIn .35s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: none;
+    }
+    .phone-bubble__tail {
+      position: absolute;
+      left: -8px; bottom: 6px;
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right: 12px solid var(--primary);
+      filter: drop-shadow(-2px 1px 2px rgba(0, 0, 0, .15));
+    }
+    .phone-bubble.is-changing {
+      animation: bubbleSwap .35s ease;
+    }
+    @keyframes bubbleIn {
+      0%   { opacity: 0; transform: translateY(8px) scale(.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes bubbleSwap {
+      0%   { opacity: .4; transform: translateY(4px) scale(.97); }
+      60%  { opacity: 1; transform: translateY(-2px) scale(1.03); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    /* Tablet — bubble menor e ajustada à posição do phone reduzido */
+    @media(max-width: 1024px) {
+      .phone-bubble {
+        left: 185px;
+        max-width: 170px;
+        font-size: .72rem;
+        padding: 8px 12px;
+      }
+    }
+    /* Mobile — bubble abaixo do phone (fora do absolute), centralizado */
+    @media(max-width: 768px) {
+      .phone-bubble {
+        position: relative;
+        left: auto; bottom: auto;
+        margin: 16px auto 0;
+        max-width: 260px;
+        text-align: center;
+        border-bottom-left-radius: 14px;
+        border-top-left-radius: 4px;
+      }
+      .phone-bubble__tail {
+        left: 50%; top: -8px; bottom: auto;
+        transform: translateX(-50%);
+        border-top: none;
+        border-bottom: 12px solid var(--primary);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .phone-bubble, .phone-bubble.is-changing { animation: none; }
+    }
+
+    /* Polaroides com fotos de aprovados — flutuando ao redor da Carla */
+    .hero-portrait {
+      position: absolute;
+      z-index: 3;
+      width: 180px;
+      background: #FFFFFF;
+      padding: 10px 10px 50px;
+      border-radius: 4px;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, .55),
+        0 0 0 1px rgba(0, 0, 0, .04);
+      transition: transform .5s cubic-bezier(.34,1.56,.64,1), box-shadow .35s ease;
+    }
+    .hero-portrait:hover {
+      box-shadow:
+        0 30px 80px rgba(255, 214, 10, .4),
+        0 0 0 1px var(--primary);
+      z-index: 5;
+    }
+    .hero-portrait__photo {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 2px;
+      display: block;
+    }
+    .hero-portrait__caption {
+      position: absolute;
+      bottom: 12px; left: 10px; right: 10px;
+      text-align: center;
+      font-family: 'Caveat', cursive;
+      font-size: 1rem;
+      color: #1f2937;
+      font-weight: 700;
+      letter-spacing: .02em;
+      line-height: 1.1;
+    }
+    .hero-portrait__caption small {
+      display: block;
+      font-family: var(--font-h);
+      font-size: .55rem;
+      color: #10b981;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    /* Polaroide aluna — canto superior-direito da Carla */
+    .hero-portrait--top-right {
+      top: -8%;
+      right: -8%;
+      transform: rotate(8deg);
+      width: 160px;
+    }
+    .hero-portrait--top-right:hover {
+      transform: rotate(3deg) scale(1.06);
+    }
+    /* Polaroide aluno — canto inferior-direito da Carla */
+    .hero-portrait--bottom-right {
+      bottom: 5%;
+      right: -10%;
+      transform: rotate(-6deg);
+      width: 165px;
+    }
+    .hero-portrait--bottom-right:hover {
+      transform: rotate(-1deg) scale(1.06);
+    }
+    /* Fita adesiva no topo da polaroid */
+    .hero-portrait::before {
+      content: '';
+      position: absolute;
+      top: -7px; left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 50px; height: 16px;
+      background: rgba(245, 158, 11, .6);
+      border: 1px solid rgba(245, 158, 11, .25);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
+    }
+
+    /* Tablets — reduz Carla e ajusta posicionamento */
+    @media(max-width: 1024px) {
+      .hero-instructor { max-width: 380px; }
+      .hero__visual .phone-mockup { width: 180px; height: 400px; left: -5px; }
+      .hero-portrait--top-right { width: 130px; right: -5%; }
+      .hero-portrait--bottom-right { width: 135px; right: -7%; }
+    }
+
+    /* Mobile — empilha tudo, esconde polaroides do hero (vão pro carrossel) */
+    @media(max-width: 768px) {
+      .hero__visual { min-height: auto; padding: 10px 0; }
+      .hero-instructor { max-width: 320px; aspect-ratio: 4 / 5; }
+      .hero__visual .phone-mockup {
+        position: relative;
+        width: 240px; height: 500px;
+        bottom: auto; left: auto;
+        margin-top: 24px;
+        transform: perspective(800px) rotateY(-4deg);
+      }
+      .hero-portrait { display: none; }
     }
     .hero__row {
       position: relative; z-index: 2;
@@ -284,7 +585,7 @@
       grid-template-columns: 1fr 1fr;
       align-items: center;
       gap: 48px;
-      padding: 80px 0;
+      padding: 24px 0 80px;
     }
     .hero__content { min-width: 0; }
     .hero__badge { margin-bottom: 22px; }
@@ -313,79 +614,237 @@
     }
     .hero__sub strong { color: var(--text); font-weight: 600; }
 
+    /* ====== PRICE BOX (limpo) ======
+       Hierarquia vertical clara: chip de oferta → preço antigo + desconto → preço novo + bônus
+       → trust bar. Apenas a cor primária da marca (azul) com um único acento vermelho contido
+       no chip de desconto. Nenhuma animação dentro do card — o pulse fica só no CTA. */
     .hero__price-box {
-      background: var(--surface);
+      position: relative;
+      background:
+        radial-gradient(ellipse at top right, rgba(255, 214, 10, .12) 0%, transparent 65%),
+        linear-gradient(180deg, var(--surface), var(--bg-2));
       border: 1px solid var(--border-strong);
-      border-radius: var(--radius);
-      padding: 22px;
+      border-radius: 18px;
+      padding: 22px 24px 20px;
       margin-bottom: 22px;
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 16px;
-      align-items: center;
-      box-shadow: var(--shadow-1);
+      display: flex; flex-direction: column;
+      gap: 10px;
+      box-shadow:
+        0 12px 32px rgba(15, 23, 42, .12),
+        0 0 0 1px var(--primary-soft) inset;
+    }
+    /* Linha 1 — chip de oferta */
+    .hero__price-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      width: fit-content;
+      font-family: var(--font-h);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #FFF;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      padding: 5px 11px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .hero__price-tag::before {
+      content: '⚡';
+      font-size: .85rem;
+    }
+    /* Linha 2 — preço antigo + chip vermelho de desconto */
+    .hero__price-old-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
     .hero__price-old {
-      grid-column: 1; grid-row: 1;
-      font-size: 1rem; color: var(--text-subtle);
+      font-size: 1rem;
+      color: var(--text-subtle);
       text-decoration: line-through;
       text-decoration-color: var(--danger);
-      font-weight: 500;
+      text-decoration-thickness: 2px;
+      font-weight: 600;
     }
-    .hero__price-lbl {
-      grid-column: 1; grid-row: 2;
-      display: inline-block;
-      width: fit-content;
+    .hero__price-discount {
+      font-family: var(--font-h);
       font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .08em;
       color: #FFF;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       padding: 4px 10px;
       border-radius: 6px;
-      margin-bottom: 4px;
+      box-shadow: 0 3px 10px rgba(239, 68, 68, .35);
+    }
+    /* Linha 3 — preço novo gigante + sublinha de bônus */
+    .hero__price-main {
+      display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+      margin-top: 2px;
     }
     .hero__price-val {
-      grid-column: 1; grid-row: 3;
-      font-family: var(--font-h); font-weight: 800;
-      font-size: clamp(3rem, 8vw, 4rem);
-      color: var(--primary);
-      line-height: .95;
-      letter-spacing: -.02em;
+      display: inline-flex; align-items: flex-start; gap: 4px;
+      font-family: var(--font-h); font-weight: 900;
+      font-size: clamp(3.2rem, 8.5vw, 4.4rem);
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: .9;
+      letter-spacing: -.03em;
+      filter: drop-shadow(0 4px 16px var(--primary-glow));
+      transform-origin: left center;
+      animation: priceBreathe 3.4s ease-in-out infinite;
+    }
+    @keyframes priceBreathe {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 4px 16px var(--primary-glow));
+      }
+      50% {
+        transform: scale(1.035);
+        filter: drop-shadow(0 6px 28px var(--primary-glow))
+                drop-shadow(0 0 12px rgba(255, 214, 10, .35));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero__price-val { animation: none; }
     }
     .hero__price-val sup {
-      font-size: 1.4rem; vertical-align: super; line-height: 0;
-      font-weight: 700; opacity: .9;
-    }
-    .hero__price-note {
-      grid-column: 1 / -1; grid-row: 4;
-      font-size: .82rem; color: var(--text-subtle);
-      margin-top: 6px; line-height: 1.4;
-    }
-    .hero__offer-bar {
-      grid-column: 2; grid-row: 1 / span 3;
-      align-self: center; justify-self: end;
-      display: flex; flex-direction: column; gap: 6px;
-      padding: 8px;
-      border-radius: 14px;
-      background: var(--bg-3);
-      border: 2px solid var(--primary);
-      width: 100%; max-width: 160px;
-    }
-    .offer-bar__item {
-      padding: 10px 14px;
-      font-family: var(--font-h); font-weight: 700;
-      font-size: .9rem;
-      letter-spacing: .06em;
-      text-align: center;
-      border-radius: 10px;
-      text-transform: uppercase;
-    }
-    .offer-bar__pay { color: var(--primary); }
-    .offer-bar__get {
+      display: inline-block;
+      font-size: 1.5rem;
+      line-height: 1;
+      font-weight: 800;
+      margin-top: 8px;
+      /* Reaplica o gradient explicitamente para garantir que o R$ apareça */
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: #FFF;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero__price-bonus {
+      font-size: .92rem;
+      color: var(--text);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .hero__price-bonus strong {
+      color: var(--primary);
+      font-weight: 800;
+    }
+    .hero__price-bonus-sub {
+      display: block;
+      font-size: .78rem;
+      color: var(--text-mute);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    /* Linha 4 — trust bar */
+    .hero__price-trust {
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-top: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: .8rem;
+      color: var(--text-mute);
+      font-weight: 500;
+    }
+    .hero__price-trust span {
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .hero__price-trust span strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ====== VAGAS LIMITADAS ======
+       Indicador de escassez real: 100 vagas, decresce conforme as vendas. */
+    .vagas-counter {
+      position: relative;
+      background:
+        radial-gradient(ellipse at top right, rgba(239, 68, 68, .12) 0%, transparent 60%),
+        var(--surface);
+      border: 1px solid rgba(239, 68, 68, .35);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .vagas-counter__head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px;
+    }
+    .vagas-counter__label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-h); font-weight: 800;
+      font-size: .68rem; color: #ef4444;
+      text-transform: uppercase; letter-spacing: .12em;
+    }
+    .vagas-counter__label::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, .6);
+      animation: vagasDot 1.6s ease-in-out infinite;
+    }
+    @keyframes vagasDot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .6); }
+      50%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    }
+    .vagas-counter__count {
+      font-family: var(--font-h); font-weight: 800;
+      font-size: .78rem; color: var(--text);
+    }
+    .vagas-counter__count strong {
+      color: #ef4444;
+      font-size: 1rem;
+    }
+    .vagas-counter__bar {
+      position: relative;
+      height: 6px;
+      background: var(--bg-3);
+      border-radius: 100px; overflow: hidden;
+    }
+    .vagas-counter__bar-fill {
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, #ef4444, #f97316);
+      border-radius: 100px;
+      transition: width .8s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: 0 0 8px rgba(239, 68, 68, .4);
+    }
+    .vagas-counter__hint {
+      font-size: .72rem; color: var(--text-mute);
+      font-style: italic;
+    }
+    /* Variante "esgotado" — vira lista de espera */
+    .vagas-counter.is-waitlist {
+      border-color: rgba(245, 158, 11, .4);
+      background:
+        radial-gradient(ellipse at top right, rgba(245, 158, 11, .12) 0%, transparent 60%),
+        var(--surface);
+    }
+    .vagas-counter.is-waitlist .vagas-counter__label {
+      color: #f59e0b;
+    }
+    .vagas-counter.is-waitlist .vagas-counter__label::before {
+      background: #f59e0b;
+      animation-name: waitlistDot;
+    }
+    @keyframes waitlistDot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .6); }
+      50%      { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    }
+    .vagas-counter.is-waitlist .vagas-counter__count strong {
+      color: #f59e0b;
+    }
+    .vagas-counter.is-waitlist .vagas-counter__bar-fill {
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+    }
+
+    /* Variante compacta no modal — mais discreta */
+    .modal .vagas-counter {
+      margin: 0 0 18px;
+      padding: 10px 12px;
     }
 
     .hero__cta-btn {
@@ -394,7 +853,7 @@
     }
     @keyframes pulseBtn {
       0%, 100% { box-shadow: 0 10px 30px var(--primary-glow); }
-      50%      { box-shadow: 0 14px 44px var(--primary-glow), 0 0 0 8px rgba(37, 99, 235, 0); }
+      50%      { box-shadow: 0 14px 44px var(--primary-glow), 0 0 0 8px rgba(255, 214, 10, 0); }
     }
     .hero__cta-note {
       font-size: .78rem; color: var(--text-subtle);
@@ -407,10 +866,12 @@
     }
     .hero__cta-note .material-symbols-outlined { font-size: 14px; }
 
-    /* ── App mockup (replaces the book mockup) ── */
+    /* ── Navegable phone mockup (replaces the book) ── */
     .hero__visual {
       position: relative;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px;
     }
     .hero__visual::before {
       content: '';
@@ -422,95 +883,134 @@
     }
     .phone-mockup {
       position: relative;
-      width: 280px; height: 580px;
-      background: linear-gradient(155deg, #1A2347, #0F1730);
-      border-radius: 38px;
+      width: 290px; height: 600px;
+      background: linear-gradient(155deg, #143598, #0D2675);
+      border-radius: 40px;
       padding: 12px;
       box-shadow:
         0 30px 70px rgba(0, 0, 0, .55),
         0 0 0 2px rgba(255, 255, 255, .08);
-      transform: perspective(1000px) rotateY(-12deg) rotateX(2deg);
       transition: transform .5s ease;
+      flex-shrink: 0;
     }
-    [data-theme="light"] .phone-mockup {
-      box-shadow:
-        0 30px 70px rgba(37, 99, 235, .25),
-        0 0 0 2px rgba(15, 23, 42, .08);
-    }
-    .phone-mockup:hover { transform: perspective(1000px) rotateY(-4deg) rotateX(0); }
     .phone-screen {
       width: 100%; height: 100%;
-      background: linear-gradient(170deg, #0A1020, #141C3A);
-      border-radius: 28px;
+      background: linear-gradient(170deg, #0A1F5C, #112D85);
+      border-radius: 30px;
       overflow: hidden;
       position: relative;
-      display: flex; flex-direction: column;
-      padding: 20px 18px;
     }
     .phone-notch {
       position: absolute; top: 8px; left: 50%;
       transform: translateX(-50%);
-      width: 90px; height: 22px;
+      width: 88px; height: 22px;
       background: #000; border-radius: 100px;
-      z-index: 2;
+      z-index: 5;
     }
+
+    /* === Demo "device" hint === */
+    .phone-demo-hint {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-family: var(--font-h);
+      font-size: .68rem; font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border-radius: 100px;
+      animation: hintPulse 2.4s ease-in-out infinite;
+    }
+    .phone-demo-hint .material-symbols-outlined {
+      font-size: 14px;
+      animation: hintTap 1.6s ease-in-out infinite;
+    }
+    @keyframes hintTap {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(2px) scale(.92); }
+    }
+    @keyframes hintPulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
+      50%      { box-shadow: 0 0 0 8px rgba(255, 214, 10, 0); }
+    }
+
+    /* === Slides (each is one app screen) === */
+    .phone-slides {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 56px;  /* leave space for bottom nav */
+      overflow: hidden;
+    }
+    .phone-slide {
+      position: absolute; inset: 0;
+      padding: 30px 16px 12px;
+      display: flex; flex-direction: column;
+      opacity: 0;
+      transform: translateX(20px);
+      pointer-events: none;
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .phone-slide.is-active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* === Common phone elements === */
     .phone-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-top: 28px; padding: 0 4px;
+      margin-bottom: 12px;
+      padding: 0 4px;
     }
     .phone-greeting {
       font-family: var(--font-h);
-      color: #FFF; font-size: .72rem; font-weight: 600;
-      opacity: .8;
+      color: #FFF; font-size: .68rem; font-weight: 500;
+      opacity: .85;
     }
     .phone-greeting strong { font-weight: 800; }
-    .phone-stats { display: flex; gap: 6px; }
+    .phone-stats { display: flex; gap: 5px; }
     .phone-stat {
       display: flex; align-items: center; gap: 3px;
       background: rgba(255, 255, 255, .08);
-      padding: 4px 8px; border-radius: 100px;
-      font-size: .65rem; color: #FFF; font-weight: 700;
+      padding: 3px 7px; border-radius: 100px;
+      font-size: .6rem; color: #FFF; font-weight: 700;
     }
-    .phone-stat .material-symbols-outlined { font-size: 12px; }
+    .phone-stat .material-symbols-outlined { font-size: 11px; }
+
+    /* ── Trilha screen ── */
     .phone-card {
-      background: rgba(37, 99, 235, .15);
-      border: 1px solid rgba(37, 99, 235, .35);
-      border-radius: 14px;
-      padding: 16px;
-      margin: 18px 0 14px;
+      background: rgba(255, 214, 10, .15);
+      border: 1px solid rgba(255, 214, 10, .35);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
     .phone-card__label {
-      font-family: var(--font-h); font-size: .58rem;
+      font-family: var(--font-h); font-size: .54rem;
       color: var(--primary-2); font-weight: 700;
       text-transform: uppercase; letter-spacing: .14em;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .phone-card__title {
       font-family: var(--font-h); font-weight: 800;
-      font-size: 1.05rem; color: #FFF; line-height: 1.2;
+      font-size: .95rem; color: #FFF; line-height: 1.2;
     }
     .phone-card__progress {
-      margin-top: 12px;
-      height: 6px;
+      margin-top: 10px; height: 5px;
       background: rgba(255, 255, 255, .1);
-      border-radius: 100px;
-      overflow: hidden;
+      border-radius: 100px; overflow: hidden;
     }
     .phone-card__progress-fill {
-      height: 100%;
-      width: 33%;
+      height: 100%; width: 33%;
       background: linear-gradient(90deg, var(--primary), var(--primary-2));
       border-radius: 100px;
     }
     .phone-trail {
-      display: flex; flex-direction: column; gap: 10px;
-      padding: 4px 0;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .phone-step {
-      display: flex; align-items: center; gap: 10px;
-    }
+    .phone-step { display: flex; align-items: center; gap: 9px; }
     .phone-step__dot {
-      width: 30px; height: 30px;
+      width: 28px; height: 28px;
       border-radius: 50%;
       background: rgba(255, 255, 255, .08);
       display: flex; align-items: center; justify-content: center;
@@ -524,35 +1024,550 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       box-shadow: 0 0 0 3px var(--primary-soft);
     }
-    .phone-step__dot .material-symbols-outlined {
-      font-size: 16px; color: #FFF;
-    }
+    .phone-step__dot .material-symbols-outlined { font-size: 14px; color: #FFF; }
     .phone-step__text {
       font-family: var(--font-h); font-weight: 600;
-      font-size: .8rem; color: #FFF;
+      font-size: .74rem; color: #FFF;
     }
     .phone-step__text small {
       display: block; font-weight: 400;
       color: rgba(255, 255, 255, .5);
-      font-size: .65rem; margin-top: 1px;
+      font-size: .6rem; margin-top: 1px;
     }
+
+    /* ── Page title (used in Cursos, Perfil) ── */
+    .phone-page-title {
+      font-family: var(--font-h); font-weight: 800;
+      font-size: 1.15rem; color: #FFF; line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .phone-page-sub {
+      color: rgba(255, 255, 255, .55);
+      font-size: .68rem; line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    /* ── Cursos screen ── */
+    .phone-catalog {
+      background: rgba(255, 214, 10, .12);
+      border: 1px solid rgba(255, 214, 10, .3);
+      border-radius: 14px;
+      padding: 28px 18px;
+      text-align: center;
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .phone-catalog__icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: rgba(255, 214, 10, .25);
+      color: var(--primary-2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .phone-catalog__icon .material-symbols-outlined { font-size: 30px; }
+    .phone-catalog__title {
+      font-family: var(--font-h); font-weight: 800;
+      color: var(--primary-2); font-size: .76rem;
+      letter-spacing: .14em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .phone-catalog__desc {
+      color: rgba(255, 255, 255, .65);
+      font-size: .72rem; line-height: 1.5;
+    }
+
+    /* ── Perfil screen ── */
+    .phone-profile {
+      text-align: center;
+      padding: 8px 0 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      margin-bottom: 14px;
+    }
+    .phone-profile__avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #FFF;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800; font-size: 1.6rem;
+      margin: 0 auto 10px;
+      box-shadow: 0 6px 18px var(--primary-glow);
+    }
+    .phone-profile__name {
+      font-family: var(--font-h); font-weight: 800;
+      color: #FFF; font-size: .95rem;
+      margin-bottom: 4px;
+    }
+    .phone-profile__league {
+      display: inline-block;
+      background: rgba(245, 158, 11, .15);
+      color: #f59e0b;
+      font-family: var(--font-h);
+      font-size: .58rem; font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px;
+      margin-bottom: 6px;
+    }
+    .phone-profile__email {
+      color: rgba(255, 255, 255, .45);
+      font-size: .62rem;
+    }
+    .phone-profile__progress {
+      margin-top: 10px;
+      padding: 0 12px;
+    }
+    .phone-profile__progress-label {
+      color: rgba(255, 255, 255, .55);
+      font-family: var(--font-h);
+      font-size: .58rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .phone-profile__progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 100px; overflow: hidden;
+    }
+    .phone-profile__progress-fill {
+      height: 100%; width: 33%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      border-radius: 100px;
+    }
+    .phone-profile-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .phone-profile-stat {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .phone-profile-stat .material-symbols-outlined {
+      color: var(--primary-2);
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .phone-profile-stat__val {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: #FFF;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+    .phone-profile-stat__lbl {
+      color: rgba(255, 255, 255, .5);
+      font-family: var(--font-h);
+      font-size: .56rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-top: 4px;
+    }
+
+    /* ── Missões / Mapa screen ── */
+    .phone-map-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .phone-map-eyebrow {
+      font-family: var(--font-h);
+      color: var(--primary-2);
+      font-size: .56rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      margin-bottom: 4px;
+    }
+    .phone-map-title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1rem;
+      color: #FFF;
+      letter-spacing: -.01em;
+      margin-bottom: 2px;
+    }
+    .phone-map-counter {
+      display: inline-block;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .65);
+      font-family: var(--font-h);
+      font-size: .55rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .phone-event {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #FFF;
+      font-family: var(--font-h);
+      font-size: .58rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 8px;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 10px;
+    }
+    .phone-event__timer {
+      margin-left: auto;
+      background: rgba(0, 0, 0, .25);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    .phone-map {
+      position: relative;
+      flex: 1;
+      background: #0a0e1a;
+      border-radius: 12px;
+      overflow: hidden;
+      background-image:
+        linear-gradient(135deg, transparent 47%, rgba(255, 255, 255, .04) 48%, rgba(255, 255, 255, .04) 52%, transparent 53%),
+        linear-gradient(45deg, transparent 47%, rgba(255, 255, 255, .04) 48%, rgba(255, 255, 255, .04) 52%, transparent 53%),
+        linear-gradient(90deg, transparent 47%, rgba(255, 255, 255, .04) 48%, rgba(255, 255, 255, .04) 52%, transparent 53%);
+      background-size: 60px 60px, 60px 60px, 60px 60px;
+    }
+    .phone-pin {
+      position: absolute;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+      animation: pinFloat 2.4s ease-in-out infinite;
+    }
+    .phone-pin--1 {
+      top: 28%; left: 65%;
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      animation-delay: 0s;
+    }
+    .phone-pin--2 {
+      top: 50%; left: 35%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      animation-delay: .4s;
+    }
+    .phone-pin--3 {
+      top: 75%; left: 25%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      animation-delay: .8s;
+    }
+    .phone-pin .material-symbols-outlined { font-size: 16px; color: #FFF; }
+    @keyframes pinFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    /* ── Ranking screen ── */
+    .phone-league-header {
+      text-align: center;
+      padding: 14px 8px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, .15), rgba(245, 158, 11, .04));
+      border: 1px solid rgba(245, 158, 11, .25);
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+    .phone-league-header .material-symbols-outlined {
+      color: #f59e0b;
+      font-size: 28px;
+    }
+    .phone-league-name {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .95rem;
+      color: #f59e0b;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .phone-podium {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 6px; margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .phone-podium-item {
+      flex: 1;
+      text-align: center;
+    }
+    .phone-podium-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .1);
+      color: #FFF;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800; font-size: .85rem;
+      margin: 0 auto 4px;
+      border: 2px solid;
+    }
+    .phone-podium-item--1 .phone-podium-avatar {
+      width: 44px; height: 44px;
+      border-color: #f59e0b;
+      box-shadow: 0 0 16px rgba(245, 158, 11, .35);
+    }
+    .phone-podium-item--2 .phone-podium-avatar { border-color: #cbd5e1; }
+    .phone-podium-item--3 .phone-podium-avatar { border-color: #f97316; }
+    .phone-podium-name {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .62rem;
+      color: #FFF;
+    }
+    .phone-podium-xp {
+      font-family: var(--font-h);
+      font-size: .56rem;
+      color: var(--primary-2);
+      font-weight: 800;
+    }
+    .phone-podium-bar {
+      margin-top: 6px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), transparent);
+      border-radius: 6px 6px 0 0;
+    }
+    .phone-podium-item--1 .phone-podium-bar { height: 32px; }
+    .phone-podium-item--2 .phone-podium-bar { height: 22px; }
+    .phone-podium-item--3 .phone-podium-bar { height: 14px; }
+    .phone-rank-list {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .phone-rank-row {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+    .phone-rank-row__pos {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: rgba(255, 255, 255, .4);
+      font-size: .7rem;
+      width: 16px;
+    }
+    .phone-rank-row__avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 214, 10, .3);
+      color: #FFF;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .6rem;
+    }
+    .phone-rank-row__name {
+      font-family: var(--font-h);
+      color: #FFF;
+      font-size: .68rem;
+      flex: 1;
+    }
+    .phone-rank-row__xp {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--primary-2);
+      font-size: .65rem;
+    }
+
+    /* ── Cursos (curso + aulas) ── */
+    .phone-course-card {
+      background: linear-gradient(135deg, rgba(255, 214, 10, .18), rgba(255, 214, 10, .04));
+      border: 1px solid rgba(255, 214, 10, .35);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .phone-course-thumb {
+      width: 56px; height: 42px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px var(--primary-glow);
+    }
+    .phone-course-thumb .material-symbols-outlined {
+      color: #FFF; font-size: 22px;
+    }
+    .phone-course-info { min-width: 0; flex: 1; }
+    .phone-course-title {
+      font-family: var(--font-h); font-weight: 800;
+      font-size: .72rem; color: #FFF; line-height: 1.2;
+      margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .phone-course-meta {
+      font-size: .55rem; color: rgba(255, 255, 255, .5);
+    }
+    .phone-aulas {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .phone-aula {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 8px;
+    }
+    .phone-aula__icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 214, 10, .25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .phone-aula__icon .material-symbols-outlined {
+      font-size: 12px; color: var(--primary-2);
+    }
+    .phone-aula--done .phone-aula__icon {
+      background: var(--success);
+    }
+    .phone-aula--done .phone-aula__icon .material-symbols-outlined { color: #FFF; }
+    .phone-aula__title {
+      font-family: var(--font-h); font-weight: 600;
+      font-size: .62rem; color: #FFF; flex: 1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .phone-aula__time {
+      font-size: .55rem; color: rgba(255, 255, 255, .5);
+      font-family: var(--font-h);
+    }
+
+    /* ── Comunidade ── */
+    .phone-stories {
+      display: flex; gap: 8px;
+      margin-bottom: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .phone-stories::-webkit-scrollbar { display: none; }
+    .phone-story {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; flex-shrink: 0;
+    }
+    .phone-story__avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #FFF;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800; font-size: .72rem;
+      border: 2px solid var(--primary-2);
+      position: relative;
+    }
+    .phone-story--online .phone-story__avatar::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      border: 2px solid #0A1F5C;
+    }
+    .phone-story__name {
+      font-family: var(--font-h);
+      font-size: .5rem;
+      color: rgba(255, 255, 255, .8);
+      max-width: 42px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .phone-post {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+    .phone-post__head {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 4px;
+    }
+    .phone-post__avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #FFF;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800; font-size: .55rem;
+      flex-shrink: 0;
+    }
+    .phone-post__meta { min-width: 0; flex: 1; }
+    .phone-post__author {
+      font-family: var(--font-h); font-weight: 700;
+      font-size: .6rem; color: #FFF;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .phone-post__role {
+      font-size: .45rem;
+      color: var(--primary-2);
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: rgba(255, 214, 10, .18);
+      padding: 1px 5px;
+      border-radius: 100px;
+    }
+    .phone-post__time {
+      font-size: .5rem;
+      color: rgba(255, 255, 255, .4);
+    }
+    .phone-post__body {
+      font-size: .58rem;
+      color: rgba(255, 255, 255, .85);
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+    .phone-post__actions {
+      display: flex; gap: 12px;
+      font-size: .52rem;
+      color: rgba(255, 255, 255, .55);
+    }
+    .phone-post__actions span {
+      display: inline-flex; align-items: center; gap: 3px;
+    }
+    .phone-post__actions .material-symbols-outlined {
+      font-size: 11px;
+    }
+
+    /* ── Bottom nav (always visible, navigates between slides) ── */
     .phone-bottom {
-      margin-top: auto;
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 56px;
       display: flex; justify-content: space-around;
-      padding-top: 14px;
+      padding: 8px 4px;
+      background: rgba(10, 16, 32, .85);
+      backdrop-filter: blur(8px);
       border-top: 1px solid rgba(255, 255, 255, .06);
+      z-index: 4;
     }
     .phone-bottom__item {
       display: flex; flex-direction: column; align-items: center;
       gap: 2px; opacity: .55;
+      cursor: pointer;
+      flex: 1;
+      padding: 4px 0;
+      border: none; background: transparent;
+      transition: opacity .25s ease;
     }
-    .phone-bottom__item--active { opacity: 1; color: var(--primary-2); }
-    .phone-bottom__item .material-symbols-outlined { font-size: 18px; color: #FFF; }
-    .phone-bottom__item--active .material-symbols-outlined { color: var(--primary-2); }
+    .phone-bottom__item:hover { opacity: .85; }
+    .phone-bottom__item.is-active { opacity: 1; }
+    .phone-bottom__item.is-active .material-symbols-outlined { color: var(--primary-2); }
+    .phone-bottom__item.is-active span:not(.material-symbols-outlined) { color: var(--primary-2); }
+    .phone-bottom__item .material-symbols-outlined {
+      font-size: 18px; color: #FFF;
+    }
     .phone-bottom__item span:not(.material-symbols-outlined) {
-      font-size: .55rem; color: #FFF; font-weight: 700;
+      font-size: .5rem; color: rgba(255, 255, 255, .8);
+      font-weight: 700;
     }
-    .phone-bottom__item--active span:not(.material-symbols-outlined) { color: var(--primary-2); }
 
     /* ─── PAIN SECTION ──────────────────────────────────── */
     .pain-section {
@@ -714,9 +1729,54 @@
       font-size: .9rem;
     }
 
+    /* Mãozinha que indica "clica aqui" no primeiro item da lista de dores.
+       Some assim que qualquer item é selecionado (CSS :has). */
+    .pain-list li { position: relative; }
+    .click-hand {
+      position: absolute;
+      top: 50%; right: -14px;
+      transform: translateY(-50%);
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      z-index: 5;
+      animation: handTap 1.6s ease-in-out infinite;
+    }
+    .click-hand::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: .28;
+      animation: handPulse 1.6s ease-out infinite;
+    }
+    .click-hand .material-symbols-outlined {
+      position: relative; z-index: 1;
+      font-size: 40px;
+      color: var(--primary);
+      filter: drop-shadow(0 4px 14px var(--primary-glow));
+    }
+    @keyframes handTap {
+      0%, 100% { transform: translate(0, -50%) scale(1) rotate(-4deg); }
+      40%      { transform: translate(-6px, calc(-50% - 5px)) scale(.92) rotate(-14deg); }
+      60%      { transform: translate(-2px, calc(-50% + 2px)) scale(1.08) rotate(-2deg); }
+    }
+    @keyframes handPulse {
+      0%   { transform: scale(.55); opacity: .4; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    /* Esconde a mãozinha após qualquer interação */
+    .pain-list:has(li.is-selected) .click-hand { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .click-hand,
+      .click-hand::before { animation: none; }
+    }
     @media(max-width: 768px) {
       .pain-inner { grid-template-columns: 1fr; gap: 24px; }
       .pain-diagnosis { position: relative; top: auto; }
+      .click-hand { right: -8px; width: 44px; height: 44px; }
+      .click-hand .material-symbols-outlined { font-size: 32px; }
     }
 
     /* ─── QUEM SOMOS ────────────────────────────────────── */
@@ -731,7 +1791,7 @@
       position: absolute; inset: 0;
       background:
         radial-gradient(ellipse 60% 50% at 100% 50%, var(--primary-soft) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 0% 100%, rgba(59, 130, 246, .04) 0%, transparent 70%);
+        radial-gradient(ellipse 40% 30% at 0% 100%, rgba(255, 214, 10, .04) 0%, transparent 70%);
       pointer-events: none;
     }
     .quem-somos__grid {
@@ -902,6 +1962,32 @@
       margin-bottom: 10px;
       opacity: .35;
     }
+    .module-card__badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-family: var(--font-h);
+      font-size: .55rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 100px;
+    }
+    .module-card__badge--live {
+      background: rgba(16, 185, 129, .15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
+    .module-card__badge--soon {
+      background: rgba(245, 158, 11, .15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, .3);
+    }
+    .module-card--soon { opacity: .75; }
+    .module-card--soon:hover { opacity: 1; }
+    .module-card--soon .module-card__icon {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+    }
     .module-card__icon {
       width: 56px; height: 56px;
       border-radius: 14px;
@@ -922,6 +2008,233 @@
       color: var(--text-mute);
       font-size: .9rem;
       line-height: 1.6;
+    }
+
+    /* ─── FEATURES (gamificação completa) ─────────────── */
+    .features-section {
+      background: var(--bg-2);
+      padding: 80px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .features-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 50% 40% at 100% 0%, var(--primary-soft) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 0% 100%, rgba(255, 214, 10, .04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 40px;
+      position: relative;
+    }
+    @media(max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 22px 18px;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: .4;
+      pointer-events: none;
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-1);
+    }
+    .feature-card:hover::before { opacity: .65; transform: scale(1.4); }
+    .feature-card__icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #FFF;
+      margin-bottom: 14px;
+    }
+    .feature-card__icon .material-symbols-outlined { font-size: 24px; }
+    .feature-card--red    .feature-card__icon { background: linear-gradient(135deg, #ef4444, #f87171); }
+    .feature-card--red::before    { background: rgba(239, 68, 68, .35); }
+    .feature-card--orange .feature-card__icon { background: linear-gradient(135deg, #f97316, #fb923c); }
+    .feature-card--orange::before { background: rgba(249, 115, 22, .35); }
+    .feature-card--yellow .feature-card__icon { background: linear-gradient(135deg, #eab308, #facc15); }
+    .feature-card--yellow::before { background: rgba(234, 179, 8, .35); }
+    .feature-card--blue   .feature-card__icon { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+    .feature-card--blue::before   { background: rgba(255, 214, 10, .35); }
+    .feature-card--gold   .feature-card__icon { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .feature-card--gold::before   { background: rgba(217, 119, 6, .35); }
+    .feature-card--purple .feature-card__icon { background: linear-gradient(135deg, #9333ea, #c084fc); }
+    .feature-card--purple::before { background: rgba(147, 51, 234, .35); }
+    .feature-card--teal   .feature-card__icon { background: linear-gradient(135deg, #14b8a6, #2dd4bf); }
+    .feature-card--teal::before   { background: rgba(20, 184, 166, .35); }
+    .feature-card--pink   .feature-card__icon { background: linear-gradient(135deg, #ec4899, #f472b6); }
+    .feature-card--pink::before   { background: rgba(236, 72, 153, .35); }
+    .feature-card--indigo .feature-card__icon { background: linear-gradient(135deg, #6366f1, #818cf8); }
+    .feature-card--indigo::before { background: rgba(99, 102, 241, .35); }
+    .feature-card--green  .feature-card__icon { background: linear-gradient(135deg, var(--success), #34d399); }
+    .feature-card--green::before  { background: rgba(16, 185, 129, .35); }
+    .feature-card--cyan   .feature-card__icon { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+    .feature-card--cyan::before   { background: rgba(6, 182, 212, .35); }
+    .feature-card--rose   .feature-card__icon { background: linear-gradient(135deg, #e11d48, #fb7185); }
+    .feature-card--rose::before   { background: rgba(225, 29, 72, .35); }
+    .feature-card__title {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .feature-card__text {
+      color: var(--text-mute);
+      font-size: .85rem;
+      line-height: 1.55;
+    }
+
+    /* ─── DYNAMIC COURSES (auto-sync com Supabase) ────── */
+    .dynamic-courses-section {
+      background: var(--bg);
+      padding: 80px 0;
+    }
+    .dynamic-courses-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-top: 40px;
+    }
+    @media(max-width: 900px) { .dynamic-courses-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 600px) { .dynamic-courses-grid { grid-template-columns: 1fr; } }
+    .course-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .course-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-2);
+    }
+    .course-card__img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .course-card__img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .course-card__img-fallback {
+      font-size: 64px;
+      color: rgba(255, 255, 255, .5);
+    }
+    .course-card__badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(16, 185, 129, .9);
+      color: #FFF;
+      font-family: var(--font-h);
+      font-size: .58rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      backdrop-filter: blur(4px);
+    }
+    .course-card__body {
+      padding: 22px 22px 24px;
+      display: flex; flex-direction: column;
+      flex: 1;
+    }
+    .course-card__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .course-card__desc {
+      color: var(--text-mute);
+      font-size: .88rem;
+      line-height: 1.55;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+    .course-card__meta {
+      display: flex; gap: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-h);
+      font-size: .78rem;
+      color: var(--text-mute);
+    }
+    .course-card__meta-item {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .course-card__meta-item .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--primary);
+    }
+    @keyframes pulseSkeleton {
+      0%, 100% { opacity: .4; }
+      50%      { opacity: .8; }
+    }
+    .course-card--skeleton .course-card__img,
+    .course-card--skeleton .course-card__skeleton-line {
+      background: var(--bg-3);
+      animation: pulseSkeleton 1.4s ease-in-out infinite;
+    }
+    .course-card__skeleton-line {
+      height: 14px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .course-card__skeleton-line--title { height: 20px; width: 75%; }
+    .course-card__skeleton-line--short { width: 60%; }
+    .dynamic-courses-empty {
+      max-width: 520px;
+      margin: 40px auto 0;
+      text-align: center;
+      padding: 48px 32px;
+      background: var(--surface);
+      border: 1px dashed var(--border-strong);
+      border-radius: 18px;
+    }
+    .dynamic-courses-empty .material-symbols-outlined {
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .dynamic-courses-empty p {
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .dynamic-courses-empty__sub {
+      color: var(--text-mute) !important;
+      font-size: .9rem !important;
     }
 
     /* ─── INCLUDES ─────────────────────────────────────── */
@@ -1149,6 +2462,173 @@
       margin-left: auto; margin-right: auto;
     }
 
+    /* ─── APROVADAS (carrossel de fotos reais) ─────────── */
+    .approved-section {
+      background: var(--bg);
+      padding: 80px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .approved-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 50% 40% at 100% 50%, rgba(34, 197, 94, .06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 0% 0%, var(--primary-soft) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .approved-section .eyebrow { color: #10b981; }
+    .approved-carousel {
+      position: relative;
+      max-width: 480px;
+      margin: 40px auto 0;
+      perspective: 1400px;
+    }
+    .approved-track {
+      position: relative;
+      width: 100%;
+      height: 680px;
+      transform-style: preserve-3d;
+    }
+    @media(max-width: 540px) {
+      .approved-carousel { max-width: 320px; }
+      .approved-track { height: 480px; }
+    }
+    .approved-slide {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: scale(.85) rotateY(0deg);
+      transition: opacity .55s ease, transform .55s ease;
+      pointer-events: none;
+    }
+    .approved-slide.is-active {
+      opacity: 1;
+      transform: scale(1) rotateY(0deg);
+      pointer-events: auto;
+      z-index: 2;
+    }
+    .approved-slide.is-prev,
+    .approved-slide.is-next {
+      opacity: .35;
+      z-index: 1;
+    }
+    .approved-slide.is-prev {
+      transform: translateX(-30%) scale(.78) rotateY(20deg);
+    }
+    .approved-slide.is-next {
+      transform: translateX(30%) scale(.78) rotateY(-20deg);
+    }
+    .approved-slide img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      border-radius: 14px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+      transition: transform .35s ease, box-shadow .35s ease;
+    }
+    .approved-slide.is-active img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 36px 100px rgba(0, 0, 0, .55);
+    }
+
+    /* Quando uma imagem falha em carregar, mostra um placeholder com instruções */
+    .approved-slide__placeholder {
+      width: 100%; max-width: 360px;
+      aspect-ratio: 9 / 16;
+      border-radius: 14px;
+      background: linear-gradient(160deg, var(--surface), var(--bg-3));
+      border: 2px dashed var(--border-strong);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+      color: var(--text-mute);
+    }
+    .approved-slide__placeholder .material-symbols-outlined {
+      font-size: 48px; color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .approved-slide__placeholder strong {
+      color: var(--text);
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .approved-slide__placeholder code {
+      background: var(--bg-3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: .8rem;
+      color: var(--primary);
+      margin-top: 10px;
+    }
+
+    .approved-arrow {
+      position: absolute; top: 50%;
+      transform: translateY(-50%);
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-1);
+      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+      z-index: 5;
+    }
+    .approved-arrow:hover {
+      background: var(--primary);
+      color: #FFF;
+      transform: translateY(-50%) scale(1.08);
+      box-shadow: 0 8px 22px var(--primary-glow);
+    }
+    .approved-arrow .material-symbols-outlined { font-size: 26px; }
+    .approved-arrow--prev { left: -10px; }
+    .approved-arrow--next { right: -10px; }
+    @media(max-width: 600px) {
+      .approved-arrow--prev { left: -8px; }
+      .approved-arrow--next { right: -8px; }
+      .approved-arrow { width: 40px; height: 40px; }
+    }
+
+    .approved-dots {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 22px;
+    }
+    .approved-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border-strong);
+      border: none;
+      cursor: pointer;
+      transition: all .25s ease;
+      padding: 0;
+    }
+    .approved-dot.is-active {
+      background: var(--primary);
+      width: 28px;
+      border-radius: 4px;
+    }
+
+    .approved-counter {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 185, 129, .12);
+      border: 1px solid rgba(16, 185, 129, .35);
+      color: #10b981;
+      font-family: var(--font-h);
+      font-size: .65rem; font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      backdrop-filter: blur(8px);
+      z-index: 6;
+    }
+
     /* ─── TESTIMONIALS ─────────────────────────────────── */
     .testi-section { background: var(--bg); padding: 80px 0; }
     @keyframes scrollUp {
@@ -1253,7 +2733,7 @@
     }
     @keyframes pulseRing {
       0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
-      50%      { box-shadow: 0 0 0 18px rgba(37, 99, 235, 0); }
+      50%      { box-shadow: 0 0 0 18px rgba(255, 214, 10, 0); }
     }
     .guarantee-shield .material-symbols-outlined { font-size: 40px; }
     .guarantee-days {
@@ -1619,10 +3099,12 @@
 
     /* ─── RESPONSIVE ───────────────────────────────────── */
     @media(max-width: 768px) {
-      .hero__row { grid-template-columns: 1fr; gap: 32px; padding: 48px 0; text-align: center; }
+      .hero__row { grid-template-columns: 1fr; gap: 32px; padding: 16px 0 48px; text-align: center; }
       .hero__visual { order: 2; }
       .hero__content { order: 1; }
       .hero__price-box { text-align: left; }
+      .hero__price-main { gap: 10px; }
+      .hero__price-bonus { flex: 1; min-width: 160px; }
       .phone-mockup {
         width: 240px; height: 500px;
         transform: perspective(800px) rotateY(-6deg);
@@ -1661,14 +3143,9 @@
   </div>
 </div>
 
-<!-- ─── THEME TOGGLE ─── -->
-<button class="theme-toggle" id="themeToggle" aria-label="Alternar tema claro/escuro">
-  <span class="material-symbols-outlined theme-toggle__sun">light_mode</span>
-  <span class="material-symbols-outlined theme-toggle__moon">dark_mode</span>
-</button>
-
 <!-- ─── HERO ─── -->
 <section class="hero">
+  <div class="hero__bg-photo"></div>
   <div class="hero__overlay"></div>
   <div class="container--wide">
     <div class="hero__row">
@@ -1679,15 +3156,43 @@
           <strong>O método gamificado</strong> que transforma sua ansiedade ao volante em confiança real — em fases curtas, no seu ritmo, direto no celular.
         </p>
 
-        <div class="hero__price-box">
-          <div class="hero__price-old">De R$197,00</div>
-          <div class="hero__price-lbl">Hoje apenas</div>
-          <div class="hero__price-val"><sup>R$</sup>97</div>
-          <div class="hero__offer-bar">
-            <span class="offer-bar__item offer-bar__pay">App</span>
-            <span class="offer-bar__item offer-bar__get">+ Bônus</span>
+        <!-- Contador de vagas — atualizado via Supabase -->
+        <div class="vagas-counter" id="vagasCounter" data-vagas-mode="open">
+          <div class="vagas-counter__head">
+            <span class="vagas-counter__label">Vagas limitadas</span>
+            <span class="vagas-counter__count">
+              Restam <strong id="vagasRemaining">100</strong> de 100
+            </span>
           </div>
-          <div class="hero__price-note">Acesso imediato · Garantia de 7 dias · Use no celular</div>
+          <div class="vagas-counter__bar">
+            <div class="vagas-counter__bar-fill" id="vagasBarFill" style="width:100%"></div>
+          </div>
+          <div class="vagas-counter__hint" id="vagasHint">
+            Quando zerar, novas inscrições entram em <strong>lista de espera</strong>.
+          </div>
+        </div>
+
+        <div class="hero__price-box">
+          <span class="hero__price-tag">Oferta de lançamento</span>
+
+          <div class="hero__price-old-row">
+            <span class="hero__price-old">De R$ 197,00</span>
+            <span class="hero__price-discount">−51% OFF</span>
+          </div>
+
+          <div class="hero__price-main">
+            <span class="hero__price-val"><sup>R$</sup>97</span>
+            <span class="hero__price-bonus">
+              <strong>App completo + Bônus exclusivos</strong>
+              <span class="hero__price-bonus-sub">Pagamento único · Sem mensalidade</span>
+            </span>
+          </div>
+
+          <div class="hero__price-trust">
+            <span>✓ <strong>Acesso imediato</strong></span>
+            <span>🔒 Garantia de 7 dias</span>
+            <span>📱 Use no celular</span>
+          </div>
         </div>
 
         <button class="btn btn--primary hero__cta-btn" onclick="openLeadModal()">
@@ -1702,67 +3207,359 @@
       </div>
 
       <div class="hero__visual">
-        <div class="phone-mockup">
-          <div class="phone-notch"></div>
-          <div class="phone-screen">
-            <div class="phone-header">
-              <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
-              <div class="phone-stats">
-                <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>5</div>
-                <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#f59e0b">local_fire_department</span>7</div>
-              </div>
-            </div>
-            <div class="phone-card">
-              <div class="phone-card__label">Sua Trilha</div>
-              <div class="phone-card__title">Fase 2 · O jogo dos pés</div>
-              <div class="phone-card__progress">
-                <div class="phone-card__progress-fill"></div>
-              </div>
-            </div>
-            <div class="phone-trail">
-              <div class="phone-step">
-                <div class="phone-step__dot phone-step__dot--done"><span class="material-symbols-outlined filled">check</span></div>
-                <div class="phone-step__text">Conhecendo o carro<small>Concluído · +50 XP</small></div>
-              </div>
-              <div class="phone-step">
-                <div class="phone-step__dot phone-step__dot--current"><span class="material-symbols-outlined filled">directions_car</span></div>
-                <div class="phone-step__text">O jogo dos pés<small>Em andamento</small></div>
-              </div>
-              <div class="phone-step">
-                <div class="phone-step__dot"><span class="material-symbols-outlined">lock</span></div>
-                <div class="phone-step__text">Fluidez e direção<small>Próxima fase</small></div>
-              </div>
-              <div class="phone-step">
-                <div class="phone-step__dot"><span class="material-symbols-outlined">lock</span></div>
-                <div class="phone-step__text">Trânsito real<small>Em breve</small></div>
-              </div>
-            </div>
-            <div class="phone-bottom">
-              <div class="phone-bottom__item"><span class="material-symbols-outlined">person</span><span>Perfil</span></div>
-              <div class="phone-bottom__item phone-bottom__item--active"><span class="material-symbols-outlined filled">video_library</span><span>Cursos</span></div>
-              <div class="phone-bottom__item"><span class="material-symbols-outlined">target</span><span>Missões</span></div>
-              <div class="phone-bottom__item"><span class="material-symbols-outlined">trophy</span><span>Ranking</span></div>
-            </div>
+
+        <!-- Carla — instrutora protagonista -->
+        <div class="hero-instructor">
+          <img src="/hero/instrutora.jpg" alt="Carla — sua instrutora" loading="eager" />
+          <div class="hero-instructor__name">
+            <div class="hero-instructor__name-value">Carla</div>
           </div>
         </div>
+
+        <!-- Polaroide aluna aprovada — canto superior-direito -->
+        <div class="hero-portrait hero-portrait--top-right">
+          <img class="hero-portrait__photo" src="/hero/aluna-aprovada.jpg" alt="Aluna aprovada" loading="lazy" />
+          <div class="hero-portrait__caption">
+            Aprovada!
+            <small>Mais uma livre</small>
+          </div>
+        </div>
+
+        <!-- Polaroide aluno aprovado — canto inferior-direito -->
+        <div class="hero-portrait hero-portrait--bottom-right">
+          <img class="hero-portrait__photo" src="/hero/aluno-aprovado.jpg" alt="Aluno aprovado" loading="lazy" />
+          <div class="hero-portrait__caption">
+            Aprovado!
+            <small>Vencendo o medo</small>
+          </div>
+        </div>
+
+        <!-- Phone mockup MENOR sobreposto à esquerda da Carla -->
+        <div class="phone-mockup" id="phoneMockup">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+
+            <!-- ═══ Slides ═══ -->
+            <div class="phone-slides">
+
+              <!-- Slide 1: TRILHA (default) -->
+              <div class="phone-slide is-active" data-screen="trilha">
+                <div class="phone-header">
+                  <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
+                  <div class="phone-stats">
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>5</div>
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#f59e0b">local_fire_department</span>7</div>
+                  </div>
+                </div>
+                <div class="phone-card">
+                  <div class="phone-card__label">Sua Trilha</div>
+                  <div class="phone-card__title">Fase 2 · O jogo dos pés</div>
+                  <div class="phone-card__progress"><div class="phone-card__progress-fill"></div></div>
+                </div>
+                <div class="phone-trail">
+                  <div class="phone-step">
+                    <div class="phone-step__dot phone-step__dot--done"><span class="material-symbols-outlined filled">check</span></div>
+                    <div class="phone-step__text">Conhecendo o carro<small>Concluído · +50 XP</small></div>
+                  </div>
+                  <div class="phone-step">
+                    <div class="phone-step__dot phone-step__dot--current"><span class="material-symbols-outlined filled">directions_car</span></div>
+                    <div class="phone-step__text">O jogo dos pés<small>Em andamento</small></div>
+                  </div>
+                  <div class="phone-step">
+                    <div class="phone-step__dot"><span class="material-symbols-outlined">lock</span></div>
+                    <div class="phone-step__text">Fluidez e direção<small>Próxima fase</small></div>
+                  </div>
+                  <div class="phone-step">
+                    <div class="phone-step__dot"><span class="material-symbols-outlined">lock</span></div>
+                    <div class="phone-step__text">Trânsito real<small>Em breve</small></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 2: CURSOS — curso + aulas -->
+              <div class="phone-slide" data-screen="cursos">
+                <div class="phone-header">
+                  <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
+                  <div class="phone-stats">
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>5</div>
+                  </div>
+                </div>
+                <h3 class="phone-page-title">Meus Cursos</h3>
+                <p class="phone-page-sub">Sua biblioteca de conteúdos exclusivos.</p>
+
+                <div class="phone-course-card">
+                  <div class="phone-course-thumb"><span class="material-symbols-outlined filled">school</span></div>
+                  <div class="phone-course-info">
+                    <div class="phone-course-title">Vencendo o Medo</div>
+                    <div class="phone-course-meta">8 aulas · 2h 40min</div>
+                  </div>
+                </div>
+
+                <div class="phone-aulas">
+                  <div class="phone-aula phone-aula--done">
+                    <div class="phone-aula__icon"><span class="material-symbols-outlined filled">check</span></div>
+                    <div class="phone-aula__title">Aula 1 · Respiração</div>
+                    <div class="phone-aula__time">12min</div>
+                  </div>
+                  <div class="phone-aula phone-aula--done">
+                    <div class="phone-aula__icon"><span class="material-symbols-outlined filled">check</span></div>
+                    <div class="phone-aula__title">Aula 2 · Postura ao volante</div>
+                    <div class="phone-aula__time">18min</div>
+                  </div>
+                  <div class="phone-aula">
+                    <div class="phone-aula__icon"><span class="material-symbols-outlined filled">play_arrow</span></div>
+                    <div class="phone-aula__title">Aula 3 · Embreagem sem medo</div>
+                    <div class="phone-aula__time">22min</div>
+                  </div>
+                  <div class="phone-aula">
+                    <div class="phone-aula__icon"><span class="material-symbols-outlined">lock</span></div>
+                    <div class="phone-aula__title">Aula 4 · Pontos de referência</div>
+                    <div class="phone-aula__time">15min</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 3: MISSÕES (Mapa) -->
+              <div class="phone-slide" data-screen="missoes">
+                <div class="phone-header">
+                  <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
+                  <div class="phone-stats">
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>5</div>
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#f59e0b">local_fire_department</span>7</div>
+                  </div>
+                </div>
+                <div class="phone-map-header">
+                  <div class="phone-map-eyebrow">MAPA DA CIDADE</div>
+                  <h3 class="phone-map-title">TREINOS PRÁTICOS</h3>
+                  <span class="phone-map-counter">4 locais disponíveis</span>
+                </div>
+                <div class="phone-event">
+                  <span class="material-symbols-outlined" style="font-size:13px">bolt</span>
+                  2x XP em Rua do Desafio
+                  <span class="phone-event__timer">4:57</span>
+                </div>
+                <div class="phone-map">
+                  <div class="phone-pin phone-pin--1"><span class="material-symbols-outlined filled">workspace_premium</span></div>
+                  <div class="phone-pin phone-pin--2"><span class="material-symbols-outlined filled">home</span></div>
+                  <div class="phone-pin phone-pin--3"><span class="material-symbols-outlined filled">local_parking</span></div>
+                </div>
+              </div>
+
+              <!-- Slide 4: RANKING -->
+              <div class="phone-slide" data-screen="ranking">
+                <div class="phone-header">
+                  <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
+                  <div class="phone-stats">
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#f59e0b">monetization_on</span>120</div>
+                  </div>
+                </div>
+                <div class="phone-league-header">
+                  <span class="material-symbols-outlined filled">workspace_premium</span>
+                  <div class="phone-league-name">Liga Bronze</div>
+                </div>
+                <div class="phone-podium">
+                  <div class="phone-podium-item phone-podium-item--2">
+                    <div class="phone-podium-avatar">S</div>
+                    <div class="phone-podium-name">Sarah</div>
+                    <div class="phone-podium-xp">800 XP</div>
+                    <div class="phone-podium-bar"></div>
+                  </div>
+                  <div class="phone-podium-item phone-podium-item--1">
+                    <div class="phone-podium-avatar">M</div>
+                    <div class="phone-podium-name">Mariana</div>
+                    <div class="phone-podium-xp">950 XP</div>
+                    <div class="phone-podium-bar"></div>
+                  </div>
+                  <div class="phone-podium-item phone-podium-item--3">
+                    <div class="phone-podium-avatar">L</div>
+                    <div class="phone-podium-name">Leo</div>
+                    <div class="phone-podium-xp">650 XP</div>
+                    <div class="phone-podium-bar"></div>
+                  </div>
+                </div>
+                <div class="phone-rank-list">
+                  <div class="phone-rank-row">
+                    <span class="phone-rank-row__pos">4</span>
+                    <div class="phone-rank-row__avatar">E</div>
+                    <span class="phone-rank-row__name">Elena V.</span>
+                    <span class="phone-rank-row__xp">320 XP</span>
+                  </div>
+                  <div class="phone-rank-row">
+                    <span class="phone-rank-row__pos">5</span>
+                    <div class="phone-rank-row__avatar">J</div>
+                    <span class="phone-rank-row__name">Julian P.</span>
+                    <span class="phone-rank-row__xp">320 XP</span>
+                  </div>
+                  <div class="phone-rank-row">
+                    <span class="phone-rank-row__pos">6</span>
+                    <div class="phone-rank-row__avatar">T</div>
+                    <span class="phone-rank-row__name">Thomas W.</span>
+                    <span class="phone-rank-row__xp">150 XP</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 5: PERFIL -->
+              <div class="phone-slide" data-screen="perfil">
+                <div class="phone-profile">
+                  <div class="phone-profile__avatar">A</div>
+                  <div class="phone-profile__name">Aluna Silva</div>
+                  <span class="phone-profile__league">Liga Bronze</span>
+                  <div class="phone-profile__email">aluna@email.com</div>
+                  <div class="phone-profile__progress">
+                    <div class="phone-profile__progress-label">33% do curso</div>
+                    <div class="phone-profile__progress-bar"><div class="phone-profile__progress-fill"></div></div>
+                  </div>
+                </div>
+                <div class="phone-profile-stats">
+                  <div class="phone-profile-stat">
+                    <span class="material-symbols-outlined filled">flag</span>
+                    <div class="phone-profile-stat__val">2</div>
+                    <div class="phone-profile-stat__lbl">Fases</div>
+                  </div>
+                  <div class="phone-profile-stat">
+                    <span class="material-symbols-outlined filled">bolt</span>
+                    <div class="phone-profile-stat__val">125</div>
+                    <div class="phone-profile-stat__lbl">XP Total</div>
+                  </div>
+                  <div class="phone-profile-stat">
+                    <span class="material-symbols-outlined filled">local_fire_department</span>
+                    <div class="phone-profile-stat__val">7d</div>
+                    <div class="phone-profile-stat__lbl">Ofensiva</div>
+                  </div>
+                  <div class="phone-profile-stat">
+                    <span class="material-symbols-outlined filled">shield</span>
+                    <div class="phone-profile-stat__val">4/5</div>
+                    <div class="phone-profile-stat__lbl">Confiança</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 6: COMUNIDADE -->
+              <div class="phone-slide" data-screen="comunidade">
+                <div class="phone-header">
+                  <div class="phone-greeting">Comunidade</div>
+                  <div class="phone-stats">
+                    <div class="phone-stat"><span class="material-symbols-outlined filled" style="color:#10b981">forum</span></div>
+                  </div>
+                </div>
+                <div class="phone-stories">
+                  <div class="phone-story phone-story--online">
+                    <div class="phone-story__avatar">K</div>
+                    <div class="phone-story__name">Karla</div>
+                  </div>
+                  <div class="phone-story phone-story--online">
+                    <div class="phone-story__avatar">A</div>
+                    <div class="phone-story__name">Anna</div>
+                  </div>
+                  <div class="phone-story">
+                    <div class="phone-story__avatar">S</div>
+                    <div class="phone-story__name">Sarah</div>
+                  </div>
+                  <div class="phone-story">
+                    <div class="phone-story__avatar">M</div>
+                    <div class="phone-story__name">Mari</div>
+                  </div>
+                </div>
+                <div class="phone-post">
+                  <div class="phone-post__head">
+                    <div class="phone-post__avatar">K</div>
+                    <div class="phone-post__meta">
+                      <div class="phone-post__author">Karla M. <span class="phone-post__role">Mentora</span></div>
+                      <div class="phone-post__time">há 2h</div>
+                    </div>
+                  </div>
+                  <div class="phone-post__body">Ótima sessão de baliza hoje! Respire fundo e use os pontos de referência 🚗✨</div>
+                  <div class="phone-post__actions">
+                    <span><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>128</span>
+                    <span><span class="material-symbols-outlined">chat_bubble</span>24</span>
+                  </div>
+                </div>
+                <div class="phone-post">
+                  <div class="phone-post__head">
+                    <div class="phone-post__avatar">S</div>
+                    <div class="phone-post__meta">
+                      <div class="phone-post__author">Sarah P. <span class="phone-post__role" style="background:rgba(245,158,11,.2);color:#f59e0b">Aluna</span></div>
+                      <div class="phone-post__time">há 4h</div>
+                    </div>
+                  </div>
+                  <div class="phone-post__body">Quem já está dentro da rotatória tem preferência? 🤔</div>
+                  <div class="phone-post__actions">
+                    <span><span class="material-symbols-outlined filled" style="color:#ef4444">favorite</span>85</span>
+                    <span><span class="material-symbols-outlined">chat_bubble</span>12</span>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /.phone-slides -->
+
+            <!-- Bottom nav (interactive — switches slides) -->
+            <div class="phone-bottom">
+              <button class="phone-bottom__item" data-target="perfil">
+                <span class="material-symbols-outlined">person</span>
+                <span>Perfil</span>
+              </button>
+              <button class="phone-bottom__item" data-target="cursos">
+                <span class="material-symbols-outlined">video_library</span>
+                <span>Cursos</span>
+              </button>
+              <button class="phone-bottom__item is-active" data-target="trilha">
+                <span class="material-symbols-outlined filled">map</span>
+                <span>Trilha</span>
+              </button>
+              <button class="phone-bottom__item" data-target="missoes">
+                <span class="material-symbols-outlined">target</span>
+                <span>Missões</span>
+              </button>
+              <button class="phone-bottom__item" data-target="comunidade">
+                <span class="material-symbols-outlined">forum</span>
+                <span>Comuni.</span>
+              </button>
+              <button class="phone-bottom__item" data-target="ranking">
+                <span class="material-symbols-outlined">trophy</span>
+                <span>Ranking</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Balão de conversa que descreve o slide ativo do phone -->
+        <div class="phone-bubble" id="phoneBubble" aria-live="polite">
+          <span class="phone-bubble__tail"></span>
+          <span class="phone-bubble__text" id="phoneBubbleText">Sua trilha gamificada com fases progressivas</span>
+        </div>
+
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─── COUNTDOWN ─── -->
-<div class="countdown-bar">
-  <div class="countdown-bar__label"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">bolt</span> Esta condição especial expira em</div>
-  <div class="countdown-digits">
-    <div class="cd-unit"><div class="cd-num" id="cd-d">07</div><div class="cd-lbl">Dias</div></div>
-    <div class="cd-sep">:</div>
-    <div class="cd-unit"><div class="cd-num" id="cd-h">00</div><div class="cd-lbl">Horas</div></div>
-    <div class="cd-sep">:</div>
-    <div class="cd-unit"><div class="cd-num" id="cd-m">47</div><div class="cd-lbl">Min</div></div>
-    <div class="cd-sep">:</div>
-    <div class="cd-unit"><div class="cd-num" id="cd-s">00</div><div class="cd-lbl">Seg</div></div>
+<!-- ─── APROVADAS (carrossel de fotos reais) — segunda dobra ─── -->
+<section class="approved-section">
+  <div class="container">
+    <p class="eyebrow text-center">Histórias reais de aprovação</p>
+    <h2 class="section-title text-center">Alunas que <span>venceram o medo</span> e foram aprovadas</h2>
+    <p class="section-sub text-center" style="margin:8px auto 0">São pessoas reais que estavam travadas com o medo de dirigir e hoje estão aprovadas no Detran, dirigindo sozinhas.</p>
+
+    <div class="approved-carousel" id="approvedCarousel">
+      <span class="approved-counter" id="approvedCounter">1 / 22</span>
+
+      <div class="approved-track" id="approvedTrack">
+        <!-- Slides são populados via JS a partir do manifest.json -->
+      </div>
+
+      <button class="approved-arrow approved-arrow--prev" id="approvedPrev" aria-label="Anterior">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button class="approved-arrow approved-arrow--next" id="approvedNext" aria-label="Próxima">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+
+    <div class="approved-dots" id="approvedDots"></div>
   </div>
-</div>
+</section>
 
 <!-- ─── PAIN ─── -->
 <section class="pain-section">
@@ -1787,6 +3584,10 @@
             <span class="ico-wrap"><span class="material-symbols-outlined">heart_broken</span></span>
             <p><strong>Coração dispara só de pensar</strong>Antes de pegar a chave, o estômago já está revirando. A ansiedade chega antes do carro.</p>
             <span class="pain-check"></span>
+            <!-- Mãozinha animada: indica que os itens são clicáveis. Some no primeiro clique. -->
+            <span class="click-hand" aria-hidden="true">
+              <span class="material-symbols-outlined filled">touch_app</span>
+            </span>
           </li>
           <li data-pain="2" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">visibility_off</span></span>
@@ -1893,50 +3694,186 @@
   </div>
 </section>
 
-<!-- ─── MODULES ─── -->
+<!-- ─── MODULES (Trilha Completa) ─── -->
 <section class="modules-section">
   <div class="container">
     <p class="eyebrow text-center">A trilha completa</p>
     <h2 class="section-title text-center">As fases que vão <span>te tirar do medo</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">Cada fase é curta, prática, e te prepara para a próxima sem sobrecarga.</p>
+    <p class="section-sub text-center" style="margin:8px auto 0">Cada fase é curta, prática, e te prepara para a próxima sem sobrecarga. Você avança no seu ritmo, vencendo uma camada por vez.</p>
 
     <div class="modules-grid">
+      <!-- Fases ATIVAS (já estão no app) -->
       <div class="module-card">
         <div class="module-card__num">01</div>
+        <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">directions_car</span></div>
         <h3 class="module-card__title">Conhecendo o carro</h3>
         <p class="module-card__text">Elimine a ansiedade do desconhecido. Entenda os comandos, os pedais, a posição correta — sem precisar nem ligar o motor.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">02</div>
+        <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">footprint</span></div>
         <h3 class="module-card__title">O jogo dos pés</h3>
         <p class="module-card__text">Domine a coordenação inferior antes de pensar no volante. Quando os pés ficam automáticos, tudo fica mais leve.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">03</div>
+        <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">route</span></div>
         <h3 class="module-card__title">Fluidez e direção</h3>
         <p class="module-card__text">Volante, curvas, terceira marcha. Você passa a controlar o carro, em vez de só reagir a ele.</p>
       </div>
-      <div class="module-card">
+
+      <!-- Fases FUTURAS (em desenvolvimento) -->
+      <div class="module-card module-card--soon">
         <div class="module-card__num">04</div>
+        <span class="module-card__badge module-card__badge--soon">Em breve</span>
+        <div class="module-card__icon"><span class="material-symbols-outlined">smart_toy</span></div>
+        <h3 class="module-card__title">Modo Automático</h3>
+        <p class="module-card__text">Adaptação completa para câmbio automático. Pega leve quem nunca encostou em manual — e domina o automático com fluidez.</p>
+      </div>
+      <div class="module-card module-card--soon">
+        <div class="module-card__num">05</div>
+        <span class="module-card__badge module-card__badge--soon">Em breve</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">traffic</span></div>
-        <h3 class="module-card__title">Trânsito leve</h3>
+        <h3 class="module-card__title">Trânsito Leve</h3>
         <p class="module-card__text">Os primeiros metros no mundo real, com técnicas para manter o foco mesmo com estímulos ao redor.</p>
       </div>
-      <div class="module-card">
-        <div class="module-card__num">05</div>
-        <div class="module-card__icon"><span class="material-symbols-outlined">terrain</span></div>
-        <h3 class="module-card__title">Subidas e desafios</h3>
-        <p class="module-card__text">Rampas, baliza, manobras. As situações que mais geram travamento — desconstruídas e treinadas com segurança.</p>
-      </div>
-      <div class="module-card">
+      <div class="module-card module-card--soon">
         <div class="module-card__num">06</div>
-        <div class="module-card__icon"><span class="material-symbols-outlined">emoji_events</span></div>
-        <h3 class="module-card__title">Liberdade total</h3>
-        <p class="module-card__text">Você dirige sozinha, em qualquer rua, em qualquer horário. A confiança que você sempre quis — agora é sua.</p>
+        <span class="module-card__badge module-card__badge--soon">Em breve</span>
+        <div class="module-card__icon"><span class="material-symbols-outlined">terrain</span></div>
+        <h3 class="module-card__title">Modo Subida</h3>
+        <p class="module-card__text">Controle de embreagem em rampas, baliza, manobras. As situações que mais geram travamento — desconstruídas e treinadas com segurança.</p>
       </div>
+      <div class="module-card module-card--soon">
+        <div class="module-card__num">07</div>
+        <span class="module-card__badge module-card__badge--soon">Em breve</span>
+        <div class="module-card__icon"><span class="material-symbols-outlined">verified</span></div>
+        <h3 class="module-card__title">Prova do Detran</h3>
+        <p class="module-card__text">Simulado completo para aprovação. Você passa na prova com tranquilidade e dirige no mundo real com a mesma confiança.</p>
+      </div>
+    </div>
+
+    <p style="text-align:center;color:var(--text-mute);font-size:.92rem;margin-top:24px;line-height:1.6">
+      <strong style="color:var(--primary)">Acesso vitalício:</strong> conforme novas fases forem liberadas, você as recebe automaticamente sem pagar nada a mais.
+    </p>
+  </div>
+</section>
+
+<!-- ─── EXPERIÊNCIA COMPLETA ─── -->
+<section class="features-section">
+  <div class="container--wide">
+    <p class="eyebrow text-center">Não é só aula. É um app gamificado completo.</p>
+    <h2 class="section-title text-center">Cada detalhe foi pensado pra <span>te manter avançando</span></h2>
+    <p class="section-sub text-center" style="margin:8px auto 0">Inspirado em apps como Duolingo — porque medo só passa com prática constante. Gamificação aqui não é firula, é o motor que mantém você no jogo.</p>
+
+    <div class="features-grid">
+      <div class="feature-card feature-card--red">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">favorite</span></div>
+        <h3 class="feature-card__title">Vidas (5 ❤️)</h3>
+        <p class="feature-card__text">Erre sem culpa. Se zerar suas vidas, basta esperar regenerar — ou usar moedas pra recuperar e voltar pra ação.</p>
+      </div>
+      <div class="feature-card feature-card--orange">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">local_fire_department</span></div>
+        <h3 class="feature-card__title">Streak 🔥</h3>
+        <p class="feature-card__text">Cada dia que você praticar acende um fogo. Quanto mais dias seguidos, maiores as recompensas. Não deixe apagar.</p>
+      </div>
+      <div class="feature-card feature-card--yellow">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">monetization_on</span></div>
+        <h3 class="feature-card__title">Moedas 🪙</h3>
+        <p class="feature-card__text">Acertou algo? Ganhou moeda. Use na Roleta da Sorte, na Loja, ou pra recuperar vidas extras quando precisar.</p>
+      </div>
+      <div class="feature-card feature-card--blue">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">bolt</span></div>
+        <h3 class="feature-card__title">XP e Níveis</h3>
+        <p class="feature-card__text">Suba de Iniciante até Mestre. Cada nível é uma conquista visível do seu progresso real ao volante.</p>
+      </div>
+      <div class="feature-card feature-card--gold">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
+        <h3 class="feature-card__title">Ligas Competitivas</h3>
+        <p class="feature-card__text">Bronze → Prata → Ouro → Diamante. Compita amigavelmente toda semana e suba de liga em liga.</p>
+      </div>
+      <div class="feature-card feature-card--purple">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">military_tech</span></div>
+        <h3 class="feature-card__title">Conquistas e Medalhas</h3>
+        <p class="feature-card__text">Cada marco vira uma medalha exclusiva. Sua coleção fica linda no perfil — e ainda mostra pra todo mundo o quanto você evoluiu.</p>
+      </div>
+      <div class="feature-card feature-card--teal">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">target</span></div>
+        <h3 class="feature-card__title">Missões Diárias</h3>
+        <p class="feature-card__text">Pequenas tarefas todo dia: "Acerte 10 placas", "Leia 1 artigo técnico". Recompensas em XP e moedas.</p>
+      </div>
+      <div class="feature-card feature-card--pink">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">casino</span></div>
+        <h3 class="feature-card__title">Roleta da Sorte 🎰</h3>
+        <p class="feature-card__text">Gire e ganhe vidas extras, moedas, XP turbo, ou conteúdo bônus. A diversão sem cobrança extra.</p>
+      </div>
+      <div class="feature-card feature-card--indigo">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">shopping_bag</span></div>
+        <h3 class="feature-card__title">Loja Interna</h3>
+        <p class="feature-card__text">Use suas moedas pra comprar vidas extras, boost de XP por 24h, ou freezes de streak (pra quando a vida apertar).</p>
+      </div>
+      <div class="feature-card feature-card--green">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">groups</span></div>
+        <h3 class="feature-card__title">Comunidade Privada</h3>
+        <p class="feature-card__text">Tire dúvidas com a Coach Anna e outras alunas que estão na mesma jornada. Não é solidão. É time.</p>
+      </div>
+      <div class="feature-card feature-card--cyan">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">leaderboard</span></div>
+        <h3 class="feature-card__title">Ranking Semanal</h3>
+        <p class="feature-card__text">Veja sua posição comparada com alunas de todo o Brasil. Saudável, motivante, sem pressão tóxica.</p>
+      </div>
+      <div class="feature-card feature-card--rose">
+        <div class="feature-card__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
+        <h3 class="feature-card__title">Suporte Direto</h3>
+        <p class="feature-card__text">Travou em alguma fase? Botão de suporte abre um chamado direto pelo WhatsApp. Resposta humana e rápida.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CURSOS PREMIUM (DINÂMICO — auto-sync com Supabase) ─── -->
+<section class="dynamic-courses-section" id="dynamicCoursesSection">
+  <div class="container--wide">
+    <p class="eyebrow text-center">Conteúdo extra liberado pra alunos</p>
+    <h2 class="section-title text-center">Cursos Premium <span>incluídos no acesso</span></h2>
+    <p class="section-sub text-center" style="margin:8px auto 0">Conforme novos cursos forem adicionados, eles aparecem aqui automaticamente — você terá acesso a tudo, sem pagar a mais.</p>
+
+    <div class="dynamic-courses-grid" id="dynamicCoursesGrid">
+      <!-- Loading skeleton -->
+      <div class="course-card course-card--skeleton">
+        <div class="course-card__img"></div>
+        <div class="course-card__body">
+          <div class="course-card__skeleton-line course-card__skeleton-line--title"></div>
+          <div class="course-card__skeleton-line"></div>
+          <div class="course-card__skeleton-line course-card__skeleton-line--short"></div>
+        </div>
+      </div>
+      <div class="course-card course-card--skeleton">
+        <div class="course-card__img"></div>
+        <div class="course-card__body">
+          <div class="course-card__skeleton-line course-card__skeleton-line--title"></div>
+          <div class="course-card__skeleton-line"></div>
+          <div class="course-card__skeleton-line course-card__skeleton-line--short"></div>
+        </div>
+      </div>
+      <div class="course-card course-card--skeleton">
+        <div class="course-card__img"></div>
+        <div class="course-card__body">
+          <div class="course-card__skeleton-line course-card__skeleton-line--title"></div>
+          <div class="course-card__skeleton-line"></div>
+          <div class="course-card__skeleton-line course-card__skeleton-line--short"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state (shown when no products) -->
+    <div class="dynamic-courses-empty" id="dynamicCoursesEmpty" style="display:none">
+      <span class="material-symbols-outlined">auto_awesome</span>
+      <p><strong>Novos cursos premium chegando em breve.</strong></p>
+      <p class="dynamic-courses-empty__sub">Conforme forem liberados, aparecem aqui — e você que já é aluna já tem acesso garantido.</p>
     </div>
   </div>
 </section>
@@ -2204,8 +4141,22 @@
 <div class="modal-overlay" id="leadModal">
   <div class="modal">
     <button class="modal__close" onclick="closeLeadModal()">×</button>
-    <h3 class="modal__title">Falta pouco pra <span>sua liberdade</span></h3>
-    <p class="modal__sub">Preencha pra ir pro checkout seguro:</p>
+    <h3 class="modal__title" id="modalTitle">Falta pouco pra <span>sua liberdade</span></h3>
+    <p class="modal__sub" id="modalSub">Preencha pra ir pro checkout seguro:</p>
+
+    <!-- Mesmo contador de vagas, mostrado também no modal -->
+    <div class="vagas-counter" id="modalVagasCounter" data-vagas-mode="open">
+      <div class="vagas-counter__head">
+        <span class="vagas-counter__label">Vagas limitadas</span>
+        <span class="vagas-counter__count">
+          Restam <strong id="modalVagasRemaining">100</strong> de 100
+        </span>
+      </div>
+      <div class="vagas-counter__bar">
+        <div class="vagas-counter__bar-fill" id="modalVagasBarFill" style="width:100%"></div>
+      </div>
+    </div>
+
     <form id="leadForm" onsubmit="event.preventDefault();submitLead();">
       <div class="modal__field">
         <input type="text" id="leadName" placeholder="Seu nome completo" required />
@@ -2216,47 +4167,13 @@
       <div class="modal__field">
         <input type="tel" id="leadPhone" placeholder="(11) 99999-9999" required />
       </div>
-      <button type="submit" class="modal__submit">IR PARA O CHECKOUT →</button>
+      <button type="submit" class="modal__submit" id="modalSubmit">IR PARA O CHECKOUT →</button>
     </form>
   </div>
 </div>
 
 <script>
-  // ── THEME TOGGLE ──────────────────────────────────────
-  (function() {
-    const root = document.documentElement;
-    const saved = localStorage.getItem('mddnm-theme') || 'dark';
-    root.setAttribute('data-theme', saved);
-    document.getElementById('themeToggle').addEventListener('click', () => {
-      const current = root.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem('mddnm-theme', next);
-    });
-  })();
-
-  // ── COUNTDOWN ─────────────────────────────────────────
-  (function() {
-    const KEY = 'mddnm-countdown';
-    let end = parseInt(localStorage.getItem(KEY) || '0');
-    if (!end || end < Date.now()) {
-      end = Date.now() + 7 * 24 * 3600 * 1000;
-      localStorage.setItem(KEY, String(end));
-    }
-    const pad = n => String(n).padStart(2, '0');
-    function tick() {
-      const diff = Math.max(0, end - Date.now());
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      document.getElementById('cd-d').textContent = pad(d);
-      document.getElementById('cd-h').textContent = pad(h);
-      document.getElementById('cd-m').textContent = pad(m);
-      document.getElementById('cd-s').textContent = pad(s);
-    }
-    tick(); setInterval(tick, 1000);
-  })();
+  // Tema travado em "dark" — paleta navy + amarelo (sem opção de claro).
 
   // ── PAIN DIAGNOSIS ────────────────────────────────────
   (function() {
@@ -2298,7 +4215,11 @@
 
   // ── COUNT-UP STATS ────────────────────────────────────
   (function() {
-    const nums = document.querySelectorAll('[data-target]');
+    // Selector ESPECÍFICO — não pega [data-target] genérico (a bottom nav do
+    // mockup usa data-target pra navegação, e parsear "perfil" vira NaN).
+    const nums = document.querySelectorAll(
+      '.qs-stat__val[data-target], .proof-num__val[data-target]'
+    );
     if (!nums.length) return;
     const ease = t => 1 - Math.pow(1 - t, 3);
     function animate(el) {
@@ -2403,10 +4324,100 @@
     setInterval(showViewers, 25000);
   })();
 
+  // ── VAGAS LIMITADAS (100 turmas, decresce com vendas) ─
+  // Lê o número de inscritos da tabela enrolled_emails (populada pelo
+  // webhook da Eduzz quando a venda é aprovada). Quando atinge 100,
+  // o site muda automaticamente pra modo "lista de espera".
+  const VAGAS_TOTAL = 100;
+  let vagasRestantes = VAGAS_TOTAL; // valor inicial otimista; atualiza ao carregar
+  let modoListaEspera = false;
+
+  async function carregarVagas() {
+    const SUPABASE_URL  = 'https://qkvinhzwiptfobdvsdtr.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdmluaHp3aXB0Zm9iZHZzZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzE5NzYsImV4cCI6MjA5MDA0Nzk3Nn0.HdleSrgGuymiA3a72aAITy0K5wHaYvcVmESYNzSGZ-M';
+    try {
+      // RPC esperada: public.vagas_disponiveis() retornando int (100 - count(enrolled_emails))
+      const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/vagas_disponiveis', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON,
+          'Authorization': 'Bearer ' + SUPABASE_ANON,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      });
+      if (r.ok) {
+        const v = await r.json();
+        const num = typeof v === 'number' ? v : parseInt(v, 10);
+        if (!isNaN(num)) {
+          vagasRestantes = Math.max(0, Math.min(VAGAS_TOTAL, num));
+          renderVagas();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('[vagas] falha ao buscar contagem:', e);
+    }
+    // Fallback caso a RPC ainda não exista — assume 73 vagas restantes
+    // (urgência sem ser irrealista). Substitua por valor real quando criar a RPC.
+    vagasRestantes = 73;
+    renderVagas();
+  }
+
+  function renderVagas() {
+    const pct = (vagasRestantes / VAGAS_TOTAL) * 100;
+    modoListaEspera = vagasRestantes <= 0;
+
+    // Atualiza ambos os contadores (hero + modal)
+    document.querySelectorAll('#vagasRemaining, #modalVagasRemaining').forEach(el => {
+      el.textContent = vagasRestantes;
+    });
+    document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
+      el.style.width = pct + '%';
+    });
+    document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
+      el.classList.toggle('is-waitlist', modoListaEspera);
+      el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
+    });
+
+    // Hint do hero muda quando esgota
+    const hint = document.getElementById('vagasHint');
+    if (hint) {
+      hint.innerHTML = modoListaEspera
+        ? 'Vagas <strong>esgotadas</strong>. Entre na lista de espera abaixo.'
+        : 'Quando zerar, novas inscrições entram em <strong>lista de espera</strong>.';
+    }
+
+    // Rótulo das contagens muda no modo lista de espera
+    document.querySelectorAll('.vagas-counter__label').forEach(el => {
+      el.textContent = modoListaEspera ? 'Lista de espera' : 'Vagas limitadas';
+    });
+
+    // Modal — título, subtítulo, botão e CTAs externos mudam quando esgota
+    const modalTitle  = document.getElementById('modalTitle');
+    const modalSub    = document.getElementById('modalSub');
+    const modalSubmit = document.getElementById('modalSubmit');
+    if (modoListaEspera) {
+      if (modalTitle)  modalTitle.innerHTML  = 'Entre na <span>lista de espera</span>';
+      if (modalSub)    modalSub.textContent = 'Vagas esgotadas. Te avisamos quando reabrir:';
+      if (modalSubmit) modalSubmit.textContent = 'ENTRAR NA LISTA DE ESPERA →';
+    } else {
+      if (modalTitle)  modalTitle.innerHTML  = 'Falta pouco pra <span>sua liberdade</span>';
+      if (modalSub)    modalSub.textContent = 'Preencha pra ir pro checkout seguro:';
+      if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
+    }
+  }
+
+  // Carrega ao iniciar e revalida a cada 60s caso o usuário fique muito tempo na página
+  carregarVagas();
+  setInterval(carregarVagas, 60000);
+
   // ── LEAD MODAL ───────────────────────────────────────
   function openLeadModal() {
     document.getElementById('leadModal').classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    // Revalida vagas ao abrir o modal (caso esgotaram nesse meio tempo)
+    carregarVagas();
     setTimeout(() => document.getElementById('leadName').focus(), 350);
   }
   function closeLeadModal() {
@@ -2420,8 +4431,21 @@
     if (!name || !email || !phone) return;
     // Save to localStorage as fallback
     try {
-      localStorage.setItem('mddnm-lead', JSON.stringify({ name, email, phone, ts: Date.now() }));
+      localStorage.setItem('mddnm-lead', JSON.stringify({ name, email, phone, ts: Date.now(), waitlist: modoListaEspera }));
     } catch (e) {}
+
+    if (modoListaEspera) {
+      // Modo lista de espera: salva o lead e mostra confirmação (sem ir pro checkout)
+      // TODO: enviar pra um webhook/edge function de "lista de espera"
+      const submitBtn = document.getElementById('modalSubmit');
+      if (submitBtn) {
+        submitBtn.textContent = '✓ ADICIONADO À LISTA';
+        submitBtn.disabled = true;
+      }
+      setTimeout(closeLeadModal, 1800);
+      return;
+    }
+
     // TODO: substituir por seu link de checkout (Eduzz/Hotmart/Kiwify)
     window.location.href = 'https://sun.eduzz.com/SEU_LINK_AQUI?nome=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
   }
@@ -2432,6 +4456,300 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeLeadModal();
   });
+
+  // ── APROVADAS CAROUSEL (carrega do manifest.json) ────
+  // Lê /aprovados/manifest.json (lista de imagens) e popula o carrossel.
+  // Pra adicionar/remover fotos: atualize o manifest e o carrossel se ajusta.
+  (function() {
+    const track = document.getElementById('approvedTrack');
+    const counter = document.getElementById('approvedCounter');
+    const dotsWrap = document.getElementById('approvedDots');
+    const prevBtn = document.getElementById('approvedPrev');
+    const nextBtn = document.getElementById('approvedNext');
+    if (!track || !counter || !dotsWrap || !prevBtn || !nextBtn) return;
+
+    let images = [];
+    let current = 0;
+    let autoTimer = null;
+    let userInteracted = false;
+
+    async function loadManifest() {
+      try {
+        const res = await fetch('/aprovados/manifest.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error('manifest 404');
+        return await res.json();
+      } catch (e) {
+        console.warn('[approved] manifest.json não encontrado, fallback para 22 imagens');
+        // Fallback: tenta nomes sequenciais se manifest falhar
+        return Array.from({ length: 22 }, (_, i) => `aprovado-${String(i + 1).padStart(2, '0')}.jpg`);
+      }
+    }
+
+    function render() {
+      // Renderiza slides (lazy load — browser só baixa as visíveis)
+      track.innerHTML = images.map((file, i) => `
+        <div class="approved-slide" data-idx="${i}">
+          <img src="/aprovados/${file}" alt="Aluna aprovada no Detran" loading="lazy" />
+        </div>
+      `).join('');
+
+      // Renderiza dots
+      dotsWrap.innerHTML = images.map((_, i) => `
+        <button class="approved-dot" data-idx="${i}" aria-label="Foto ${i + 1}"></button>
+      `).join('');
+
+      // Click handlers nos dots
+      dotsWrap.querySelectorAll('.approved-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          userInteracted = true;
+          stopAuto();
+          go(parseInt(dot.dataset.idx));
+        });
+      });
+
+      go(0);
+    }
+
+    function go(idx) {
+      const total = images.length;
+      if (!total) return;
+      current = ((idx % total) + total) % total;
+
+      track.querySelectorAll('.approved-slide').forEach((s, i) => {
+        s.classList.remove('is-active', 'is-prev', 'is-next');
+        if (i === current) s.classList.add('is-active');
+        else if (i === (current - 1 + total) % total) s.classList.add('is-prev');
+        else if (i === (current + 1) % total) s.classList.add('is-next');
+      });
+
+      dotsWrap.querySelectorAll('.approved-dot').forEach((d, i) => {
+        d.classList.toggle('is-active', i === current);
+      });
+
+      counter.textContent = `${current + 1} / ${total}`;
+    }
+
+    function next() { go(current + 1); }
+    function prev() { go(current - 1); }
+
+    function startAuto() {
+      stopAuto();
+      autoTimer = setInterval(() => {
+        if (userInteracted) return;
+        next();
+      }, 4500);
+    }
+    function stopAuto() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    // Botões
+    prevBtn.addEventListener('click', () => {
+      userInteracted = true;
+      stopAuto();
+      prev();
+    });
+    nextBtn.addEventListener('click', () => {
+      userInteracted = true;
+      stopAuto();
+      next();
+    });
+
+    // Pause auto-rotate ao passar mouse
+    const carousel = document.getElementById('approvedCarousel');
+    carousel.addEventListener('mouseenter', stopAuto);
+    carousel.addEventListener('mouseleave', () => { if (!userInteracted) startAuto(); });
+
+    // Swipe touch (mobile)
+    let touchStartX = 0;
+    carousel.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    carousel.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) < 40) return;
+      userInteracted = true;
+      stopAuto();
+      if (dx > 0) prev(); else next();
+    });
+
+    // Keyboard arrows
+    document.addEventListener('keydown', (e) => {
+      const rect = carousel.getBoundingClientRect();
+      const visible = rect.top < window.innerHeight && rect.bottom > 0;
+      if (!visible) return;
+      if (e.key === 'ArrowLeft')  { stopAuto(); userInteracted = true; prev(); }
+      if (e.key === 'ArrowRight') { stopAuto(); userInteracted = true; next(); }
+    });
+
+    // Inicia
+    loadManifest().then(list => {
+      images = Array.isArray(list) ? list : [];
+      if (!images.length) {
+        carousel.innerHTML = '<p style="text-align:center;color:var(--text-mute)">Nenhuma foto disponível.</p>';
+        return;
+      }
+      render();
+      startAuto();
+    });
+  })();
+
+  // ── DYNAMIC COURSES (auto-sync com Supabase) ─────────
+  // Busca os cursos publicados no banco e renderiza os cards.
+  // Quando o admin adicionar um novo curso pelo /admin/lms, ele aparece
+  // automaticamente aqui na próxima visita à página — zero deploy.
+  (function() {
+    const SUPABASE_URL  = 'https://qkvinhzwiptfobdvsdtr.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdmluaHp3aXB0Zm9iZHZzZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzE5NzYsImV4cCI6MjA5MDA0Nzk3Nn0.HdleSrgGuymiA3a72aAITy0K5wHaYvcVmESYNzSGZ-M';
+    const grid    = document.getElementById('dynamicCoursesGrid');
+    const empty   = document.getElementById('dynamicCoursesEmpty');
+    if (!grid || !empty) return;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function renderCourses(products, modulesByProduct) {
+      if (!products.length) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      grid.innerHTML = products.map(p => {
+        const modulesCount = modulesByProduct[p.id] || 0;
+        const img = p.image_url
+          ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.title)}" loading="lazy" />`
+          : `<span class="material-symbols-outlined course-card__img-fallback filled">school</span>`;
+        return `
+          <div class="course-card">
+            <div class="course-card__img">
+              ${img}
+              <span class="course-card__badge">Incluído</span>
+            </div>
+            <div class="course-card__body">
+              <h3 class="course-card__title">${escapeHtml(p.title)}</h3>
+              <p class="course-card__desc">${escapeHtml(p.description || 'Curso premium liberado pra alunas.')}</p>
+              <div class="course-card__meta">
+                <span class="course-card__meta-item">
+                  <span class="material-symbols-outlined">view_module</span>
+                  ${modulesCount} ${modulesCount === 1 ? 'módulo' : 'módulos'}
+                </span>
+                <span class="course-card__meta-item">
+                  <span class="material-symbols-outlined">verified</span>
+                  Acesso vitalício
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadCourses() {
+      try {
+        // 1. Busca produtos publicados
+        const productsRes = await fetch(
+          SUPABASE_URL + '/rest/v1/products?status=eq.published&order=created_at.asc',
+          { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+        );
+        if (!productsRes.ok) throw new Error('Falha ao buscar cursos');
+        const products = await productsRes.json();
+
+        if (!products.length) {
+          renderCourses([], {});
+          return;
+        }
+
+        // 2. Busca contagem de módulos por produto (em paralelo)
+        const productIds = products.map(p => p.id);
+        const modulesRes = await fetch(
+          SUPABASE_URL + '/rest/v1/modules?select=product_id&product_id=in.(' + productIds.map(id => '"' + id + '"').join(',') + ')',
+          { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+        );
+        const modules = modulesRes.ok ? await modulesRes.json() : [];
+        const modulesByProduct = {};
+        modules.forEach(m => {
+          modulesByProduct[m.product_id] = (modulesByProduct[m.product_id] || 0) + 1;
+        });
+
+        renderCourses(products, modulesByProduct);
+      } catch (err) {
+        console.warn('[sales] Falha ao carregar cursos do Supabase:', err);
+        // Fallback: mostra estado vazio em caso de erro de rede
+        renderCourses([], {});
+      }
+    }
+
+    loadCourses();
+  })();
+
+  // ── PHONE MOCKUP NAV (auto-rotate + chat bubble) ─────
+  (function() {
+    const slides  = document.querySelectorAll('.phone-slide');
+    const buttons = document.querySelectorAll('.phone-bottom__item');
+    const mockup  = document.getElementById('phoneMockup');
+    const bubble  = document.getElementById('phoneBubble');
+    const bubbleT = document.getElementById('phoneBubbleText');
+    if (!slides.length || !buttons.length || !mockup) return;
+
+    // Ordem de exibição + texto do balão pra cada tela
+    const SCREENS = [
+      { id: 'trilha',     text: 'Sua trilha gamificada com fases progressivas' },
+      { id: 'cursos',     text: 'Cursos completos com aulas em vídeo' },
+      { id: 'missoes',    text: 'Missões diárias no mapa da sua cidade' },
+      { id: 'comunidade', text: 'Comunidade ativa com mentoras e alunas' },
+      { id: 'ranking',    text: 'Ranking semanal pra te manter motivada' },
+      { id: 'perfil',     text: 'Seu perfil com XP, ofensiva e conquistas' },
+    ];
+
+    function activate(target) {
+      slides.forEach(s => s.classList.toggle('is-active', s.dataset.screen === target));
+      buttons.forEach(b => b.classList.toggle('is-active', b.dataset.target === target));
+      // Atualiza balão
+      const screen = SCREENS.find(s => s.id === target);
+      if (screen && bubbleT) {
+        bubbleT.textContent = screen.text;
+        if (bubble) {
+          bubble.classList.remove('is-changing');
+          // force reflow pra reanimar
+          void bubble.offsetWidth;
+          bubble.classList.add('is-changing');
+        }
+      }
+    }
+
+    // Auto-rotate a cada 1,75s — ciclo permanente (não para com clique)
+    let idx = 0;
+    let paused = false;
+    const INTERVAL = 1750;
+    const autoTimer = setInterval(() => {
+      if (paused) return;
+      idx = (idx + 1) % SCREENS.length;
+      activate(SCREENS[idx].id);
+    }, INTERVAL);
+
+    // Click handlers — pula pra tela mas mantém ciclo rodando a partir dali
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetIdx = SCREENS.findIndex(s => s.id === btn.dataset.target);
+        if (targetIdx >= 0) {
+          idx = targetIdx;
+          activate(SCREENS[idx].id);
+        }
+      });
+    });
+
+    // Pausa só enquanto hover, retoma ao sair
+    mockup.addEventListener('mouseenter', () => { paused = true; });
+    mockup.addEventListener('mouseleave', () => { paused = false; });
+
+    // Inicializa o balão com a tela ativa atual
+    const initial = document.querySelector('.phone-slide.is-active');
+    if (initial) activate(initial.dataset.screen);
+  })();
 
   // ── PHONE MASK ───────────────────────────────────────
   document.getElementById('leadPhone').addEventListener('input', (e) => {

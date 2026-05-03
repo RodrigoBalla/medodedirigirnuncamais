@@ -312,7 +312,7 @@ const Auth = () => {
               !isLogin ? "bg-primary text-primary-foreground shadow-md" : "text-white/40 hover:text-white/60"
             }`}
           >
-            Cadastrar
+            Primeiro acesso
           </button>
         </div>
 

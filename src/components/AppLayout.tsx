@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShopModal } from "@/components/lms/ShopModal";
@@ -34,11 +33,13 @@ const NAV_ITEMS: { tab: AppTab; icon: string; label: string }[] = [
 ];
 
 const SIDEBAR_ITEMS: { tab: AppTab; icon: string; label: string }[] = [
+  // Itens ATIVOS no topo (usáveis hoje):
   { tab: "biblioteca", icon: "video_library", label: "Meus Cursos" },
+  { tab: "comunidade", icon: "forum", label: "Comunidade" },
+  // Itens BLOQUEADOS abaixo (Em breve):
   { tab: "home", icon: "map", label: "Trilha" },
   { tab: "treinos", icon: "target", label: "Missões Diárias" },
   { tab: "ranking", icon: "trophy", label: "Rankings" },
-  { tab: "comunidade", icon: "forum", label: "Comunidade" },
 ];
 
 function getLevel(xp: number) {
@@ -66,7 +67,8 @@ export function AppLayout({
   streakDays = 1,
 }: AppLayoutProps) {
   const { signOut } = useAuth();
-  const { toggleTheme, isDark } = useTheme();
+  // Tema fixo em dark — sem necessidade de toggle
+
   const { isAdmin } = useAdmin();
   const nav = useNavigate();
   const { lives, coins, totalXP, streak, xpBoostExpiresAt } = useUserProgress();
@@ -88,7 +90,10 @@ export function AppLayout({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background asphalt-texture relative">
+      {/* Fita de advertência fininha no topo absoluto da página — identidade trânsito */}
+      <div className="caution-tape h-1.5 w-full" aria-hidden="true" />
+
       {/* Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-6 py-2.5">
         {/* Left: Logo (MVP: leva para Meus Cursos, área principal) */}
@@ -171,14 +176,6 @@ export function AppLayout({
               <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
             </button>
           )}
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            title={isDark ? "Modo Claro" : "Modo Escuro"}
-          >
-            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
-          </button>
           {/* Avatar */}
           <div className="size-9 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
             {displayName ? displayName.charAt(0).toUpperCase() : "?"}
@@ -187,12 +184,14 @@ export function AppLayout({
       </header>
 
       <div className="flex flex-1">
-        {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card p-4 sticky top-[53px] h-[calc(100vh-53px)]">
+        {/* Desktop Sidebar — fundo preto puro como detalhe da paleta (navy + amarelo + preto)
+            + fita de advertência vertical fina na borda direita pra reforçar identidade trânsito */}
+        <aside className="hidden lg:flex flex-col w-64 bg-black p-4 sticky top-[53px] h-[calc(100vh-53px)] relative">
+          <div className="caution-tape--vertical absolute top-0 right-0 bottom-0 w-1.5" aria-hidden="true" />
           <div className="flex flex-col gap-6 h-full justify-between">
             <div className="flex flex-col gap-4">
-              {/* Profile mini card */}
-              <div className="flex items-center gap-3 px-3 py-3 bg-accent/50 rounded-xl border border-border">
+              {/* Profile mini card — fundo levemente clareado pra destacar do preto */}
+              <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
                 <div className="size-11 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary font-bold text-lg">
                   {displayName ? displayName.charAt(0).toUpperCase() : "?"}
                 </div>
@@ -244,16 +243,20 @@ export function AppLayout({
                 })}
               </nav>
 
-              {/* Pro upsell */}
-              <div className="bg-gradient-to-br from-primary to-blue-700 rounded-xl p-4 text-primary-foreground">
-                <p className="font-bold text-sm mb-1">Desbloqueie o Pro!</p>
-                <p className="text-xs opacity-80 mb-3 leading-relaxed">Acesso ilimitado a simulados e revisões em vídeo.</p>
-                <button
-                  onClick={() => setShowShop(true)}
-                  className="w-full bg-primary-foreground text-primary font-bold text-xs py-2 rounded-lg hover:bg-primary-foreground/90 transition-colors"
-                >
-                  Ver Planos
-                </button>
+              {/* Pro upsell — embrulhado em fitas de advertência (identidade trânsito) */}
+              <div className="rounded-xl overflow-hidden">
+                <div className="caution-tape h-2" aria-hidden="true" />
+                <div className="bg-gradient-to-br from-primary to-yellow-500 p-4 text-primary-foreground">
+                  <p className="font-black text-sm mb-1 uppercase tracking-wider">Desbloqueie o Pro!</p>
+                  <p className="text-xs opacity-90 mb-3 leading-relaxed">Acesso ilimitado a simulados e revisões em vídeo.</p>
+                  <button
+                    onClick={() => setShowShop(true)}
+                    className="w-full bg-black text-primary font-black text-xs py-2.5 rounded-lg hover:bg-black/85 transition-colors uppercase tracking-widest"
+                  >
+                    Ver Planos
+                  </button>
+                </div>
+                <div className="caution-tape h-2" aria-hidden="true" />
               </div>
             </div>
 
@@ -269,13 +272,6 @@ export function AppLayout({
               >
                 <span className="material-symbols-outlined text-xl">person</span>
                 <span className="text-sm">Perfil</span>
-              </button>
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all font-medium"
-              >
-                <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
-                <span className="text-sm">{isDark ? "Modo Claro" : "Modo Escuro"}</span>
               </button>
               <button
                 onClick={signOut}
@@ -297,8 +293,9 @@ export function AppLayout({
       {/* Shop Modal */}
       <ShopModal isOpen={showShop} onClose={() => setShowShop(false)} />
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1.5 flex justify-between items-center z-50 safe-area-bottom">
+      {/* Mobile Bottom Navigation — fita de advertência fininha logo acima */}
+      <div className="caution-tape lg:hidden fixed bottom-[70px] left-0 right-0 h-1 z-50" aria-hidden="true" />
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 px-2 py-1.5 flex justify-between items-center z-50 safe-area-bottom">
         {NAV_ITEMS.map((item) => {
           const isLocked = LOCKED_TABS.includes(item.tab);
           return (

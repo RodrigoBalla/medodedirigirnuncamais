@@ -123,6 +123,88 @@ export type Database = {
           },
         ]
       }
+      community_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_question: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_question?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_question?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_saves: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_saves_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrolled_emails: {
         Row: {
           email: string
@@ -330,6 +412,7 @@ export type Database = {
           display_name: string
           id: string
           is_blocked: boolean
+          phone: string | null
           updated_at: string
           user_id: string
         }
@@ -339,6 +422,7 @@ export type Database = {
           display_name?: string
           id?: string
           is_blocked?: boolean
+          phone?: string | null
           updated_at?: string
           user_id: string
         }
@@ -348,6 +432,7 @@ export type Database = {
           display_name?: string
           id?: string
           is_blocked?: boolean
+          phone?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -465,6 +550,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      vagas_disponiveis: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"

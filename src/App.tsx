@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { CompletionScreen } from "./components/CompletionScreen";
 import SalesPage from "./pages/SalesPage";
+import { CarCursor } from "./components/CarCursor";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CarCursor />
         <AuthProvider>
           <UserProgressProvider>
             <BrowserRouter>

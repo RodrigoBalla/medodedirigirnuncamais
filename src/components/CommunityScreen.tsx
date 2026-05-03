@@ -1,77 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCheckSound, playCoinSound } from "@/lib/sounds";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
-const MOCK_POSTS = [
-  {
-    id: 1,
-    author: "Karla Margaretch",
-    initial: "K",
-    role: "Mentora",
-    roleColor: "bg-primary/10 text-primary",
-    time: "Há 2 horas",
-    content: "Ótima sessão de baliza hoje! Lembre-se: respire fundo e use os pontos de referência que treinamos. Você está no controle! 🚗✨",
-    likes: 128,
-    comments: 24,
-    tab: "feed",
-  },
-  {
-    id: 2,
-    author: "Sarah P.",
-    initial: "S",
-    role: "Aluna",
-    roleColor: "bg-muted text-muted-foreground",
-    time: "Há 4 horas",
-    content: "Meninas, ainda tenho muita dúvida sobre a preferência em rotatórias. Quem já está dentro sempre tem a preferência? 🤔",
-    isDuvida: true,
-    reply: {
-      author: "Coach Anna",
-      initial: "A",
-      content: "Isso mesmo! A preferência é de quem já circula pela rotatória. Na dúvida, reduza e espere a passagem.",
-      time: "Há 1h",
-    },
-    likes: 85,
-    comments: 12,
-    tab: "feed",
-  },
-  {
-    id: 3,
-    author: "Coach Anna",
-    initial: "A",
-    role: "Mentora",
-    roleColor: "bg-primary/10 text-primary",
-    time: "Amanhã, 19h",
-    content: "📹 Mentoria ao vivo: 'Como vencer o medo da primeira vez na rodovia'. Vagas limitadas!",
-    likes: 256,
-    comments: 48,
-    tab: "mentorias",
-  },
-  {
-    id: 4,
-    author: "Karla Margaretch",
-    initial: "K",
-    role: "Mentora",
-    roleColor: "bg-primary/10 text-primary",
-    time: "Há 1 dia",
-    content: "💡 Dica rápida: Antes de entrar no carro, ajuste todos os espelhos. 90% dos alunos esquecem o retrovisor interno!",
-    likes: 342,
-    comments: 67,
-    tab: "dicas",
-  },
-  {
-    id: 5,
-    author: "Coach Anna",
-    initial: "A",
-    role: "Mentora",
-    roleColor: "bg-primary/10 text-primary",
-    time: "Há 3 dias",
-    content: "💡 Na subida com embreagem: o segredo é encontrar o ponto de arrancada (o carro treme levemente). Solte o freio de mão SÓ depois de sentir isso.",
-    likes: 189,
-    comments: 33,
-    tab: "dicas",
-  },
-];
+// =============================================================================
+// COMUNIDADE — agora 100% conectada ao Supabase.
+//
+// Tabelas:
+//   - public.community_posts   (posts dos usuários)
+//   - public.community_likes   (curtidas, 1 por user/post)
+//   - public.community_saves   (bookmarks privados)
+//
+// RLS garante que cada usuário só escreve em nome próprio.
+// Realtime: novos posts aparecem ao vivo via channel subscription.
+//
+// "Stories" e algumas mentorias/dicas continuam mockadas (V1) — a base
+// pra eles seria outra tabela/feature, fora do escopo do MVP de comunidade.
+// =============================================================================
+
+type CommunityPost = {
+  id: string;
+  user_id: string;
+  content: string;
+  is_question: boolean;
+  category: string;
+  created_at: string;
+  // Campos derivados (preenchidos depois do fetch):
+  authorName: string;
+  authorInitial: string;
+  likeCount: number;
+  isLiked: boolean;
+  isSaved: boolean;
+};
 
 const STORIES = [
   { name: "Karla M.", online: true },
@@ -85,53 +47,258 @@ const TABS = [
   { id: "feed", label: "Para Você" },
   { id: "mentorias", label: "Mentorias" },
   { id: "dicas", label: "Dicas" },
-];
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
+// Formata "há X horas/min" a partir do created_at
+function formatTimeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "agora";
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `há ${d}d`;
+  return new Date(iso).toLocaleDateString("pt-BR");
+}
 
 export function CommunityScreen() {
-  const [activeTab, setActiveTab] = useState("feed");
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [postText, setPostText] = useState("");
-  const [likedPosts, setLikedPosts] = useState<number[]>([]);
-  const [savedPosts, setSavedPosts] = useState<number[]>([]);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
   const [selectedStory, setSelectedStory] = useState<string | null>(null);
+  const [isQuestion, setIsQuestion] = useState(false);
 
-  const filteredPosts = activeTab === "feed"
-    ? MOCK_POSTS.filter(p => p.tab === "feed")
-    : MOCK_POSTS.filter(p => p.tab === activeTab);
+  // ── Carrega posts + curtidas + saves do usuário ──────────────────────
+  async function loadPosts() {
+    setLoading(true);
+    try {
+      // 1. Posts (RLS: autenticado lê tudo)
+      const { data: rawPosts, error: postsErr } = await supabase
+        .from("community_posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (postsErr) throw postsErr;
+      const postRows = rawPosts ?? [];
 
-  const handleLike = (postId: number) => {
-    playCheckSound();
-    if (likedPosts.includes(postId)) {
-      setLikedPosts(prev => prev.filter(id => id !== postId));
-    } else {
-      setLikedPosts(prev => [...prev, postId]);
+      if (postRows.length === 0) {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+
+      const postIds = postRows.map((p) => p.id);
+      const userIds = Array.from(new Set(postRows.map((p) => p.user_id)));
+
+      // 2. Profiles dos autores (1 query batched)
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
+      const profilesByUser = new Map(
+        (profiles ?? []).map((p) => [p.user_id, p.display_name || "Aluna"]),
+      );
+
+      // 3. Contagem de curtidas por post (1 query agregada)
+      const { data: likesAll } = await supabase
+        .from("community_likes")
+        .select("post_id, user_id")
+        .in("post_id", postIds);
+      const likeCountByPost = new Map<string, number>();
+      const likedByMe = new Set<string>();
+      (likesAll ?? []).forEach((l) => {
+        likeCountByPost.set(l.post_id, (likeCountByPost.get(l.post_id) ?? 0) + 1);
+        if (user && l.user_id === user.id) likedByMe.add(l.post_id);
+      });
+
+      // 4. Saves do usuário atual (RLS: só vê os próprios)
+      const savedByMe = new Set<string>();
+      if (user) {
+        const { data: mySaves } = await supabase
+          .from("community_saves")
+          .select("post_id")
+          .in("post_id", postIds);
+        (mySaves ?? []).forEach((s) => savedByMe.add(s.post_id));
+      }
+
+      const enriched: CommunityPost[] = postRows.map((p) => {
+        const name = profilesByUser.get(p.user_id) ?? "Aluna";
+        return {
+          id: p.id,
+          user_id: p.user_id,
+          content: p.content,
+          is_question: p.is_question,
+          category: p.category,
+          created_at: p.created_at,
+          authorName: name,
+          authorInitial: name.charAt(0).toUpperCase(),
+          likeCount: likeCountByPost.get(p.id) ?? 0,
+          isLiked: likedByMe.has(p.id),
+          isSaved: savedByMe.has(p.id),
+        };
+      });
+      setPosts(enriched);
+    } catch (err) {
+      console.error("[community] loadPosts error:", err);
+      toast.error("Não consegui carregar os posts.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
-  const handleSave = (postId: number) => {
-    playCheckSound();
-    if (savedPosts.includes(postId)) {
-      setSavedPosts(prev => prev.filter(id => id !== postId));
-      toast("Removido dos salvos");
-    } else {
-      setSavedPosts(prev => [...prev, postId]);
-      toast.success("Salvo! 🔖");
+  useEffect(() => {
+    loadPosts();
+
+    // Realtime: insere novos posts no topo conforme chegam
+    const channel = supabase
+      .channel("community_posts_changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "community_posts" },
+        () => {
+          // Recarrega — mais simples e barato que reconciliar joins manualmente
+          loadPosts();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // ── Filtro por tab ───────────────────────────────────────────────────
+  const filteredPosts = posts.filter((p) => p.category === activeTab);
+
+  // ── Ações ────────────────────────────────────────────────────────────
+  async function handlePost() {
+    if (!user) {
+      toast.error("Faça login pra postar.");
+      return;
     }
-  };
-
-  const handlePost = () => {
-    if (!postText.trim()) {
+    const content = postText.trim().replace(/^❓ Dúvida:\s*/i, "").trim();
+    if (!content) {
       toast.error("Escreva algo antes de postar!");
       return;
     }
-    playCoinSound();
-    toast.success("Postagem enviada! +5 XP 🎉");
-    setPostText("");
-  };
+    setPosting(true);
+    try {
+      const { error } = await supabase.from("community_posts").insert({
+        user_id: user.id,
+        content,
+        is_question: isQuestion,
+        category: activeTab,
+      });
+      if (error) throw error;
+      playCoinSound();
+      toast.success("Postagem enviada! +5 XP 🎉");
+      setPostText("");
+      setIsQuestion(false);
+      // Realtime já vai trazer; mas força um refresh imediato pra UX
+      loadPosts();
+    } catch (err) {
+      console.error("[community] handlePost error:", err);
+      toast.error("Não consegui publicar. Tenta de novo.");
+    } finally {
+      setPosting(false);
+    }
+  }
 
-  const handleStoryClick = (name: string) => {
+  async function handleLike(postId: string) {
+    if (!user) {
+      toast.error("Faça login pra curtir.");
+      return;
+    }
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+    playCheckSound();
+
+    // Otimista: atualiza local imediatamente
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, isLiked: !p.isLiked, likeCount: p.likeCount + (p.isLiked ? -1 : 1) }
+          : p,
+      ),
+    );
+
+    try {
+      if (post.isLiked) {
+        await supabase
+          .from("community_likes")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_id", user.id);
+      } else {
+        await supabase.from("community_likes").insert({
+          post_id: postId,
+          user_id: user.id,
+        });
+      }
+    } catch (err) {
+      console.error("[community] handleLike error:", err);
+      // Reverte otimismo se falhar
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked: post.isLiked, likeCount: post.likeCount }
+            : p,
+        ),
+      );
+      toast.error("Erro ao curtir.");
+    }
+  }
+
+  async function handleSave(postId: string) {
+    if (!user) {
+      toast.error("Faça login pra salvar.");
+      return;
+    }
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+    playCheckSound();
+
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, isSaved: !p.isSaved } : p)),
+    );
+
+    try {
+      if (post.isSaved) {
+        await supabase
+          .from("community_saves")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_id", user.id);
+        toast("Removido dos salvos");
+      } else {
+        await supabase
+          .from("community_saves")
+          .insert({ post_id: postId, user_id: user.id });
+        toast.success("Salvo! 🔖");
+      }
+    } catch (err) {
+      console.error("[community] handleSave error:", err);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, isSaved: post.isSaved } : p)),
+      );
+      toast.error("Erro ao salvar.");
+    }
+  }
+
+  function handleStoryClick(name: string) {
     setSelectedStory(name);
     setTimeout(() => setSelectedStory(null), 3000);
-  };
+  }
+
+  // Avatar inicial do usuário logado pro card de criação
+  const myInitial = user?.email?.charAt(0).toUpperCase() ?? "?";
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -200,7 +367,7 @@ export function CommunityScreen() {
       <div className="bg-card rounded-2xl p-4 md:p-6 border border-border mb-6 shadow-sm">
         <div className="flex gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-            V
+            {myInitial}
           </div>
           <div className="flex-1">
             <textarea
@@ -208,6 +375,7 @@ export function CommunityScreen() {
               onChange={(e) => setPostText(e.target.value)}
               className="w-full bg-transparent border-none focus:ring-0 text-base placeholder:text-muted-foreground resize-none h-16 focus:outline-none"
               placeholder="Compartilhe seu progresso..."
+              maxLength={2000}
             />
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
               <div className="flex items-center gap-3">
@@ -220,10 +388,16 @@ export function CommunityScreen() {
                 </button>
                 <button
                   onClick={() => {
-                    setPostText(prev => prev ? prev : "❓ Dúvida: ");
-                    toast("Modo dúvida ativado! Sua pergunta será destacada.", { icon: "❓" });
+                    setIsQuestion((v) => !v);
+                    if (!isQuestion) {
+                      toast("Modo dúvida ativado! Sua pergunta será destacada.", { icon: "❓" });
+                    }
                   }}
-                  className="flex items-center gap-1 text-primary font-bold hover:bg-primary/10 transition-colors bg-primary/5 px-2 py-1 rounded-lg"
+                  className={`flex items-center gap-1 font-bold transition-colors px-2 py-1 rounded-lg ${
+                    isQuestion
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "text-primary bg-primary/5 hover:bg-primary/10"
+                  }`}
                 >
                   <span className="material-symbols-outlined text-lg">help</span>
                   <span className="text-xs">Dúvida</span>
@@ -232,9 +406,10 @@ export function CommunityScreen() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={handlePost}
-                className="bg-primary text-primary-foreground px-4 py-1.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+                disabled={posting}
+                className="bg-primary text-primary-foreground px-4 py-1.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Postar
+                {posting ? "Enviando…" : "Postar"}
               </motion.button>
             </div>
           </div>
@@ -243,7 +418,7 @@ export function CommunityScreen() {
 
       {/* Feed tabs */}
       <div className="flex gap-6 mb-6 border-b border-border">
-        {TABS.map(tab => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -260,21 +435,34 @@ export function CommunityScreen() {
 
       {/* Posts */}
       <div className="flex flex-col gap-6">
-        <AnimatePresence mode="wait">
-          {filteredPosts.map((post) => {
-            const isLiked = likedPosts.includes(post.id);
-            const isSaved = savedPosts.includes(post.id);
-            return (
+        {loading ? (
+          <div className="text-center py-10 text-muted-foreground text-sm">
+            Carregando posts…
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-10">
+            <div className="inline-block p-3 rounded-full bg-primary/10 text-primary mb-3">
+              <span className="material-symbols-outlined text-3xl">forum</span>
+            </div>
+            <h3 className="text-lg font-bold">Sem posts em {TABS.find((t) => t.id === activeTab)?.label}</h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              Seja a primeira a compartilhar algo aqui!
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {filteredPosts.map((post) => (
               <motion.article
                 key={post.id}
+                layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className={`bg-card rounded-2xl border overflow-hidden shadow-sm ${
-                  post.isDuvida ? "border-2 border-primary/20" : "border-border"
+                  post.is_question ? "border-2 border-primary/20" : "border-border"
                 } relative`}
               >
-                {post.isDuvida && (
+                {post.is_question && (
                   <div className="absolute top-3 right-4 bg-primary text-primary-foreground text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-md shadow-primary/20">
                     <span className="material-symbols-outlined text-xs">bolt</span> Dúvida
                   </div>
@@ -283,16 +471,16 @@ export function CommunityScreen() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {post.initial}
+                        {post.authorInitial}
                       </div>
                       <div>
                         <h4 className="font-bold text-sm">
-                          {post.author}
-                          <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${post.roleColor}`}>
-                            {post.role}
+                          {post.authorName}
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-muted text-muted-foreground">
+                            Aluna
                           </span>
                         </h4>
-                        <p className="text-xs text-muted-foreground">{post.time}</p>
+                        <p className="text-xs text-muted-foreground">{formatTimeAgo(post.created_at)}</p>
                       </div>
                     </div>
                     <button
@@ -303,30 +491,12 @@ export function CommunityScreen() {
                     </button>
                   </div>
 
-                  {post.isDuvida ? (
+                  {post.is_question ? (
                     <div className="bg-primary/5 rounded-xl p-4 mb-4">
                       <p className="text-sm leading-relaxed font-medium italic">"{post.content}"</p>
                     </div>
                   ) : (
-                    <p className="text-sm leading-relaxed mb-3">{post.content}</p>
-                  )}
-
-                  {/* Coach reply */}
-                  {post.reply && (
-                    <div className="flex items-start gap-3 pl-3 border-l-2 border-primary/20 mb-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                        {post.reply.initial}
-                      </div>
-                      <div className="flex-1">
-                        <div className="bg-muted rounded-xl p-3">
-                          <p className="text-xs font-bold text-primary mb-1">
-                            {post.reply.author}
-                            <span className="text-muted-foreground font-normal ml-2">{post.reply.time}</span>
-                          </p>
-                          <p className="text-sm text-muted-foreground">{post.reply.content}</p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-sm leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
                   )}
                 </div>
 
@@ -337,45 +507,47 @@ export function CommunityScreen() {
                         whileTap={{ scale: 1.3 }}
                         onClick={() => handleLike(post.id)}
                         className={`flex items-center gap-1.5 transition-colors ${
-                          isLiked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+                          post.isLiked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
                         }`}
                       >
-                        <span className={`material-symbols-outlined text-lg ${isLiked ? "filled-icon" : ""}`}>favorite</span>
-                        <span className="text-sm font-bold">{post.likes + (isLiked ? 1 : 0)}</span>
+                        <span className={`material-symbols-outlined text-lg ${post.isLiked ? "filled-icon" : ""}`}>favorite</span>
+                        <span className="text-sm font-bold">{post.likeCount}</span>
                       </motion.button>
                       <button
                         onClick={() => toast("💬 Comentários em breve!", { icon: "🔜" })}
                         className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <span className="material-symbols-outlined text-lg">mode_comment</span>
-                        <span className="text-sm font-bold">{post.comments}</span>
+                        <span className="text-sm font-bold">0</span>
                       </button>
                     </div>
                     <motion.button
                       whileTap={{ scale: 1.3 }}
                       onClick={() => handleSave(post.id)}
                       className={`transition-colors ${
-                        isSaved ? "text-primary" : "text-muted-foreground hover:text-primary"
+                        post.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary"
                       }`}
                     >
-                      <span className={`material-symbols-outlined text-lg ${isSaved ? "filled-icon" : ""}`}>bookmark</span>
+                      <span className={`material-symbols-outlined text-lg ${post.isSaved ? "filled-icon" : ""}`}>bookmark</span>
                     </motion.button>
                   </div>
                 </div>
               </motion.article>
-            );
-          })}
-        </AnimatePresence>
+            ))}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* End of feed */}
-      <div className="mt-10 text-center py-6">
-        <div className="inline-block p-3 rounded-full bg-primary/10 text-primary mb-3">
-          <span className="material-symbols-outlined text-3xl">check_circle</span>
+      {!loading && filteredPosts.length > 0 && (
+        <div className="mt-10 text-center py-6">
+          <div className="inline-block p-3 rounded-full bg-primary/10 text-primary mb-3">
+            <span className="material-symbols-outlined text-3xl">check_circle</span>
+          </div>
+          <h3 className="text-lg font-bold">Você está em dia!</h3>
+          <p className="text-muted-foreground text-sm mt-1">Volte mais tarde para novas postagens.</p>
         </div>
-        <h3 className="text-lg font-bold">Você está em dia!</h3>
-        <p className="text-muted-foreground text-sm mt-1">Volte mais tarde para novas postagens.</p>
-      </div>
+      )}
     </div>
   );
 }
