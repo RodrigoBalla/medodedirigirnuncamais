@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Organizar Conteúdo — Carla</title>
+  <meta name="description" content="Ferramenta interna pra Carla organizar módulos e conteúdos do app Medo de Dirigir Nunca Mais." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ────────── PALETA ────────── */
+    :root {
+      --navy:        #0A1F5C;
+      --navy-2:      #0D2675;
+      --navy-3:      #112D85;
+      --yellow:      #FFD60A;
+      --yellow-2:    #FFC700;
+      --on-yellow:   #0A1F5C;
+      --black:       #000000;
+      --danger:      #ef4444;
+      --font-h:      'Lexend', sans-serif;
+      --font-b:      'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-b);
+      background: var(--navy);
+      color: #FFFFFF;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+
+    /* ────────── FITA DE ADVERTÊNCIA ────────── */
+    .tape {
+      height: 8px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #000000 0 14px,
+        var(--yellow) 14px 28px
+      );
+    }
+
+    /* ────────── LAYOUT ────────── */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 28px 0 20px;
+    }
+    .header h1 {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--yellow);
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 6px;
+      letter-spacing: -.02em;
+    }
+    .header p {
+      color: rgba(255, 255, 255, .7);
+      font-size: .95rem;
+    }
+
+    /* ────────── TELAS (swap via JS) ────────── */
+    .screen { display: none; animation: fadeIn .3s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ────────── BOTÕES BASE ────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 17px 24px;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1rem;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      width: 100%;
+      line-height: 1.2;
+    }
+    .btn:hover  { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--on-yellow);
+      box-shadow: 0 8px 24px rgba(255, 214, 10, .35);
+    }
+    .btn-primary:hover { background: var(--yellow-2); box-shadow: 0 14px 34px rgba(255, 214, 10, .5); }
+    .btn-ghost {
+      background: transparent;
+      color: #FFFFFF;
+      border: 1.5px solid rgba(255, 255, 255, .25);
+    }
+    .btn-ghost:hover { border-color: var(--yellow); color: var(--yellow); }
+    .btn-danger {
+      background: transparent;
+      color: rgba(255, 255, 255, .55);
+      border: 1px dashed rgba(255, 255, 255, .18);
+      font-size: .85rem;
+      padding: 14px 20px;
+    }
+    .btn-danger:hover { color: var(--danger); border-color: var(--danger); }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    /* ────────── HOME — 2 BOTÕES PRINCIPAIS ────────── */
+    .home-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .home-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 22px;
+      background: var(--black);
+      border: 1.5px solid rgba(255, 214, 10, .25);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all .2s ease;
+      text-align: left;
+      width: 100%;
+      font-family: var(--font-b);
+      color: inherit;
+    }
+    .home-btn:hover {
+      border-color: var(--yellow);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(255, 214, 10, .15);
+    }
+    .home-btn .icon { font-size: 2.2rem; flex-shrink: 0; }
+    .home-btn .home-btn-text { min-width: 0; flex: 1; }
+    .home-btn h3 {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--yellow);
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    .home-btn p {
+      font-size: .85rem;
+      color: rgba(255, 255, 255, .65);
+      line-height: 1.4;
+    }
+
+    /* ────────── CARD DE STATS ────────── */
+    .stat-card {
+      background: rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255, 214, 10, .25);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 4px 0 14px;
+    }
+    .stat-card-label {
+      font-family: var(--font-h);
+      font-size: .65rem;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      margin-bottom: 4px;
+    }
+    .stat-card-value {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: 1rem;
+      color: #FFFFFF;
+    }
+
+    /* ────────── CAMPOS ────────── */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .75rem;
+      color: var(--yellow);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, .05);
+      color: #FFFFFF;
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      border-radius: 12px;
+      font-family: var(--font-b);
+      font-size: 1rem;
+      font-weight: 500;
+      transition: border-color .2s ease, background .2s ease;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--yellow);
+      background: rgba(255, 255, 255, .08);
+    }
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(255, 255, 255, .3);
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 90px;
+      line-height: 1.5;
+    }
+
+    /* ────────── BLOCO DE AULA ────────── */
+    .lesson-block {
+      background: rgba(0, 0, 0, .3);
+      border: 1px solid rgba(0, 0, 0, .55);
+      border-radius: 14px;
+      padding: 18px 16px 16px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .lesson-num {
+      position: absolute;
+      top: -10px; left: 14px;
+      background: var(--yellow);
+      color: var(--on-yellow);
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-family: var(--font-h);
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+    .lesson-block .remove-btn {
+      position: absolute;
+      top: 8px; right: 10px;
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, .4);
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 1.4rem;
+      line-height: 1;
+      border-radius: 6px;
+    }
+    .lesson-block .remove-btn:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, .1);
+    }
+
+    .add-lesson {
+      width: 100%;
+      padding: 16px;
+      border: 2px dashed rgba(255, 214, 10, .35);
+      border-radius: 12px;
+      background: rgba(255, 214, 10, .04);
+      color: var(--yellow);
+      font-family: var(--font-h);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-size: .9rem;
+      margin-bottom: 22px;
+    }
+    .add-lesson:hover {
+      background: rgba(255, 214, 10, .12);
+      border-color: var(--yellow);
+    }
+
+    /* ────────── BACK BTN ────────── */
+    .back-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, .65);
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      padding: 6px 0;
+      margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .back-btn:hover { color: var(--yellow); }
+
+    /* ────────── SUCCESS SCREEN ────────── */
+    .checkmark-pulse {
+      width: 86px; height: 86px;
+      border-radius: 50%;
+      background: var(--yellow);
+      color: var(--on-yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 32px auto 18px;
+      font-size: 2.6rem;
+      font-weight: 900;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 214, 10, .4); }
+      50%      { box-shadow: 0 0 0 18px rgba(255, 214, 10, 0); }
+    }
+    .saved-success h2 {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--yellow);
+      text-align: center;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+    .saved-success p {
+      text-align: center;
+      color: rgba(255, 255, 255, .7);
+      margin-bottom: 22px;
+    }
+
+    /* ────────── PREVIEW FINAL ────────── */
+    .preview-area {
+      background: var(--black);
+      border: 1px solid rgba(255, 214, 10, .25);
+      border-radius: 14px;
+      padding: 20px;
+      font-family: var(--font-b);
+      font-size: .9rem;
+      color: rgba(255, 255, 255, .9);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 50vh;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .preview-area::-webkit-scrollbar { width: 6px; }
+    .preview-area::-webkit-scrollbar-thumb {
+      background: rgba(255, 214, 10, .4);
+      border-radius: 100px;
+    }
+
+    /* ────────── TOAST ────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(150%);
+      background: var(--yellow);
+      color: var(--on-yellow);
+      padding: 14px 26px;
+      border-radius: 100px;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .9rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+      z-index: 1000;
+      transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ────────── RESPONSIVO ────────── */
+    @media (max-width: 480px) {
+      .container  { padding: 16px; }
+      .btn-row    { grid-template-columns: 1fr; }
+      .header     { padding: 22px 0 16px; }
+      .home-btn   { padding: 18px; }
+      .home-btn .icon { font-size: 1.9rem; }
+    }
+
+    /* Section title nas formas */
+    .section-title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--yellow);
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="tape" aria-hidden="true"></div>
+
+<div class="container">
+  <div class="header">
+    <h1>📋 Organizar Conteúdo</h1>
+    <p>Olá, Carla! Vamos estruturar seu material 👋</p>
+  </div>
+
+  <!-- ════════ TELA 1: HOME ════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="home-btns">
+      <button class="home-btn" onclick="goTo('module')">
+        <span class="icon">📚</span>
+        <div class="home-btn-text">
+          <h3>Criar Módulo</h3>
+          <p>Cadastre o nome do módulo e cada aula que ele vai ter</p>
+        </div>
+      </button>
+      <button class="home-btn" onclick="goTo('content')">
+        <span class="icon">🎯</span>
+        <div class="home-btn-text">
+          <h3>Criar Conteúdo</h3>
+          <p>Cadastre um tema avulso e o que será aprendido nele</p>
+        </div>
+      </button>
+    </div>
+
+    <div id="stats-area"></div>
+  </div>
+
+  <!-- ════════ TELA 2: FORM MÓDULO ════════ -->
+  <div class="screen" id="screen-module">
+    <button class="back-btn" onclick="goTo('home')">← Voltar</button>
+    <h2 class="section-title">📚 Novo Módulo</h2>
+
+    <div class="field">
+      <label for="module-name">Nome do Módulo</label>
+      <input type="text" id="module-name" placeholder="Ex: Conhecendo o Carro" autocomplete="off" />
+    </div>
+
+    <div id="lessons-list"></div>
+
+    <button class="add-lesson" onclick="addLesson()">+ Adicionar outra aula</button>
+
+    <button class="btn btn-primary" onclick="saveModule()">✓ Salvar Módulo</button>
+  </div>
+
+  <!-- ════════ TELA 3: FORM CONTEÚDO ════════ -->
+  <div class="screen" id="screen-content">
+    <button class="back-btn" onclick="goTo('home')">← Voltar</button>
+    <h2 class="section-title">🎯 Novo Conteúdo</h2>
+
+    <div class="field">
+      <label for="content-theme">Tema</label>
+      <input type="text" id="content-theme" placeholder="Ex: Estacionamento em ladeira" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="content-learn">O que aprenderemos nesse tema</label>
+      <textarea id="content-learn" placeholder="Descreva o que o aluno vai aprender..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveContent()">✓ Salvar Conteúdo</button>
+  </div>
+
+  <!-- ════════ TELA 4: SUCESSO + ESCOLHA ════════ -->
+  <div class="screen saved-success" id="screen-saved">
+    <div class="checkmark-pulse">✓</div>
+    <h2>Salvo!</h2>
+    <p>O que você quer fazer agora?</p>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goTo('module', true)">+ Outro Módulo</button>
+      <button class="btn btn-ghost" onclick="goTo('content', true)">+ Outro Conteúdo</button>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <button class="btn btn-primary" onclick="goTo('final')">📋 Encerrar e Ver Texto Final</button>
+    </div>
+  </div>
+
+  <!-- ════════ TELA 5: TEXTO FINAL ════════ -->
+  <div class="screen" id="screen-final">
+    <button class="back-btn" onclick="goTo('home')">← Voltar ao Início</button>
+    <h2 class="section-title">📋 Texto Final</h2>
+    <p style="color: rgba(255,255,255,.7); font-size: .9rem; margin-bottom: 16px;">
+      Toque em <strong>Copiar Tudo</strong> e cole na conversa do WhatsApp do Rodrigo:
+    </p>
+
+    <div class="preview-area" id="preview-text"></div>
+
+    <div style="margin-top: 16px;">
+      <button class="btn btn-primary" onclick="copyAll()">📋 Copiar Tudo</button>
+    </div>
+    <div style="margin-top: 10px;">
+      <button class="btn btn-danger" onclick="clearAll()">🗑️ Limpar e começar de novo</button>
+    </div>
+  </div>
+</div>
+
+<div class="tape" style="margin-top: 60px;" aria-hidden="true"></div>
+
+<div class="toast" id="toast">Copiado! 🎉</div>
+
+<script>
+  // ====================================================================
+  // STATE — guarda módulos e conteúdos durante a sessão
+  // ====================================================================
+  const STATE_KEY = 'carla-content-builder';
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const raw = sessionStorage.getItem(STATE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { /* ignore */ }
+    return { modules: [], contents: [] };
+  }
+
+  function saveState() {
+    try { sessionStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ====================================================================
+  // NAVEGAÇÃO ENTRE TELAS
+  // ====================================================================
+  function goTo(screen, reset) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+    if (screen === 'module') {
+      if (reset) resetModuleForm();
+      document.getElementById('screen-module').classList.add('active');
+      // Garante pelo menos 1 bloco de aula no formulário
+      if (document.getElementById('lessons-list').children.length === 0) {
+        addLesson();
+      }
+    } else if (screen === 'content') {
+      if (reset) resetContentForm();
+      document.getElementById('screen-content').classList.add('active');
+    } else if (screen === 'saved') {
+      document.getElementById('screen-saved').classList.add('active');
+    } else if (screen === 'final') {
+      renderPreview();
+      document.getElementById('screen-final').classList.add('active');
+    } else {
+      renderStats();
+      document.getElementById('screen-home').classList.add('active');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ====================================================================
+  // STATS NA HOME
+  // ====================================================================
+  function renderStats() {
+    const area = document.getElementById('stats-area');
+    const m = state.modules.length;
+    const c = state.contents.length;
+    if (m === 0 && c === 0) { area.innerHTML = ''; return; }
+    area.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-card-label">Itens registrados</div>
+        <div class="stat-card-value">
+          ${m} módulo${m === 1 ? '' : 's'} · ${c} conteúdo${c === 1 ? '' : 's'}
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goTo('final')">📋 Ver e Copiar Texto Final</button>
+    `;
+  }
+
+  // ====================================================================
+  // FORM DE MÓDULO
+  // ====================================================================
+  function resetModuleForm() {
+    document.getElementById('module-name').value = '';
+    document.getElementById('lessons-list').innerHTML = '';
+  }
+
+  function addLesson() {
+    const list = document.getElementById('lessons-list');
+    const num = list.children.length + 1;
+    const block = document.createElement('div');
+    block.className = 'lesson-block';
+    block.innerHTML = `
+      <span class="lesson-num">Aula ${num}</span>
+      <button class="remove-btn" onclick="removeLesson(this)" title="Remover aula" aria-label="Remover aula">×</button>
+      <div class="field" style="margin-top: 12px;">
+        <label>Nome da Aula</label>
+        <input type="text" class="lesson-name" placeholder="Ex: Banco e encosto" autocomplete="off" />
+      </div>
+      <div class="field" style="margin-bottom: 0;">
+        <label>O que o aluno vai aprender</label>
+        <textarea class="lesson-learn" placeholder="Descreva o que será ensinado nesta aula..."></textarea>
+      </div>
+    `;
+    list.appendChild(block);
+    // Auto-focus no input do título da nova aula
+    block.querySelector('.lesson-name').focus({ preventScroll: true });
+  }
+
+  function removeLesson(btn) {
+    const block = btn.closest('.lesson-block');
+    block.remove();
+    // Renumera
+    document.querySelectorAll('#lessons-list .lesson-block').forEach((b, i) => {
+      b.querySelector('.lesson-num').textContent = `Aula ${i + 1}`;
+    });
+  }
+
+  function saveModule() {
+    const name = document.getElementById('module-name').value.trim();
+    if (!name) {
+      showToast('Coloca o nome do módulo primeiro 😊');
+      document.getElementById('module-name').focus();
+      return;
+    }
+    const blocks = document.querySelectorAll('#lessons-list .lesson-block');
+    const lessons = [];
+    for (const b of blocks) {
+      const ln = b.querySelector('.lesson-name').value.trim();
+      const ll = b.querySelector('.lesson-learn').value.trim();
+      if (ln || ll) lessons.push({ name: ln, learn: ll });
+    }
+    if (lessons.length === 0) {
+      showToast('Adiciona pelo menos uma aula 😊');
+      return;
+    }
+    state.modules.push({ name, lessons });
+    saveState();
+    resetModuleForm();
+    goTo('saved');
+  }
+
+  // ====================================================================
+  // FORM DE CONTEÚDO
+  // ====================================================================
+  function resetContentForm() {
+    document.getElementById('content-theme').value = '';
+    document.getElementById('content-learn').value = '';
+  }
+
+  function saveContent() {
+    const theme = document.getElementById('content-theme').value.trim();
+    const learn = document.getElementById('content-learn').value.trim();
+    if (!theme) {
+      showToast('Coloca o tema 😊');
+      document.getElementById('content-theme').focus();
+      return;
+    }
+    if (!learn) {
+      showToast('Diz o que aprenderemos 😊');
+      document.getElementById('content-learn').focus();
+      return;
+    }
+    state.contents.push({ theme, learn });
+    saveState();
+    resetContentForm();
+    goTo('saved');
+  }
+
+  // ====================================================================
+  // TEXTO FINAL FORMATADO PRA WHATSAPP
+  // ====================================================================
+  function buildFinalText() {
+    const lines = [];
+    if (state.modules.length === 0 && state.contents.length === 0) {
+      return '(nada cadastrado ainda — volta e adiciona pelo menos um item)';
+    }
+
+    state.modules.forEach((m, i) => {
+      lines.push('═══════════════════════════');
+      lines.push(`📚 MÓDULO ${i + 1}: ${m.name}`);
+      lines.push('═══════════════════════════');
+      lines.push('');
+      m.lessons.forEach((l, j) => {
+        lines.push(`▸ Aula ${j + 1}: ${l.name || '(sem nome)'}`);
+        if (l.learn) lines.push(`   O que aprenderá: ${l.learn}`);
+        lines.push('');
+      });
+    });
+
+    if (state.contents.length > 0) {
+      state.contents.forEach((c, i) => {
+        lines.push('───────────────────────────');
+        lines.push(`🎯 CONTEÚDO ${i + 1}`);
+        lines.push('───────────────────────────');
+        lines.push(`Tema: ${c.theme}`);
+        lines.push(`O que aprenderemos: ${c.learn}`);
+        lines.push('');
+      });
+    }
+
+    return lines.join('\n').trim();
+  }
+
+  function renderPreview() {
+    document.getElementById('preview-text').textContent = buildFinalText();
+  }
+
+  function copyAll() {
+    const text = buildFinalText();
+    if (!text || text.startsWith('(nada')) {
+      showToast('Adiciona algo antes de copiar 😊');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('Copiado! 🎉 Cole no WhatsApp.'))
+        .catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast('Copiado! 🎉');
+    } catch (e) {
+      showToast('Não consegui copiar — selecione manualmente.');
+    }
+    document.body.removeChild(ta);
+  }
+
+  function clearAll() {
+    if (!confirm('Tem certeza? Vai apagar tudo que você cadastrou.')) return;
+    state = { modules: [], contents: [] };
+    saveState();
+    goTo('home');
+    showToast('Tudo limpo!');
+  }
+
+  // ====================================================================
+  // TOAST
+  // ====================================================================
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // ====================================================================
+  // INIT
+  // ====================================================================
+  goTo('home');
+</script>
+
+</body>
+</html>

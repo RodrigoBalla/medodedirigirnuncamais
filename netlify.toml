@@ -12,6 +12,12 @@
   to     = "/sales.html"
   status = 200
 
+# Ferramenta interna pra Carla organizar conteúdos (estática, fora do SPA).
+[[redirects]]
+  from   = "/carla"
+  to     = "/carla.html"
+  status = 200
+
 # Fallback SPA (mesmo objetivo do public/_redirects, redundância proposital).
 [[redirects]]
   from   = "/*"
