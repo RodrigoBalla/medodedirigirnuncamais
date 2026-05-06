@@ -22,7 +22,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <CarCursor />
+        {/* <CarCursor /> — cursor de carro desativado temporariamente; reativar quando quiser */}
         <AuthProvider>
           <UserProgressProvider>
             <BrowserRouter>

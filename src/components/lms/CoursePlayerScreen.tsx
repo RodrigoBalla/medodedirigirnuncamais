@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Module, Lesson } from "@/types/lms";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import { InteractiveChallenge } from "./InteractiveChallenge";
 import { LuckRoulette } from "./LuckRoulette";
 import { GameOverModal } from "./GameOverModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { VideoPlayer, parseVideoUrl } from "./VideoPlayer";
+import { LessonComments } from "./LessonComments";
 
 interface Props {
   productId: string;
@@ -32,6 +34,11 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const [showRoulette, setShowRoulette] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
 
+  // Progresso individual de aula (resume position) — Map<lessonId, seconds>
+  const [progressByLesson, setProgressByLesson] = useState<Map<string, number>>(new Map());
+  // Posição atual no vídeo (atualizada via onProgress) — usada pra timestamp de comentários
+  const currentTimeRef = useRef<number>(0);
+
   useEffect(() => {
     loadCourse();
   }, [productId, user]);
@@ -47,6 +54,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
     const { data: p } = await supabase.from('products').select('*').eq('id', productId).single();
     if (p) setProduct(p);
 
+    let lessonList: Lesson[] = [];
     const { data: m } = await supabase.from('modules').select('*').eq('product_id', productId).order('order_index');
     if (m && m.length > 0) {
       setModules(m);
@@ -54,7 +62,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       const { data: less } = await supabase.from('lessons').select('*').in('module_id', modIds).order('order_index');
       if (less) {
          setLessons(less);
-         if (less.length > 0) setActiveLessonId(less[0].id);
+         lessonList = less as Lesson[];
       }
     }
 
@@ -63,9 +71,91 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
        if (prog) {
           setHasCompletedTutorial(prog.has_completed_tutorial ?? false);
        }
+
+       // Carrega lesson_progress (posição + flags) pra retomar de onde parou
+       if (lessonList.length > 0) {
+         const { data: lp } = await supabase
+           .from('lesson_progress')
+           .select('lesson_id, position_seconds, completed')
+           .eq('user_id', user.id)
+           .in('lesson_id', lessonList.map(l => l.id));
+         const map = new Map<string, number>();
+         (lp ?? []).forEach((row: { lesson_id: string; position_seconds: number }) => {
+           map.set(row.lesson_id, Number(row.position_seconds) || 0);
+         });
+         setProgressByLesson(map);
+
+         // Aula inicial: a primeira não concluída com posição salva, ou a primeira do curso
+         const completedSet = new Set((lp ?? []).filter((r: any) => r.completed).map((r: any) => r.lesson_id));
+         const firstUnfinished = lessonList.find((l) => !completedSet.has(l.id));
+         setActiveLessonId((firstUnfinished ?? lessonList[0]).id);
+       } else {
+         setActiveLessonId(null);
+       }
+    } else if (lessonList.length > 0) {
+       setActiveLessonId(lessonList[0].id);
     }
 
     setLoading(false);
+  }
+
+  // Salva progresso (posição) no banco — chamado a cada ~5s pelo VideoPlayer
+  const saveLessonProgress = useCallback(
+    async (lessonId: string, seconds: number, durationSeconds: number) => {
+      if (!user || !lessonId) return;
+      currentTimeRef.current = seconds;
+      try {
+        await supabase.from('lesson_progress').upsert({
+          user_id: user.id,
+          lesson_id: lessonId,
+          position_seconds: Math.max(0, Math.floor(seconds)),
+          duration_seconds: durationSeconds > 0 ? durationSeconds : null,
+        }, { onConflict: 'user_id,lesson_id' });
+        // Atualiza cache local
+        setProgressByLesson((prev) => {
+          const next = new Map(prev);
+          next.set(lessonId, seconds);
+          return next;
+        });
+      } catch (err) {
+        // Falha silenciosa — progresso é best-effort
+        console.warn('[lesson-progress] save error:', err);
+      }
+    },
+    [user],
+  );
+
+  // Marca aula como concluída no banco (lesson_progress) e dispara avanço
+  const handleLessonAutoComplete = useCallback(async () => {
+    if (!activeLessonId || !user) return;
+    if (isLessonCompleted(activeLessonId)) {
+      // Já concluída — só avança
+      goToNextLesson();
+      return;
+    }
+    try {
+      await supabase.from('lesson_progress').upsert({
+        user_id: user.id,
+        lesson_id: activeLessonId,
+        completed: true,
+        completed_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,lesson_id' });
+    } catch (err) {
+      console.warn('[lesson-progress] complete error:', err);
+    }
+    await completeLesson(activeLessonId); // atualiza UserProgressContext (XP, badges)
+    toast.success('🎯 Aula concluída! Indo pra próxima…');
+    setTimeout(() => goToNextLesson(), 1500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLessonId, user]);
+
+  function goToNextLesson() {
+    const idx = lessons.findIndex((l) => l.id === activeLessonId);
+    if (idx >= 0 && idx < lessons.length - 1) {
+      setActiveLessonId(lessons[idx + 1].id);
+    } else {
+      toast('🎉 Parabéns! Você concluiu todas as aulas deste curso!');
+    }
   }
 
   const isLessonCompleted = (lessonId: string) => completedLessons.includes(lessonId);
@@ -198,57 +288,41 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                     </div>
                  ) : (
                     <>
-                       {/* Video Container (Classic 16:9 Cinema Mode) */}
+                       {/* Video Container — VideoPlayer abstrai YouTube/Vimeo/MP4 com auto-complete + resume */}
                        <div className="w-full bg-black aspect-video relative flex flex-col items-center justify-center shadow-2xl xl:rounded-t-3xl overflow-hidden border border-border border-b-0">
-                          {activeLesson.video_url ? (
-                             <video 
-                                key={activeLesson.video_url} 
-                                src={activeLesson.video_url} 
-                                controls 
-                                controlsList="nodownload"
-                                className="w-full h-full object-contain"
-                                autoPlay
-                                onEnded={() => {
-                                   if(!isLessonCompleted(activeLesson.id)) {
-                                      setShowChallenge(true); // Engatilha o Bandersnatch no final do video
-                                   }
-                                }}
-                             >
-                                Seu navegador não suporta vídeos HTML5.
-                             </video>
-                          ) : (
-                             <div className="text-white/40 flex flex-col items-center group">
-                                <span className="material-symbols-outlined text-6xl mb-3 group-hover:scale-110 transition-transform">article</span>
-                                <p className="font-medium tracking-widest uppercase text-sm">Missão Estática</p>
-                             </div>
-                          )}
+                          <VideoPlayer
+                             embed={parseVideoUrl(activeLesson.video_url)}
+                             startAt={progressByLesson.get(activeLesson.id) ?? 0}
+                             onProgress={(seconds, duration) => {
+                                saveLessonProgress(activeLesson.id, seconds, duration);
+                             }}
+                             onDurationChange={() => { /* duração já é capturada no onProgress */ }}
+                             onEnded={handleLessonAutoComplete}
+                          />
                        </div>
                        
-                       {/* Action Toolbar */}
+                       {/* Action Toolbar — botão de concluir aula (sem challenge no módulo de cursos) */}
                        <div className="bg-card w-full p-5 border border-border flex justify-end xl:rounded-b-3xl shadow-lg gap-3">
-                          <button 
+                          <button
                              onClick={() => {
-                                if(isLessonCompleted(activeLesson.id)) {
-                                   handleMarkCompleted(); // Just next lesson manually
-                                } else {
-                                   setShowChallenge(true); // Initiate the Challenge
-                                }
+                                if (!isLessonCompleted(activeLesson.id)) handleMarkCompleted();
                              }}
+                             disabled={isLessonCompleted(activeLesson.id)}
                              className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-md ${
-                                isLessonCompleted(activeLesson.id) 
-                                  ? 'bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] border border-[hsl(var(--success)/0.3)] shadow-none opacity-80'
-                                  : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] animate-pulse'
+                                isLessonCompleted(activeLesson.id)
+                                  ? 'bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] border border-[hsl(var(--success)/0.3)] shadow-none opacity-80 cursor-default'
+                                  : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]'
                              }`}
                           >
                              <span className={`material-symbols-outlined text-xl ${isLessonCompleted(activeLesson.id) ? 'filled-icon' : ''}`}>
-                                {isLessonCompleted(activeLesson.id) ? 'check_circle' : 'swords'}
+                                {isLessonCompleted(activeLesson.id) ? 'check_circle' : 'check'}
                              </span>
-                             {isLessonCompleted(activeLesson.id) ? 'Missão Cumprida' : 'Desafiar Meu Destino'}
+                             {isLessonCompleted(activeLesson.id) ? 'Aula Concluída' : 'Concluir Aula'}
                           </button>
                        </div>
                        
                        {/* Content Frame */}
-                       <div className="bg-card w-full p-6 md:p-8 border-b border-border xl:border xl:rounded-2xl xl:mt-6 shadow-sm mb-10 xl:mb-20">
+                       <div className="bg-card w-full p-6 md:p-8 border-b border-border xl:border xl:rounded-2xl xl:mt-6 shadow-sm">
                           <div className="flex items-center gap-2 mb-2">
                              <span className="px-2.5 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded flex items-center gap-1">
                                 MISSÃO ATUAL
@@ -258,6 +332,11 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                           <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap">
                              {activeLesson.content || "Nenhum material de apoio para esta missão."}
                           </div>
+                       </div>
+
+                       {/* Comentários da aula — moderação por admin, +20 XP por aprovado */}
+                       <div className="bg-card w-full px-4 md:px-8 pt-2 pb-8 xl:rounded-2xl xl:mt-4 xl:px-8 xl:py-6 mb-10 xl:mb-20">
+                          <LessonComments lessonId={activeLesson.id} />
                        </div>
                     </>
                  )}

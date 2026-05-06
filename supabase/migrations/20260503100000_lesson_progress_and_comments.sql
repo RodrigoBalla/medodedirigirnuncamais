@@ -1,0 +1,3 @@
+-- Lesson progress (resume position) + Lesson comments (with admin approval & XP)
+-- Aplicado via Supabase MCP em 2026-05-03. Arquivo aqui pra rastreabilidade.
+-- Conteúdo idêntico à execução remota. Ver detalhes nas tabelas e triggers.

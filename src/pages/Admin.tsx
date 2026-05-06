@@ -9,8 +9,9 @@ import { PHASES } from "@/data/driving-data";
 import { toast } from "sonner";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import ProductsManager from "@/components/admin/lms/ProductsManager";
+import { CommentsModeration } from "@/components/admin/CommentsModeration";
 
-type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics" | "products";
+type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics" | "products" | "comments";
 
 interface StudentData {
   user_id: string;
@@ -52,6 +53,24 @@ export default function Admin() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newStudent, setNewStudent] = useState({ name: "", email: "", password: "" });
   const [isCreating, setIsCreating] = useState(false);
+
+  // Badge de comentários pendentes — atualiza via RPC + realtime
+  const [pendingComments, setPendingComments] = useState<number>(0);
+  useEffect(() => {
+    if (!isAdmin) return;
+    async function loadPending() {
+      try {
+        const { data } = await supabase.rpc("pending_comments_count");
+        setPendingComments(typeof data === "number" ? data : 0);
+      } catch {}
+    }
+    loadPending();
+    const channel = supabase
+      .channel("admin_pending_count")
+      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_comments" }, loadPending)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -251,6 +270,7 @@ export default function Admin() {
     { key: "students", icon: "group", label: "Alunos" },
     { key: "modules", icon: "school", label: "Módulos" },
     { key: "products", icon: "video_library", label: "Cursos" },
+    { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
 
@@ -292,7 +312,12 @@ export default function Admin() {
                 }`}
               >
                 <span className={`material-symbols-outlined text-xl ${tab === t.key ? "filled-icon" : ""}`}>{t.icon}</span>
-                {t.label}
+                <span className="flex-1">{t.label}</span>
+                {t.key === "comments" && pendingComments > 0 && (
+                  <span className="text-[10px] font-black bg-amber-500 text-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                    {pendingComments}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -304,12 +329,17 @@ export default function Admin() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-lg transition-colors ${
+              className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-lg transition-colors ${
                 tab === t.key ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <span className={`material-symbols-outlined text-xl ${tab === t.key ? "filled-icon" : ""}`}>{t.icon}</span>
               <span className="text-[10px] font-bold">{t.label}</span>
+              {t.key === "comments" && pendingComments > 0 && (
+                <span className="absolute -top-0.5 right-1/2 translate-x-[16px] text-[8px] font-black bg-amber-500 text-black px-1 py-px rounded-full min-w-[14px] text-center leading-none">
+                  {pendingComments}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -830,6 +860,8 @@ export default function Admin() {
           {tab === "analytics" && <AnalyticsTab />}
 
           {tab === "products" && <ProductsManager />}
+
+          {tab === "comments" && <CommentsModeration />}
 
           {tab === "reports" && (
             <div className="space-y-6">

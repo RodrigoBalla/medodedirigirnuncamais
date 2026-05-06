@@ -7,85 +7,27 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
       access_group_products: {
-        Row: {
-          group_id: string
-          product_id: string
-        }
-        Insert: {
-          group_id: string
-          product_id: string
-        }
-        Update: {
-          group_id?: string
-          product_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "access_group_products_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "access_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "access_group_products_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { group_id: string; product_id: string }
+        Insert: { group_id: string; product_id: string }
+        Update: { group_id?: string; product_id?: string }
+        Relationships: []
       }
       access_group_users: {
-        Row: {
-          group_id: string
-          user_id: string
-        }
-        Insert: {
-          group_id: string
-          user_id: string
-        }
-        Update: {
-          group_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "access_group_users_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "access_groups"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { group_id: string; user_id: string }
+        Insert: { group_id: string; user_id: string }
+        Update: { group_id?: string; user_id?: string }
+        Relationships: []
       }
       access_groups: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-        }
+        Row: { created_at: string | null; description: string | null; id: string; name: string }
+        Insert: { created_at?: string | null; description?: string | null; id?: string; name: string }
+        Update: { created_at?: string | null; description?: string | null; id?: string; name?: string }
         Relationships: []
       }
       challenge_options: {
@@ -113,41 +55,13 @@ export type Database = {
           is_correct?: boolean | null
           option_text?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_options_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_challenges"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       community_likes: {
-        Row: {
-          created_at: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "community_likes_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "community_posts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { created_at: string; post_id: string; user_id: string }
+        Insert: { created_at?: string; post_id: string; user_id: string }
+        Update: { created_at?: string; post_id?: string; user_id?: string }
+        Relationships: []
       }
       community_posts: {
         Row: {
@@ -180,88 +94,103 @@ export type Database = {
         Relationships: []
       }
       community_saves: {
-        Row: {
-          created_at: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "community_saves_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "community_posts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { created_at: string; post_id: string; user_id: string }
+        Insert: { created_at?: string; post_id: string; user_id: string }
+        Update: { created_at?: string; post_id?: string; user_id?: string }
+        Relationships: []
       }
       enrolled_emails: {
-        Row: {
-          email: string
-          enrolled_at: string
-          notes: string | null
-          product_id: string | null
-        }
-        Insert: {
-          email: string
-          enrolled_at?: string
-          notes?: string | null
-          product_id?: string | null
-        }
-        Update: {
-          email?: string
-          enrolled_at?: string
-          notes?: string | null
-          product_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "enrolled_emails_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { email: string; enrolled_at: string; notes: string | null; product_id: string | null }
+        Insert: { email: string; enrolled_at?: string; notes?: string | null; product_id?: string | null }
+        Update: { email?: string; enrolled_at?: string; notes?: string | null; product_id?: string | null }
+        Relationships: []
       }
       lesson_challenges: {
+        Row: { created_at: string; id: string; lesson_id: string | null; question_text: string }
+        Insert: { created_at?: string; id?: string; lesson_id?: string | null; question_text: string }
+        Update: { created_at?: string; id?: string; lesson_id?: string | null; question_text?: string }
+        Relationships: []
+      }
+      lesson_comments: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          content: string
           created_at: string
+          edited: boolean
           id: string
-          lesson_id: string | null
-          question_text: string
+          lesson_id: string
+          pinned: boolean
+          status: string
+          updated_at: string
+          user_id: string
+          video_timestamp_seconds: number | null
+          xp_awarded: boolean
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content: string
           created_at?: string
+          edited?: boolean
           id?: string
-          lesson_id?: string | null
-          question_text: string
+          lesson_id: string
+          pinned?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+          video_timestamp_seconds?: number | null
+          xp_awarded?: boolean
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content?: string
           created_at?: string
+          edited?: boolean
           id?: string
-          lesson_id?: string | null
-          question_text?: string
+          lesson_id?: string
+          pinned?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video_timestamp_seconds?: number | null
+          xp_awarded?: boolean
         }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_challenges_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      lesson_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          lesson_id: string
+          position_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          lesson_id: string
+          position_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          lesson_id?: string
+          position_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       lessons: {
         Row: {
@@ -294,15 +223,7 @@ export type Database = {
           updated_at?: string | null
           video_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "lessons_module_id_fkey"
-            columns: ["module_id"]
-            isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       modules: {
         Row: {
@@ -329,15 +250,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "modules_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       page_views: {
         Row: {
@@ -532,37 +445,25 @@ export type Database = {
         Relationships: []
       }
     }
-    Views: {
-      [_ in never]: never
-    }
+    Views: { [_ in never]: never }
     Functions: {
       assign_admin_by_email: { Args: { _email: string }; Returns: undefined }
       check_enrollment: { Args: { p_email: string }; Returns: boolean }
       check_existing_user: { Args: { p_email: string }; Returns: Json }
-      delete_user_by_admin: {
-        Args: { target_user_id: string }
-        Returns: undefined
-      }
+      delete_user_by_admin: { Args: { target_user_id: string }; Returns: undefined }
       has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
+        Args: { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
         Returns: boolean
       }
+      pending_comments_count: { Args: never; Returns: number }
       vagas_disponiveis: { Args: never; Returns: number }
     }
-    Enums: {
-      app_role: "admin" | "user"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+    Enums: { app_role: "admin" | "user" }
+    CompositeTypes: { [_ in never]: never }
   }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
@@ -584,8 +485,7 @@ export type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     ? (DefaultSchema["Tables"] &
         DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R

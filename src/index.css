@@ -22,44 +22,47 @@
 
   :root,
   .dark {
-    --background: 226 80% 20%;          /* #0A1F5C */
+    /* Navy premium: mais escuro e saturado pra parecer mais profundo,
+       como nas fitas pretas+amarelas das comunicações da auto escola.
+       #0B1A38 (HSL ≈ 222 65% 13%) — entre o midnight blue e o royal navy. */
+    --background: 222 65% 13%;          /* #0B1A38 */
     --foreground: 0 0% 100%;
-    --card: 226 75% 24%;
+    --card: 222 55% 18%;                /* #16264D — surface 1 */
     --card-foreground: 0 0% 100%;
-    --popover: 226 75% 24%;
+    --popover: 222 55% 18%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 50 100% 52%;             /* amarelo */
-    --primary-foreground: 226 80% 14%;  /* navy escuro sobre amarelo */
+    --primary: 50 100% 52%;             /* amarelo destaque */
+    --primary-foreground: 222 70% 11%;  /* navy quase preto sobre amarelo */
 
-    --secondary: 226 70% 28%;
+    --secondary: 222 48% 24%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 226 60% 26%;
-    --muted-foreground: 0 0% 80%;
-    --accent: 226 70% 30%;
+    --muted: 222 45% 22%;
+    --muted-foreground: 0 0% 78%;
+    --accent: 222 50% 26%;              /* hover surface */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 226 50% 14%;
-    --input: 226 60% 30%;
+    --border: 222 50% 9%;               /* preto-navy p/ contornos sutis */
+    --input: 222 48% 26%;
     --ring: 50 100% 52%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 0%;       /* preto puro p/ sidebar */
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 80%;
     --sidebar-primary: 50 100% 52%;
-    --sidebar-primary-foreground: 226 80% 14%;
-    --sidebar-accent: 226 70% 30%;
+    --sidebar-primary-foreground: 222 70% 11%;
+    --sidebar-accent: 222 50% 22%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-border: 0 0% 100% / 0.08;
     --sidebar-ring: 50 100% 52%;
 
     /* Tokens "blue-*" remapeados (mantidos por compat) */
-    --blue-900: 226 80% 12%;
-    --blue-800: 226 80% 16%;
-    --blue-700: 226 80% 20%;
-    --blue-600: 226 70% 28%;
+    --blue-900: 222 70% 8%;
+    --blue-800: 222 65% 12%;
+    --blue-700: 222 60% 16%;
+    --blue-600: 222 50% 22%;
     --blue-500: 50 100% 52%;
     --blue-400: 50 100% 60%;
     --blue-300: 50 100% 70%;
@@ -90,8 +93,16 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: var(--font-body);
+    /* Background com gradiente radial sutil: spot mais claro no centro-topo
+       desbotando pra um navy mais escuro nas bordas. Dá sensação de
+       profundidade/iluminação cinematográfica sem prejudicar leitura. */
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% 0%, hsl(222 60% 18% / 0.7), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 100% 100%, hsl(222 70% 8% / 0.5), transparent 60%);
+    background-attachment: fixed;
   }
 }
 
@@ -207,6 +218,25 @@
     radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .015) 0%, transparent 40%),
     radial-gradient(circle at 80% 70%, rgba(255, 255, 255, .015) 0%, transparent 40%),
     radial-gradient(circle at 40% 90%, rgba(255, 214, 10, .025) 0%, transparent 50%);
+}
+
+/* ============================================================
+   YOUTUBE CLEAN WRAPPER (sem crop — preserva interatividade plena)
+   O crop com transform foi removido porque o iframe do YouTube
+   Shorts tem controles limitados que ficam ainda mais difíceis de
+   acessar quando há transform aplicado. Os parâmetros do embed
+   (rel=0, modestbranding=1, iv_load_policy=3, etc.) já reduzem
+   o branding visível sem prejudicar a navegação.
+   ============================================================ */
+.yt-clean-wrapper {
+  position: absolute;
+  inset: 0;
+}
+.yt-clean-wrapper iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+  pointer-events: auto;
 }
 
 /* ============================================================

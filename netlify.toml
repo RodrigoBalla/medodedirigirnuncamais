@@ -41,7 +41,7 @@
     # CSP — permitindo origens reais usadas pelo app:
     # Supabase (auth, REST, realtime), Vimeo (vídeo welcome), Pexels (galeria
     # de fundo no login), Google Fonts, Pixabay (assets antigos), R2 (OG image).
-    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pexels.com; frame-src https://player.vimeo.com; media-src 'self' https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co; worker-src 'self' blob:;"
+    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://player.vimeo.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pexels.com https://player.vimeo.com; frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com; media-src 'self' https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co; worker-src 'self' blob:;"
 
 # Cache agressivo para assets versionados (com hash no nome).
 [[headers]]

@@ -33,12 +33,13 @@
       --font-b:        'Inter', sans-serif;
       --radius:        14px;
     }
-    /* Tema único — paleta navy + amarelo. Sem alternativa clara. */
+    /* Tema único — paleta navy + amarelo. Navy mais escuro pra ficar
+       premium/profundo, alinhado com a comunicação da Auto Escola Jó. */
     [data-theme="dark"], :root {
-      --bg:            #0A1F5C;
-      --bg-2:          #0D2675;
-      --bg-3:          #112D85;
-      --surface:       #143598;
+      --bg:            #0B1A38;
+      --bg-2:          #0F2148;
+      --bg-3:          #14285A;
+      --surface:       #1A2F66;
       --text:          #FFFFFF;
       --text-mute:     rgba(255, 255, 255, .72);
       --text-subtle:   rgba(255, 255, 255, .5);
@@ -46,17 +47,21 @@
       --border-strong: rgba(0, 0, 0, .55);
       --shadow-1:      0 4px 18px rgba(0, 0, 0, .45);
       --shadow-2:      0 12px 40px rgba(0, 0, 0, .65);
-      --hero-grad:     linear-gradient(155deg, #0A1F5C 0%, #0D2675 50%, #0A1F5C 100%);
+      --hero-grad:     radial-gradient(ellipse 90% 70% at 50% 0%, #16264E 0%, #0B1A38 55%, #061027 100%);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-b);
-      background: var(--bg);
+      /* Gradiente sutil no body pra dar profundidade — spot luz no topo */
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 255, 255, .04) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 100% 100%, rgba(0, 0, 0, .35) 0%, transparent 60%);
+      background-attachment: fixed;
       color: var(--text);
       overflow-x: hidden;
-      transition: background-color .35s ease, color .35s ease;
     }
     img { max-width: 100%; display: block; }
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500; }
@@ -845,6 +850,68 @@
     .modal .vagas-counter {
       margin: 0 0 18px;
       padding: 10px 12px;
+    }
+
+    /* Prova social rápida no hero — números entre subtítulo e price box */
+    .hero__quick-proof {
+      display: inline-flex; flex-wrap: wrap; align-items: baseline;
+      gap: 12px;
+      margin: 16px 0 22px;
+      padding: 14px 20px;
+      background: rgba(255, 214, 10, .08);
+      border: 1px solid rgba(255, 214, 10, .25);
+      border-radius: 12px;
+    }
+    .hero__quick-proof .qp-item {
+      display: inline-flex; align-items: baseline; gap: 6px;
+    }
+    .hero__quick-proof .qp-num {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 1.4rem;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .hero__quick-proof .qp-lbl {
+      font-size: .78rem;
+      color: var(--text-mute);
+      font-weight: 600;
+    }
+    .hero__quick-proof .qp-sep {
+      color: var(--text-subtle);
+      font-weight: 700;
+    }
+
+    /* CTA secundário pra quem quer conhecer antes de comprar */
+    .hero__cta-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 14px;
+      padding: 12px 18px;
+      background: transparent;
+      color: var(--text-mute);
+      border: 1px dashed rgba(255, 214, 10, .35);
+      border-radius: 100px;
+      text-decoration: none;
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .85rem;
+      transition: all .2s ease;
+    }
+    .hero__cta-secondary:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: rgba(255, 214, 10, .06);
+      transform: translateY(-1px);
+    }
+    .hero__cta-secondary strong { color: var(--text); }
+    .hero__cta-secondary:hover strong { color: var(--primary); }
+    .hero__cta-secondary .material-symbols-outlined {
+      font-size: 16px;
+      animation: arrowBounceY 1.8s ease-in-out infinite;
+    }
+    @keyframes arrowBounceY {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(3px); }
     }
 
     .hero__cta-btn {
@@ -2034,6 +2101,193 @@
     }
     @media(max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+
+    /* ─── COMPARATIVO Auto escola × Método ─────────────────── */
+    .vs-section {
+      background: var(--bg-2);
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+    .vs-table {
+      max-width: 900px;
+      margin: 40px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow-2);
+    }
+    .vs-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.4fr 1.4fr;
+      align-items: stretch;
+      border-bottom: 1px solid var(--border);
+    }
+    .vs-row:last-child { border-bottom: 0; }
+    .vs-row--head {
+      background: var(--bg-3);
+    }
+    .vs-col {
+      padding: 18px 20px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    .vs-col--label {
+      font-family: var(--font-h);
+      font-weight: 700;
+      color: var(--text);
+      background: var(--bg-3);
+      border-right: 1px solid var(--border);
+    }
+    .vs-col--no {
+      color: var(--text-mute);
+      border-right: 1px solid var(--border);
+    }
+    .vs-col--no .material-symbols-outlined {
+      color: var(--danger);
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .vs-col--yes {
+      color: var(--text);
+      font-weight: 500;
+      background: rgba(255, 214, 10, .04);
+    }
+    .vs-col--yes .material-symbols-outlined {
+      color: var(--primary);
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .vs-tag {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .68rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+    .vs-tag--no {
+      background: rgba(239, 68, 68, .15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+    .vs-tag--yes {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .vs-footer {
+      max-width: 700px;
+      margin: 28px auto 0;
+      padding: 20px 24px;
+      text-align: center;
+      color: var(--text-mute);
+      font-size: 1rem;
+      line-height: 1.6;
+      background: var(--surface);
+      border: 1px dashed var(--border-strong);
+      border-radius: 14px;
+    }
+    .vs-footer strong { color: var(--primary); }
+    @media(max-width: 768px) {
+      .vs-row {
+        grid-template-columns: 1fr;
+      }
+      .vs-row--head .vs-col--label { display: none; }
+      .vs-col--label {
+        background: var(--bg-3);
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 1rem;
+      }
+      .vs-col--no, .vs-col--yes {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .vs-col--yes { border-bottom: 0; }
+    }
+
+    /* Big blocks — 5 cards grandes que substituíram os 12 menores */
+    .big-blocks {
+      display: flex; flex-direction: column;
+      gap: 18px;
+      margin-top: 40px;
+    }
+    .big-block {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 24px;
+      align-items: start;
+      padding: 28px 30px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--primary);
+      border-radius: 18px;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .big-block:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, .35);
+      border-left-color: var(--primary-2);
+    }
+    .big-block__icon {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 22px var(--primary-glow);
+    }
+    .big-block__icon .material-symbols-outlined { font-size: 38px; }
+    .big-block__body h3 {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -.01em;
+    }
+    .big-block__body p {
+      color: var(--text-mute);
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+    .big-block__body em {
+      color: var(--primary);
+      font-style: normal;
+      font-weight: 600;
+    }
+    .big-block__list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 6px;
+      margin: 0; padding: 0;
+    }
+    .big-block__list li {
+      position: relative;
+      padding-left: 22px;
+      color: var(--text);
+      font-size: .92rem;
+      font-weight: 500;
+    }
+    .big-block__list li::before {
+      content: '✓';
+      position: absolute; left: 0; top: 0;
+      color: var(--primary);
+      font-weight: 900;
+    }
+    @media(max-width: 768px) {
+      .big-block {
+        grid-template-columns: 1fr;
+        padding: 22px;
+        gap: 14px;
+      }
+      .big-block__icon { width: 56px; height: 56px; }
+      .big-block__icon .material-symbols-outlined { font-size: 28px; }
+      .big-block__body h3 { font-size: 1.1rem; }
+    }
     .feature-card {
       background: var(--surface);
       border: 1px solid var(--border-strong);
@@ -2465,7 +2719,7 @@
     /* ─── APROVADAS (carrossel de fotos reais) ─────────── */
     .approved-section {
       background: var(--bg);
-      padding: 80px 0;
+      padding: 80px 0 60px;
       position: relative;
       overflow: hidden;
     }
@@ -2478,151 +2732,61 @@
       pointer-events: none;
     }
     .approved-section .eyebrow { color: #10b981; }
-    .approved-carousel {
-      position: relative;
-      max-width: 480px;
-      margin: 40px auto 0;
-      perspective: 1400px;
-    }
-    .approved-track {
-      position: relative;
+
+    /* Marquee horizontal contínuo da direita pra esquerda */
+    .approved-marquee {
+      margin-top: 40px;
       width: 100%;
-      height: 680px;
-      transform-style: preserve-3d;
+      overflow: hidden;
+      mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
     }
-    @media(max-width: 540px) {
-      .approved-carousel { max-width: 320px; }
-      .approved-track { height: 480px; }
+    .approved-marquee__track {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      animation: approvedScroll 90s linear infinite;
+      will-change: transform;
     }
+    .approved-marquee:hover .approved-marquee__track {
+      animation-play-state: paused;
+    }
+    @keyframes approvedScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .approved-marquee__track {
+        animation: none;
+        overflow-x: auto;
+      }
+    }
+
     .approved-slide {
-      position: absolute;
-      inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0;
-      transform: scale(.85) rotateY(0deg);
-      transition: opacity .55s ease, transform .55s ease;
-      pointer-events: none;
+      flex: 0 0 auto;
+      width: 280px;
+      aspect-ratio: 9 / 16;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+      transition: transform .25s ease, box-shadow .25s ease;
     }
-    .approved-slide.is-active {
-      opacity: 1;
-      transform: scale(1) rotateY(0deg);
-      pointer-events: auto;
-      z-index: 2;
-    }
-    .approved-slide.is-prev,
-    .approved-slide.is-next {
-      opacity: .35;
-      z-index: 1;
-    }
-    .approved-slide.is-prev {
-      transform: translateX(-30%) scale(.78) rotateY(20deg);
-    }
-    .approved-slide.is-next {
-      transform: translateX(30%) scale(.78) rotateY(-20deg);
+    .approved-slide:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 28px 60px rgba(0, 0, 0, .55);
     }
     .approved-slide img {
       width: 100%; height: 100%;
-      object-fit: contain;
-      border-radius: 14px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
-      transition: transform .35s ease, box-shadow .35s ease;
+      object-fit: cover;
+      display: block;
     }
-    .approved-slide.is-active img:hover {
-      transform: scale(1.02);
-      box-shadow: 0 36px 100px rgba(0, 0, 0, .55);
-    }
-
-    /* Quando uma imagem falha em carregar, mostra um placeholder com instruções */
-    .approved-slide__placeholder {
-      width: 100%; max-width: 360px;
-      aspect-ratio: 9 / 16;
-      border-radius: 14px;
-      background: linear-gradient(160deg, var(--surface), var(--bg-3));
-      border: 2px dashed var(--border-strong);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 24px; text-align: center;
-      color: var(--text-mute);
-    }
-    .approved-slide__placeholder .material-symbols-outlined {
-      font-size: 48px; color: var(--primary);
-      margin-bottom: 12px;
-    }
-    .approved-slide__placeholder strong {
-      color: var(--text);
-      font-family: var(--font-h);
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 6px;
-    }
-    .approved-slide__placeholder code {
-      background: var(--bg-3);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: .8rem;
-      color: var(--primary);
-      margin-top: 10px;
-    }
-
-    .approved-arrow {
-      position: absolute; top: 50%;
-      transform: translateY(-50%);
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      color: var(--text);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-1);
-      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
-      z-index: 5;
-    }
-    .approved-arrow:hover {
-      background: var(--primary);
-      color: #FFF;
-      transform: translateY(-50%) scale(1.08);
-      box-shadow: 0 8px 22px var(--primary-glow);
-    }
-    .approved-arrow .material-symbols-outlined { font-size: 26px; }
-    .approved-arrow--prev { left: -10px; }
-    .approved-arrow--next { right: -10px; }
-    @media(max-width: 600px) {
-      .approved-arrow--prev { left: -8px; }
-      .approved-arrow--next { right: -8px; }
-      .approved-arrow { width: 40px; height: 40px; }
-    }
-
-    .approved-dots {
-      display: flex; justify-content: center; gap: 8px;
-      margin-top: 22px;
-    }
-    .approved-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--border-strong);
-      border: none;
-      cursor: pointer;
-      transition: all .25s ease;
-      padding: 0;
-    }
-    .approved-dot.is-active {
-      background: var(--primary);
-      width: 28px;
-      border-radius: 4px;
+    @media (max-width: 768px) {
+      .approved-marquee__track { gap: 14px; animation-duration: 60s; }
+      .approved-slide { width: 200px; }
     }
 
     .approved-counter {
-      position: absolute;
-      top: 12px; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(16, 185, 129, .12);
-      border: 1px solid rgba(16, 185, 129, .35);
-      color: #10b981;
-      font-family: var(--font-h);
-      font-size: .65rem; font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
+      display: none;
       padding: 6px 14px;
       border-radius: 100px;
       backdrop-filter: blur(8px);
@@ -2777,6 +2941,128 @@
       font-size: .85rem;
       color: var(--text-mute);
       font-weight: 500;
+    }
+
+    /* ─── SELO DE GARANTIA (medalha) ──────────────────────── */
+    .guarantee-seal-wrapper {
+      max-width: 900px;
+      margin: 16px auto 0;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 40px;
+      align-items: center;
+      padding: 36px 36px;
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      border-radius: 22px;
+      box-shadow: var(--shadow-2);
+    }
+    .guarantee-seal {
+      position: relative;
+      width: 220px; height: 220px;
+      margin: 0 auto;
+      flex-shrink: 0;
+      animation: sealFloat 3.5s ease-in-out infinite;
+    }
+    @keyframes sealFloat {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-6px) rotate(3deg); }
+    }
+    .guarantee-seal__ring {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow:
+        0 16px 50px var(--primary-glow),
+        0 0 0 4px rgba(0, 0, 0, .35),
+        inset 0 0 0 4px rgba(0, 0, 0, .15);
+    }
+    /* Texto curvo simulado via duas faixas planas no topo/base */
+    .guarantee-seal__top, .guarantee-seal__bottom {
+      position: absolute;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: .68rem;
+      letter-spacing: .22em;
+      color: var(--on-primary);
+      text-transform: uppercase;
+    }
+    .guarantee-seal__top    { top: 14px; }
+    .guarantee-seal__bottom { bottom: 14px; }
+    .guarantee-seal__core {
+      position: absolute;
+      inset: 30px;
+      border-radius: 50%;
+      background: var(--on-primary);
+      color: var(--primary);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      box-shadow: inset 0 4px 20px rgba(0, 0, 0, .4);
+    }
+    .guarantee-seal__num {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 4.2rem;
+      line-height: 1;
+      color: var(--primary);
+      filter: drop-shadow(0 2px 8px rgba(255, 214, 10, .4));
+    }
+    .guarantee-seal__lbl {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+    .guarantee-seal__check {
+      position: absolute;
+      top: -8px; right: -8px;
+      background: var(--on-primary);
+      color: var(--primary);
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+      border: 3px solid var(--primary);
+    }
+
+    .guarantee-content__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 12px;
+      letter-spacing: -.01em;
+    }
+    .guarantee-content__text {
+      color: var(--text-mute);
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+    .guarantee-content__text strong { color: var(--text); font-weight: 700; }
+    .guarantee-signature {
+      margin-top: 16px;
+      font-family: 'Caveat', cursive;
+      color: var(--primary);
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    @media(max-width: 768px) {
+      .guarantee-seal-wrapper {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 28px 24px;
+      }
+      .guarantee-seal { width: 180px; height: 180px; }
+      .guarantee-seal__num { font-size: 3.2rem; }
+      .guarantee-bullets { justify-content: center; }
     }
     .guarantee-bullet__dot {
       width: 22px; height: 22px;
@@ -2936,6 +3222,9 @@
     .faq-a.open { display: block; }
 
     /* ─── FINAL CTA ────────────────────────────────────── */
+    /* CTA final: fundo amarelo → texto navy escuro pra contraste AAA.
+       Botão inverte: fundo navy com texto amarelo (faz a "mão dada" com
+       o resto da paleta). */
     .final-cta {
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       padding: 80px 0;
@@ -2947,42 +3236,128 @@
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse at 30% 50%, rgba(255, 255, 255, .12) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(255, 255, 255, .08) 0%, transparent 60%);
+        radial-gradient(ellipse at 30% 50%, rgba(0, 0, 0, .08) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(0, 0, 0, .12) 0%, transparent 60%);
       pointer-events: none;
     }
     .final-cta h2 {
       font-family: var(--font-h);
-      font-weight: 800;
+      font-weight: 900;
       font-size: clamp(1.8rem, 4vw, 2.8rem);
-      color: #FFF;
+      color: var(--on-primary);  /* navy escuro sobre amarelo */
       margin-bottom: 20px;
       line-height: 1.15;
       letter-spacing: -.02em;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, .15);  /* relevo sutil */
+      position: relative;
     }
     .final-cta p {
-      color: rgba(255, 255, 255, .9);
+      color: var(--on-primary);
+      opacity: .82;
       font-size: 1.1rem;
       max-width: 600px;
       margin: 0 auto 32px;
       line-height: 1.6;
+      font-weight: 500;
+      position: relative;
     }
     .final-cta .btn {
-      background: #FFF;
-      color: var(--primary);
+      background: var(--on-primary);   /* navy */
+      color: var(--primary);            /* amarelo */
       font-size: 1.1rem;
       padding: 22px 44px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .35);
+      border: 2px solid var(--on-primary);
+      position: relative;
     }
     .final-cta .btn:hover {
-      box-shadow: 0 16px 40px rgba(0, 0, 0, .25);
+      background: #050D24;              /* navy ainda mais escuro no hover */
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .5);
+      transform: translateY(-2px);
     }
     .final-cta__note {
-      color: rgba(255, 255, 255, .8);
+      color: var(--on-primary);
+      opacity: .75;
       font-size: .82rem;
       margin-top: 14px;
+      font-weight: 600;
+      position: relative;
     }
 
     /* ─── FOOTER ───────────────────────────────────────── */
+    .footer__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 24px 32px;
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      gap: 40px;
+    }
+    .footer__brand-title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .footer__tag {
+      color: var(--primary);
+      font-style: italic;
+      font-weight: 500;
+      margin-bottom: 14px;
+      font-size: .92rem;
+    }
+    .footer__author {
+      color: var(--text-mute);
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+    .footer__author strong { color: var(--text); }
+    .footer__col h5 {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .72rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+    .footer__col ul {
+      list-style: none;
+      padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .footer__col a {
+      color: var(--text-mute);
+      text-decoration: none;
+      font-size: .9rem;
+      transition: color .2s ease;
+    }
+    .footer__col a:hover { color: var(--primary); }
+    .footer__bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-subtle);
+      font-size: .85rem;
+      line-height: 1.6;
+    }
+    .footer__bottom small {
+      font-size: .78rem;
+      opacity: .8;
+      display: inline-block;
+      margin-top: 4px;
+    }
+    @media(max-width: 768px) {
+      .footer__inner {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 40px 24px 24px;
+      }
+    }
+
     .footer {
       background: var(--bg);
       border-top: 1px solid var(--border);
@@ -3131,11 +3506,11 @@
 <!-- ─── TOP BAR ─── -->
 <div class="topbar" id="topbar">
   <div class="topbar__track" id="topbarTrack">
-    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">flash_on</span> Acesso vitalício · Pague uma vez e tenha pra sempre</span>
-    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">verified</span> Garantia incondicional de 7 dias</span>
-    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">trending_up</span> Mais de 500 alunos transformaram o medo em liberdade</span>
-    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">flash_on</span> Acesso vitalício · Pague uma vez e tenha pra sempre</span>
-    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">verified</span> Garantia incondicional de 7 dias</span>
+    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">flash_on</span> Pague uma vez e tenha pra sempre · Acesso vitalício</span>
+    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">verified</span> 7 dias de garantia · Risco zero</span>
+    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">favorite</span> +500 alunas vencendo o medo no seu tempo</span>
+    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">support_agent</span> Carla e turma de alunas te apoiando todo dia</span>
+    <span class="topbar__item"><span class="material-symbols-outlined" style="font-size:14px">flash_on</span> Pague uma vez e tenha pra sempre · Acesso vitalício</span>
   </div>
   <div class="topbar__viewers" id="topbarViewers">
     <span class="topbar__viewers-dot"></span>
@@ -3150,11 +3525,29 @@
   <div class="container--wide">
     <div class="hero__row">
       <div class="hero__content">
-        <div class="hero__badge"><span class="badge-pill"><span class="material-symbols-outlined" style="font-size:14px">workspace_premium</span> Método Validado · +500 Alunos</span></div>
-        <h1 class="hero__title">Vença o medo de dirigir <span>de uma vez por todas</span></h1>
+        <div class="hero__badge"><span class="badge-pill"><span class="material-symbols-outlined" style="font-size:14px">workspace_premium</span> Método da Carla · 25 anos</span></div>
+        <h1 class="hero__title">Aprender a dirigir é diferente <span>de passar na prova</span></h1>
         <p class="hero__sub">
-          <strong>O método gamificado</strong> que transforma sua ansiedade ao volante em confiança real — em fases curtas, no seu ritmo, direto no celular.
+          <strong>Pra você sair sozinha.</strong> No seu tempo. No celular.
         </p>
+
+        <!-- Prova social numérica — antes do scroll, no fold -->
+        <div class="hero__quick-proof">
+          <div class="qp-item">
+            <span class="qp-num">+500</span>
+            <span class="qp-lbl">alunas livres do medo</span>
+          </div>
+          <span class="qp-sep">·</span>
+          <div class="qp-item">
+            <span class="qp-num">98%</span>
+            <span class="qp-lbl">aprovação na prática</span>
+          </div>
+          <span class="qp-sep">·</span>
+          <div class="qp-item">
+            <span class="qp-num">25</span>
+            <span class="qp-lbl">anos de método validado</span>
+          </div>
+        </div>
 
         <!-- Contador de vagas — atualizado via Supabase -->
         <div class="vagas-counter" id="vagasCounter" data-vagas-mode="open">
@@ -3199,6 +3592,10 @@
           <span class="material-symbols-outlined">directions_car</span>
           QUERO COMEÇAR AGORA
         </button>
+        <a href="#quem-somos" class="hero__cta-secondary">
+          Ainda na dúvida? <strong>Conheça a Carla primeiro</strong>
+          <span class="material-symbols-outlined">arrow_downward</span>
+        </a>
         <p class="hero__cta-note">
           <span><span class="material-symbols-outlined">lock</span> Compra segura</span>
           <span><span class="material-symbols-outlined">credit_card</span> Parcelado</span>
@@ -3218,7 +3615,7 @@
 
         <!-- Polaroide aluna aprovada — canto superior-direito -->
         <div class="hero-portrait hero-portrait--top-right">
-          <img class="hero-portrait__photo" src="/hero/aluna-aprovada.jpg" alt="Aluna aprovada" loading="lazy" />
+          <img class="hero-portrait__photo" src="/hero/aluna-aprovada.jpg" alt="Aluna aprovada" loading="eager" fetchpriority="high" />
           <div class="hero-portrait__caption">
             Aprovada!
             <small>Mais uma livre</small>
@@ -3227,7 +3624,7 @@
 
         <!-- Polaroide aluno aprovado — canto inferior-direito -->
         <div class="hero-portrait hero-portrait--bottom-right">
-          <img class="hero-portrait__photo" src="/hero/aluno-aprovado.jpg" alt="Aluno aprovado" loading="lazy" />
+          <img class="hero-portrait__photo" src="/hero/aluno-aprovado.jpg" alt="Aluno aprovado" loading="eager" fetchpriority="high" />
           <div class="hero-portrait__caption">
             Aprovado!
             <small>Vencendo o medo</small>
@@ -3535,29 +3932,17 @@
   </div>
 </section>
 
-<!-- ─── APROVADAS (carrossel de fotos reais) — segunda dobra ─── -->
+<!-- ─── APROVADAS (galeria horizontal em loop infinito) ─── -->
 <section class="approved-section">
   <div class="container">
-    <p class="eyebrow text-center">Histórias reais de aprovação</p>
-    <h2 class="section-title text-center">Alunas que <span>venceram o medo</span> e foram aprovadas</h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">São pessoas reais que estavam travadas com o medo de dirigir e hoje estão aprovadas no Detran, dirigindo sozinhas.</p>
-
-    <div class="approved-carousel" id="approvedCarousel">
-      <span class="approved-counter" id="approvedCounter">1 / 22</span>
-
-      <div class="approved-track" id="approvedTrack">
-        <!-- Slides são populados via JS a partir do manifest.json -->
-      </div>
-
-      <button class="approved-arrow approved-arrow--prev" id="approvedPrev" aria-label="Anterior">
-        <span class="material-symbols-outlined">chevron_left</span>
-      </button>
-      <button class="approved-arrow approved-arrow--next" id="approvedNext" aria-label="Próxima">
-        <span class="material-symbols-outlined">chevron_right</span>
-      </button>
+    <p class="eyebrow text-center">Aprovadas reais</p>
+    <h2 class="section-title text-center">Elas <span>venceram o medo</span></h2>
+  </div>
+  <!-- Track sai do container pra ocupar largura inteira sem cropping -->
+  <div class="approved-marquee" id="approvedMarquee">
+    <div class="approved-marquee__track" id="approvedTrack">
+      <!-- Imagens duplicadas via JS pra criar o loop sem corte visível -->
     </div>
-
-    <div class="approved-dots" id="approvedDots"></div>
   </div>
 </section>
 
@@ -3574,39 +3959,38 @@
       <div>
         <div class="pain-chip">
           <span class="material-symbols-outlined">psychology</span>
-          <span>Você se identifica?</span>
+          <span>Se identifica?</span>
         </div>
-        <h2 class="section-title">Esses são os 5 sinais<br/>de quem trava <span>ao volante</span></h2>
-        <p class="pain-section__sub">São os bloqueios que travam 9 em cada 10 pessoas com medo de dirigir antes mesmo de ligar o carro.</p>
+        <h2 class="section-title">Os 5 sinais de <span>quem trava</span></h2>
+        <p class="pain-section__sub">Marque os que você sente.</p>
 
         <ul class="pain-list" id="painList">
           <li data-pain="1" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">heart_broken</span></span>
-            <p><strong>Coração dispara só de pensar</strong>Antes de pegar a chave, o estômago já está revirando. A ansiedade chega antes do carro.</p>
+            <p><strong>Coração dispara antes de pegar a chave</strong>Ansiedade que chega antes do carro.</p>
             <span class="pain-check"></span>
-            <!-- Mãozinha animada: indica que os itens são clicáveis. Some no primeiro clique. -->
             <span class="click-hand" aria-hidden="true">
               <span class="material-symbols-outlined filled">touch_app</span>
             </span>
           </li>
           <li data-pain="2" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">visibility_off</span></span>
-            <p><strong>Trava no trânsito real</strong>Em rua vazia até vai. Mas com carro do lado, buzina, motoboy passando — o cérebro desliga.</p>
+            <p><strong>Trava no trânsito de verdade</strong>Buzina, motoboy, carro do lado — o cérebro desliga.</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="3" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">no_accounts</span></span>
-            <p><strong>Depende dos outros pra tudo</strong>Aniversário, mercado, médico... sempre pedindo carona ou Uber. Já perdeu a conta de oportunidades.</p>
+            <p><strong>Depende de carona pra tudo</strong>Mercado, médico, aniversário. Cansa.</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="4" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">school</span></span>
-            <p><strong>Tirou CNH e não dirige</strong>Carteira na carteira, carro na garagem. Mas aquele "ainda não tô preparada" virou anos.</p>
+            <p><strong>Tem CNH mas não dirige</strong>O "ainda não tô preparada" virou anos.</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="5" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">trending_down</span></span>
-            <p><strong>Aulas tradicionais não resolvem</strong>Pagou autoescola, fez aula extra, dirigiu com parente. O medo continua exatamente onde estava.</p>
+            <p><strong>Aula tradicional não resolveu</strong>Auto escola, parente, aula extra. O medo segue.</p>
             <span class="pain-check"></span>
           </li>
         </ul>
@@ -3620,35 +4004,32 @@
   <div class="container--wide">
     <div class="quem-somos__grid">
       <div class="quem-somos__content">
-        <p class="eyebrow">Quem está por trás do método</p>
-        <h2 class="section-title">Um método criado por <span>quem entende de medo</span></h2>
-        <p style="color:var(--text-mute);font-size:1rem;line-height:1.7;margin-bottom:18px">
-          O <strong style="color:var(--primary)">Medo de Dirigir Nunca Mais</strong> foi construído por uma equipe que combina experiência em direção defensiva, psicologia comportamental e design de jogos digitais.
-        </p>
-        <p style="color:var(--text-mute);font-size:1rem;line-height:1.7;margin-bottom:24px">
-          Não é mais uma "autoescola". É um <strong style="color:var(--primary)">programa de exposição gradual</strong> aplicado ao volante — testado, validado e refinado com centenas de alunas que travavam ao dirigir.
+        <p class="eyebrow">Quem cuida de você</p>
+        <h2 class="section-title">Quem entende <span>de medo</span></h2>
+        <p style="color:var(--text-mute);font-size:1.05rem;line-height:1.7;margin-bottom:24px">
+          Sou a <strong style="color:var(--primary)">Carla</strong>. Há 25 anos como instrutora, ensinando do jeito da aluna — não do jeito da prova.
         </p>
 
         <div class="quem-somos__credentials">
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">verified</span></span>
-            <span>Método validado com <strong>+500 alunos</strong> em todo o Brasil</span>
+            <span><strong>+500 alunas</strong> aprovadas</span>
           </div>
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">verified</span></span>
-            <span>Combina <strong>psicologia + gamificação + direção real</strong></span>
+            <span><strong>97 mil seguidoras</strong> no Instagram</span>
           </div>
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">verified</span></span>
-            <span>Aulas curtas, no <strong>seu ritmo, no seu celular</strong></span>
+            <span>Método <strong>técnica + emoção</strong></span>
           </div>
         </div>
 
         <div class="quem-somos__signature">
-          <div class="quem-somos__signature-avatar">M</div>
+          <div class="quem-somos__signature-avatar">C</div>
           <div>
-            <div class="quem-somos__signature-name">Equipe Medo de Dirigir Nunca Mais</div>
-            <div class="quem-somos__signature-role">Fundadores e instrutores certificados</div>
+            <div class="quem-somos__signature-name">Carla Margareth</div>
+            <div class="quem-somos__signature-role">Sua instrutora há 25 anos</div>
           </div>
         </div>
       </div>
@@ -3657,17 +4038,17 @@
         <div class="qs-stat">
           <div class="qs-stat__icon"><span class="material-symbols-outlined">groups</span></div>
           <div class="qs-stat__val" data-target="500" data-prefix="+">+0</div>
-          <div class="qs-stat__lbl">Alunos<br/>transformados</div>
+          <div class="qs-stat__lbl">alunas<br/>aprovadas</div>
         </div>
         <div class="qs-stat">
           <div class="qs-stat__icon"><span class="material-symbols-outlined">star</span></div>
           <div class="qs-stat__val" data-target="98" data-suffix="%">0%</div>
-          <div class="qs-stat__lbl">Recomendariam<br/>pra um amigo</div>
+          <div class="qs-stat__lbl">recomendariam<br/>pra uma amiga</div>
         </div>
         <div class="qs-stat">
           <div class="qs-stat__icon"><span class="material-symbols-outlined">schedule</span></div>
           <div class="qs-stat__val" data-target="21" data-suffix="d">0d</div>
-          <div class="qs-stat__lbl">Tempo médio<br/>pra dirigir só</div>
+          <div class="qs-stat__lbl">até dirigir<br/>sozinha</div>
         </div>
       </div>
     </div>
@@ -3678,18 +4059,63 @@
 <section class="solution-section">
   <div class="container">
     <div style="text-align:center">
-      <p class="eyebrow">A solução existe</p>
-      <h2 class="section-title">Existe um caminho mais <span>seguro e gradual</span></h2>
+      <p class="eyebrow">O caminho leve</p>
+      <h2 class="section-title">Uma marcha <span>de cada vez</span></h2>
       <div class="solution-card">
         <p>
-          O segredo não é "se forçar a dirigir mais". É <strong>quebrar o medo em camadas</strong> — pés primeiro, depois mãos, depois trânsito — com pequenas vitórias gamificadas que reprogramam seu sistema nervoso.
-          <br/><br/>
-          Com a <strong>trilha completa</strong> + suporte da comunidade, você sai de "não consigo nem entrar no carro" para <strong>dirigir sozinha com confiança</strong> — sem precisar enfrentar tudo de uma vez.
+          <strong>Pés. Volante. Trânsito.</strong> Nessa ordem.<br/>
+          Sem pressa. Sem julgamento. Sem se forçar.
         </p>
       </div>
       <button class="btn btn--primary" style="margin-top:28px;width:100%;max-width:480px;padding:22px 36px;font-size:1.05rem" onclick="openLeadModal()">
-        QUERO ESSA TRANSFORMAÇÃO
+        QUERO COMEÇAR
       </button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── COMPARATIVO ─── -->
+<section class="vs-section">
+  <div class="container">
+    <p class="eyebrow text-center">Aqui é diferente</p>
+    <h2 class="section-title text-center">Auto escola × <span>Método da Carla</span></h2>
+
+    <div class="vs-table">
+      <div class="vs-row vs-row--head">
+        <div class="vs-col vs-col--label"></div>
+        <div class="vs-col vs-col--no"><span class="vs-tag vs-tag--no">Auto escola</span></div>
+        <div class="vs-col vs-col--yes"><span class="vs-tag vs-tag--yes">Método</span></div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Custo</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Aulas avulsas</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>Pagamento único</div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Horário</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Marcado</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>Seu tempo</div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Rever aula</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Não pode</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>Quantas quiser</div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Foco</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Passar na prova</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>Dirigir de verdade</div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Se travar</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Sozinha</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>Carla e turma</div>
+      </div>
+      <div class="vs-row">
+        <div class="vs-col vs-col--label">Garantia</div>
+        <div class="vs-col vs-col--no"><span class="material-symbols-outlined">close</span>Nenhuma</div>
+        <div class="vs-col vs-col--yes"><span class="material-symbols-outlined">check</span>7 dias · 100%</div>
+      </div>
     </div>
   </div>
 </section>
@@ -3697,138 +4123,138 @@
 <!-- ─── MODULES (Trilha Completa) ─── -->
 <section class="modules-section">
   <div class="container">
-    <p class="eyebrow text-center">A trilha completa</p>
-    <h2 class="section-title text-center">As fases que vão <span>te tirar do medo</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">Cada fase é curta, prática, e te prepara para a próxima sem sobrecarga. Você avança no seu ritmo, vencendo uma camada por vez.</p>
+    <p class="eyebrow text-center">A trilha</p>
+    <h2 class="section-title text-center">7 fases até <span>dirigir sozinha</span></h2>
 
     <div class="modules-grid">
-      <!-- Fases ATIVAS (já estão no app) -->
       <div class="module-card">
         <div class="module-card__num">01</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">directions_car</span></div>
         <h3 class="module-card__title">Conhecendo o carro</h3>
-        <p class="module-card__text">Elimine a ansiedade do desconhecido. Entenda os comandos, os pedais, a posição correta — sem precisar nem ligar o motor.</p>
+        <p class="module-card__text">Comandos, pedais, posição. Sem nem ligar o motor.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">02</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">footprint</span></div>
         <h3 class="module-card__title">O jogo dos pés</h3>
-        <p class="module-card__text">Domine a coordenação inferior antes de pensar no volante. Quando os pés ficam automáticos, tudo fica mais leve.</p>
+        <p class="module-card__text">Os pedais ficam automáticos. Aí o resto fica leve.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">03</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">route</span></div>
         <h3 class="module-card__title">Fluidez e direção</h3>
-        <p class="module-card__text">Volante, curvas, terceira marcha. Você passa a controlar o carro, em vez de só reagir a ele.</p>
+        <p class="module-card__text">Volante, curvas, terceira. Você no controle.</p>
       </div>
 
-      <!-- Fases FUTURAS (em desenvolvimento) -->
       <div class="module-card module-card--soon">
         <div class="module-card__num">04</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">smart_toy</span></div>
         <h3 class="module-card__title">Modo Automático</h3>
-        <p class="module-card__text">Adaptação completa para câmbio automático. Pega leve quem nunca encostou em manual — e domina o automático com fluidez.</p>
+        <p class="module-card__text">Câmbio automático sem mistério.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">05</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">traffic</span></div>
         <h3 class="module-card__title">Trânsito Leve</h3>
-        <p class="module-card__text">Os primeiros metros no mundo real, com técnicas para manter o foco mesmo com estímulos ao redor.</p>
+        <p class="module-card__text">Primeiros metros na rua. Foco e calma.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">06</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">terrain</span></div>
         <h3 class="module-card__title">Modo Subida</h3>
-        <p class="module-card__text">Controle de embreagem em rampas, baliza, manobras. As situações que mais geram travamento — desconstruídas e treinadas com segurança.</p>
+        <p class="module-card__text">Ladeira, baliza, manobras. Sem trava.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">07</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
         <div class="module-card__icon"><span class="material-symbols-outlined">verified</span></div>
         <h3 class="module-card__title">Prova do Detran</h3>
-        <p class="module-card__text">Simulado completo para aprovação. Você passa na prova com tranquilidade e dirige no mundo real com a mesma confiança.</p>
+        <p class="module-card__text">Aprovada. Sem decoreba, sem nervosismo.</p>
       </div>
     </div>
 
-    <p style="text-align:center;color:var(--text-mute);font-size:.92rem;margin-top:24px;line-height:1.6">
-      <strong style="color:var(--primary)">Acesso vitalício:</strong> conforme novas fases forem liberadas, você as recebe automaticamente sem pagar nada a mais.
+    <p style="text-align:center;color:var(--text-mute);font-size:.92rem;margin-top:24px">
+      <strong style="color:var(--primary)">Vitalício:</strong> novas fases entram sem custo extra.
     </p>
   </div>
 </section>
 
-<!-- ─── EXPERIÊNCIA COMPLETA ─── -->
+<!-- ─── O QUE TEM DENTRO (5 blocos grandes) ─── -->
 <section class="features-section">
-  <div class="container--wide">
-    <p class="eyebrow text-center">Não é só aula. É um app gamificado completo.</p>
-    <h2 class="section-title text-center">Cada detalhe foi pensado pra <span>te manter avançando</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">Inspirado em apps como Duolingo — porque medo só passa com prática constante. Gamificação aqui não é firula, é o motor que mantém você no jogo.</p>
+  <div class="container">
+    <p class="eyebrow text-center">O que você ganha</p>
+    <h2 class="section-title text-center">Tudo no <span>seu ritmo</span></h2>
 
-    <div class="features-grid">
-      <div class="feature-card feature-card--red">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">favorite</span></div>
-        <h3 class="feature-card__title">Vidas (5 ❤️)</h3>
-        <p class="feature-card__text">Erre sem culpa. Se zerar suas vidas, basta esperar regenerar — ou usar moedas pra recuperar e voltar pra ação.</p>
+    <div class="big-blocks">
+      <div class="big-block">
+        <div class="big-block__icon"><span class="material-symbols-outlined filled">route</span></div>
+        <div class="big-block__body">
+          <h3>Trilha guiada</h3>
+          <p>Pés. Volante. Trânsito. Nessa ordem.</p>
+          <ul class="big-block__list">
+            <li>Fases curtinhas e progressivas</li>
+            <li>Missão de 5 minutos por dia</li>
+            <li>Acesso vitalício</li>
+          </ul>
+        </div>
       </div>
-      <div class="feature-card feature-card--orange">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">local_fire_department</span></div>
-        <h3 class="feature-card__title">Streak 🔥</h3>
-        <p class="feature-card__text">Cada dia que você praticar acende um fogo. Quanto mais dias seguidos, maiores as recompensas. Não deixe apagar.</p>
+
+      <div class="big-block">
+        <div class="big-block__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
+        <div class="big-block__body">
+          <h3>Selos de conquista</h3>
+          <p>Cada vitória vira uma medalha sua.</p>
+          <ul class="big-block__list">
+            <li>"Primeira vez sozinha"</li>
+            <li>"Primeira ladeira"</li>
+            <li>"Passei na prova"</li>
+          </ul>
+        </div>
       </div>
-      <div class="feature-card feature-card--yellow">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">monetization_on</span></div>
-        <h3 class="feature-card__title">Moedas 🪙</h3>
-        <p class="feature-card__text">Acertou algo? Ganhou moeda. Use na Roleta da Sorte, na Loja, ou pra recuperar vidas extras quando precisar.</p>
+
+      <div class="big-block">
+        <div class="big-block__icon"><span class="material-symbols-outlined filled">groups</span></div>
+        <div class="big-block__body">
+          <h3>Turma exclusiva</h3>
+          <p>Você não está sozinha.</p>
+          <ul class="big-block__list">
+            <li>Alunas na mesma jornada</li>
+            <li>Carla e Anna respondendo</li>
+            <li>WhatsApp se travar</li>
+          </ul>
+        </div>
       </div>
-      <div class="feature-card feature-card--blue">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">bolt</span></div>
-        <h3 class="feature-card__title">XP e Níveis</h3>
-        <p class="feature-card__text">Suba de Iniciante até Mestre. Cada nível é uma conquista visível do seu progresso real ao volante.</p>
+
+      <div class="big-block">
+        <div class="big-block__icon"><span class="material-symbols-outlined filled">favorite</span></div>
+        <div class="big-block__body">
+          <h3>Erre sem culpa</h3>
+          <p>Errar aqui é treinar.</p>
+          <ul class="big-block__list">
+            <li>Vidas pra recomeçar</li>
+            <li>Sem prazo apertado</li>
+            <li>Sem julgamento</li>
+          </ul>
+        </div>
       </div>
-      <div class="feature-card feature-card--gold">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
-        <h3 class="feature-card__title">Ligas Competitivas</h3>
-        <p class="feature-card__text">Bronze → Prata → Ouro → Diamante. Compita amigavelmente toda semana e suba de liga em liga.</p>
-      </div>
-      <div class="feature-card feature-card--purple">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">military_tech</span></div>
-        <h3 class="feature-card__title">Conquistas e Medalhas</h3>
-        <p class="feature-card__text">Cada marco vira uma medalha exclusiva. Sua coleção fica linda no perfil — e ainda mostra pra todo mundo o quanto você evoluiu.</p>
-      </div>
-      <div class="feature-card feature-card--teal">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">target</span></div>
-        <h3 class="feature-card__title">Missões Diárias</h3>
-        <p class="feature-card__text">Pequenas tarefas todo dia: "Acerte 10 placas", "Leia 1 artigo técnico". Recompensas em XP e moedas.</p>
-      </div>
-      <div class="feature-card feature-card--pink">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">casino</span></div>
-        <h3 class="feature-card__title">Roleta da Sorte 🎰</h3>
-        <p class="feature-card__text">Gire e ganhe vidas extras, moedas, XP turbo, ou conteúdo bônus. A diversão sem cobrança extra.</p>
-      </div>
-      <div class="feature-card feature-card--indigo">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">shopping_bag</span></div>
-        <h3 class="feature-card__title">Loja Interna</h3>
-        <p class="feature-card__text">Use suas moedas pra comprar vidas extras, boost de XP por 24h, ou freezes de streak (pra quando a vida apertar).</p>
-      </div>
-      <div class="feature-card feature-card--green">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">groups</span></div>
-        <h3 class="feature-card__title">Comunidade Privada</h3>
-        <p class="feature-card__text">Tire dúvidas com a Coach Anna e outras alunas que estão na mesma jornada. Não é solidão. É time.</p>
-      </div>
-      <div class="feature-card feature-card--cyan">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">leaderboard</span></div>
-        <h3 class="feature-card__title">Ranking Semanal</h3>
-        <p class="feature-card__text">Veja sua posição comparada com alunas de todo o Brasil. Saudável, motivante, sem pressão tóxica.</p>
-      </div>
-      <div class="feature-card feature-card--rose">
-        <div class="feature-card__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
-        <h3 class="feature-card__title">Suporte Direto</h3>
-        <p class="feature-card__text">Travou em alguma fase? Botão de suporte abre um chamado direto pelo WhatsApp. Resposta humana e rápida.</p>
+
+      <div class="big-block">
+        <div class="big-block__icon"><span class="material-symbols-outlined filled">redeem</span></div>
+        <div class="big-block__body">
+          <h3>Recompensa diária</h3>
+          <p>Pequena vitória todo dia.</p>
+          <ul class="big-block__list">
+            <li>Moedas pelo esforço</li>
+            <li>Roleta da Sorte</li>
+            <li>Bônus surpresa</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -3837,9 +4263,8 @@
 <!-- ─── CURSOS PREMIUM (DINÂMICO — auto-sync com Supabase) ─── -->
 <section class="dynamic-courses-section" id="dynamicCoursesSection">
   <div class="container--wide">
-    <p class="eyebrow text-center">Conteúdo extra liberado pra alunos</p>
-    <h2 class="section-title text-center">Cursos Premium <span>incluídos no acesso</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">Conforme novos cursos forem adicionados, eles aparecem aqui automaticamente — você terá acesso a tudo, sem pagar a mais.</p>
+    <p class="eyebrow text-center">Bônus liberados</p>
+    <h2 class="section-title text-center">Cursos premium <span>inclusos</span></h2>
 
     <div class="dynamic-courses-grid" id="dynamicCoursesGrid">
       <!-- Loading skeleton -->
@@ -3869,11 +4294,11 @@
       </div>
     </div>
 
-    <!-- Empty state (shown when no products) -->
+    <!-- Empty state -->
     <div class="dynamic-courses-empty" id="dynamicCoursesEmpty" style="display:none">
       <span class="material-symbols-outlined">auto_awesome</span>
-      <p><strong>Novos cursos premium chegando em breve.</strong></p>
-      <p class="dynamic-courses-empty__sub">Conforme forem liberados, aparecem aqui — e você que já é aluna já tem acesso garantido.</p>
+      <p><strong>Mais cursos chegando.</strong></p>
+      <p class="dynamic-courses-empty__sub">Quem já é aluna ganha acesso automático.</p>
     </div>
   </div>
 </section>
@@ -3881,23 +4306,23 @@
 <!-- ─── INCLUDES ─── -->
 <section class="includes-section">
   <div class="container">
-    <p class="eyebrow text-center">O que você recebe</p>
-    <h2 class="section-title text-center">Tudo que você precisa pra <span>nunca mais ter medo</span></h2>
+    <p class="eyebrow text-center">Você leva</p>
+    <h2 class="section-title text-center">Tudo no <span>pacote</span></h2>
 
     <div class="includes-hero">
       <div class="include-hero-card">
-        <div class="include-hero-card__badge">Produto principal</div>
+        <div class="include-hero-card__badge">Principal</div>
         <div class="include-hero-card__icon"><span class="material-symbols-outlined">smartphone</span></div>
-        <div class="include-hero-card__title">App gamificado completo</div>
-        <div class="include-hero-card__text">Trilha de fases progressivas, missões diárias, conquistas, ranking — direto no seu celular, no seu ritmo. Acesso vitalício.</div>
-        <div class="include-hero-card__tag">✓ Acesso imediato</div>
+        <div class="include-hero-card__title">App completo</div>
+        <div class="include-hero-card__text">Trilha, missões, conquistas. No celular.</div>
+        <div class="include-hero-card__tag">✓ Vitalício</div>
       </div>
       <div class="include-hero-card">
-        <div class="include-hero-card__badge">Bônus exclusivo</div>
+        <div class="include-hero-card__badge">Bônus</div>
         <div class="include-hero-card__icon"><span class="material-symbols-outlined">groups</span></div>
-        <div class="include-hero-card__title">Comunidade de alunas</div>
-        <div class="include-hero-card__text">Grupo privado de apoio, com mulheres que estão na mesma jornada. Compartilhe conquistas, tire dúvidas, encontre coragem.</div>
-        <div class="include-hero-card__tag">✓ Suporte coletivo</div>
+        <div class="include-hero-card__title">Turma exclusiva</div>
+        <div class="include-hero-card__text">Alunas que estão na mesma jornada.</div>
+        <div class="include-hero-card__tag">✓ Apoio diário</div>
       </div>
     </div>
 
@@ -3905,23 +4330,23 @@
     <div class="includes-grid">
       <div class="include-card">
         <div class="include-card__icon"><span class="material-symbols-outlined">support_agent</span></div>
-        <div class="include-card__title">Suporte direto</div>
-        <div class="include-card__text">Tire dúvidas com instrutores no WhatsApp.</div>
+        <div class="include-card__title">WhatsApp</div>
+        <div class="include-card__text">Carla responde direto.</div>
       </div>
       <div class="include-card">
         <div class="include-card__icon"><span class="material-symbols-outlined">play_circle</span></div>
-        <div class="include-card__title">Vídeo de boas-vindas</div>
-        <div class="include-card__text">O passo-a-passo pra começar com o pé direito.</div>
+        <div class="include-card__title">Boas-vindas</div>
+        <div class="include-card__text">Pra começar com o pé direito.</div>
       </div>
       <div class="include-card">
         <div class="include-card__icon"><span class="material-symbols-outlined">military_tech</span></div>
-        <div class="include-card__title">Conquistas</div>
-        <div class="include-card__text">Ganhe medalhas a cada fase concluída.</div>
+        <div class="include-card__title">Selos</div>
+        <div class="include-card__text">Medalha a cada fase.</div>
       </div>
       <div class="include-card">
         <div class="include-card__icon"><span class="material-symbols-outlined">verified_user</span></div>
-        <div class="include-card__title">Garantia 7 dias</div>
-        <div class="include-card__text">100% do dinheiro de volta. Sem perguntas.</div>
+        <div class="include-card__title">7 dias</div>
+        <div class="include-card__text">Não gostou? Devolvo.</div>
       </div>
     </div>
   </div>
@@ -3930,56 +4355,55 @@
 <!-- ─── FOR WHO ─── -->
 <section class="for-section">
   <div class="container">
-    <p class="eyebrow text-center">Esse programa é pra você se:</p>
-    <h2 class="section-title text-center">Você se encaixa em <span>algum desses perfis?</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0">Marcou pelo menos um? Esse método foi feito sob medida pra você.</p>
+    <p class="eyebrow text-center">É pra você se</p>
+    <h2 class="section-title text-center">Você <span>se encaixa</span></h2>
 
     <div class="for-grid">
       <div class="for-item">
         <div class="for-item__num">01</div>
         <div>
-          <div class="for-item__title">Tirou CNH e não dirige</div>
-          <div class="for-item__desc">Carteira tirada faz tempo, mas o carro continua na mesma vaga.</div>
+          <div class="for-item__title">Tem CNH e não dirige</div>
+          <div class="for-item__desc">Carteira tirada, carro na vaga.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
       <div class="for-item">
         <div class="for-item__num">02</div>
         <div>
-          <div class="for-item__title">Sente ansiedade ao volante</div>
-          <div class="for-item__desc">Suor frio, coração disparado, branco mental. Você sabe do que estamos falando.</div>
+          <div class="for-item__title">Trava de ansiedade</div>
+          <div class="for-item__desc">Coração disparado, branco mental.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
       <div class="for-item">
         <div class="for-item__num">03</div>
         <div>
-          <div class="for-item__title">Já tentou aulas extras</div>
-          <div class="for-item__desc">Pagou autoescola, instrutor particular, dirigiu com parente. E continua travada.</div>
+          <div class="for-item__title">Já tentou e não rolou</div>
+          <div class="for-item__desc">Auto escola, parente, aula extra.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
       <div class="for-item">
         <div class="for-item__num">04</div>
         <div>
-          <div class="for-item__title">Depende dos outros pra tudo</div>
-          <div class="for-item__desc">Trabalho, médico, emergência: sempre dependendo de carona ou Uber.</div>
+          <div class="for-item__title">Depende de carona</div>
+          <div class="for-item__desc">Mercado, médico, emergência.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
       <div class="for-item">
         <div class="for-item__num">05</div>
         <div>
-          <div class="for-item__title">Quer ir no seu ritmo</div>
-          <div class="for-item__desc">Aulas presenciais te pressionam. Você quer aprender com calma, sem julgamento.</div>
+          <div class="for-item__title">Quer no seu ritmo</div>
+          <div class="for-item__desc">Sem pressão, sem julgamento.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
       <div class="for-item">
         <div class="for-item__num">06</div>
         <div>
-          <div class="for-item__title">Quer liberdade real</div>
-          <div class="for-item__desc">Já se imaginou dirigindo sozinha, escolhendo seu caminho? Esse é o objetivo.</div>
+          <div class="for-item__title">Quer liberdade</div>
+          <div class="for-item__desc">Sair quando quiser, pra onde quiser.</div>
         </div>
         <div class="for-item__check">✓</div>
       </div>
@@ -3990,23 +4414,23 @@
 <!-- ─── PROOF ─── -->
 <section class="proof-section">
   <div class="container">
-    <p class="eyebrow text-center">Prova social</p>
-    <h2 class="section-title text-center">Resultados que <span>falam por si</span></h2>
+    <p class="eyebrow text-center">Os números</p>
+    <h2 class="section-title text-center">Resultados <span>reais</span></h2>
     <div class="proof-numbers">
       <div class="proof-num">
         <div class="proof-num__icon"><span class="material-symbols-outlined">groups</span></div>
         <div class="proof-num__val" data-target="500" data-prefix="+">+0</div>
-        <div class="proof-num__lbl">alunas que venceram o medo de dirigir</div>
+        <div class="proof-num__lbl">alunas livres do medo</div>
       </div>
       <div class="proof-num">
         <div class="proof-num__icon"><span class="material-symbols-outlined">schedule</span></div>
         <div class="proof-num__val" data-target="21" data-suffix=" dias">0 dias</div>
-        <div class="proof-num__lbl">tempo médio pra dirigir sozinha com confiança</div>
+        <div class="proof-num__lbl">média até dirigir só</div>
       </div>
       <div class="proof-num">
         <div class="proof-num__icon"><span class="material-symbols-outlined">star</span></div>
         <div class="proof-num__val" data-target="4.9" data-suffix="/5">0/5</div>
-        <div class="proof-num__lbl">avaliação média pelas alunas do método</div>
+        <div class="proof-num__lbl">avaliação das alunas</div>
       </div>
     </div>
   </div>
@@ -4015,9 +4439,8 @@
 <!-- ─── TESTIMONIALS ─── -->
 <section class="testi-section">
   <div class="container--wide">
-    <p class="eyebrow text-center">Quem viveu isso conta</p>
-    <h2 class="section-title text-center">A jornada de quem <span>confiou no método</span></h2>
-    <p class="section-sub text-center" style="margin:12px auto 0">Histórias reais de transformação ao volante.</p>
+    <p class="eyebrow text-center">Quem viveu</p>
+    <h2 class="section-title text-center">Histórias <span>reais</span></h2>
 
     <div class="testi-columns-wrap">
       <div class="testi-col">
@@ -4033,22 +4456,37 @@
   </div>
 </section>
 
-<!-- ─── GUARANTEE ─── -->
+<!-- ─── GUARANTEE (selo visual forte como medalha) ─── -->
 <section class="guarantee-section">
   <div class="container">
-    <p class="eyebrow text-center">Risco zero pra você</p>
-    <h2 class="section-title text-center">Você está <span>totalmente protegida</span></h2>
-    <div class="guarantee-box">
-      <div class="guarantee-shield"><span class="material-symbols-outlined filled">verified_user</span></div>
-      <div class="guarantee-days"><span class="material-symbols-outlined filled" style="font-size:18px">schedule</span> 7 dias de garantia</div>
-      <h3 class="guarantee-box__title">Garantia incondicional.<br/>Sem risco. Sem letras miúdas.</h3>
-      <p class="guarantee-box__text">
-        Acesse o app, faça as primeiras fases, entre na comunidade. Se nos primeiros <strong>7 dias</strong> você sentir que não é pra você, basta enviar um e-mail e devolvemos <strong>100% do valor investido</strong>.
-      </p>
-      <div class="guarantee-bullets">
-        <div class="guarantee-bullet"><div class="guarantee-bullet__dot">✓</div>Sem perguntas</div>
-        <div class="guarantee-bullet"><div class="guarantee-bullet__dot">✓</div>Sem burocracia</div>
-        <div class="guarantee-bullet"><div class="guarantee-bullet__dot">✓</div>100% do valor</div>
+    <p class="eyebrow text-center">Risco zero</p>
+    <h2 class="section-title text-center">7 dias <span>pra testar</span></h2>
+
+    <div class="guarantee-seal-wrapper">
+      <!-- Selo gigante tipo medalha -->
+      <div class="guarantee-seal">
+        <div class="guarantee-seal__ring">
+          <span class="guarantee-seal__top">GARANTIA</span>
+          <span class="guarantee-seal__bottom">INCONDICIONAL</span>
+        </div>
+        <div class="guarantee-seal__core">
+          <div class="guarantee-seal__num">7</div>
+          <div class="guarantee-seal__lbl">dias</div>
+        </div>
+        <span class="material-symbols-outlined guarantee-seal__check filled">verified</span>
+      </div>
+
+      <div class="guarantee-content">
+        <h3 class="guarantee-content__title">Não gostou? Eu devolvo.</h3>
+        <p class="guarantee-content__text">
+          Testa 7 dias. Se não for pra você, devolvo os <strong>R$ 97 inteirinhos</strong>.
+        </p>
+        <div class="guarantee-bullets">
+          <div class="guarantee-bullet"><span class="material-symbols-outlined">check_circle</span> Sem perguntas</div>
+          <div class="guarantee-bullet"><span class="material-symbols-outlined">check_circle</span> Sem burocracia</div>
+          <div class="guarantee-bullet"><span class="material-symbols-outlined">check_circle</span> 100% do valor</div>
+        </div>
+        <p class="guarantee-signature">— Carla 🙏</p>
       </div>
     </div>
   </div>
@@ -4121,21 +4559,55 @@
 <!-- ─── FINAL CTA ─── -->
 <section class="final-cta">
   <div class="container">
-    <h2>Sua liberdade ao volante começa hoje</h2>
-    <p>Por R$97 você desbloqueia o método que vai transformar sua relação com o carro. Acesso vitalício, garantia de 7 dias, risco zero.</p>
-    <button class="btn btn--primary" onclick="openLeadModal()">SIM, QUERO COMEÇAR AGORA</button>
-    <p class="final-cta__note">Risco zero · Garantia de 7 dias · Acesso imediato</p>
+    <h2>Vamos juntas?</h2>
+    <p>R$ 97 · uma vez só · acesso vitalício</p>
+    <button class="btn btn--primary" onclick="openLeadModal()">QUERO COMEÇAR AGORA</button>
+    <p class="final-cta__note">7 dias de garantia · Risco zero</p>
   </div>
 </section>
 
 <!-- ─── FOOTER ─── -->
-<div class="footer">
-  <div class="footer__text">
-    © 2026 Medo de Dirigir Nunca Mais — Todos os direitos reservados<br/>
-    Programa educacional. Resultados podem variar conforme a dedicação de cada aluna.<br/>
-    <a href="#">Termos de Uso</a> · <a href="#">Política de Privacidade</a> · <a href="#">Contato</a>
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <h4 class="footer__brand-title">Medo de Dirigir Nunca Mais</h4>
+      <p class="footer__tag">Aprender a dirigir é diferente de passar na prova.</p>
+      <p class="footer__author">
+        Idealizado pela <strong>Carla Margareth</strong>, instrutora autônoma há 25 anos no Rio de Janeiro.
+      </p>
+    </div>
+
+    <div class="footer__col">
+      <h5>Suporte</h5>
+      <ul>
+        <li><a href="https://wa.me/5521999999999?text=Ol%C3%A1%20Carla%21%20Tenho%20uma%20d%C3%BAvida" target="_blank" rel="noopener">WhatsApp direto</a></li>
+        <li><a href="mailto:contato@medodedirigirnuncamais.com.br">contato@medodedirigirnuncamais.com.br</a></li>
+        <li><a href="https://instagram.com/medodedirigirnuncamais" target="_blank" rel="noopener">@medodedirigirnuncamais</a></li>
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h5>Legal</h5>
+      <ul>
+        <li><a href="#">Termos de Uso</a></li>
+        <li><a href="#">Política de Privacidade</a></li>
+        <li><a href="#">Política de Reembolso (7 dias)</a></li>
+      </ul>
+    </div>
   </div>
-</div>
+
+  <div class="footer__bottom">
+    <p>
+      © 2026 Medo de Dirigir Nunca Mais — Todos os direitos reservados.
+      <br/>
+      <small>
+        Programa educacional sem vínculo institucional com o Detran.
+        Resultados variam conforme dedicação de cada aluna.
+        Cidade do Rio de Janeiro — RJ.
+      </small>
+    </p>
+  </div>
+</footer>
 
 <!-- ─── LEAD MODAL ─── -->
 <div class="modal-overlay" id="leadModal">
@@ -4457,21 +4929,13 @@
     if (e.key === 'Escape') closeLeadModal();
   });
 
-  // ── APROVADAS CAROUSEL (carrega do manifest.json) ────
-  // Lê /aprovados/manifest.json (lista de imagens) e popula o carrossel.
-  // Pra adicionar/remover fotos: atualize o manifest e o carrossel se ajusta.
+  // ── APROVADAS — galeria horizontal em loop infinito (right→left) ────
+  // Popula com a lista do manifest.json e duplica pra criar o efeito de
+  // loop contínuo via translateX(-50%) em CSS. Sem botões, sem dots —
+  // marquee puro com pause-on-hover. Pra mais fotos: atualizar manifest.
   (function() {
     const track = document.getElementById('approvedTrack');
-    const counter = document.getElementById('approvedCounter');
-    const dotsWrap = document.getElementById('approvedDots');
-    const prevBtn = document.getElementById('approvedPrev');
-    const nextBtn = document.getElementById('approvedNext');
-    if (!track || !counter || !dotsWrap || !prevBtn || !nextBtn) return;
-
-    let images = [];
-    let current = 0;
-    let autoTimer = null;
-    let userInteracted = false;
+    if (!track) return;
 
     async function loadManifest() {
       try {
@@ -4479,118 +4943,24 @@
         if (!res.ok) throw new Error('manifest 404');
         return await res.json();
       } catch (e) {
-        console.warn('[approved] manifest.json não encontrado, fallback para 22 imagens');
-        // Fallback: tenta nomes sequenciais se manifest falhar
         return Array.from({ length: 22 }, (_, i) => `aprovado-${String(i + 1).padStart(2, '0')}.jpg`);
       }
     }
 
-    function render() {
-      // Renderiza slides (lazy load — browser só baixa as visíveis)
-      track.innerHTML = images.map((file, i) => `
-        <div class="approved-slide" data-idx="${i}">
-          <img src="/aprovados/${file}" alt="Aluna aprovada no Detran" loading="lazy" />
-        </div>
-      `).join('');
-
-      // Renderiza dots
-      dotsWrap.innerHTML = images.map((_, i) => `
-        <button class="approved-dot" data-idx="${i}" aria-label="Foto ${i + 1}"></button>
-      `).join('');
-
-      // Click handlers nos dots
-      dotsWrap.querySelectorAll('.approved-dot').forEach(dot => {
-        dot.addEventListener('click', () => {
-          userInteracted = true;
-          stopAuto();
-          go(parseInt(dot.dataset.idx));
-        });
-      });
-
-      go(0);
-    }
-
-    function go(idx) {
-      const total = images.length;
-      if (!total) return;
-      current = ((idx % total) + total) % total;
-
-      track.querySelectorAll('.approved-slide').forEach((s, i) => {
-        s.classList.remove('is-active', 'is-prev', 'is-next');
-        if (i === current) s.classList.add('is-active');
-        else if (i === (current - 1 + total) % total) s.classList.add('is-prev');
-        else if (i === (current + 1) % total) s.classList.add('is-next');
-      });
-
-      dotsWrap.querySelectorAll('.approved-dot').forEach((d, i) => {
-        d.classList.toggle('is-active', i === current);
-      });
-
-      counter.textContent = `${current + 1} / ${total}`;
-    }
-
-    function next() { go(current + 1); }
-    function prev() { go(current - 1); }
-
-    function startAuto() {
-      stopAuto();
-      autoTimer = setInterval(() => {
-        if (userInteracted) return;
-        next();
-      }, 4500);
-    }
-    function stopAuto() {
-      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-    }
-
-    // Botões
-    prevBtn.addEventListener('click', () => {
-      userInteracted = true;
-      stopAuto();
-      prev();
-    });
-    nextBtn.addEventListener('click', () => {
-      userInteracted = true;
-      stopAuto();
-      next();
-    });
-
-    // Pause auto-rotate ao passar mouse
-    const carousel = document.getElementById('approvedCarousel');
-    carousel.addEventListener('mouseenter', stopAuto);
-    carousel.addEventListener('mouseleave', () => { if (!userInteracted) startAuto(); });
-
-    // Swipe touch (mobile)
-    let touchStartX = 0;
-    carousel.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
-    carousel.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(dx) < 40) return;
-      userInteracted = true;
-      stopAuto();
-      if (dx > 0) prev(); else next();
-    });
-
-    // Keyboard arrows
-    document.addEventListener('keydown', (e) => {
-      const rect = carousel.getBoundingClientRect();
-      const visible = rect.top < window.innerHeight && rect.bottom > 0;
-      if (!visible) return;
-      if (e.key === 'ArrowLeft')  { stopAuto(); userInteracted = true; prev(); }
-      if (e.key === 'ArrowRight') { stopAuto(); userInteracted = true; next(); }
-    });
-
-    // Inicia
     loadManifest().then(list => {
-      images = Array.isArray(list) ? list : [];
+      const images = Array.isArray(list) ? list : [];
       if (!images.length) {
-        carousel.innerHTML = '<p style="text-align:center;color:var(--text-mute)">Nenhuma foto disponível.</p>';
+        track.innerHTML = '<p style="text-align:center;color:var(--text-mute);padding:40px">Nenhuma foto disponível.</p>';
         return;
       }
-      render();
-      startAuto();
+      // Duplicamos a lista pra que, quando translateX(-50%) chegar ao fim,
+      // a 2ª metade já esteja no lugar e o loop pareça contínuo.
+      const html = images.map(file => `
+        <div class="approved-slide">
+          <img src="/aprovados/${file}" alt="Aluna aprovada" loading="lazy" />
+        </div>
+      `).join('');
+      track.innerHTML = html + html;
     });
   })();
 
