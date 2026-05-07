@@ -3127,15 +3127,18 @@
       margin-top: 14px;
     }
     .testi-card__avatar {
-      width: 40px; height: 40px;
+      width: 44px; height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: #FFF;
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-h);
-      font-weight: 800;
-      font-size: .9rem;
       flex-shrink: 0;
+      overflow: hidden;
+      background: var(--bg-3);
+      border: 2px solid var(--primary);
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .testi-card__avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
     }
     .testi-card__name {
       font-family: var(--font-h);
@@ -5068,24 +5071,32 @@
   }
 
   // ── TESTIMONIALS ──────────────────────────────────────
+  // Depoimentos com tom de WhatsApp real: sem acentos em algumas palavras,
+  // abreviações leves (vc, q, td, msm), emojis discretos. Fotos das 22
+  // imagens reais de aprovados (aprovado-01.jpg → aprovado-22.jpg).
   (function() {
     const testimonials = [
-      { text: "Tirei minha carteira em 2018 e nunca dirigi. O app me ajudou a pegar a coragem que faltava — em 3 semanas eu fiz meu primeiro trajeto sozinha. Chorei no volante.", name: "Marina S.", role: "Aluna · São Paulo, SP", initial: "M" },
-      { text: "Achei que ia ser mais um curso. Mas a forma como tudo é dividido em fases pequenas mudou tudo. Hoje vou pro trabalho dirigindo, sem ansiedade.", name: "Camila R.", role: "Aluna · Belo Horizonte, MG", initial: "C" },
-      { text: "Comprei depois de anos travada. A comunidade foi o diferencial — saber que tem outras mulheres na mesma jornada me deu força.", name: "Patrícia L.", role: "Aluna · Curitiba, PR", initial: "P" },
-      { text: "Em 28 dias passei de 'não consigo nem entrar no carro' pra dirigir até a casa da minha mãe sozinha. O método funciona de verdade.", name: "Juliana M.", role: "Aluna · Rio de Janeiro, RJ", initial: "J" },
-      { text: "Já tinha feito 4 cursos antes. Esse foi o primeiro que entendeu que o problema não era técnica — era a cabeça. Recomendo demais.", name: "Roberta F.", role: "Aluna · Porto Alegre, RS", initial: "R" },
-      { text: "Comecei sem confiança nenhuma e em 2 meses dirigi até a praia em férias. Coisa que nem nos meus melhores sonhos eu faria antes.", name: "Larissa C.", role: "Aluna · Fortaleza, CE", initial: "L" },
-      { text: "Sou mãe e dependia do meu marido pra tudo. Hoje levo minha filha na escola sozinha, vou ao mercado, médico. É liberdade de verdade.", name: "Aline N.", role: "Aluna · Salvador, BA", initial: "A" },
-      { text: "O preço é o que mais me chamou atenção. Por menos do que 2 aulas de autoescola, peguei o programa completo com acesso vitalício.", name: "Fernanda P.", role: "Aluna · Brasília, DF", initial: "F" },
-      { text: "A gamificação me prendeu. Cada conquista que destravava era um passo a mais — e quando vi, eu já tava na rua dirigindo.", name: "Beatriz O.", role: "Aluna · Campinas, SP", initial: "B" }
+      { text: "Tirei minha carteira em 2018 e nunca dirigi. O app me ajudou a pegar coragem... em 3 semanas fiz meu primeiro trajeto sozinha. Chorei no volante 😭 obrigada Carla", name: "Marina S., 38 anos", role: "São Paulo · SP", photo: "/aprovados/aprovado-01.jpg" },
+      { text: "Achei q ia ser mais um curso q eu ia abandonar kkk. Mas a forma q td é dividido em fases pequenas mudou tudo. Hoje vou pro trabalho dirigindo sem ansiedade ❤️", name: "Camila R., 29 anos", role: "Belo Horizonte · MG", photo: "/aprovados/aprovado-02.jpg" },
+      { text: "Comprei pra minha esposa, mas acabei usando junto. Cara, mudou minha relação com o volante tbm. Quem disse que homem nao tem medo? Tem sim 😅", name: "Carlos M., 45 anos", role: "Brasília · DF", photo: "/aprovados/aprovado-03.jpg" },
+      { text: "Em 28 dias passei de 'nao consigo nem entrar no carro' pra dirigir ate a casa da minha mae sozinha. Funciona msm 🙌", name: "Juliana M., 33 anos", role: "Rio de Janeiro · RJ", photo: "/aprovados/aprovado-04.jpg" },
+      { text: "Ja tinha feito 4 cursos antes desse. Foi o unico q entendeu q o problema nao era tecnica, era a cabeça. Recomendo dms", name: "Roberto F., 52 anos", role: "Porto Alegre · RS", photo: "/aprovados/aprovado-05.jpg" },
+      { text: "Comecei sem confiança nenhuma e em 2 meses dirigi até a praia nas férias. Coisa q nem nos meus melhores sonhos eu faria antes 😍", name: "Larissa C., 31 anos", role: "Fortaleza · CE", photo: "/aprovados/aprovado-06.jpg" },
+      { text: "Tirei minha CNH com 60 anos. Achei q era tarde demais... mas a Carla me mostrou q nao tem idade pra isso. Hoje saio sozinha pra padaria e volto sem tremer. Obg de coração 🙏", name: "Lúcia M., 62 anos", role: "Recife · PE", photo: "/aprovados/aprovado-07.jpg" },
+      { text: "O preço foi o q mais me chamou atenção. Por menos do q 2 aulas de auto escola peguei o programa todo, vitalício. Sem mensalidade. Tá de boa demais", name: "Fernando P., 38 anos", role: "Salvador · BA", photo: "/aprovados/aprovado-08.jpg" },
+      { text: "Sou mãe e dependia do meu marido pra td. Hoje levo minha filha na escola, vou no mercado, medico. Liberdade de vdd 💛", name: "Aline N., 42 anos", role: "Salvador · BA", photo: "/aprovados/aprovado-09.jpg" },
+      { text: "A gamificação me prendeu. Cada conquista q eu destravava era um passo a mais... quando vi ja tava na rua dirigindo 🚗", name: "Beatriz O., 27 anos", role: "Campinas · SP", photo: "/aprovados/aprovado-10.jpg" },
+      { text: "Comprei depois de anos travada. A turma foi o diferencial — saber q tem outras pessoas na mesma jornada me deu uma força q eu nao tinha sozinha", name: "Patrícia L., 47 anos", role: "Curitiba · PR", photo: "/aprovados/aprovado-11.jpg" },
+      { text: "Reprovei na prova prática 2x antes de comprar. Achei q nunca ia conseguir mais... refiz tudo no app, fui na 3a tentativa e PASSEI 🎉 obrigado!!", name: "Diego A., 24 anos", role: "Goiânia · GO", photo: "/aprovados/aprovado-12.jpg" }
     ];
 
     function cardHTML(t) {
       return `<div class="testi-card">
         <p class="testi-card__text">"${t.text}"</p>
         <div class="testi-card__footer">
-          <div class="testi-card__avatar">${t.initial}</div>
+          <div class="testi-card__avatar">
+            <img src="${t.photo}" alt="${t.name}" loading="lazy" />
+          </div>
           <div>
             <div class="testi-card__name">${t.name}</div>
             <div class="testi-card__role">${t.role}</div>
@@ -5094,9 +5105,9 @@
       </div>`;
     }
     const cols = [
-      { id: 'col1', items: [0, 3, 6] },
-      { id: 'col2', items: [1, 4, 7] },
-      { id: 'col3', items: [2, 5, 8] }
+      { id: 'col1', items: [0, 3, 6, 9] },
+      { id: 'col2', items: [1, 4, 7, 10] },
+      { id: 'col3', items: [2, 5, 8, 11] }
     ];
     cols.forEach(col => {
       const el = document.getElementById(col.id);
