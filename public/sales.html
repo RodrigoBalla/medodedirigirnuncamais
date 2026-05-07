@@ -2452,6 +2452,32 @@
     }
 
     /* ─── DYNAMIC COURSES (auto-sync com Supabase) ────── */
+    /* Selo Habilitados Fundadores — chama atenção pra promoção limitada */
+    .founders-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin: 0 auto 18px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .8rem;
+      letter-spacing: .04em;
+      border-radius: 100px;
+      box-shadow: 0 8px 24px var(--primary-glow), 0 0 0 4px rgba(255, 214, 10, .15);
+      text-transform: uppercase;
+      animation: foundersPulse 2.4s ease-in-out infinite;
+    }
+    .founders-tag .material-symbols-outlined { font-size: 18px; }
+    .founders-tag strong { font-weight: 900; }
+    @keyframes foundersPulse {
+      0%, 100% { box-shadow: 0 8px 24px var(--primary-glow), 0 0 0 0 rgba(255, 214, 10, .35); }
+      50%      { box-shadow: 0 12px 32px var(--primary-glow), 0 0 0 12px rgba(255, 214, 10, 0); }
+    }
+
     .dynamic-courses-section {
       background: var(--bg);
       padding: 80px 0;
@@ -4388,8 +4414,14 @@
 <!-- ─── CURSOS PREMIUM (DINÂMICO — auto-sync com Supabase) ─── -->
 <section class="dynamic-courses-section" id="dynamicCoursesSection">
   <div class="container--wide">
-    <p class="eyebrow text-center">Bônus liberados</p>
-    <h2 class="section-title text-center">Cursos premium <span>inclusos</span></h2>
+    <div class="founders-tag">
+      <span class="material-symbols-outlined filled">workspace_premium</span>
+      <span>Promoção <strong>Habilitados Fundadores</strong> · só os 100 primeiros</span>
+    </div>
+    <h2 class="section-title text-center">Os 3 cursos <span>juntos no mesmo pacote</span></h2>
+    <p class="section-sub text-center" style="margin:8px auto 0;max-width:640px">
+      Quem entrar nos primeiros <strong style="color:var(--primary)">100 acessos</strong> leva os <strong>3 cursos completos</strong> num único pagamento de R$ 97. Depois disso, viram pacote separado.
+    </p>
 
     <div class="dynamic-courses-grid" id="dynamicCoursesGrid">
       <!-- Loading skeleton -->
