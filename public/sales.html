@@ -3379,47 +3379,86 @@
     .testi-col__inner--slow   { animation-duration: 22s; }
     .testi-col__inner--medium { animation-duration: 26s; }
     .testi-col__inner--fast   { animation-duration: 30s; }
+    /* ── Cards no estilo WhatsApp Dark ──
+       Card outer = "tela do app". Avatar à esquerda + nome em verde estilo
+       username de grupo + bolha verde escura com tail no canto inferior
+       esquerdo + timestamp + check azul "lida". */
     .testi-card {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: var(--shadow-1);
+      background: #0b141a;
+      border: 1px solid rgba(134, 150, 160, .12);
+      border-radius: 12px;
+      padding: 12px 12px 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
     }
-    .testi-card__text {
-      color: var(--text);
-      font-size: .95rem;
-      line-height: 1.65;
-    }
-    .testi-card__footer {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 14px;
+    .testi-card__row {
+      display: flex; gap: 8px; align-items: flex-start;
     }
     .testi-card__avatar {
-      width: 44px; height: 44px;
+      width: 38px; height: 38px;
       border-radius: 50%;
       flex-shrink: 0;
       overflow: hidden;
       background: var(--bg-3);
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, .08);
     }
     .testi-card__avatar img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    .testi-card__name {
+    .testi-card__bubble-wrap {
+      flex: 1; min-width: 0;
+    }
+    .testi-card__name-line {
+      display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+      margin: 2px 0 5px;
+      padding-left: 12px;
       font-family: var(--font-h);
+    }
+    .testi-card__name {
       font-weight: 700;
       font-size: .82rem;
-      color: var(--text);
+      color: #06cf9c;
+      letter-spacing: -.01em;
     }
     .testi-card__role {
-      color: var(--text-subtle);
-      font-size: .72rem;
-      margin-top: 2px;
+      font-size: .7rem;
+      color: rgba(233, 237, 239, .5);
+      font-weight: 500;
+    }
+    .testi-card__bubble {
+      position: relative;
+      background: #005c4b;
+      color: #e9edef;
+      padding: 8px 12px 6px;
+      border-radius: 0 8px 8px 8px;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, .25);
+    }
+    .testi-card__bubble::before {
+      content: '';
+      position: absolute;
+      left: -6px; top: 0;
+      width: 8px; height: 13px;
+      background: #005c4b;
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+    .testi-card__text {
+      font-size: .9rem;
+      line-height: 1.45;
+      color: #e9edef;
+      margin: 0;
+      word-wrap: break-word;
+      font-family: var(--font-b);
+    }
+    .testi-card__meta {
+      display: flex; align-items: center; gap: 3px;
+      justify-content: flex-end;
+      margin-top: 3px;
+      font-size: .66rem;
+      color: rgba(233, 237, 239, .6);
+      font-weight: 500;
+    }
+    .testi-card__meta svg {
+      flex-shrink: 0;
     }
 
     /* ─── GUARANTEE ────────────────────────────────────── */
@@ -5974,30 +6013,41 @@
   // Cada `?img=NN` é uma foto fixa diferente (não muda no reload).
   (function() {
     const testimonials = [
-      { text: "Tirei minha carteira em 2018 e nunca dirigi. O app me ajudou a pegar coragem... em 3 semanas fiz meu primeiro trajeto sozinha. Chorei no volante 😭 obrigada Carla", name: "Marina S., 38 anos", role: "São Paulo · SP", photo: "https://i.pravatar.cc/150?img=44" },
-      { text: "Achei q ia ser mais um curso q eu ia abandonar kkk. Mas a forma q td é dividido em fases pequenas mudou tudo. Hoje vou pro trabalho dirigindo sem ansiedade ❤️", name: "Camila R., 29 anos", role: "Belo Horizonte · MG", photo: "https://i.pravatar.cc/150?img=49" },
-      { text: "Comprei pra minha esposa, mas acabei usando junto. Cara, mudou minha relação com o volante tbm. Quem disse que homem nao tem medo? Tem sim 😅", name: "Carlos M., 45 anos", role: "Brasília · DF", photo: "https://i.pravatar.cc/150?img=12" },
-      { text: "Em 28 dias passei de 'nao consigo nem entrar no carro' pra dirigir ate a casa da minha mae sozinha. Funciona msm 🙌", name: "Juliana M., 33 anos", role: "Rio de Janeiro · RJ", photo: "https://i.pravatar.cc/150?img=23" },
-      { text: "Ja tinha feito 4 cursos antes desse. Foi o unico q entendeu q o problema nao era tecnica, era a cabeça. Recomendo dms", name: "Roberto F., 52 anos", role: "Porto Alegre · RS", photo: "https://i.pravatar.cc/150?img=68" },
-      { text: "Comecei sem confiança nenhuma e em 2 meses dirigi até a praia nas férias. Coisa q nem nos meus melhores sonhos eu faria antes 😍", name: "Larissa C., 31 anos", role: "Fortaleza · CE", photo: "https://i.pravatar.cc/150?img=47" },
-      { text: "Tirei minha CNH com 60 anos. Achei q era tarde demais... mas a Carla me mostrou q nao tem idade pra isso. Hoje saio sozinha pra padaria e volto sem tremer. Obg de coração 🙏", name: "Lúcia M., 62 anos", role: "Recife · PE", photo: "https://i.pravatar.cc/150?img=45" },
-      { text: "O preço foi o q mais me chamou atenção. Por menos do q 2 aulas de auto escola peguei o programa todo, vitalício. Sem mensalidade. Tá de boa demais", name: "Fernando P., 38 anos", role: "Salvador · BA", photo: "https://i.pravatar.cc/150?img=33" },
-      { text: "Sou mãe e dependia do meu marido pra td. Hoje levo minha filha na escola, vou no mercado, medico. Liberdade de vdd 💛", name: "Aline N., 42 anos", role: "Salvador · BA", photo: "https://i.pravatar.cc/150?img=10" },
-      { text: "A gamificação me prendeu. Cada conquista q eu destravava era um passo a mais... quando vi ja tava na rua dirigindo 🚗", name: "Beatriz O., 27 anos", role: "Campinas · SP", photo: "https://i.pravatar.cc/150?img=16" },
-      { text: "Comprei depois de anos travada. A turma foi o diferencial — saber q tem outras pessoas na mesma jornada me deu uma força q eu nao tinha sozinha", name: "Patrícia L., 47 anos", role: "Curitiba · PR", photo: "https://i.pravatar.cc/150?img=24" },
-      { text: "Reprovei na prova prática 2x antes de comprar. Achei q nunca ia conseguir mais... refiz tudo no app, fui na 3a tentativa e PASSEI 🎉 obrigado!!", name: "Diego A., 24 anos", role: "Goiânia · GO", photo: "https://i.pravatar.cc/150?img=51" }
+      { text: "Tirei minha carteira em 2018 e nunca dirigi. O app me ajudou a pegar coragem... em 3 semanas fiz meu primeiro trajeto sozinha. Chorei no volante 😭 obrigada Carla", name: "Marina S., 38", role: "São Paulo", photo: "https://i.pravatar.cc/150?img=44", time: "14:32" },
+      { text: "Achei q ia ser mais um curso q eu ia abandonar kkk. Mas a forma q td é dividido em fases pequenas mudou tudo. Hoje vou pro trabalho dirigindo sem ansiedade ❤️", name: "Camila R., 29", role: "Belo Horizonte", photo: "https://i.pravatar.cc/150?img=49", time: "ontem" },
+      { text: "Comprei pra minha esposa, mas acabei usando junto. Cara, mudou minha relação com o volante tbm. Quem disse que homem nao tem medo? Tem sim 😅", name: "Carlos M., 45", role: "Brasília", photo: "https://i.pravatar.cc/150?img=12", time: "09:15" },
+      { text: "Em 28 dias passei de 'nao consigo nem entrar no carro' pra dirigir ate a casa da minha mae sozinha. Funciona msm 🙌", name: "Juliana M., 33", role: "Rio de Janeiro", photo: "https://i.pravatar.cc/150?img=23", time: "21:48" },
+      { text: "Ja tinha feito 4 cursos antes desse. Foi o unico q entendeu q o problema nao era tecnica, era a cabeça. Recomendo dms", name: "Roberto F., 52", role: "Porto Alegre", photo: "https://i.pravatar.cc/150?img=68", time: "08:03" },
+      { text: "Comecei sem confiança nenhuma e em 2 meses dirigi até a praia nas férias. Coisa q nem nos meus melhores sonhos eu faria antes 😍", name: "Larissa C., 31", role: "Fortaleza", photo: "https://i.pravatar.cc/150?img=47", time: "ontem" },
+      { text: "Tirei minha CNH com 60 anos. Achei q era tarde demais... mas a Carla me mostrou q nao tem idade pra isso. Hoje saio sozinha pra padaria e volto sem tremer. Obg de coração 🙏", name: "Lúcia M., 62", role: "Recife", photo: "https://i.pravatar.cc/150?img=45", time: "16:20" },
+      { text: "O preço foi o q mais me chamou atenção. Por menos do q 2 aulas de auto escola peguei o programa todo, vitalício. Sem mensalidade. Tá de boa demais", name: "Fernando P., 38", role: "Salvador", photo: "https://i.pravatar.cc/150?img=33", time: "12:47" },
+      { text: "Sou mãe e dependia do meu marido pra td. Hoje levo minha filha na escola, vou no mercado, medico. Liberdade de vdd 💛", name: "Aline N., 42", role: "Salvador", photo: "https://i.pravatar.cc/150?img=10", time: "ontem" },
+      { text: "A gamificação me prendeu. Cada conquista q eu destravava era um passo a mais... quando vi ja tava na rua dirigindo 🚗", name: "Beatriz O., 27", role: "Campinas", photo: "https://i.pravatar.cc/150?img=16", time: "19:55" },
+      { text: "Comprei depois de anos travada. A turma foi o diferencial — saber q tem outras pessoas na mesma jornada me deu uma força q eu nao tinha sozinha", name: "Patrícia L., 47", role: "Curitiba", photo: "https://i.pravatar.cc/150?img=24", time: "10:08" },
+      { text: "Reprovei na prova prática 2x antes de comprar. Achei q nunca ia conseguir mais... refiz tudo no app, fui na 3a tentativa e PASSEI 🎉 obrigado!!", name: "Diego A., 24", role: "Goiânia", photo: "https://i.pravatar.cc/150?img=51", time: "22:14" }
     ];
+
+    // SVG do duplo-check azul "mensagem lida" do WhatsApp
+    const READ_CHECK_SVG = '<svg width="16" height="11" viewBox="0 0 18 11" xmlns="http://www.w3.org/2000/svg"><path d="M17.394.281a.387.387 0 00-.526.058L7.978 9.097 4.93 6.024a.387.387 0 00-.547 0l-.547.547a.387.387 0 000 .547l3.815 3.815a.387.387 0 00.547 0L17.952.876a.387.387 0 000-.547L17.394.28zm-5.657 5.74L11.19 5.47 14.97 1.69a.387.387 0 000-.547L14.422.6a.387.387 0 00-.547 0L9.74 4.736a.387.387 0 000 .547l1.45 1.45a.387.387 0 00.547 0z" fill="#53bdeb"/></svg>';
 
     function cardHTML(t) {
       return `<div class="testi-card">
-        <p class="testi-card__text">"${t.text}"</p>
-        <div class="testi-card__footer">
+        <div class="testi-card__row">
           <div class="testi-card__avatar">
             <img src="${t.photo}" alt="${t.name}" loading="lazy" />
           </div>
-          <div>
-            <div class="testi-card__name">${t.name}</div>
-            <div class="testi-card__role">${t.role}</div>
+          <div class="testi-card__bubble-wrap">
+            <div class="testi-card__name-line">
+              <span class="testi-card__name">${t.name}</span>
+              <span class="testi-card__role">${t.role}</span>
+            </div>
+            <div class="testi-card__bubble">
+              <p class="testi-card__text">${t.text}</p>
+              <div class="testi-card__meta">
+                <time>${t.time}</time>
+                ${READ_CHECK_SVG}
+              </div>
+            </div>
           </div>
         </div>
       </div>`;
