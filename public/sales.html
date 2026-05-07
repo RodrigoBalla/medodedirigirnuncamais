@@ -2255,7 +2255,7 @@
     }
     .solution-card p strong { color: var(--primary); font-weight: 700; }
 
-    /* ─── MODULES (TRAIL premium) ──────────────────────── */
+    /* ─── MODULES (TRILHA — estrada vertical com fases alternadas) ─── */
     .modules-section {
       background: var(--bg);
       padding: 80px 0;
@@ -2270,6 +2270,232 @@
         radial-gradient(ellipse 30% 30% at 100% 100%, rgba(0, 0, 0, .35) 0%, transparent 70%);
       pointer-events: none;
     }
+    /* Trilha — estrada vertical central com pontos zigzagueando */
+    .trail-grid {
+      position: relative;
+      max-width: 920px;
+      margin: 56px auto 0;
+      padding: 8px 0;
+    }
+    /* Estrada amarela tracejada no centro */
+    .trail-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px; bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      background: repeating-linear-gradient(
+        180deg,
+        var(--primary) 0,
+        var(--primary) 18px,
+        transparent 18px,
+        transparent 30px
+      );
+      border-radius: 100px;
+      z-index: 0;
+    }
+    /* Cobertura cinza no trecho "em breve" (fases 4-7) — sobrepõe a amarela */
+    .trail-grid__future {
+      position: absolute;
+      top: calc(28px + (100% - 56px) * 0.428); /* depois da fase 3 */
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      background:
+        var(--bg),
+        repeating-linear-gradient(
+          180deg,
+          rgba(255, 255, 255, .18) 0,
+          rgba(255, 255, 255, .18) 14px,
+          transparent 14px,
+          transparent 24px
+        );
+      z-index: 1;
+    }
+    .trail-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 88px 1fr;
+      align-items: center;
+      margin-bottom: 24px;
+      min-height: 110px;
+    }
+    .trail-step:last-child { margin-bottom: 0; }
+    /* Milestone (círculo numerado no meio da estrada) */
+    .trail-step__milestone {
+      grid-column: 2;
+      justify-self: center;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #0B1A38;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 1.35rem;
+      box-shadow:
+        0 0 0 6px var(--bg),
+        0 8px 24px var(--primary-glow),
+        inset 0 1px 0 rgba(255, 255, 255, .35);
+      position: relative;
+      z-index: 3;
+      transition: transform .3s ease;
+    }
+    .trail-step:hover .trail-step__milestone {
+      transform: scale(1.06);
+    }
+    .trail-step--soon .trail-step__milestone {
+      background: linear-gradient(135deg, #1f2942, #2a3556);
+      color: rgba(255, 255, 255, .5);
+      box-shadow: 0 0 0 6px var(--bg), inset 0 1px 0 rgba(255, 255, 255, .08);
+    }
+    .trail-step--soon .trail-step__milestone::after {
+      content: 'lock';
+      font-family: 'Material Symbols Outlined';
+      position: absolute;
+      bottom: -6px; right: -6px;
+      width: 22px; height: 22px;
+      background: var(--bg);
+      border: 1.5px solid rgba(255, 255, 255, .25);
+      border-radius: 50%;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .55);
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* Card lateral */
+    .trail-step__card {
+      background: linear-gradient(160deg, var(--surface) 0%, var(--bg-3) 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      position: relative;
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+    .trail-step:nth-child(odd) .trail-step__card {
+      grid-column: 1;
+      text-align: right;
+    }
+    .trail-step:nth-child(even) .trail-step__card {
+      grid-column: 3;
+    }
+    /* Pontinha do card apontando pra estrada (estilo balão) */
+    .trail-step:nth-child(odd) .trail-step__card::after {
+      content: '';
+      position: absolute;
+      right: -9px; top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border: 9px solid transparent;
+      border-left-color: var(--surface);
+      filter: drop-shadow(1px 0 0 var(--border));
+    }
+    .trail-step:nth-child(even) .trail-step__card::after {
+      content: '';
+      position: absolute;
+      left: -9px; top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border: 9px solid transparent;
+      border-right-color: var(--surface);
+      filter: drop-shadow(-1px 0 0 var(--border));
+    }
+    .trail-step__card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .4), 0 0 0 1px var(--primary-soft) inset;
+    }
+    /* Conteúdo do card */
+    .trail-step__icon {
+      display: inline-flex;
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .trail-step__icon .material-symbols-outlined { font-size: 24px; }
+    .trail-step__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 0 0 6px;
+      letter-spacing: -.01em;
+    }
+    .trail-step__text {
+      color: var(--text-mute);
+      font-size: .88rem;
+      line-height: 1.55;
+      margin: 0 0 12px;
+    }
+    .trail-step__badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-h);
+      font-size: .56rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+    .trail-step__badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .trail-step__badge--live {
+      background: rgba(16, 185, 129, .12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .35);
+    }
+    .trail-step__badge--live::before { animation: liveDot 1.6s ease-in-out infinite; }
+    .trail-step__badge--soon {
+      background: rgba(255, 255, 255, .04);
+      color: rgba(255, 255, 255, .55);
+      border: 1px dashed rgba(255, 255, 255, .18);
+    }
+    /* Variante "em breve" — dim card */
+    .trail-step--soon .trail-step__card {
+      opacity: .68;
+    }
+    .trail-step--soon .trail-step__icon {
+      background: rgba(255, 255, 255, .04);
+      border-color: rgba(255, 255, 255, .12);
+      color: rgba(255, 255, 255, .4);
+    }
+    /* Mobile: empilha tudo à esquerda da estrada */
+    @media (max-width: 768px) {
+      .trail-grid::before { left: 30px; transform: none; }
+      .trail-grid__future { left: 30px; transform: none; }
+      .trail-step {
+        grid-template-columns: 60px 1fr;
+        gap: 14px;
+      }
+      .trail-step__milestone {
+        grid-column: 1;
+        width: 50px; height: 50px;
+        font-size: 1.05rem;
+      }
+      .trail-step:nth-child(odd) .trail-step__card,
+      .trail-step:nth-child(even) .trail-step__card {
+        grid-column: 2;
+        text-align: left;
+      }
+      .trail-step:nth-child(odd) .trail-step__card::after,
+      .trail-step:nth-child(even) .trail-step__card::after {
+        left: -9px; right: auto;
+        border-right-color: var(--surface);
+        border-left-color: transparent;
+        filter: drop-shadow(-1px 0 0 var(--border));
+      }
+    }
+
+    /* Mantém compat com classes antigas pra não quebrar nada */
     .modules-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -5275,56 +5501,78 @@
     <p class="eyebrow text-center">A trilha</p>
     <h2 class="section-title text-center">7 fases até <span>dirigir sozinha</span></h2>
 
-    <div class="modules-grid">
-      <div class="module-card">
-        <div class="module-card__num">01</div>
-        <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">airline_seat_recline_normal</span></div>
-        <h3 class="module-card__title">Conhecendo o carro</h3>
-        <p class="module-card__text">Banco, retrovisores, pedais. Comece sentindo o carro como seu.</p>
-      </div>
-      <div class="module-card">
-        <div class="module-card__num">02</div>
-        <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">footprint</span></div>
-        <h3 class="module-card__title">O jogo dos pés</h3>
-        <p class="module-card__text">Embreagem, freio, acelerador. Sai sem matar o carro.</p>
-      </div>
-      <div class="module-card">
-        <div class="module-card__num">03</div>
-        <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">explore</span></div>
-        <h3 class="module-card__title">Fluidez e direção</h3>
-        <p class="module-card__text">Volante, curvas, troca de marcha. Você no controle.</p>
+    <div class="trail-grid">
+      <!-- Linha cinza tracejada cobre o trecho "em breve" (depois fase 3) -->
+      <div class="trail-grid__future"></div>
+
+      <div class="trail-step">
+        <div class="trail-step__milestone">01</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">airline_seat_recline_normal</span></div>
+          <h3 class="trail-step__title">Conhecendo o carro</h3>
+          <p class="trail-step__text">Banco, retrovisores, pedais. Comece sentindo o carro como seu.</p>
+          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+        </div>
       </div>
 
-      <div class="module-card module-card--soon">
-        <div class="module-card__num">04</div>
-        <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
-        <h3 class="module-card__title">Modo Automático</h3>
-        <p class="module-card__text">Câmbio automático: D, R, P, N. Sem mistério.</p>
+      <div class="trail-step">
+        <div class="trail-step__milestone">02</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">footprint</span></div>
+          <h3 class="trail-step__title">O jogo dos pés</h3>
+          <p class="trail-step__text">Embreagem, freio, acelerador. Sai sem matar o carro.</p>
+          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+        </div>
       </div>
-      <div class="module-card module-card--soon">
-        <div class="module-card__num">05</div>
-        <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">traffic</span></div>
-        <h3 class="module-card__title">Trânsito real</h3>
-        <p class="module-card__text">Primeiros metros na rua. Foco, calma e prática.</p>
+
+      <div class="trail-step">
+        <div class="trail-step__milestone">03</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">explore</span></div>
+          <h3 class="trail-step__title">Fluidez e direção</h3>
+          <p class="trail-step__text">Volante, curvas, troca de marcha. Você no controle.</p>
+          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+        </div>
       </div>
-      <div class="module-card module-card--soon">
-        <div class="module-card__num">06</div>
-        <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">altitude</span></div>
-        <h3 class="module-card__title">Ladeira e baliza</h3>
-        <p class="module-card__text">Saída em rampa, freio de mão, manobras. Sem trava.</p>
+
+      <div class="trail-step trail-step--soon">
+        <div class="trail-step__milestone">04</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
+          <h3 class="trail-step__title">Modo Automático</h3>
+          <p class="trail-step__text">Câmbio automático: D, R, P, N. Sem mistério.</p>
+          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+        </div>
       </div>
-      <div class="module-card module-card--soon">
-        <div class="module-card__num">07</div>
-        <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
-        <h3 class="module-card__title">Prova do Detran</h3>
-        <p class="module-card__text">Simulado prático. Você passa sem decoreba.</p>
+
+      <div class="trail-step trail-step--soon">
+        <div class="trail-step__milestone">05</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">traffic</span></div>
+          <h3 class="trail-step__title">Trânsito real</h3>
+          <p class="trail-step__text">Primeiros metros na rua. Foco, calma e prática.</p>
+          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+        </div>
+      </div>
+
+      <div class="trail-step trail-step--soon">
+        <div class="trail-step__milestone">06</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">altitude</span></div>
+          <h3 class="trail-step__title">Ladeira e baliza</h3>
+          <p class="trail-step__text">Saída em rampa, freio de mão, manobras. Sem trava.</p>
+          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+        </div>
+      </div>
+
+      <div class="trail-step trail-step--soon">
+        <div class="trail-step__milestone">07</div>
+        <div class="trail-step__card">
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
+          <h3 class="trail-step__title">Prova do Detran</h3>
+          <p class="trail-step__text">Simulado prático. Você passa sem decoreba.</p>
+          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+        </div>
       </div>
     </div>
 
