@@ -2573,13 +2573,13 @@
       .trail-car { display: none; }
     }
 
-    /* SERPENTINAS — chovem amarelas e pretas quando o carro chega no fim */
+    /* SERPENTINAS — chovem na TELA INTEIRA quando o carro chega no fim.
+       position: fixed escapa do overflow:hidden do modules-section. */
     .confetti-burst {
-      position: absolute;
-      top: 0; left: -20%; right: -20%;
-      bottom: 0;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
       pointer-events: none;
-      z-index: 5;
+      z-index: 9999;
       overflow: visible;
     }
     .confetti-piece {
@@ -6665,8 +6665,13 @@
   (function() {
     const trail = document.getElementById('trailGrid');
     const car = document.getElementById('trailCar');
-    const confettiContainer = document.getElementById('trailConfetti');
     if (!trail || !car) return;
+
+    // Move o confetti pro <body> pra escapar de qualquer overflow:hidden
+    let confettiContainer = document.getElementById('trailConfetti');
+    if (confettiContainer && confettiContainer.parentNode !== document.body) {
+      document.body.appendChild(confettiContainer);
+    }
 
     const steps = trail.querySelectorAll('.trail-step');
 
@@ -6677,20 +6682,18 @@
     // Cria UMA serpentina (peça de confetti)
     function makeConfettiPiece() {
       if (!confettiContainer) return;
-      const colors = ['#FFD60A', '#000000', '#FFD60A', '#1a1a1a', '#FFD60A'];
-      const variants = ['', '--streamer', '--circle'];
+      const colors = ['#FFD60A', '#000000', '#FFD60A', '#1a1a1a', '#FFD60A', '#FFFFFF'];
+      const variants = ['', '--streamer', '--circle', '', '--streamer'];
+      const variant = variants[Math.floor(Math.random() * variants.length)];
       const piece = document.createElement('span');
-      piece.className = 'confetti-piece' + (variants[Math.floor(Math.random() * variants.length)]
-        ? ' confetti-piece' + variants[Math.floor(Math.random() * variants.length)]
-        : '');
+      piece.className = 'confetti-piece' + (variant ? ' confetti-piece' + variant : '');
       piece.style.left = (Math.random() * 100) + '%';
       piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-      piece.style.animationDelay = (Math.random() * 0.6) + 's';
-      piece.style.animationDuration = (2.4 + Math.random() * 2.5) + 's';
-      piece.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+      piece.style.animationDelay = (Math.random() * 0.8) + 's';
+      piece.style.animationDuration = (3 + Math.random() * 2.5) + 's';
+      piece.style.setProperty('--drift', (Math.random() * 280 - 140) + 'px');
       confettiContainer.appendChild(piece);
-      // Remove após 5s pra não acumular
-      setTimeout(() => piece.remove(), 5500);
+      setTimeout(() => piece.remove(), 6500);
     }
     function spawnConfetti(count) {
       for (let i = 0; i < count; i++) {
