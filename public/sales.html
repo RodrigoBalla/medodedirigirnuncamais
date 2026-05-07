@@ -2087,6 +2087,109 @@
       color: var(--text-mute);
       margin-top: 2px;
     }
+    /* Portrait da Carla — coluna direita do quem-somos */
+    .quem-somos__portrait {
+      display: flex; flex-direction: column;
+      gap: 18px;
+    }
+    .qs-portrait-frame {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, .4),
+        0 0 0 1px var(--primary-soft) inset,
+        0 0 60px var(--primary-glow);
+    }
+    .qs-portrait-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: 78% 30%; /* foca na Carla (lado direito da foto) */
+      display: block;
+    }
+    .qs-portrait-frame::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 45%, rgba(11, 26, 56, .55) 75%, rgba(11, 26, 56, .92) 100%);
+      pointer-events: none;
+    }
+    /* Nome da Carla flutuando na parte de baixo da foto */
+    .qs-portrait-overlay {
+      position: absolute;
+      left: 14px; right: 14px; bottom: 14px;
+      z-index: 2;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: rgba(11, 26, 56, .75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 214, 10, .35);
+      border-radius: 14px;
+    }
+    .qs-portrait-overlay .material-symbols-outlined {
+      color: var(--primary);
+      font-size: 30px;
+      flex-shrink: 0;
+    }
+    .qs-portrait-overlay strong {
+      display: block;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .qs-portrait-overlay small {
+      display: block;
+      font-size: .76rem;
+      color: var(--text-mute);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    /* Selo "Método oficial" no topo direito da foto */
+    .qs-portrait-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 2;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 12px;
+      background: var(--primary);
+      color: #0B1A38;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .68rem;
+      line-height: 1.1;
+      letter-spacing: .04em;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transform: rotate(-3deg);
+    }
+    .qs-portrait-badge .material-symbols-outlined {
+      font-size: 16px;
+      color: #0B1A38;
+    }
+    /* Stats compactos em linha embaixo da foto */
+    .qs-portrait-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .qs-stat--mini {
+      padding: 14px 10px;
+      border-radius: 12px;
+    }
+    .qs-stat--mini .qs-stat__val {
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+    }
+    .qs-stat--mini .qs-stat__lbl {
+      font-size: .62rem;
+      letter-spacing: .06em;
+      margin-top: 6px;
+    }
+
     .quem-somos__stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -4986,21 +5089,35 @@
         </div>
       </div>
 
-      <div class="quem-somos__stats">
-        <div class="qs-stat">
-          <div class="qs-stat__icon"><span class="material-symbols-outlined">groups</span></div>
-          <div class="qs-stat__val" data-target="500" data-prefix="+">+0</div>
-          <div class="qs-stat__lbl">alunos<br/>aprovados</div>
+      <!-- Foto da Carla + stats em baixo -->
+      <div class="quem-somos__portrait">
+        <div class="qs-portrait-frame">
+          <img src="/hero/instrutora.jpg" alt="Carla Margareth — sua instrutora" loading="lazy" />
+          <div class="qs-portrait-overlay">
+            <span class="material-symbols-outlined filled">verified</span>
+            <div>
+              <strong>Carla Margareth</strong>
+              <small>Há 25 anos no volante · São Paulo</small>
+            </div>
+          </div>
+          <div class="qs-portrait-badge">
+            <span class="material-symbols-outlined filled">workspace_premium</span>
+            Método<br>oficial
+          </div>
         </div>
-        <div class="qs-stat">
-          <div class="qs-stat__icon"><span class="material-symbols-outlined">star</span></div>
-          <div class="qs-stat__val" data-target="98" data-suffix="%">0%</div>
-          <div class="qs-stat__lbl">recomendariam<br/>pra um amigo</div>
-        </div>
-        <div class="qs-stat">
-          <div class="qs-stat__icon"><span class="material-symbols-outlined">schedule</span></div>
-          <div class="qs-stat__val" data-target="21" data-suffix="d">0d</div>
-          <div class="qs-stat__lbl">até dirigir<br/>sozinha</div>
+        <div class="qs-portrait-stats">
+          <div class="qs-stat qs-stat--mini">
+            <div class="qs-stat__val" data-target="500" data-prefix="+">+0</div>
+            <div class="qs-stat__lbl">alunos<br/>aprovados</div>
+          </div>
+          <div class="qs-stat qs-stat--mini">
+            <div class="qs-stat__val" data-target="98" data-suffix="%">0%</div>
+            <div class="qs-stat__lbl">recomendam<br/>pra um amigo</div>
+          </div>
+          <div class="qs-stat qs-stat--mini">
+            <div class="qs-stat__val" data-target="21" data-suffix="d">0d</div>
+            <div class="qs-stat__lbl">até dirigir<br/>sozinho</div>
+          </div>
         </div>
       </div>
     </div>
