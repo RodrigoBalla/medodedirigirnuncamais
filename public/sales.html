@@ -2270,29 +2270,42 @@
         radial-gradient(ellipse 30% 30% at 100% 100%, rgba(0, 0, 0, .35) 0%, transparent 70%);
       pointer-events: none;
     }
-    /* Trilha — estrada vertical central com pontos zigzagueando */
+    /* Trilha — pista de asfalto vertical com fases zigzagueando */
     .trail-grid {
       position: relative;
       max-width: 920px;
       margin: 56px auto 0;
       padding: 8px 0;
     }
-    /* Estrada amarela tracejada no centro */
+    /* PISTA — asfalto cinza-azulado com center-line amarela tracejada */
     .trail-grid::before {
       content: '';
       position: absolute;
       top: 28px; bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
-      background: repeating-linear-gradient(
-        180deg,
-        var(--primary) 0,
-        var(--primary) 18px,
-        transparent 18px,
-        transparent 30px
-      );
-      border-radius: 100px;
+      width: 36px;
+      background:
+        /* faixa central amarela tracejada (em cima) */
+        repeating-linear-gradient(
+          180deg,
+          var(--primary) 0px,
+          var(--primary) 18px,
+          transparent 18px,
+          transparent 30px
+        ) center / 4px 100% no-repeat,
+        /* asfalto com gradient lateral pra dar profundidade */
+        linear-gradient(90deg,
+          #0a1124 0%,
+          #1a2540 18%,
+          #232f54 50%,
+          #1a2540 82%,
+          #0a1124 100%
+        );
+      border-radius: 4px;
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, .35),
+        0 0 30px rgba(0, 0, 0, .4);
       z-index: 0;
     }
     /* Cobertura cinza no trecho "em breve" (fases 4-7) — sobrepõe a amarela */
@@ -2302,17 +2315,129 @@
       bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
+      width: 36px;
       background:
-        var(--bg),
+        /* tracejado branco translúcido pro trecho "em breve" */
         repeating-linear-gradient(
           180deg,
-          rgba(255, 255, 255, .18) 0,
-          rgba(255, 255, 255, .18) 14px,
+          rgba(255, 255, 255, .22) 0px,
+          rgba(255, 255, 255, .22) 14px,
           transparent 14px,
           transparent 24px
+        ) center / 4px 100% no-repeat,
+        /* mesmo asfalto, mais opaco pra cobrir o amarelo */
+        linear-gradient(90deg,
+          #0a1124 0%,
+          #14203b 18%,
+          #1c2748 50%,
+          #14203b 82%,
+          #0a1124 100%
         );
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
       z-index: 1;
+    }
+    /* CARRO — desce/sobe conforme scroll, vira na mudança de direção */
+    .trail-car {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      pointer-events: none;
+      transition: top .35s cubic-bezier(.32, 1, .36, 1);
+    }
+    .trail-car__inner {
+      position: relative;
+      width: 46px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .4s cubic-bezier(.32, 1.2, .35, 1);
+    }
+    /* Direção do carro — descendo (default) ou subindo (mirror vertical) */
+    .trail-car[data-direction="down"] .trail-car__inner {
+      transform: rotate(90deg);
+    }
+    .trail-car[data-direction="up"] .trail-car__inner {
+      transform: rotate(-90deg);
+    }
+    .trail-car__vehicle {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #0B1A38;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow:
+        0 0 0 5px var(--bg),
+        0 10px 30px var(--primary-glow),
+        inset 0 1px 0 rgba(255, 255, 255, .4);
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .trail-car__vehicle .material-symbols-outlined {
+      font-size: 26px;
+      animation: carVibrate 1.2s ease-in-out infinite;
+    }
+    @keyframes carVibrate {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-1px) rotate(.5deg); }
+    }
+    /* Motorista comemorando — aparece quando o carro chega no fim */
+    .trail-car__driver {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      transform-origin: bottom center;
+      margin-bottom: 14px;
+      display: inline-flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+      padding: 8px 14px;
+      background: var(--primary);
+      color: #0B1A38;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .82rem;
+      letter-spacing: .02em;
+      border-radius: 100px;
+      box-shadow: 0 12px 32px var(--primary-glow);
+      transition: transform .45s cubic-bezier(.32, 1.5, .35, 1), opacity .3s ease;
+      opacity: 0;
+    }
+    /* Triangulinho do balão apontando pro carro */
+    .trail-car__driver::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border: 8px solid transparent;
+      border-top-color: var(--primary);
+    }
+    .trail-car__driver .material-symbols-outlined {
+      font-size: 18px;
+      animation: handWave 1s ease-in-out infinite;
+      transform-origin: 70% 80%;
+    }
+    @keyframes handWave {
+      0%, 100% { transform: rotate(-12deg); }
+      50%      { transform: rotate(20deg); }
+    }
+    /* Estado "chegou no destino" — mostra motorista, contra-rotaciona o
+       carro pra ficar reto (não inclinado), e dá um pulse */
+    .trail-car.is-arrived .trail-car__inner {
+      transform: rotate(0deg) !important;
+      animation: arrivedBounce 1.6s ease-in-out infinite;
+    }
+    @keyframes arrivedBounce {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      50%      { transform: rotate(0deg) translateY(-4px); }
+    }
+    .trail-car.is-arrived .trail-car__driver {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+    /* Reduce motion — desliga animações de scroll-driven */
+    @media (prefers-reduced-motion: reduce) {
+      .trail-car { display: none; }
     }
     .trail-step {
       position: relative;
@@ -5501,9 +5626,22 @@
     <p class="eyebrow text-center">A trilha</p>
     <h2 class="section-title text-center">7 fases até <span>dirigir sozinha</span></h2>
 
-    <div class="trail-grid">
+    <div class="trail-grid" id="trailGrid">
       <!-- Linha cinza tracejada cobre o trecho "em breve" (depois fase 3) -->
       <div class="trail-grid__future"></div>
+
+      <!-- Carrinho que segue o scroll -->
+      <div class="trail-car" id="trailCar" data-direction="down" aria-hidden="true">
+        <div class="trail-car__driver">
+          <span class="material-symbols-outlined filled">waving_hand</span>
+          <span>Conseguiu! 🎉</span>
+        </div>
+        <div class="trail-car__inner">
+          <div class="trail-car__vehicle">
+            <span class="material-symbols-outlined filled">directions_car</span>
+          </div>
+        </div>
+      </div>
 
       <div class="trail-step">
         <div class="trail-step__milestone">01</div>
@@ -6196,6 +6334,62 @@
 
 <script>
   // Tema travado em "dark" — paleta navy + amarelo (sem opção de claro).
+
+  // ── TRAIL CAR (carrinho que segue o scroll na trilha) ─
+  // Carrinho desce/sobe na pista conforme o usuário scrolla a página.
+  // Vira (rotate +90/-90) na mudança de direção.
+  // Quando chega no fim da trilha, para e o motorista comemora.
+  (function() {
+    const trail = document.getElementById('trailGrid');
+    const car = document.getElementById('trailCar');
+    if (!trail || !car) return;
+
+    let lastScroll = window.scrollY;
+    let arrived = false;
+    let raf = null;
+
+    function update() {
+      raf = null;
+      const rect = trail.getBoundingClientRect();
+      const trailTop = rect.top + window.scrollY;
+      const trailH = rect.height;
+      const vh = window.innerHeight;
+
+      // Referência: ponto médio do viewport (carro acompanha leitura central)
+      const refY = window.scrollY + vh * 0.5;
+      let progress = (refY - trailTop) / trailH;
+      progress = Math.max(0, Math.min(1, progress));
+
+      // Posição vertical do carro
+      car.style.top = `${progress * trailH}px`;
+
+      // Direção do scroll → vira o carro
+      const dy = window.scrollY - lastScroll;
+      if (Math.abs(dy) > 1) {
+        const direction = dy > 0 ? 'down' : 'up';
+        if (car.dataset.direction !== direction) {
+          car.dataset.direction = direction;
+        }
+        lastScroll = window.scrollY;
+      }
+
+      // Estado "chegou" — quando passa de 92% da trilha (perto do último marker)
+      const justArrived = progress > 0.92;
+      if (justArrived !== arrived) {
+        arrived = justArrived;
+        car.classList.toggle('is-arrived', arrived);
+      }
+    }
+
+    function onScroll() {
+      if (raf) return;
+      raf = requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  })();
 
   // ── PAIN DIAGNOSIS ────────────────────────────────────
   (function() {
