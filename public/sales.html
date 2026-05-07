@@ -2647,6 +2647,135 @@
       background: var(--bg-2);
       padding: 80px 0;
     }
+
+    /* ─── VALUE STACK — soma do que vai no pacote ───────── */
+    .value-stack {
+      max-width: 720px;
+      margin: 36px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow-2);
+    }
+    .vs-line {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      transition: background .2s ease;
+    }
+    .vs-line:hover { background: rgba(255, 214, 10, .03); }
+    .vs-line__icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 16px var(--primary-glow);
+    }
+    .vs-line__icon .material-symbols-outlined { font-size: 24px; }
+    .vs-line__info { min-width: 0; }
+    .vs-line__title {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .vs-line__sub {
+      color: var(--text-mute);
+      font-size: .82rem;
+    }
+    .vs-line__price {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text-mute);
+      text-decoration: line-through;
+      text-decoration-color: var(--danger);
+      text-decoration-thickness: 2px;
+      flex-shrink: 0;
+    }
+    .vs-line--highlight {
+      background: rgba(16, 185, 129, .04);
+    }
+    .vs-line--highlight .vs-line__price {
+      color: #10b981;
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 800;
+    }
+    .vs-line--highlight .vs-line__icon {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #FFF;
+      box-shadow: 0 6px 16px rgba(16, 185, 129, .35);
+    }
+
+    /* Total */
+    .vs-total {
+      padding: 24px 26px 28px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      text-align: center;
+    }
+    .vs-total-row {
+      display: flex; align-items: baseline; justify-content: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .vs-total-label {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      opacity: .7;
+    }
+    .vs-total-old {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.4rem;
+      text-decoration: line-through;
+      opacity: .65;
+    }
+    .vs-total-row--final { margin-top: 6px; margin-bottom: 8px; }
+    .vs-total-new {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 4.6rem;
+      line-height: 1;
+      letter-spacing: -.03em;
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .vs-total-new sup {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+    .vs-total-save {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .95rem;
+      margin-top: 6px;
+      opacity: .85;
+    }
+    .vs-total-save strong { font-weight: 900; }
+    @media(max-width: 540px) {
+      .vs-line { grid-template-columns: 40px 1fr auto; padding: 14px 16px; gap: 12px; }
+      .vs-line__icon { width: 36px; height: 36px; border-radius: 10px; }
+      .vs-line__icon .material-symbols-outlined { font-size: 20px; }
+      .vs-line__title { font-size: .92rem; }
+      .vs-line__sub { font-size: .76rem; }
+      .vs-line__price { font-size: .95rem; }
+      .vs-total-new { font-size: 3.6rem; }
+      .vs-total-old { font-size: 1.2rem; }
+    }
+
     .includes-hero {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -4460,50 +4589,75 @@
   </div>
 </section>
 
-<!-- ─── INCLUDES ─── -->
+<!-- ─── VALUE STACK (somando tudo que vai dentro do pacote) ─── -->
 <section class="includes-section">
   <div class="container">
-    <p class="eyebrow text-center">Você leva</p>
-    <h2 class="section-title text-center">Tudo no <span>pacote</span></h2>
+    <p class="eyebrow text-center">Quanto vale tudo isso</p>
+    <h2 class="section-title text-center">O que você leva por <span>R$ 97</span></h2>
+    <p class="section-sub text-center" style="margin:8px auto 0">Se fosse comprar separado, daria <strong style="color:var(--primary)">R$ 738</strong>.</p>
 
-    <div class="includes-hero">
-      <div class="include-hero-card">
-        <div class="include-hero-card__badge">Principal</div>
-        <div class="include-hero-card__icon"><span class="material-symbols-outlined">smartphone</span></div>
-        <div class="include-hero-card__title">App completo</div>
-        <div class="include-hero-card__text">Trilha, missões, conquistas. No celular.</div>
-        <div class="include-hero-card__tag">✓ Vitalício</div>
+    <div class="value-stack">
+      <div class="vs-line">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">directions_car</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Curso Medo de Dirigir Nunca Mais</div>
+          <div class="vs-line__sub">8 aulas · método completo</div>
+        </div>
+        <div class="vs-line__price">R$ 297</div>
       </div>
-      <div class="include-hero-card">
-        <div class="include-hero-card__badge">Bônus</div>
-        <div class="include-hero-card__icon"><span class="material-symbols-outlined">groups</span></div>
-        <div class="include-hero-card__title">Turma exclusiva</div>
-        <div class="include-hero-card__text">Alunas que estão na mesma jornada.</div>
-        <div class="include-hero-card__tag">✓ Apoio diário</div>
+      <div class="vs-line">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">altitude</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Curso Dominando as Ladeiras</div>
+          <div class="vs-line__sub">Saída em rampa · freio de mão · baliza</div>
+        </div>
+        <div class="vs-line__price">R$ 147</div>
       </div>
-    </div>
+      <div class="vs-line">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">local_taxi</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Manual do Motorista de Aplicativo</div>
+          <div class="vs-line__sub">Cadastro Uber/99 · faturar com o carro</div>
+        </div>
+        <div class="vs-line__price">R$ 147</div>
+      </div>
+      <div class="vs-line">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">groups</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Turma exclusiva no app</div>
+          <div class="vs-line__sub">Comunidade ativa · alunos na mesma</div>
+        </div>
+        <div class="vs-line__price">R$ 97</div>
+      </div>
+      <div class="vs-line">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Suporte direto Carla pelo WhatsApp</div>
+          <div class="vs-line__sub">Resposta humana em até 24h</div>
+        </div>
+        <div class="vs-line__price">R$ 50</div>
+      </div>
+      <div class="vs-line vs-line--highlight">
+        <div class="vs-line__icon"><span class="material-symbols-outlined filled">verified</span></div>
+        <div class="vs-line__info">
+          <div class="vs-line__title">Garantia incondicional de 7 dias</div>
+          <div class="vs-line__sub">Não gostou, devolve 100%</div>
+        </div>
+        <div class="vs-line__price">— Risco zero —</div>
+      </div>
 
-    <div class="includes-bonus-label">+ Bônus inclusos</div>
-    <div class="includes-grid">
-      <div class="include-card">
-        <div class="include-card__icon"><span class="material-symbols-outlined">support_agent</span></div>
-        <div class="include-card__title">WhatsApp</div>
-        <div class="include-card__text">Carla responde direto.</div>
-      </div>
-      <div class="include-card">
-        <div class="include-card__icon"><span class="material-symbols-outlined">play_circle</span></div>
-        <div class="include-card__title">Boas-vindas</div>
-        <div class="include-card__text">Pra começar com o pé direito.</div>
-      </div>
-      <div class="include-card">
-        <div class="include-card__icon"><span class="material-symbols-outlined">military_tech</span></div>
-        <div class="include-card__title">Selos</div>
-        <div class="include-card__text">Medalha a cada fase.</div>
-      </div>
-      <div class="include-card">
-        <div class="include-card__icon"><span class="material-symbols-outlined">verified_user</span></div>
-        <div class="include-card__title">7 dias</div>
-        <div class="include-card__text">Não gostou? Devolvo.</div>
+      <div class="vs-total">
+        <div class="vs-total-row">
+          <span class="vs-total-label">De</span>
+          <span class="vs-total-old">R$ 738,00</span>
+        </div>
+        <div class="vs-total-row vs-total-row--final">
+          <span class="vs-total-label">Por</span>
+          <span class="vs-total-new"><sup>R$</sup>97</span>
+        </div>
+        <div class="vs-total-save">
+          Você economiza <strong>R$ 641</strong> · <strong>87% OFF</strong>
+        </div>
       </div>
     </div>
   </div>
@@ -4565,6 +4719,15 @@
         <div class="for-item__check">✓</div>
       </div>
     </div>
+
+    <p style="text-align:center;color:var(--text-mute);margin:32px auto 18px;font-size:1.05rem;max-width:580px">
+      <strong style="color:var(--primary)">Marcou pelo menos um?</strong> O método foi feito pra você.
+    </p>
+    <div style="text-align:center">
+      <button class="btn btn--primary" style="padding:18px 36px;font-size:1rem" onclick="openLeadModal()">
+        QUERO MINHA VAGA AGORA
+      </button>
+    </div>
   </div>
 </section>
 
@@ -4572,7 +4735,7 @@
 <section class="proof-section">
   <div class="container">
     <p class="eyebrow text-center">Os números</p>
-    <h2 class="section-title text-center">Resultados <span>reais</span></h2>
+    <h2 class="section-title text-center">A próxima estatística <span>pode ser você</span></h2>
     <div class="proof-numbers">
       <div class="proof-num">
         <div class="proof-num__icon"><span class="material-symbols-outlined">groups</span></div>
@@ -4587,7 +4750,7 @@
       <div class="proof-num">
         <div class="proof-num__icon"><span class="material-symbols-outlined">star</span></div>
         <div class="proof-num__val" data-target="4.9" data-suffix="/5">0/5</div>
-        <div class="proof-num__lbl">avaliação dos alunos</div>
+        <div class="proof-num__lbl">★★★★★ entre quem usou</div>
       </div>
     </div>
   </div>
@@ -4653,26 +4816,27 @@
 <section class="offer-section">
   <div class="container">
     <p class="eyebrow text-center">Sua decisão</p>
-    <h2 class="section-title text-center">Tudo isso por apenas <span>R$97</span></h2>
+    <h2 class="section-title text-center">Habilitados Fundadores <span>· R$ 97</span></h2>
     <div class="offer-box">
-      <div class="offer-box__title">O QUE ESTÁ INCLUSO</div>
-      <div class="offer-box__sub">Acesso vitalício · Garantia de 7 dias</div>
+      <div class="offer-box__title">O QUE VOCÊ LEVA</div>
+      <div class="offer-box__sub">Acesso vitalício · Pagamento único · Garantia de 7 dias</div>
       <ul class="offer-items">
-        <li><span class="tick">✓</span> App gamificado completo (acesso vitalício)</li>
-        <li><span class="tick">✓</span> 6 fases progressivas + bônus futuros</li>
-        <li><span class="tick">✓</span> Comunidade exclusiva no WhatsApp</li>
-        <li><span class="tick">✓</span> Suporte direto com instrutores</li>
-        <li><span class="tick">✓</span> Vídeo de boas-vindas + onboarding</li>
-        <li><span class="tick">✓</span> Garantia incondicional de 7 dias</li>
+        <li><span class="tick">✓</span> Curso <strong>Medo de Dirigir Nunca Mais</strong> (8 aulas + bônus futuros)</li>
+        <li><span class="tick">✓</span> Curso <strong>Dominando as Ladeiras</strong></li>
+        <li><span class="tick">✓</span> Curso <strong>O Manual do Motorista de Aplicativo</strong></li>
+        <li><span class="tick">✓</span> Turma exclusiva no app (alunos na mesma jornada)</li>
+        <li><span class="tick">✓</span> Suporte direto com a Carla pelo WhatsApp</li>
+        <li><span class="tick">✓</span> Selos e conquistas a cada fase concluída</li>
+        <li><span class="tick">✓</span> Garantia incondicional de 7 dias · 100% de volta</li>
       </ul>
       <div class="price-stack">
-        <div class="price-stack__old">Valor real: R$197,00</div>
-        <div class="price-stack__from">Hoje apenas</div>
+        <div class="price-stack__old">Valor real somado: R$ 738,00</div>
+        <div class="price-stack__from">Promoção dos 100 primeiros</div>
         <div class="price-stack__val"><sup>R$</sup>97</div>
         <div class="price-stack__note">Pagamento único · Acesso vitalício</div>
       </div>
       <button class="btn btn--primary btn--block" style="padding:22px 32px;font-size:1.1rem" onclick="openLeadModal()">
-        GARANTIR MINHA VAGA AGORA
+        GARANTIR MINHA VAGA DE FUNDADOR
       </button>
       <p style="font-size:.78rem;color:var(--text-subtle);margin-top:14px"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">lock</span> Ambiente seguro · SSL · Parcelamento disponível</p>
     </div>
@@ -4686,28 +4850,44 @@
     <h2 class="section-title text-center">Perguntas e respostas</h2>
     <div class="faq-list">
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Eu já tirei a CNH faz tempo. Vai funcionar pra mim? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim — esse é exatamente o perfil que mais buscamos. O método foi pensado pra quem tem habilitação mas trava na hora de dirigir. Você revisa o básico no seu ritmo e vai destravando camada por camada, sem pressão.</div>
+        <button class="faq-q" onclick="toggleFaq(this)">Sirvo se eu sou homem? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Sim, totalmente. O método não tem gênero — funciona pra qualquer pessoa que tem medo, ansiedade ou trava ao volante. Tem alunos homens vencendo o medo no app, igual.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Preciso ter um carro pra começar? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Não. As primeiras fases são teóricas e simulam mentalmente os comandos, sem precisar do carro. Você só vai pra prática real quando se sentir pronta — e a comunidade ajuda a encontrar instrutores parceiros se precisar.</div>
+        <button class="faq-q" onclick="toggleFaq(this)">Sirvo se eu nunca tirei CNH? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Esse curso é desenhado pra quem já tem habilitação mas trava. Se você ainda não tirou CNH, o método ajuda a se preparar emocionalmente antes da prova prática, mas o ideal é fazer junto com a auto escola.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo até eu dirigir sozinha? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">A média dos alunos é de 21 dias pra fazer o primeiro trajeto sozinha com confiança. Mas tudo depende do seu ritmo — alguns levam 7 dias, outros 60. O importante é não pular etapas.</div>
+        <button class="faq-q" onclick="toggleFaq(this)">Eu tirei CNH faz tempo e nunca dirigi. Funciona? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Funciona — esse é exatamente o perfil mais comum dos nossos alunos. Você revisa o básico no seu ritmo e vai destravando camada por camada, sem pressão de auto escola.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">É realmente diferente de uma autoescola? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Completamente. Autoescola foca em fazer você passar na prova. Aqui o foco é o emocional + a coordenação real, com gamificação que mantém o cérebro engajado e reprograma a resposta de medo.</div>
+        <button class="faq-q" onclick="toggleFaq(this)">Preciso ter carro pra começar? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Não. As aulas funcionam mesmo sem carro — você simula mentalmente os comandos, vê os vídeos e prepara a confiança. Quando for pra prática real (com auto escola, instrutor ou parente), vai com base.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo até eu dirigir sozinho? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">A média dos alunos é de 21 dias pro primeiro trajeto sozinho com confiança. Mas depende do seu ritmo — alguns levam 7 dias, outros 60. O importante é não pular etapas.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">É só pelas 100 vagas mesmo? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Sim. A oferta "Habilitados Fundadores" — 3 cursos juntos por R$ 97 — é só pros 100 primeiros acessos. Depois disso, os cursos viram pacote separado e o preço sobe. Você acompanha o número exato no card de vagas no topo da página.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Como funciona o pagamento? Posso parcelar? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Pagamento único de R$ 97 (sem mensalidade). Aceita cartão de crédito (com parcelamento), Pix e boleto. Tudo via ambiente seguro com SSL.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Quando começa o acesso? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Na hora. Assim que o pagamento é confirmado (via cartão é instantâneo), você recebe o login por email e já entra direto na primeira aula.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">E se eu não gostar? Tem reembolso? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim — garantia incondicional de 7 dias. Basta enviar um e-mail dentro do prazo e devolvemos 100% do valor. Sem perguntas, sem burocracia.</div>
+        <div class="faq-a">Garantia incondicional de 7 dias. Não gostou — manda um email dentro do prazo e devolvo 100% do valor. Sem pergunta, sem burocracia.</div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">Funciona em iPhone e Android? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim. O app roda direto no navegador do celular (iOS, Android) e também no computador. Não precisa baixar nada, é só fazer login e começar.</div>
+        <button class="faq-q" onclick="toggleFaq(this)">Funciona no iPhone, Android e computador? <span class="chev material-symbols-outlined">expand_more</span></button>
+        <div class="faq-a">Funciona em tudo. O app roda direto no navegador do celular (iOS, Android) e no desktop. Não precisa baixar nada — é só fazer login.</div>
       </div>
     </div>
   </div>
