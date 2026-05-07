@@ -4894,8 +4894,8 @@
     <div class="pain-inner">
       <div class="pain-diagnosis" id="painDiagnosis">
         <span class="pain-diagnosis__label">Diagnóstico instantâneo</span>
-        <h3 class="pain-diagnosis__title" id="painDiagTitle">Aguardando seus cliques…</h3>
-        <p class="pain-diagnosis__desc" id="painDiagDesc">Marque o que você sente <strong>com mais frequência</strong> ao pensar em dirigir.</p>
+        <h3 class="pain-diagnosis__title" id="painDiagTitle">Marque os sinais que você sente</h3>
+        <p class="pain-diagnosis__desc" id="painDiagDesc">Pra <strong>cada um</strong> deles o método tem uma fase específica. Vai marcando que eu te mostro.</p>
         <span class="pain-diagnosis__count"><strong id="painCount">0</strong>/5 selecionadas</span>
       </div>
       <div>
@@ -5760,20 +5760,35 @@
     const countEl = document.getElementById('painCount');
     if (!list) return;
 
+    // Cada diagnóstico aponta a SOLUÇÃO — qual fase do método trata aquele
+    // sintoma. Linguagem neutra (homem + mulher). Combos de 2/3/4/5 sintomas
+    // reforçam que o método tem fase pra cada um.
     const DIAGNOSES = {
-      0: { t: 'Aguardando seus cliques…', d: 'Marque o que você sente <strong>com mais frequência</strong> ao pensar em dirigir.' },
-      1: { t: 'A Ansiosa Iniciante', d: 'O medo já chega <strong>antes do carro ligar</strong>. A boa notícia: o método trabalha exatamente esse ponto.' },
-      2: { t: 'A Travada no Real', d: 'Você até dirige no vazio — mas <strong>perde o foco</strong> com qualquer estímulo. Vamos retreinar isso por camadas.' },
-      3: { t: 'A Dependente Frustrada', d: 'Você sabe que <strong>poderia ter mais autonomia</strong>. Falta só destravar o emocional pra colocar isso em prática.' },
-      4: { t: 'A CNH Engavetada', d: 'Habilitação no bolso, <strong>liberdade ainda não</strong>. Esse é o perfil mais comum entre nossos alunos — você não está sozinha.' },
-      5: { t: 'A Veterana de Tentativas', d: 'Já tentou de tudo e continua travada. <strong>Não é falta de aula</strong> — é falta de método pro emocional.' },
-      31: { t: 'O Combo Travante', d: 'Sintomas físicos + dependência + desmotivação. <strong>Esse é exatamente o público</strong> pra quem o método foi desenhado.' }
+      // Estado inicial — nada selecionado
+      0: { t: 'Marque os sinais que você sente', d: 'Pra <strong>cada um</strong> deles o método tem uma fase específica. Vai marcando que eu te mostro.' },
+      // Seleção única
+      1:  { t: 'Ansiedade antes da chave', d: '<strong>Fase 1</strong> trabalha respiração + checkpoint pré-carro. Você chega ao volante já calmo.' },
+      2:  { t: 'Trava no trânsito real', d: '<strong>Fase 4</strong> te expõe aos gatilhos (buzina, motoboy, lateral) em camadas progressivas — sem o pânico do real.' },
+      4:  { t: 'Depende de carona pra tudo', d: 'Em <strong>21 dias</strong> você dirige sozinho pros lugares do dia a dia. Mercado, médico, escola — sem pedir favor.' },
+      8:  { t: 'CNH parada na gaveta', d: '<strong>75% dos nossos alunos</strong> já tinham CNH e travavam. O método foi desenhado pra exatamente esse perfil.' },
+      16: { t: 'Auto escola não resolveu', d: '<strong>Falta método pro emocional</strong> — não falta aula. Aqui você trabalha técnica + cabeça em paralelo.' },
+      // Combos (qualquer combinação de N sintomas)
+      _combo2: { t: 'Dois sinais, um método só', d: 'Os dois sintomas que você marcou têm <strong>fase específica</strong> no programa. Trabalha um, depois o outro.' },
+      _combo3: { t: 'Três sinais batendo juntos', d: 'Esse é o <strong>perfil principal</strong> dos nossos alunos. Cada sinal vira foco numa fase do método.' },
+      _combo4: { t: 'Você se identifica forte', d: '4 dos 5 sintomas — <strong>exatamente</strong> o público pra quem o método foi desenhado. Cada um tem tratamento.' },
+      31:      { t: 'Combo completo do medo', d: 'Os 5 sintomas estão em você. <strong>Boa notícia:</strong> o método ataca todos em paralelo, fase por fase, em 21 dias.' }
     };
 
     let mask = 0;
     function update() {
       const bits = (mask.toString(2).match(/1/g) || []).length;
-      const diag = DIAGNOSES[mask] || DIAGNOSES[bits >= 3 ? 31 : 1];
+      let diag;
+      if (bits === 0)      diag = DIAGNOSES[0];
+      else if (bits === 1) diag = DIAGNOSES[mask];
+      else if (bits === 5) diag = DIAGNOSES[31];
+      else if (bits === 2) diag = DIAGNOSES._combo2;
+      else if (bits === 3) diag = DIAGNOSES._combo3;
+      else if (bits === 4) diag = DIAGNOSES._combo4;
       titleEl.textContent = diag.t;
       descEl.innerHTML = diag.d;
       countEl.textContent = bits;
