@@ -2527,6 +2527,39 @@
       margin-bottom: 16px;
       flex: 1;
     }
+    /* Lista de tópicos (aulas/conteúdos) — substitui o desc quando há " · " */
+    .course-card__topics {
+      list-style: none;
+      padding: 0; margin: 0 0 16px;
+      display: flex; flex-direction: column; gap: 6px;
+      flex: 1;
+    }
+    .course-card__topics li {
+      position: relative;
+      padding-left: 22px;
+      color: var(--text);
+      font-size: .85rem;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .course-card__topics li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 7px;
+      width: 14px; height: 14px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+    .course-card__topics li::after {
+      content: '✓';
+      position: absolute;
+      left: 2px; top: 5px;
+      font-size: .65rem;
+      font-weight: 900;
+      color: var(--on-primary);
+      line-height: 1;
+    }
     .course-card__meta {
       display: flex; gap: 16px;
       padding-top: 12px;
@@ -4222,52 +4255,52 @@
       <div class="module-card">
         <div class="module-card__num">01</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">directions_car</span></div>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">airline_seat_recline_normal</span></div>
         <h3 class="module-card__title">Conhecendo o carro</h3>
-        <p class="module-card__text">Comandos, pedais, posição. Sem nem ligar o motor.</p>
+        <p class="module-card__text">Banco, retrovisores, pedais. Comece sentindo o carro como seu.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">02</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">footprint</span></div>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">footprint</span></div>
         <h3 class="module-card__title">O jogo dos pés</h3>
-        <p class="module-card__text">Os pedais ficam automáticos. Aí o resto fica leve.</p>
+        <p class="module-card__text">Embreagem, freio, acelerador. Sai sem matar o carro.</p>
       </div>
       <div class="module-card">
         <div class="module-card__num">03</div>
         <span class="module-card__badge module-card__badge--live">Disponível</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">route</span></div>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">explore</span></div>
         <h3 class="module-card__title">Fluidez e direção</h3>
-        <p class="module-card__text">Volante, curvas, terceira. Você no controle.</p>
+        <p class="module-card__text">Volante, curvas, troca de marcha. Você no controle.</p>
       </div>
 
       <div class="module-card module-card--soon">
         <div class="module-card__num">04</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">smart_toy</span></div>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
         <h3 class="module-card__title">Modo Automático</h3>
-        <p class="module-card__text">Câmbio automático sem mistério.</p>
+        <p class="module-card__text">Câmbio automático: D, R, P, N. Sem mistério.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">05</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">traffic</span></div>
-        <h3 class="module-card__title">Trânsito Leve</h3>
-        <p class="module-card__text">Primeiros metros na rua. Foco e calma.</p>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">traffic</span></div>
+        <h3 class="module-card__title">Trânsito real</h3>
+        <p class="module-card__text">Primeiros metros na rua. Foco, calma e prática.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">06</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">terrain</span></div>
-        <h3 class="module-card__title">Modo Subida</h3>
-        <p class="module-card__text">Ladeira, baliza, manobras. Sem trava.</p>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">altitude</span></div>
+        <h3 class="module-card__title">Ladeira e baliza</h3>
+        <p class="module-card__text">Saída em rampa, freio de mão, manobras. Sem trava.</p>
       </div>
       <div class="module-card module-card--soon">
         <div class="module-card__num">07</div>
         <span class="module-card__badge module-card__badge--soon">Em breve</span>
-        <div class="module-card__icon"><span class="material-symbols-outlined">verified</span></div>
+        <div class="module-card__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
         <h3 class="module-card__title">Prova do Detran</h3>
-        <p class="module-card__text">Aprovada. Sem decoreba, sem nervosismo.</p>
+        <p class="module-card__text">Simulado prático. Você passa sem decoreba.</p>
       </div>
     </div>
 
@@ -5085,6 +5118,15 @@
         const img = p.image_url
           ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.title)}" loading="lazy" />`
           : `<span class="material-symbols-outlined course-card__img-fallback filled">school</span>`;
+
+        // Descrição: se tiver " · " separador, vira bullet list (tópicos)
+        const desc = p.description || '';
+        const topicsHtml = desc.includes(' · ')
+          ? `<ul class="course-card__topics">${
+              desc.split(' · ').map(t => `<li>${escapeHtml(t.trim())}</li>`).join('')
+            }</ul>`
+          : `<p class="course-card__desc">${escapeHtml(desc || 'Curso premium liberado pra alunos.')}</p>`;
+
         return `
           <div class="course-card">
             <div class="course-card__img">
@@ -5093,12 +5135,8 @@
             </div>
             <div class="course-card__body">
               <h3 class="course-card__title">${escapeHtml(p.title)}</h3>
-              <p class="course-card__desc">${escapeHtml(p.description || 'Curso premium liberado pra alunos.')}</p>
+              ${topicsHtml}
               <div class="course-card__meta">
-                <span class="course-card__meta-item">
-                  <span class="material-symbols-outlined">view_module</span>
-                  ${modulesCount} ${modulesCount === 1 ? 'módulo' : 'módulos'}
-                </span>
                 <span class="course-card__meta-item">
                   <span class="material-symbols-outlined">verified</span>
                   Acesso vitalício
