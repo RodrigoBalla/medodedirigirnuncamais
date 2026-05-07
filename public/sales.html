@@ -6677,6 +6677,7 @@
 
     let lastScroll = window.scrollY;
     let arrived = false;
+    let confettiActive = false; // true enquanto a mensagem "Conseguiu!" está visível
     let raf = null;
 
     // Cria UMA serpentina (peça de confetti)
@@ -6747,12 +6748,20 @@
       if (justArrived !== arrived) {
         arrived = justArrived;
         car.classList.toggle('is-arrived', arrived);
-        if (arrived) {
-          // 🎉 CHUVA DE SERPENTINAS amarelas e pretas
-          spawnConfetti(80);
-        } else {
-          clearConfetti();
-        }
+      }
+
+      // Confetti DEVE acompanhar a visibilidade da mensagem "Conseguiu!" —
+      // ou seja, só roda quando o carro está visível na viewport E arrived=true.
+      // Se o usuário rola pra fora da seção, a mensagem some e o confetti também.
+      const carRect = car.getBoundingClientRect();
+      const carVisible = carRect.bottom > 0 && carRect.top < vh;
+      const shouldShowConfetti = arrived && carVisible;
+      if (shouldShowConfetti && !confettiActive) {
+        confettiActive = true;
+        spawnConfetti(80);
+      } else if (!shouldShowConfetti && confettiActive) {
+        confettiActive = false;
+        clearConfetti();
       }
     }
 
