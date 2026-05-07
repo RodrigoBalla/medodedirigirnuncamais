@@ -997,6 +997,36 @@
       font-style: italic;
       margin-left: auto;
     }
+    /* Badge ESGOTADO! — aparece só quando vagas zeram */
+    .hero__cta-pack__sold-out {
+      display: none;
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: .82rem;
+      color: #FFF;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      padding: 4px 11px;
+      border-radius: 6px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      box-shadow: 0 3px 12px rgba(239, 68, 68, .5);
+      animation: soldOutShake 1.6s ease-in-out infinite;
+    }
+    @keyframes soldOutShake {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25%      { transform: scale(1.06) rotate(-2deg); }
+      75%      { transform: scale(1.06) rotate(2deg); }
+    }
+    .hero__cta-pack.is-waitlist .hero__cta-pack__sold-out {
+      display: inline-flex;
+    }
+    .hero__cta-pack.is-waitlist .hero__cta-pack__count {
+      text-decoration: line-through;
+      opacity: .55;
+    }
+    .hero__cta-pack.is-waitlist .hero__cta-pack__tail {
+      display: none;
+    }
     .hero__cta-pack__bar {
       height: 5px;
       background: rgba(0, 0, 0, .35);
@@ -4481,6 +4511,7 @@
           <div class="hero__cta-pack__urgency">
             <span class="vagas-counter__label">Vagas limitadas</span>
             <span class="hero__cta-pack__count">Restam <strong id="vagasRemaining">100</strong>/100</span>
+            <span class="hero__cta-pack__sold-out">Esgotado!</span>
             <span class="hero__cta-pack__tail">depois vira lista de espera</span>
           </div>
           <div class="hero__cta-pack__bar">
@@ -5922,17 +5953,51 @@
     renderVagas();
   }
 
+  // Interpolação de cor: 0% preenchido = verde, 50% = amarelo, 100% = vermelho
+  function getUrgencyColor(pctFilled) {
+    let r, g, b;
+    if (pctFilled <= 50) {
+      // verde (#10b981 → 16,185,129) → amarelo (#eab308 → 234,179,8)
+      const t = pctFilled / 50;
+      r = Math.round(16  + (234 - 16)  * t);
+      g = Math.round(185 + (179 - 185) * t);
+      b = Math.round(129 + (8   - 129) * t);
+    } else {
+      // amarelo (#eab308) → vermelho (#ef4444 → 239,68,68)
+      const t = (pctFilled - 50) / 50;
+      r = Math.round(234 + (239 - 234) * t);
+      g = Math.round(179 + (68  - 179) * t);
+      b = Math.round(8   + (68  - 8)   * t);
+    }
+    return { r, g, b, css: `rgb(${r}, ${g}, ${b})` };
+  }
+
   function renderVagas() {
     const pct = (vagasRestantes / VAGAS_TOTAL) * 100;
+    const pctFilled = 100 - pct; // 1 inscrito = ~1% preenchido (verde) / 100 = vermelho
     modoListaEspera = vagasRestantes <= 0;
 
     // Atualiza ambos os contadores (hero + modal)
     document.querySelectorAll('#vagasRemaining, #modalVagasRemaining').forEach(el => {
       el.textContent = vagasRestantes;
     });
+
+    // Barra com cor dinâmica (verde → amarelo → vermelho conforme enche a turma)
     document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
-      el.style.width = pct + '%';
+      if (modoListaEspera) {
+        // Esgotado: barra full vermelha
+        el.style.width = '100%';
+        el.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+        el.style.boxShadow = '0 0 12px rgba(239, 68, 68, .6)';
+      } else {
+        el.style.width = pct + '%';
+        const c1 = getUrgencyColor(pctFilled);
+        const c2 = getUrgencyColor(Math.min(100, pctFilled + 15));
+        el.style.background = `linear-gradient(90deg, ${c1.css}, ${c2.css})`;
+        el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
+      }
     });
+
     document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
       el.classList.toggle('is-waitlist', modoListaEspera);
       el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
