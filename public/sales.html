@@ -954,13 +954,16 @@
       gap: 6px 10px;
       padding: 11px 14px;
       background: rgba(0, 0, 0, .25);
-      border: 1px solid rgba(239, 68, 68, .35);
+      border: 1px solid rgba(255, 214, 10, .25);
       border-bottom: none;
       border-radius: 12px 12px 0 0;
       font-family: var(--font-h);
+      transition: border-color .35s ease;
     }
     /* Conteúdo do strip fica acima do fill */
     .hero__cta-pack__urgency > * { position: relative; z-index: 1; }
+    /* Crítico — quando >80% preenchido, strip fica vermelho pra urgência máxima */
+    .hero__cta-pack.is-critical .hero__cta-pack__urgency,
     .hero__cta-pack.is-waitlist .hero__cta-pack__urgency {
       border-color: rgba(239, 68, 68, .55);
     }
@@ -968,32 +971,35 @@
       display: inline-flex; align-items: center; gap: 6px;
       font-weight: 800;
       font-size: .68rem;
-      color: #ef4444;
+      color: var(--primary);
       text-transform: uppercase;
       letter-spacing: .12em;
+      transition: color .35s ease;
     }
     .hero__cta-pack .vagas-counter__label::before {
       content: '';
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--primary);
       animation: vagasDot 1.6s ease-in-out infinite;
+      transition: background .35s ease;
     }
-    .hero__cta-pack.is-waitlist .vagas-counter__label { color: #f59e0b; }
-    .hero__cta-pack.is-waitlist .vagas-counter__label::before {
-      background: #f59e0b;
-      animation-name: waitlistDot;
-    }
+    .hero__cta-pack.is-critical .vagas-counter__label,
+    .hero__cta-pack.is-waitlist .vagas-counter__label { color: #ef4444; }
+    .hero__cta-pack.is-critical .vagas-counter__label::before,
+    .hero__cta-pack.is-waitlist .vagas-counter__label::before { background: #ef4444; }
     .hero__cta-pack__count {
       font-weight: 800;
       font-size: .82rem;
       color: var(--text);
     }
     .hero__cta-pack__count strong {
-      color: #ef4444;
+      color: var(--text);
       font-size: 1rem;
+      transition: color .35s ease;
     }
-    .hero__cta-pack.is-waitlist .hero__cta-pack__count strong { color: #f59e0b; }
+    .hero__cta-pack.is-critical .hero__cta-pack__count strong,
+    .hero__cta-pack.is-waitlist .hero__cta-pack__count strong { color: #ef4444; }
     .hero__cta-pack__tail {
       font-size: .7rem;
       color: var(--text-mute);
@@ -6000,6 +6006,8 @@
 
     document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
       el.classList.toggle('is-waitlist', modoListaEspera);
+      // Crítico — só passa pra vermelho quando >80% da turma já está preenchida
+      el.classList.toggle('is-critical', !modoListaEspera && pctFilled >= 80);
       el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
     });
 
