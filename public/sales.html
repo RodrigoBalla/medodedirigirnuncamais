@@ -2270,6 +2270,139 @@
         radial-gradient(ellipse 30% 30% at 100% 100%, rgba(0, 0, 0, .35) 0%, transparent 70%);
       pointer-events: none;
     }
+    .modules-section > .container {
+      position: relative;
+      z-index: 2; /* acima do trail-bg-decor */
+    }
+
+    /* ── PLACAS DE TRÂNSITO NO FUNDO (decoração com opacidade) ── */
+    .trail-bg-decor {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .trail-bg-decor__sign {
+      position: absolute;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255, 214, 10, .03);
+      border: 2px dashed rgba(255, 214, 10, .14);
+      color: rgba(255, 214, 10, .14);
+      animation: signFloat 9s ease-in-out infinite;
+    }
+    .trail-bg-decor__sign .material-symbols-outlined {
+      font-size: 32px;
+    }
+    .trail-bg-decor__sign:nth-child(odd) {
+      animation-delay: -4.5s;
+      animation-duration: 11s;
+    }
+    .trail-bg-decor__sign--lg { width: 90px; height: 90px; }
+    .trail-bg-decor__sign--lg .material-symbols-outlined { font-size: 48px; }
+    .trail-bg-decor__sign--triangle {
+      border-radius: 8px;
+      transform: rotate(0);
+      width: 56px; height: 56px;
+      background: rgba(239, 68, 68, .04);
+      border-color: rgba(239, 68, 68, .18);
+      color: rgba(239, 68, 68, .22);
+    }
+    @keyframes signFloat {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50%      { transform: translateY(-8px) rotate(3deg); }
+    }
+    /* Rotatória GIGANTE girando lentamente no meio da seção */
+    .trail-bg-decor__roundabout {
+      position: absolute;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 214, 10, .12);
+      display: flex; align-items: center; justify-content: center;
+      animation: roundaboutSpin 60s linear infinite;
+      pointer-events: none;
+    }
+    .trail-bg-decor__roundabout::before {
+      content: '';
+      position: absolute;
+      inset: 30px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 214, 10, .08);
+    }
+    .trail-bg-decor__roundabout .material-symbols-outlined {
+      font-size: 80px;
+      color: rgba(255, 214, 10, .1);
+    }
+    @keyframes roundaboutSpin {
+      from { transform: translate(-50%, -50%) rotate(0); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trail-bg-decor__sign,
+      .trail-bg-decor__roundabout { animation: none; }
+    }
+
+    /* ── CRUZAMENTOS NA PISTA (faixa horizontal cruzando a estrada) ── */
+    .trail-crossing {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 36px;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        /* faixa lateral cruzada — outra estrada */
+        linear-gradient(90deg,
+          transparent 0%,
+          #0a1124 10%,
+          #1a2540 25%,
+          #232f54 50%,
+          #1a2540 75%,
+          #0a1124 90%,
+          transparent 100%
+        );
+      border-radius: 4px;
+    }
+    /* Faixas de pedestre (zebrado) sobre o cruzamento */
+    .trail-crossing::before {
+      content: '';
+      position: absolute;
+      inset: 4px 30px;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, .25) 0px,
+        rgba(255, 255, 255, .25) 5px,
+        transparent 5px,
+        transparent 10px
+      );
+      border-radius: 2px;
+    }
+    /* Placa colada no cruzamento */
+    .trail-crossing__sign {
+      position: absolute;
+      top: -22px; left: 50%;
+      transform: translateX(-50%);
+      width: 22px; height: 22px;
+      background: rgba(255, 214, 10, .9);
+      color: #0B1A38;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: .72rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+      animation: signPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes signPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50%      { transform: translateX(-50%) scale(1.1); }
+    }
     /* Trilha — pista de asfalto vertical com fases zigzagueando */
     .trail-grid {
       position: relative;
@@ -5688,6 +5821,24 @@
 
 <!-- ─── MODULES (Trilha Completa) ─── -->
 <section class="modules-section">
+  <!-- Decoração: placas de trânsito de fundo + rotatória girando -->
+  <div class="trail-bg-decor" aria-hidden="true">
+    <span class="trail-bg-decor__sign" style="top:8%;left:6%"><span class="material-symbols-outlined">traffic</span></span>
+    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:14%;right:9%"><span class="material-symbols-outlined">priority_high</span></span>
+    <span class="trail-bg-decor__sign" style="top:24%;left:11%"><span class="material-symbols-outlined">signpost</span></span>
+    <span class="trail-bg-decor__sign trail-bg-decor__sign--lg" style="top:33%;right:5%"><span class="material-symbols-outlined">roundabout_right</span></span>
+    <span class="trail-bg-decor__sign" style="top:48%;left:4%"><span class="material-symbols-outlined">local_parking</span></span>
+    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:56%;right:13%"><span class="material-symbols-outlined">do_not_disturb_on</span></span>
+    <span class="trail-bg-decor__sign" style="top:67%;left:8%"><span class="material-symbols-outlined">merge</span></span>
+    <span class="trail-bg-decor__sign" style="top:76%;right:6%"><span class="material-symbols-outlined">straight</span></span>
+    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:85%;left:12%"><span class="material-symbols-outlined">warning</span></span>
+    <span class="trail-bg-decor__sign" style="top:91%;right:10%"><span class="material-symbols-outlined">u_turn_right</span></span>
+    <!-- Rotatória decorativa girando lentamente atrás da pista -->
+    <div class="trail-bg-decor__roundabout">
+      <span class="material-symbols-outlined">roundabout_right</span>
+    </div>
+  </div>
+
   <div class="container">
     <p class="eyebrow text-center">A trilha</p>
     <h2 class="section-title text-center">7 fases até <span>dirigir sozinha</span></h2>
@@ -5695,6 +5846,14 @@
     <div class="trail-grid" id="trailGrid">
       <!-- Linha cinza tracejada cobre o trecho "em breve" (depois fase 3) -->
       <div class="trail-grid__future"></div>
+
+      <!-- Cruzamentos: outra rua cruzando a pista, com faixa de pedestre -->
+      <div class="trail-crossing" style="top:22%">
+        <span class="trail-crossing__sign">!</span>
+      </div>
+      <div class="trail-crossing" style="top:62%">
+        <span class="trail-crossing__sign">!</span>
+      </div>
 
       <!-- Carrinho que segue o scroll -->
       <div class="trail-car" id="trailCar" data-direction="down" aria-hidden="true">
