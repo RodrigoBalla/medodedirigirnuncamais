@@ -619,10 +619,9 @@
     }
     .hero__sub strong { color: var(--text); font-weight: 600; }
 
-    /* ====== PRICE BOX (limpo) ======
-       Hierarquia vertical clara: chip de oferta → preço antigo + desconto → preço novo + bônus
-       → trust bar. Apenas a cor primária da marca (azul) com um único acento vermelho contido
-       no chip de desconto. Nenhuma animação dentro do card — o pulse fica só no CTA. */
+    /* ====== PRICE BOX (reorganizado) ======
+       Hierarquia: header (oferta + desconto) → preço antigo com economia →
+       preço novo gigante com pagamento único → trust bar com ícones. */
     .hero__price-box {
       position: relative;
       background:
@@ -630,18 +629,21 @@
         linear-gradient(180deg, var(--surface), var(--bg-2));
       border: 1px solid var(--border-strong);
       border-radius: 18px;
-      padding: 22px 24px 20px;
-      margin-bottom: 22px;
+      padding: 18px 24px 16px;
+      margin-bottom: 16px;
       display: flex; flex-direction: column;
-      gap: 10px;
+      gap: 14px;
       box-shadow:
         0 12px 32px rgba(15, 23, 42, .12),
         0 0 0 1px var(--primary-soft) inset;
     }
-    /* Linha 1 — chip de oferta */
+    /* Linha 1 — header: oferta + desconto na mesma linha */
+    .hero__price-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
     .hero__price-tag {
       display: inline-flex; align-items: center; gap: 6px;
-      width: fit-content;
       font-family: var(--font-h);
       font-size: .68rem;
       font-weight: 800;
@@ -657,9 +659,25 @@
       content: '⚡';
       font-size: .85rem;
     }
-    /* Linha 2 — preço antigo + chip vermelho de desconto */
-    .hero__price-old-row {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    .hero__price-discount {
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: #FFF;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      padding: 5px 11px;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(239, 68, 68, .35);
+    }
+    /* Linha 2 — preços: antigo (com economia) + novo (gigante) */
+    .hero__price-main {
+      display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap;
+    }
+    .hero__price-old-block {
+      display: flex; flex-direction: column;
+      gap: 2px;
+      padding-bottom: 6px;
     }
     .hero__price-old {
       font-size: 1rem;
@@ -668,22 +686,23 @@
       text-decoration-color: var(--danger);
       text-decoration-thickness: 2px;
       font-weight: 600;
+      line-height: 1.1;
     }
-    .hero__price-discount {
-      font-family: var(--font-h);
-      font-size: .68rem;
+    .hero__price-savings {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .78rem;
+      color: #10b981;
       font-weight: 800;
-      letter-spacing: .08em;
-      color: #FFF;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      padding: 4px 10px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(239, 68, 68, .35);
+      letter-spacing: .02em;
+      text-transform: uppercase;
     }
-    /* Linha 3 — preço novo gigante + sublinha de bônus */
-    .hero__price-main {
-      display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-      margin-top: 2px;
+    .hero__price-savings::before {
+      content: '↓';
+      font-size: .9rem;
+      font-weight: 900;
+    }
+    .hero__price-now {
+      display: flex; align-items: baseline; gap: 12px; flex: 1;
     }
     .hero__price-val {
       display: inline-flex; align-items: flex-start; gap: 4px;
@@ -719,46 +738,44 @@
       line-height: 1;
       font-weight: 800;
       margin-top: 8px;
-      /* Reaplica o gradient explicitamente para garantir que o R$ apareça */
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero__price-bonus {
+    .hero__price-meta {
+      display: flex; flex-direction: column;
+      line-height: 1.25;
+      padding-bottom: 8px;
+    }
+    .hero__price-meta strong {
+      font-family: var(--font-h);
+      font-weight: 800;
       font-size: .92rem;
       color: var(--text);
-      font-weight: 600;
-      line-height: 1.3;
+      letter-spacing: .01em;
     }
-    .hero__price-bonus strong {
-      color: var(--primary);
-      font-weight: 800;
-    }
-    .hero__price-bonus-sub {
-      display: block;
-      font-size: .78rem;
+    .hero__price-meta span {
+      font-size: .76rem;
       color: var(--text-mute);
       font-weight: 500;
-      margin-top: 2px;
     }
-    /* Linha 4 — trust bar */
+    /* Linha 3 — trust bar com ícones */
     .hero__price-trust {
       display: flex; align-items: center; flex-wrap: wrap;
-      gap: 6px 16px;
-      margin-top: 10px;
-      padding-top: 12px;
+      gap: 8px 18px;
+      padding-top: 14px;
       border-top: 1px solid var(--border);
       font-size: .8rem;
       color: var(--text-mute);
-      font-weight: 500;
+      font-weight: 600;
     }
     .hero__price-trust span {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex; align-items: center; gap: 6px;
     }
-    .hero__price-trust span strong {
-      color: var(--text);
-      font-weight: 600;
+    .hero__price-trust .material-symbols-outlined {
+      font-size: 17px;
+      color: var(--primary);
     }
 
     /* ====== VAGAS LIMITADAS ======
@@ -4430,25 +4447,32 @@
         </p>
 
         <div class="hero__price-box">
-          <span class="hero__price-tag">Oferta de lançamento</span>
-
-          <div class="hero__price-old-row">
-            <span class="hero__price-old">De R$ 197,00</span>
+          <!-- Header: oferta + desconto na mesma linha -->
+          <div class="hero__price-header">
+            <span class="hero__price-tag">Oferta de lançamento</span>
             <span class="hero__price-discount">−51% OFF</span>
           </div>
 
+          <!-- Preços: antigo (com economia) + novo (gigante) -->
           <div class="hero__price-main">
-            <span class="hero__price-val"><sup>R$</sup>97</span>
-            <span class="hero__price-bonus">
-              <strong>App completo + Bônus exclusivos</strong>
-              <span class="hero__price-bonus-sub">Pagamento único · Sem mensalidade</span>
-            </span>
+            <div class="hero__price-old-block">
+              <span class="hero__price-old">De R$ 197</span>
+              <span class="hero__price-savings">economiza R$ 100</span>
+            </div>
+            <div class="hero__price-now">
+              <span class="hero__price-val"><sup>R$</sup>97</span>
+              <span class="hero__price-meta">
+                <strong>Pagamento único</strong>
+                <span>sem mensalidade</span>
+              </span>
+            </div>
           </div>
 
+          <!-- Trust bar com ícones próprios da marca -->
           <div class="hero__price-trust">
-            <span>✓ <strong>Acesso imediato</strong></span>
-            <span>🔒 Garantia de 7 dias</span>
-            <span>📱 Use no celular</span>
+            <span><span class="material-symbols-outlined">bolt</span> Acesso imediato</span>
+            <span><span class="material-symbols-outlined">verified_user</span> 7 dias de garantia</span>
+            <span><span class="material-symbols-outlined">smartphone</span> 100% no celular</span>
           </div>
         </div>
 
