@@ -2572,6 +2572,43 @@
     @media (prefers-reduced-motion: reduce) {
       .trail-car { display: none; }
     }
+
+    /* SERPENTINAS — chovem amarelas e pretas quando o carro chega no fim */
+    .confetti-burst {
+      position: absolute;
+      top: 0; left: -20%; right: -20%;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 5;
+      overflow: visible;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: -30px;
+      width: 9px;
+      height: 16px;
+      border-radius: 2px;
+      will-change: transform, opacity;
+      animation: confettiFall linear forwards;
+    }
+    .confetti-piece--streamer {
+      width: 4px;
+      height: 36px;
+      border-radius: 4px;
+    }
+    .confetti-piece--circle {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+      8%   { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(960deg) translateX(var(--drift, 30px)); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .confetti-burst { display: none; }
+    }
     .trail-step {
       position: relative;
       display: grid;
@@ -2663,6 +2700,47 @@
       border-color: var(--primary);
       transform: translateY(-2px);
       box-shadow: 0 18px 44px rgba(0, 0, 0, .4), 0 0 0 1px var(--primary-soft) inset;
+    }
+    /* HIGHLIGHT — quando o carro passa, a aula fica AMARELA */
+    .trail-step.is-highlighted .trail-step__card {
+      background: linear-gradient(160deg, rgba(255, 214, 10, .12) 0%, var(--surface) 100%);
+      border-color: var(--primary);
+      box-shadow:
+        0 0 0 2px var(--primary),
+        0 18px 50px rgba(255, 214, 10, .25),
+        0 0 0 1px rgba(255, 214, 10, .15) inset;
+      transform: translateY(-3px) scale(1.015);
+    }
+    .trail-step.is-highlighted .trail-step__title {
+      color: var(--primary);
+    }
+    .trail-step.is-highlighted .trail-step__icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-color: var(--primary);
+      color: #0B1A38;
+      transform: scale(1.1) rotate(-4deg);
+      box-shadow: 0 8px 24px var(--primary-glow);
+    }
+    .trail-step.is-highlighted .trail-step__milestone {
+      transform: scale(1.18);
+      box-shadow:
+        0 0 0 6px var(--bg),
+        0 12px 36px var(--primary-glow),
+        0 0 24px var(--primary),
+        inset 0 1px 0 rgba(255, 255, 255, .4);
+    }
+    .trail-step.is-highlighted .trail-step__badge--live {
+      background: var(--primary);
+      color: #0B1A38;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .trail-step .trail-step__card,
+    .trail-step .trail-step__title,
+    .trail-step .trail-step__icon,
+    .trail-step .trail-step__milestone,
+    .trail-step .trail-step__badge--live {
+      transition: all .4s cubic-bezier(.32, 1.2, .35, 1);
     }
     /* Conteúdo do card */
     .trail-step__icon {
@@ -5844,8 +5922,8 @@
     <h2 class="section-title text-center">7 fases até <span>dirigir sozinha</span></h2>
 
     <div class="trail-grid" id="trailGrid">
-      <!-- Linha cinza tracejada cobre o trecho "em breve" (depois fase 3) -->
-      <div class="trail-grid__future"></div>
+      <!-- Container das serpentinas amarelas/pretas que caem quando o carro chega -->
+      <div class="confetti-burst" id="trailConfetti" aria-hidden="true"></div>
 
       <!-- Cruzamentos: outra rua cruzando a pista, com faixa de pedestre -->
       <div class="trail-crossing" style="top:22%">
@@ -5873,68 +5951,68 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">airline_seat_recline_normal</span></div>
           <h3 class="trail-step__title">Conhecendo o carro</h3>
-          <p class="trail-step__text">Banco, retrovisores, pedais. Comece sentindo o carro como seu.</p>
-          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+          <p class="trail-step__text">Painel, banco, retrovisores. Você se sente em casa antes de ligar.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 01</span>
         </div>
       </div>
 
       <div class="trail-step">
         <div class="trail-step__milestone">02</div>
         <div class="trail-step__card">
-          <div class="trail-step__icon"><span class="material-symbols-outlined filled">footprint</span></div>
-          <h3 class="trail-step__title">O jogo dos pés</h3>
-          <p class="trail-step__text">Embreagem, freio, acelerador. Sai sem matar o carro.</p>
-          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">accessibility_new</span></div>
+          <h3 class="trail-step__title">Postura e cinto</h3>
+          <p class="trail-step__text">Ergonomia certa pra dirigir relaxado. Cinto, espelhos, posição.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 02</span>
         </div>
       </div>
 
       <div class="trail-step">
         <div class="trail-step__milestone">03</div>
         <div class="trail-step__card">
-          <div class="trail-step__icon"><span class="material-symbols-outlined filled">explore</span></div>
-          <h3 class="trail-step__title">Fluidez e direção</h3>
-          <p class="trail-step__text">Volante, curvas, troca de marcha. Você no controle.</p>
-          <span class="trail-step__badge trail-step__badge--live">Disponível</span>
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">footprint</span></div>
+          <h3 class="trail-step__title">O jogo dos pés</h3>
+          <p class="trail-step__text">Embreagem, freio, acelerador. Você sai sem matar o carro.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 03</span>
         </div>
       </div>
 
-      <div class="trail-step trail-step--soon">
+      <div class="trail-step">
         <div class="trail-step__milestone">04</div>
         <div class="trail-step__card">
-          <div class="trail-step__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
-          <h3 class="trail-step__title">Modo Automático</h3>
-          <p class="trail-step__text">Câmbio automático: D, R, P, N. Sem mistério.</p>
-          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">explore</span></div>
+          <h3 class="trail-step__title">Direção e curvas</h3>
+          <p class="trail-step__text">Volante seguro em qualquer curva. Mãos certas, olhar longe.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 04</span>
         </div>
       </div>
 
-      <div class="trail-step trail-step--soon">
+      <div class="trail-step">
         <div class="trail-step__milestone">05</div>
         <div class="trail-step__card">
-          <div class="trail-step__icon"><span class="material-symbols-outlined filled">traffic</span></div>
-          <h3 class="trail-step__title">Trânsito real</h3>
-          <p class="trail-step__text">Primeiros metros na rua. Foco, calma e prática.</p>
-          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+          <div class="trail-step__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
+          <h3 class="trail-step__title">Câmbio: marchas e automático</h3>
+          <p class="trail-step__text">Manual sem matar o carro + D, R, P, N do automático.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 05</span>
         </div>
       </div>
 
-      <div class="trail-step trail-step--soon">
+      <div class="trail-step">
         <div class="trail-step__milestone">06</div>
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">altitude</span></div>
-          <h3 class="trail-step__title">Ladeira e baliza</h3>
-          <p class="trail-step__text">Saída em rampa, freio de mão, manobras. Sem trava.</p>
-          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+          <h3 class="trail-step__title">Saída em rampa e baliza</h3>
+          <p class="trail-step__text">Ladeira sem rolar pra trás + manobra de baliza sem trava.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 06</span>
         </div>
       </div>
 
-      <div class="trail-step trail-step--soon">
+      <div class="trail-step">
         <div class="trail-step__milestone">07</div>
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
-          <h3 class="trail-step__title">Prova do Detran</h3>
-          <p class="trail-step__text">Simulado prático. Você passa sem decoreba.</p>
-          <span class="trail-step__badge trail-step__badge--soon">Em breve</span>
+          <h3 class="trail-step__title">Trânsito real e prova prática</h3>
+          <p class="trail-step__text">Rua de verdade + simulado Detran. Você passa sem decoreba.</p>
+          <span class="trail-step__badge trail-step__badge--live">Aula 07</span>
         </div>
       </div>
     </div>
@@ -6582,17 +6660,47 @@
   })();
 
   // ── TRAIL CAR (carrinho que segue o scroll na trilha) ─
-  // Carrinho desce/sobe na pista conforme o usuário scrolla a página.
-  // Vira (rotate +90/-90) na mudança de direção.
-  // Quando chega no fim da trilha, para e o motorista comemora.
+  // Carrinho desce/sobe na pista, vira na mudança de direção, destaca a
+  // aula que está passando, e quando chega no fim solta serpentinas.
   (function() {
     const trail = document.getElementById('trailGrid');
     const car = document.getElementById('trailCar');
+    const confettiContainer = document.getElementById('trailConfetti');
     if (!trail || !car) return;
+
+    const steps = trail.querySelectorAll('.trail-step');
 
     let lastScroll = window.scrollY;
     let arrived = false;
     let raf = null;
+
+    // Cria UMA serpentina (peça de confetti)
+    function makeConfettiPiece() {
+      if (!confettiContainer) return;
+      const colors = ['#FFD60A', '#000000', '#FFD60A', '#1a1a1a', '#FFD60A'];
+      const variants = ['', '--streamer', '--circle'];
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece' + (variants[Math.floor(Math.random() * variants.length)]
+        ? ' confetti-piece' + variants[Math.floor(Math.random() * variants.length)]
+        : '');
+      piece.style.left = (Math.random() * 100) + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.6) + 's';
+      piece.style.animationDuration = (2.4 + Math.random() * 2.5) + 's';
+      piece.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+      confettiContainer.appendChild(piece);
+      // Remove após 5s pra não acumular
+      setTimeout(() => piece.remove(), 5500);
+    }
+    function spawnConfetti(count) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(makeConfettiPiece, i * 30);
+      }
+    }
+    function clearConfetti() {
+      if (!confettiContainer) return;
+      confettiContainer.innerHTML = '';
+    }
 
     function update() {
       raf = null;
@@ -6607,7 +6715,8 @@
       progress = Math.max(0, Math.min(1, progress));
 
       // Posição vertical do carro
-      car.style.top = `${progress * trailH}px`;
+      const carY = progress * trailH;
+      car.style.top = `${carY}px`;
 
       // Direção do scroll → vira o carro
       const dy = window.scrollY - lastScroll;
@@ -6619,11 +6728,28 @@
         lastScroll = window.scrollY;
       }
 
-      // Estado "chegou" — quando passa de 92% da trilha (perto do último marker)
-      const justArrived = progress > 0.92;
+      // Highlight da AULA mais próxima do carro
+      let nearest = null, minDist = Infinity;
+      steps.forEach(step => {
+        const center = step.offsetTop + step.offsetHeight / 2;
+        const d = Math.abs(carY - center);
+        if (d < minDist) { minDist = d; nearest = step; }
+      });
+      steps.forEach(s => {
+        s.classList.toggle('is-highlighted', s === nearest && minDist < 120);
+      });
+
+      // Estado "chegou" — quando passa de 90% da trilha (perto do último marker)
+      const justArrived = progress > 0.9;
       if (justArrived !== arrived) {
         arrived = justArrived;
         car.classList.toggle('is-arrived', arrived);
+        if (arrived) {
+          // 🎉 CHUVA DE SERPENTINAS amarelas e pretas
+          spawnConfetti(80);
+        } else {
+          clearConfetti();
+        }
       }
     }
 
