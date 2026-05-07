@@ -3379,22 +3379,28 @@
     .testi-col__inner--slow   { animation-duration: 22s; }
     .testi-col__inner--medium { animation-duration: 26s; }
     .testi-col__inner--fast   { animation-duration: 30s; }
-    /* ── Cards no estilo WhatsApp Dark ──
-       Card outer = "tela do app". Avatar à esquerda + nome em verde estilo
-       username de grupo + bolha verde escura com tail no canto inferior
-       esquerdo + timestamp + check azul "lida". */
+    /* ── Cards no estilo WhatsApp Dark — conversa real ──
+       Cada card é uma "tela de chat aberta": header com avatar+nome em
+       cima, e bolhas alternadas (aluno IN à esquerda + Carla OUT à direita)
+       imitando uma conversa de verdade — múltiplas mensagens curtas em
+       sequência, com timestamp por mensagem. */
     .testi-card {
       background: #0b141a;
       border: 1px solid rgba(134, 150, 160, .12);
       border-radius: 12px;
-      padding: 12px 12px 14px;
+      padding: 0;
       box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+      overflow: hidden;
     }
-    .testi-card__row {
-      display: flex; gap: 8px; align-items: flex-start;
+    /* Header com avatar + nome (estilo barra de topo do WhatsApp) */
+    .testi-card__head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: #1f2c33;
+      border-bottom: 1px solid rgba(134, 150, 160, .08);
     }
     .testi-card__avatar {
-      width: 38px; height: 38px;
+      width: 36px; height: 36px;
       border-radius: 50%;
       flex-shrink: 0;
       overflow: hidden;
@@ -3405,61 +3411,96 @@
       object-fit: cover;
       display: block;
     }
-    .testi-card__bubble-wrap {
+    .testi-card__head-text {
       flex: 1; min-width: 0;
     }
-    .testi-card__name-line {
-      display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
-      margin: 2px 0 5px;
-      padding-left: 12px;
-      font-family: var(--font-h);
-    }
     .testi-card__name {
+      font-family: var(--font-h);
       font-weight: 700;
-      font-size: .82rem;
-      color: #06cf9c;
-      letter-spacing: -.01em;
+      font-size: .85rem;
+      color: #e9edef;
+      line-height: 1.1;
     }
     .testi-card__role {
-      font-size: .7rem;
-      color: rgba(233, 237, 239, .5);
+      font-size: .68rem;
+      color: rgba(233, 237, 239, .55);
+      margin-top: 2px;
       font-weight: 500;
     }
-    .testi-card__bubble {
+    /* Área de chat — bolhas empilhadas */
+    .testi-card__chat {
+      display: flex; flex-direction: column;
+      gap: 3px;
+      padding: 12px;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .015) 0%, transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, .012) 0%, transparent 50%),
+        #0b141a;
+    }
+    /* Bolha base */
+    .testi-msg {
       position: relative;
-      background: #005c4b;
-      color: #e9edef;
-      padding: 8px 12px 6px;
-      border-radius: 0 8px 8px 8px;
+      padding: 6px 10px 4px;
+      max-width: 88%;
+      width: fit-content;
       box-shadow: 0 1px 1px rgba(0, 0, 0, .25);
     }
-    .testi-card__bubble::before {
+    .testi-msg__text {
+      margin: 0;
+      color: #e9edef;
+      font-family: var(--font-b);
+      font-size: .88rem;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .testi-msg__meta {
+      display: flex; align-items: center; gap: 3px;
+      justify-content: flex-end;
+      margin-top: 2px;
+      font-size: .62rem;
+      color: rgba(233, 237, 239, .55);
+      font-weight: 500;
+    }
+    .testi-msg__meta svg { flex-shrink: 0; }
+    /* Mensagem recebida (do aluno, à esquerda, cinza) */
+    .testi-msg--in {
+      background: #202c33;
+      border-radius: 0 8px 8px 8px;
+      align-self: flex-start;
+    }
+    .testi-msg--in::before {
       content: '';
       position: absolute;
       left: -6px; top: 0;
       width: 8px; height: 13px;
-      background: #005c4b;
+      background: #202c33;
       clip-path: polygon(100% 0, 0 0, 100% 100%);
     }
-    .testi-card__text {
-      font-size: .9rem;
-      line-height: 1.45;
-      color: #e9edef;
-      margin: 0;
-      word-wrap: break-word;
-      font-family: var(--font-b);
+    /* Mensagem enviada (Carla respondendo, à direita, verde) */
+    .testi-msg--out {
+      background: #005c4b;
+      border-radius: 8px 0 8px 8px;
+      align-self: flex-end;
     }
-    .testi-card__meta {
-      display: flex; align-items: center; gap: 3px;
-      justify-content: flex-end;
-      margin-top: 3px;
-      font-size: .66rem;
-      color: rgba(233, 237, 239, .6);
-      font-weight: 500;
+    .testi-msg--out::before {
+      content: '';
+      position: absolute;
+      right: -6px; top: 0;
+      width: 8px; height: 13px;
+      background: #005c4b;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
     }
-    .testi-card__meta svg {
-      flex-shrink: 0;
+    /* Mensagens consecutivas do mesmo lado: sem tail, full radius */
+    .testi-msg--in + .testi-msg--in {
+      border-radius: 8px;
+      margin-top: -1px;
     }
+    .testi-msg--in + .testi-msg--in::before { display: none; }
+    .testi-msg--out + .testi-msg--out {
+      border-radius: 8px;
+      margin-top: -1px;
+    }
+    .testi-msg--out + .testi-msg--out::before { display: none; }
 
     /* ─── GUARANTEE ────────────────────────────────────── */
     .guarantee-section {
@@ -6012,44 +6053,160 @@
   // Fotos: i.pravatar.cc (serviço gratuito de fotos de perfil reais).
   // Cada `?img=NN` é uma foto fixa diferente (não muda no reload).
   (function() {
+    // Cada testimonial agora é uma CONVERSA real: várias mensagens curtas
+    // do aluno (in) + uma resposta da Carla (out), como WhatsApp de verdade.
     const testimonials = [
-      { text: "Tirei minha carteira em 2018 e nunca dirigi. O app me ajudou a pegar coragem... em 3 semanas fiz meu primeiro trajeto sozinha. Chorei no volante 😭 obrigada Carla", name: "Marina S., 38", role: "São Paulo", photo: "https://i.pravatar.cc/150?img=44", time: "14:32" },
-      { text: "Achei q ia ser mais um curso q eu ia abandonar kkk. Mas a forma q td é dividido em fases pequenas mudou tudo. Hoje vou pro trabalho dirigindo sem ansiedade ❤️", name: "Camila R., 29", role: "Belo Horizonte", photo: "https://i.pravatar.cc/150?img=49", time: "ontem" },
-      { text: "Comprei pra minha esposa, mas acabei usando junto. Cara, mudou minha relação com o volante tbm. Quem disse que homem nao tem medo? Tem sim 😅", name: "Carlos M., 45", role: "Brasília", photo: "https://i.pravatar.cc/150?img=12", time: "09:15" },
-      { text: "Em 28 dias passei de 'nao consigo nem entrar no carro' pra dirigir ate a casa da minha mae sozinha. Funciona msm 🙌", name: "Juliana M., 33", role: "Rio de Janeiro", photo: "https://i.pravatar.cc/150?img=23", time: "21:48" },
-      { text: "Ja tinha feito 4 cursos antes desse. Foi o unico q entendeu q o problema nao era tecnica, era a cabeça. Recomendo dms", name: "Roberto F., 52", role: "Porto Alegre", photo: "https://i.pravatar.cc/150?img=68", time: "08:03" },
-      { text: "Comecei sem confiança nenhuma e em 2 meses dirigi até a praia nas férias. Coisa q nem nos meus melhores sonhos eu faria antes 😍", name: "Larissa C., 31", role: "Fortaleza", photo: "https://i.pravatar.cc/150?img=47", time: "ontem" },
-      { text: "Tirei minha CNH com 60 anos. Achei q era tarde demais... mas a Carla me mostrou q nao tem idade pra isso. Hoje saio sozinha pra padaria e volto sem tremer. Obg de coração 🙏", name: "Lúcia M., 62", role: "Recife", photo: "https://i.pravatar.cc/150?img=45", time: "16:20" },
-      { text: "O preço foi o q mais me chamou atenção. Por menos do q 2 aulas de auto escola peguei o programa todo, vitalício. Sem mensalidade. Tá de boa demais", name: "Fernando P., 38", role: "Salvador", photo: "https://i.pravatar.cc/150?img=33", time: "12:47" },
-      { text: "Sou mãe e dependia do meu marido pra td. Hoje levo minha filha na escola, vou no mercado, medico. Liberdade de vdd 💛", name: "Aline N., 42", role: "Salvador", photo: "https://i.pravatar.cc/150?img=10", time: "ontem" },
-      { text: "A gamificação me prendeu. Cada conquista q eu destravava era um passo a mais... quando vi ja tava na rua dirigindo 🚗", name: "Beatriz O., 27", role: "Campinas", photo: "https://i.pravatar.cc/150?img=16", time: "19:55" },
-      { text: "Comprei depois de anos travada. A turma foi o diferencial — saber q tem outras pessoas na mesma jornada me deu uma força q eu nao tinha sozinha", name: "Patrícia L., 47", role: "Curitiba", photo: "https://i.pravatar.cc/150?img=24", time: "10:08" },
-      { text: "Reprovei na prova prática 2x antes de comprar. Achei q nunca ia conseguir mais... refiz tudo no app, fui na 3a tentativa e PASSEI 🎉 obrigado!!", name: "Diego A., 24", role: "Goiânia", photo: "https://i.pravatar.cc/150?img=51", time: "22:14" }
+      {
+        name: "Marina S., 38", role: "São Paulo", photo: "https://i.pravatar.cc/150?img=44",
+        msgs: [
+          { who: 'in',  t: 'Carla, lembra de mim?',                                              time: '14:32' },
+          { who: 'in',  t: 'tirei minha carteira em 2018 e nunca dirigi 😔',                     time: '14:32' },
+          { who: 'in',  t: 'fiz seu programa em 3 semanas e tô dirigindo SOZINHA 😭',            time: '14:33' },
+          { who: 'in',  t: 'obrigada de coração ❤️',                                              time: '14:33' },
+          { who: 'out', t: 'Marina meu Deus 🥹 lembro SIMM',                                     time: '14:38' }
+        ]
+      },
+      {
+        name: "Camila R., 29", role: "Belo Horizonte", photo: "https://i.pravatar.cc/150?img=49",
+        msgs: [
+          { who: 'in',  t: 'achei q ia ser mais um curso q eu ia abandonar kkk',                 time: 'ontem' },
+          { who: 'in',  t: 'mas a forma q td é dividido em fases pequenas mudou tudo',           time: 'ontem' },
+          { who: 'in',  t: 'hj vou pro trabalho dirigindo, sem ansiedade ❤️',                    time: 'ontem' },
+          { who: 'out', t: 'Camilaaa que alegria ler isso 🥲',                                    time: 'ontem' }
+        ]
+      },
+      {
+        name: "Carlos M., 45", role: "Brasília", photo: "https://i.pravatar.cc/150?img=12",
+        msgs: [
+          { who: 'in',  t: 'comprei pra minha esposa kkk',                                       time: '09:15' },
+          { who: 'in',  t: 'mas acabei usando junto',                                            time: '09:15' },
+          { who: 'in',  t: 'mudou minha relação com o volante tbm',                              time: '09:16' },
+          { who: 'in',  t: 'quem disse q homem nao tem medo? tem sim 😅',                         time: '09:16' },
+          { who: 'out', t: 'kkkkk amei isso Carlos!',                                            time: '09:22' }
+        ]
+      },
+      {
+        name: "Juliana M., 33", role: "Rio de Janeiro", photo: "https://i.pravatar.cc/150?img=23",
+        msgs: [
+          { who: 'in',  t: 'Carla bom dia',                                                      time: '21:48' },
+          { who: 'in',  t: 'tô passando só pra agradecer',                                       time: '21:48' },
+          { who: 'in',  t: "em 28 dias sai de 'nao consigo nem entrar no carro'",                 time: '21:49' },
+          { who: 'in',  t: 'pra dirigir ate a casa da minha mãe 🙌',                              time: '21:49' },
+          { who: 'in',  t: 'FUNCIONA msm!!',                                                     time: '21:50' },
+          { who: 'out', t: 'Juliana queridaaa 💛 manda foto da viagem hein',                      time: '21:55' }
+        ]
+      },
+      {
+        name: "Roberto F., 52", role: "Porto Alegre", photo: "https://i.pravatar.cc/150?img=68",
+        msgs: [
+          { who: 'in',  t: 'ja tinha feito 4 cursos antes do seu',                               time: '08:03' },
+          { who: 'in',  t: 'esse foi o unico q entendeu',                                        time: '08:03' },
+          { who: 'in',  t: 'q o problema nao era tecnica',                                       time: '08:04' },
+          { who: 'in',  t: 'era a cabeça',                                                       time: '08:04' },
+          { who: 'in',  t: 'recomendo dms 👏',                                                    time: '08:04' },
+          { who: 'out', t: 'Roberto, é exatamente isso 🙏',                                       time: '08:10' }
+        ]
+      },
+      {
+        name: "Larissa C., 31", role: "Fortaleza", photo: "https://i.pravatar.cc/150?img=47",
+        msgs: [
+          { who: 'in',  t: 'Carlaaa AMEI o programa',                                            time: 'ontem' },
+          { who: 'in',  t: 'comecei sem confiança nenhuma',                                      time: 'ontem' },
+          { who: 'in',  t: 'em 2 meses dirigi até a praia nas férias 😍',                         time: 'ontem' },
+          { who: 'in',  t: 'coisa q nem nos meus melhores sonhos eu faria antes',                time: 'ontem' },
+          { who: 'out', t: 'Larissa eu amo isso 💛 quero ver foto da praia!',                     time: 'ontem' }
+        ]
+      },
+      {
+        name: "Lúcia M., 62", role: "Recife", photo: "https://i.pravatar.cc/150?img=45",
+        msgs: [
+          { who: 'in',  t: 'Tirei minha CNH com 60 anos',                                        time: '16:20' },
+          { who: 'in',  t: 'achei q era tarde demais...',                                        time: '16:20' },
+          { who: 'in',  t: 'mas vc me mostrou q nao tem idade pra isso',                         time: '16:21' },
+          { who: 'in',  t: 'hj saio sozinha pra padaria e volto sem tremer',                     time: '16:21' },
+          { who: 'in',  t: 'obrigada de coração 🙏',                                              time: '16:22' },
+          { who: 'out', t: 'Dona Lúcia 🥹 a senhora é minha inspiração',                          time: '16:30' }
+        ]
+      },
+      {
+        name: "Fernando P., 38", role: "Salvador", photo: "https://i.pravatar.cc/150?img=33",
+        msgs: [
+          { who: 'in',  t: 'Olha',                                                               time: '12:47' },
+          { who: 'in',  t: 'comprei pq o preço foi um insulto kkk',                              time: '12:47' },
+          { who: 'in',  t: 'por menos do q 2 aulas de auto escola peguei o programa todo',       time: '12:48' },
+          { who: 'in',  t: 'vitalício, sem mensalidade',                                         time: '12:48' },
+          { who: 'in',  t: 'tá de boa demais',                                                   time: '12:48' },
+          { who: 'out', t: 'kkkk Fernando vc é demais',                                          time: '12:55' }
+        ]
+      },
+      {
+        name: "Aline N., 42", role: "Salvador", photo: "https://i.pravatar.cc/150?img=10",
+        msgs: [
+          { who: 'in',  t: 'sou mãe de 2 e dependia do meu marido pra tudo',                     time: 'ontem' },
+          { who: 'in',  t: 'hj levo minha filha na escola',                                      time: 'ontem' },
+          { who: 'in',  t: 'vou no mercado, medico, aniversário',                                time: 'ontem' },
+          { who: 'in',  t: 'liberdade de vdd 💛',                                                 time: 'ontem' },
+          { who: 'out', t: 'Aline, isso aqui é o que me move 🥲',                                 time: 'ontem' }
+        ]
+      },
+      {
+        name: "Beatriz O., 27", role: "Campinas", photo: "https://i.pravatar.cc/150?img=16",
+        msgs: [
+          { who: 'in',  t: 'a parte de fases me prendeu',                                        time: '19:55' },
+          { who: 'in',  t: 'cada conquista q eu destravava era um passo a mais',                 time: '19:55' },
+          { who: 'in',  t: 'qnd vi ja tava na rua dirigindo 🚗',                                  time: '19:56' },
+          { who: 'out', t: 'Bia 💛 fiquei feliz demais lendo isso',                               time: '20:02' }
+        ]
+      },
+      {
+        name: "Patrícia L., 47", role: "Curitiba", photo: "https://i.pravatar.cc/150?img=24",
+        msgs: [
+          { who: 'in',  t: 'comprei depois de anos travada',                                     time: '10:08' },
+          { who: 'in',  t: 'a turma foi o diferencial',                                          time: '10:08' },
+          { who: 'in',  t: 'saber q tem outras pessoas na mesma jornada',                        time: '10:09' },
+          { who: 'in',  t: 'me deu uma força q eu nao tinha sozinha',                            time: '10:09' },
+          { who: 'out', t: 'Patrícia, é isso q a gente quer ❤️',                                  time: '10:18' }
+        ]
+      },
+      {
+        name: "Diego A., 24", role: "Goiânia", photo: "https://i.pravatar.cc/150?img=51",
+        msgs: [
+          { who: 'in',  t: 'Reprovei na prova prática 2x antes de comprar',                      time: '22:14' },
+          { who: 'in',  t: 'achei q nunca ia conseguir',                                         time: '22:14' },
+          { who: 'in',  t: 'refiz tudo no app, fui na 3a tentativa',                             time: '22:15' },
+          { who: 'in',  t: 'PASSEI 🎉🎉',                                                          time: '22:15' },
+          { who: 'in',  t: 'OBRIGADO!!',                                                         time: '22:16' },
+          { who: 'out', t: 'DIEGOOOO PARABÉNS 🎊',                                                time: '22:30' }
+        ]
+      }
     ];
 
     // SVG do duplo-check azul "mensagem lida" do WhatsApp
     const READ_CHECK_SVG = '<svg width="16" height="11" viewBox="0 0 18 11" xmlns="http://www.w3.org/2000/svg"><path d="M17.394.281a.387.387 0 00-.526.058L7.978 9.097 4.93 6.024a.387.387 0 00-.547 0l-.547.547a.387.387 0 000 .547l3.815 3.815a.387.387 0 00.547 0L17.952.876a.387.387 0 000-.547L17.394.28zm-5.657 5.74L11.19 5.47 14.97 1.69a.387.387 0 000-.547L14.422.6a.387.387 0 00-.547 0L9.74 4.736a.387.387 0 000 .547l1.45 1.45a.387.387 0 00.547 0z" fill="#53bdeb"/></svg>';
 
+    function msgHTML(m) {
+      // Mensagens "out" (Carla) mostram check duplo lida; "in" (aluno) só hora
+      return `<div class="testi-msg testi-msg--${m.who}">
+        <p class="testi-msg__text">${m.t}</p>
+        <div class="testi-msg__meta">
+          <time>${m.time}</time>
+          ${m.who === 'out' ? READ_CHECK_SVG : ''}
+        </div>
+      </div>`;
+    }
     function cardHTML(t) {
+      const chat = t.msgs.map(msgHTML).join('');
       return `<div class="testi-card">
-        <div class="testi-card__row">
+        <div class="testi-card__head">
           <div class="testi-card__avatar">
             <img src="${t.photo}" alt="${t.name}" loading="lazy" />
           </div>
-          <div class="testi-card__bubble-wrap">
-            <div class="testi-card__name-line">
-              <span class="testi-card__name">${t.name}</span>
-              <span class="testi-card__role">${t.role}</span>
-            </div>
-            <div class="testi-card__bubble">
-              <p class="testi-card__text">${t.text}</p>
-              <div class="testi-card__meta">
-                <time>${t.time}</time>
-                ${READ_CHECK_SVG}
-              </div>
-            </div>
+          <div class="testi-card__head-text">
+            <div class="testi-card__name">${t.name}</div>
+            <div class="testi-card__role">${t.role}</div>
           </div>
         </div>
+        <div class="testi-card__chat">${chat}</div>
       </div>`;
     }
     const cols = [
