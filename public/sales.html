@@ -1934,9 +1934,44 @@
     }
 
     /* ─── QUEM SOMOS ────────────────────────────────────── */
+    /* Bridge entre seções — convida a conhecer a Carla */
+    .section-bridge {
+      background: var(--bg);
+      padding: 56px 0 0;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .section-bridge__content {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 24px;
+      background: rgba(255, 214, 10, .06);
+      border: 1px dashed rgba(255, 214, 10, .35);
+      border-radius: 100px;
+      color: var(--text-mute);
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .92rem;
+      transition: all .25s ease;
+    }
+    .section-bridge__content:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      border-style: solid;
+      background: rgba(255, 214, 10, .1);
+      transform: translateY(-2px);
+    }
+    .section-bridge__content strong { color: var(--text); transition: color .25s ease; }
+    .section-bridge__content:hover strong { color: var(--primary); }
+    .section-bridge__content .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--primary);
+      animation: arrowBounceY 1.8s ease-in-out infinite;
+    }
+
     .quem-somos {
       background: var(--bg);
-      padding: 80px 0;
+      padding: 32px 0 80px;
       position: relative;
       overflow: hidden;
     }
@@ -4432,10 +4467,6 @@
             QUERO COMEÇAR AGORA
           </button>
         </div>
-        <a href="#quem-somos" class="hero__cta-secondary">
-          Ainda na dúvida? <strong>Conheça a Carla primeiro</strong>
-          <span class="material-symbols-outlined">arrow_downward</span>
-        </a>
         <p class="hero__cta-note">
           <span><span class="material-symbols-outlined">lock</span> Compra segura</span>
           <span><span class="material-symbols-outlined">credit_card</span> Parcelado</span>
@@ -4858,8 +4889,18 @@
   </div>
 </section>
 
+<!-- Bridge: convida a rolar pra conhecer a Carla -->
+<div class="section-bridge">
+  <div class="container">
+    <a href="#quem-somos" class="section-bridge__content">
+      Ainda na dúvida? <strong>Conheça a Carla</strong>
+      <span class="material-symbols-outlined">arrow_downward</span>
+    </a>
+  </div>
+</div>
+
 <!-- ─── QUEM SOMOS ─── -->
-<section class="quem-somos">
+<section class="quem-somos" id="quem-somos">
   <div class="container--wide">
     <div class="quem-somos__grid">
       <div class="quem-somos__content">
