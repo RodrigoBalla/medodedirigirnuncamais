@@ -948,18 +948,21 @@
       display: flex; flex-direction: column;
     }
     .hero__cta-pack__urgency {
+      position: relative;
+      overflow: hidden;
       display: flex; flex-wrap: wrap; align-items: center;
       gap: 6px 10px;
-      padding: 9px 14px;
-      background: linear-gradient(90deg, rgba(239, 68, 68, .14), rgba(239, 68, 68, .04));
+      padding: 11px 14px;
+      background: rgba(0, 0, 0, .25);
       border: 1px solid rgba(239, 68, 68, .35);
       border-bottom: none;
       border-radius: 12px 12px 0 0;
       font-family: var(--font-h);
     }
+    /* Conteúdo do strip fica acima do fill */
+    .hero__cta-pack__urgency > * { position: relative; z-index: 1; }
     .hero__cta-pack.is-waitlist .hero__cta-pack__urgency {
-      border-color: rgba(245, 158, 11, .4);
-      background: linear-gradient(90deg, rgba(245, 158, 11, .14), rgba(245, 158, 11, .04));
+      border-color: rgba(239, 68, 68, .55);
     }
     .hero__cta-pack .vagas-counter__label {
       display: inline-flex; align-items: center; gap: 6px;
@@ -1027,26 +1030,16 @@
     .hero__cta-pack.is-waitlist .hero__cta-pack__tail {
       display: none;
     }
-    .hero__cta-pack__bar {
-      height: 5px;
-      background: rgba(0, 0, 0, .35);
-      border-left: 1px solid rgba(239, 68, 68, .35);
-      border-right: 1px solid rgba(239, 68, 68, .35);
-      position: relative;
-      overflow: hidden;
-    }
-    .hero__cta-pack.is-waitlist .hero__cta-pack__bar {
-      border-left-color: rgba(245, 158, 11, .4);
-      border-right-color: rgba(245, 158, 11, .4);
-    }
+    /* Bar-fill agora é o BACKGROUND do strip de urgência (preenche por trás
+       do texto com opacidade). Cor e largura são definidas via JS. */
     .hero__cta-pack__bar-fill {
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, #ef4444, #f97316);
-      transition: width .8s cubic-bezier(.4, 0, .2, 1);
-      box-shadow: 0 0 8px rgba(239, 68, 68, .5);
-    }
-    .hero__cta-pack.is-waitlist .hero__cta-pack__bar-fill {
-      background: linear-gradient(90deg, #f59e0b, #eab308);
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 0%;
+      opacity: .28;
+      transition: width 1s cubic-bezier(.4, 0, .2, 1), background .35s ease, opacity .35s ease;
+      z-index: 0;
+      pointer-events: none;
     }
     .hero__cta-pack .hero__cta-btn {
       border-top-left-radius: 0;
@@ -4506,16 +4499,14 @@
           </div>
         </div>
 
-        <!-- CTA com urgência integrada (vagas + barra de progresso + botão) -->
+        <!-- CTA com urgência integrada — bar preenche por trás do strip -->
         <div class="hero__cta-pack" id="vagasCounter" data-vagas-mode="open">
           <div class="hero__cta-pack__urgency">
+            <div id="vagasBarFill" class="hero__cta-pack__bar-fill"></div>
             <span class="vagas-counter__label">Vagas limitadas</span>
             <span class="hero__cta-pack__count">Restam <strong id="vagasRemaining">100</strong>/100</span>
             <span class="hero__cta-pack__sold-out">Esgotado!</span>
             <span class="hero__cta-pack__tail">depois vira lista de espera</span>
-          </div>
-          <div class="hero__cta-pack__bar">
-            <div id="vagasBarFill" class="hero__cta-pack__bar-fill" style="width:100%"></div>
           </div>
           <button class="btn btn--primary hero__cta-btn" onclick="openLeadModal()">
             <span class="material-symbols-outlined">directions_car</span>
@@ -5982,19 +5973,28 @@
       el.textContent = vagasRestantes;
     });
 
-    // Barra com cor dinâmica (verde → amarelo → vermelho conforme enche a turma)
+    // Barra preenche por trás do strip de acordo com quantos inscritos —
+    // 1 inscrito = ~1% verde, 100 = 100% vermelho + ESGOTADO
     document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
+      const isHeroFill = el.id === 'vagasBarFill'; // hero usa background com opacity
       if (modoListaEspera) {
-        // Esgotado: barra full vermelha
         el.style.width = '100%';
         el.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-        el.style.boxShadow = '0 0 12px rgba(239, 68, 68, .6)';
+        el.style.opacity = isHeroFill ? '.45' : '1';
+        if (!isHeroFill) el.style.boxShadow = '0 0 12px rgba(239, 68, 68, .6)';
       } else {
-        el.style.width = pct + '%';
+        // Mínimo de 4% pra dar visual mesmo com 1 inscrito (toque verde sutil)
+        const widthShown = Math.max(pctFilled, pctFilled > 0 ? 4 : 0);
+        el.style.width = widthShown + '%';
         const c1 = getUrgencyColor(pctFilled);
-        const c2 = getUrgencyColor(Math.min(100, pctFilled + 15));
+        const c2 = getUrgencyColor(Math.min(100, pctFilled + 20));
         el.style.background = `linear-gradient(90deg, ${c1.css}, ${c2.css})`;
-        el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
+        if (isHeroFill) {
+          el.style.opacity = '.28';
+        } else {
+          el.style.opacity = '1';
+          el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
+        }
       }
     });
 
