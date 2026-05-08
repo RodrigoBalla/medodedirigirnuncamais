@@ -4670,20 +4670,23 @@
         0 0 0 4px rgba(0, 0, 0, .35),
         inset 0 0 0 4px rgba(0, 0, 0, .15);
     }
-    /* Texto curvo simulado via duas faixas planas no topo/base */
-    .guarantee-seal__top, .guarantee-seal__bottom {
+    /* Texto curvo de verdade — segue o círculo via SVG textPath */
+    .guarantee-seal__svg {
       position: absolute;
-      left: 0; right: 0;
-      text-align: center;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .guarantee-seal__svg-text {
       font-family: var(--font-h);
       font-weight: 900;
-      font-size: .68rem;
-      letter-spacing: .22em;
-      color: var(--on-primary);
+      font-size: 19px;
+      letter-spacing: 5px;
+      fill: var(--on-primary);
       text-transform: uppercase;
     }
-    .guarantee-seal__top    { top: 14px; }
-    .guarantee-seal__bottom { bottom: 14px; }
     .guarantee-seal__core {
       position: absolute;
       inset: 30px;
@@ -6808,10 +6811,21 @@
     <div class="guarantee-seal-wrapper">
       <!-- Selo gigante tipo medalha -->
       <div class="guarantee-seal">
-        <div class="guarantee-seal__ring">
-          <span class="guarantee-seal__top">GARANTIA</span>
-          <span class="guarantee-seal__bottom">INCONDICIONAL</span>
-        </div>
+        <div class="guarantee-seal__ring"></div>
+        <svg class="guarantee-seal__svg" viewBox="0 0 220 220" aria-hidden="true">
+          <defs>
+            <!-- Arco superior: vai pelo topo (left → right, sweep clockwise) -->
+            <path id="sealTopPath" d="M 28 110 A 82 82 0 0 1 192 110" fill="none" />
+            <!-- Arco inferior: vai pelo fundo (right → left, sweep clockwise) -->
+            <path id="sealBotPath" d="M 192 110 A 82 82 0 0 1 28 110" fill="none" />
+          </defs>
+          <text class="guarantee-seal__svg-text">
+            <textPath href="#sealTopPath" startOffset="50%" text-anchor="middle">GARANTIA</textPath>
+          </text>
+          <text class="guarantee-seal__svg-text">
+            <textPath href="#sealBotPath" startOffset="50%" text-anchor="middle">INCONDICIONAL</textPath>
+          </text>
+        </svg>
         <div class="guarantee-seal__core">
           <div class="guarantee-seal__num">7</div>
           <div class="guarantee-seal__lbl">dias</div>
