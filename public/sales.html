@@ -5635,6 +5635,27 @@
       display: inline-block;
       margin-top: 4px;
     }
+    .footer__bottom small strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .footer__credit {
+      margin: 14px 0 0;
+      font-family: var(--font-h);
+      font-size: .8rem;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+    }
+    .footer__credit a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color .2s ease, text-shadow .2s ease;
+    }
+    .footer__credit a:hover {
+      color: var(--primary-2);
+      text-shadow: 0 0 12px var(--primary-glow);
+    }
     @media(max-width: 768px) {
       .footer__inner {
         grid-template-columns: 1fr;
@@ -7116,10 +7137,16 @@
       © 2026 Medo de Dirigir Nunca Mais. Todos os direitos reservados.
       <br/>
       <small>
+        <strong>Centro de Formação de Condutores Jó</strong> · CNPJ 16.826.768/0001-59
+        <br/>
         Programa educacional sem vínculo institucional com o Detran.
         Resultados variam conforme dedicação de cada aluno.
         Cidade do Rio de Janeiro / RJ.
       </small>
+    </p>
+    <p class="footer__credit">
+      Lançamento feito por
+      <a href="https://www.instagram.com/orodrigoballa/" target="_blank" rel="noopener noreferrer">@orodrigoballa</a>
     </p>
   </div>
 </footer>
