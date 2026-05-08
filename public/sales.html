@@ -11,7 +11,7 @@
   <!-- Pesos reduzidos: era 7 weights de Lexend (~480KB), agora 4 (~280KB).
        Ganho em mobile: ~200KB economizados no first paint. -->
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700;800;900&family=Inter:wght@400;600&family=Caveat:wght@700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,500,700,0..1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400..700,0..1&display=swap" rel="stylesheet" />
   <!-- Preload da imagem hero crítica (LCP) -->
   <link rel="preload" as="image" href="/hero/carla-turma.jpg" fetchpriority="high" />
 
@@ -7399,13 +7399,12 @@
   // Tema travado em "dark", paleta navy + amarelo (sem opção de claro).
 
   // ── STICKY CTA MOBILE (barra fixa após scrollar) ─────────
-  // Aparece quando o usuário rolou >30% da altura do hero, esconde se
-  // o modal de lead está aberto, e respeita posições do hero (não mostra
-  // se o hero ainda tá visível — onde já tem CTA principal).
+  // Aparece quando o BOTÃO CTA do hero sai de vista. Esconde se o lead
+  // modal estiver aberto. Não duplica CTA enquanto o hero CTA tá visível.
   (function() {
     const stickyCta = document.getElementById('stickyCta');
-    const hero = document.querySelector('.hero');
-    if (!stickyCta || !hero) return;
+    const heroCtaBtn = document.querySelector('.hero__cta-btn');
+    if (!stickyCta || !heroCtaBtn) return;
     const isMobile = () => window.innerWidth <= 768;
     let raf = null;
     function update() {
@@ -7421,12 +7420,13 @@
       );
       if (modalOpen) {
         stickyCta.classList.remove('is-visible');
+        document.body.classList.remove('has-sticky-cta');
         return;
       }
-      // Mostra após o hero sair de vista (~80% do hero rolado)
-      const heroRect = hero.getBoundingClientRect();
-      const heroOut = heroRect.bottom < window.innerHeight * 0.4;
-      if (heroOut) {
+      // Mostra quando o CTA do hero saiu de vista (top do botão acima do viewport)
+      const ctaRect = heroCtaBtn.getBoundingClientRect();
+      const heroCtaOut = ctaRect.bottom < 0;
+      if (heroCtaOut) {
         stickyCta.classList.add('is-visible');
         document.body.classList.add('has-sticky-cta');
       } else {
@@ -7440,9 +7440,14 @@
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    // Reage quando modal abre/fecha (observa class change no body)
+    // Reage quando modal abre/fecha
     new MutationObserver(update).observe(document.body, {
       attributes: true, attributeFilter: ['style']
+    });
+    document.querySelectorAll('.modal-overlay, .exit-overlay').forEach(el => {
+      new MutationObserver(update).observe(el, {
+        attributes: true, attributeFilter: ['class']
+      });
     });
     update();
   })();
