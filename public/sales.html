@@ -594,7 +594,7 @@
       grid-template-columns: 1fr 1fr;
       align-items: center;
       gap: 48px;
-      padding: 24px 0 80px;
+      padding: 19px 0 80px; /* 24→19 (-20% no top) */
     }
     .hero__content { min-width: 0; }
     .hero__badge { margin-bottom: 22px; }
@@ -6096,7 +6096,9 @@
 
     /* ─── RESPONSIVE ───────────────────────────────────── */
     @media(max-width: 768px) {
-      .hero__row { grid-template-columns: 1fr; gap: 32px; padding: 16px 0 48px; text-align: center; }
+      .hero__row { grid-template-columns: 1fr; gap: 32px; padding: 13px 0 48px; text-align: center; } /* 16→13 (-20% no top) */
+      /* Hero também recebe padding-top reduzido (override do section { padding-top:56 }) */
+      .hero { padding-top: 45px !important; } /* 56→45 (-20%) */
       .hero__visual { order: 2; }
       .hero__content { order: 1; }
       .hero__price-box { text-align: left; }
