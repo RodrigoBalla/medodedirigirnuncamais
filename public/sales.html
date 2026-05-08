@@ -4402,53 +4402,73 @@
     }
     .approved-section .eyebrow { color: #10b981; }
 
-    /* SLIDESHOW LEVE: 1 polaroide por vez, fade suave a cada 4.5s.
-       Substitui a marquee pesada que precisava carregar 22+ imagens
-       simultaneamente. Aqui só 1 visível por vez = bem mais leve. */
+    /* SLIDESHOW PEEK: slide central em destaque + previa lateral dos
+       vizinhos (esquerda + direita). Avança a cada 2.5s usando
+       scroll-snap nativo (zero animation contínua, GPU eficiente). */
     .approved-slideshow {
       position: relative;
-      width: 280px;
-      max-width: 88vw;
-      aspect-ratio: 9 / 14;
-      margin: 36px auto 0;
-      border-radius: 16px;
+      width: 100%;
+      margin: 36px 0 0;
       overflow: hidden;
-      box-shadow:
-        0 24px 60px rgba(0, 0, 0, .5),
-        0 0 0 1px rgba(255, 214, 10, .25);
+      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+    }
+    .approved-slideshow__viewport {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .approved-slideshow__viewport::-webkit-scrollbar { display: none; }
+    .approved-slideshow__track {
+      display: flex;
+      gap: 14px;
+      padding: 8px calc((100% - 240px) / 2);
+      width: max-content;
     }
     .approved-slideshow__slide {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 1s ease;
-      will-change: opacity;
+      flex: 0 0 240px;
+      aspect-ratio: 9 / 14;
+      border-radius: 16px;
+      overflow: hidden;
+      opacity: .35;
+      transform: scale(.92);
+      transition: opacity .5s ease, transform .5s ease, box-shadow .5s ease;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
     }
-    .approved-slideshow__slide.is-active { opacity: 1; }
+    .approved-slideshow__slide.is-active {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 214, 10, .3);
+    }
     .approved-slideshow__slide img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    /* Dotinhos de progresso embaixo */
+    /* Dotinhos abaixo do carrossel */
     .approved-slideshow__dots {
-      position: absolute;
-      bottom: 12px; left: 50%;
-      transform: translateX(-50%);
       display: flex; gap: 6px;
-      z-index: 2;
-      pointer-events: none;
+      justify-content: center;
+      margin-top: 16px;
     }
     .approved-slideshow__dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, .4);
+      background: rgba(255, 255, 255, .25);
       transition: background .35s ease, width .35s ease;
     }
     .approved-slideshow__dot.is-active {
       background: var(--primary);
       width: 20px;
       border-radius: 100px;
+    }
+    @media (min-width: 769px) {
+      .approved-slideshow__track { padding: 8px calc((100% - 280px) / 2); }
+      .approved-slideshow__slide { flex-basis: 280px; }
     }
 
     .approved-counter {
@@ -6187,12 +6207,14 @@
       </div>
     </div>
   </div>
-  <!-- Slideshow leve: 1 foto por vez, fade a cada 4.5s -->
+  <!-- Slideshow com peek lateral: avança a cada 2.5s, scroll-snap nativo -->
   <div class="approved-slideshow" id="approvedSlideshow">
-    <div class="approved-slideshow__dots" id="approvedDots"></div>
-    <div id="approvedTrack">
-      <!-- Imagens duplicadas via JS pra criar o loop sem corte visível -->
+    <div class="approved-slideshow__viewport" id="approvedViewport">
+      <div class="approved-slideshow__track" id="approvedTrack">
+        <!-- slides renderizados via JS a partir do manifest.json -->
+      </div>
     </div>
+    <div class="approved-slideshow__dots" id="approvedDots"></div>
   </div>
 </section>
 
@@ -7910,13 +7932,14 @@
     if (e.key === 'Escape') closeLeadModal();
   });
 
-  // ── APROVADAS, slideshow leve (1 foto por vez, fade 4.5s) ─────
-  // Substitui a marquee pesada — agora carrega só a foto atual
-  // (eager) e a próxima (lazy preload via preloadNext). Animação fade.
+  // ── APROVADAS, slideshow peek (avança 2.5s via scroll-snap nativo) ──
+  // Cada slide tem peek lateral (vizinhos visíveis em scale .92 + opacity).
+  // Usa scrollTo() smooth em vez de animation contínua. Bem leve e fluido.
   (function() {
-    const track = document.getElementById('approvedTrack');
-    const dotsEl = document.getElementById('approvedDots');
-    if (!track) return;
+    const track    = document.getElementById('approvedTrack');
+    const viewport = document.getElementById('approvedViewport');
+    const dotsEl   = document.getElementById('approvedDots');
+    if (!track || !viewport) return;
 
     async function loadManifest() {
       try {
@@ -7930,22 +7953,19 @@
 
     loadManifest().then(list => {
       const images = Array.isArray(list) ? list : [];
-      if (!images.length) {
-        track.innerHTML = '<p style="text-align:center;color:var(--text-mute);padding:40px">Nenhuma foto disponível.</p>';
-        return;
-      }
+      if (!images.length) return;
 
-      // Renderiza slides — primeira eager, restante lazy
+      // Renderiza slides — só os 3 primeiros eager (current + ±1 visíveis)
       track.innerHTML = images.map((file, i) => `
-        <div class="approved-slideshow__slide${i === 0 ? ' is-active' : ''}">
+        <div class="approved-slideshow__slide${i === 0 ? ' is-active' : ''}" data-idx="${i}">
           <img src="/aprovados/${file}" alt="Aluno aprovado"
-               loading="${i === 0 ? 'eager' : 'lazy'}"
+               loading="${i < 3 ? 'eager' : 'lazy'}"
                decoding="async"
                onerror="this.parentElement.style.display='none'" />
         </div>
       `).join('');
 
-      // Renderiza dots indicadores
+      // Renderiza dots (1 por slide)
       if (dotsEl) {
         dotsEl.innerHTML = images.map((_, i) =>
           `<span class="approved-slideshow__dot${i === 0 ? ' is-active' : ''}"></span>`
@@ -7953,28 +7973,50 @@
       }
 
       const slides = track.querySelectorAll('.approved-slideshow__slide');
-      const dots = dotsEl ? dotsEl.querySelectorAll('.approved-slideshow__dot') : [];
-      let current = 0;
+      const dots   = dotsEl ? dotsEl.querySelectorAll('.approved-slideshow__dot') : [];
+      let current  = 0;
+      let timer    = null;
 
-      // Pré-carrega próxima imagem antes de mostrar (evita flicker)
-      function preloadNext() {
-        const nextIdx = (current + 1) % slides.length;
-        const nextImg = slides[nextIdx]?.querySelector('img');
-        if (nextImg && nextImg.loading === 'lazy') {
-          nextImg.loading = 'eager';
+      function goTo(idx) {
+        const slide = slides[idx];
+        if (!slide) return;
+        // Centraliza o slide no viewport (smooth scroll horizontal)
+        const offsetLeft = slide.offsetLeft;
+        const targetScroll = offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2;
+        viewport.scrollTo({ left: targetScroll, behavior: 'smooth' });
+        // Atualiza classes
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+        dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+        // Pré-carrega o próximo (e mais um adiante) pra evitar gap
+        for (let off = 1; off <= 2; off++) {
+          const ni = (idx + off) % slides.length;
+          const img = slides[ni]?.querySelector('img');
+          if (img && img.loading === 'lazy') img.loading = 'eager';
         }
+        current = idx;
       }
-      preloadNext();
 
-      // Avança a cada 4.5s
-      setInterval(() => {
-        slides[current].classList.remove('is-active');
-        if (dots[current]) dots[current].classList.remove('is-active');
-        current = (current + 1) % slides.length;
-        slides[current].classList.add('is-active');
-        if (dots[current]) dots[current].classList.add('is-active');
-        preloadNext();
-      }, 4500);
+      function next() {
+        goTo((current + 1) % slides.length);
+      }
+
+      function start() {
+        stop();
+        timer = setInterval(next, 2500);
+      }
+      function stop() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+
+      // Pausa quando aba perde foco (economia)
+      document.addEventListener('visibilitychange', () => {
+        document.hidden ? stop() : start();
+      });
+      // Pausa quando usuário interage (toca/arrasta)
+      viewport.addEventListener('touchstart', stop, { passive: true });
+      viewport.addEventListener('touchend', () => setTimeout(start, 1500), { passive: true });
+
+      start();
     });
   })();
 
