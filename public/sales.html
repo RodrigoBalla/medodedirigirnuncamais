@@ -623,114 +623,108 @@
     }
     .hero__sub strong { color: var(--text); font-weight: 600; }
 
-    /* ====== PRICE BOX (reorganizado) ======
-       Hierarquia: header (oferta + desconto) → preço antigo com economia →
-       preço novo gigante com pagamento único → trust bar com ícones. */
+    /* ====== PRICE BOX (clean, centralizado, hierarquia premium) ======
+       Estrutura vertical: oferta+desconto → preço antigo riscado → preço
+       novo GIGANTE com pagamento único → ECONOMIA destacada →
+       trust bar com 3 ícones. Tudo centralizado. */
     .hero__price-box {
       position: relative;
       background:
-        radial-gradient(ellipse at top right, rgba(255, 214, 10, .12) 0%, transparent 65%),
+        radial-gradient(ellipse 80% 60% at 50% 0%, var(--primary-soft) 0%, transparent 65%),
         linear-gradient(180deg, var(--surface), var(--bg-2));
-      border: 1px solid var(--border-strong);
-      border-radius: 18px;
-      padding: 18px 24px 16px;
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 22px 24px;
       margin-bottom: 16px;
-      display: flex; flex-direction: column;
-      gap: 14px;
+      text-align: center;
       box-shadow:
-        0 12px 32px rgba(15, 23, 42, .12),
-        0 0 0 1px var(--primary-soft) inset;
+        0 18px 40px rgba(0, 0, 0, .35),
+        0 0 0 1px var(--primary-soft) inset,
+        0 -1px 0 rgba(255, 214, 10, .25) inset;
     }
-    /* Linha 1, header: oferta + desconto na mesma linha */
+    /* Linha 1, header centralizado: oferta + desconto */
     .hero__price-header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap;
+      margin-bottom: 18px;
     }
     .hero__price-tag {
       display: inline-flex; align-items: center; gap: 6px;
       font-family: var(--font-h);
-      font-size: .68rem;
+      font-size: .65rem;
       font-weight: 800;
       letter-spacing: .14em;
       text-transform: uppercase;
-      color: #FFF;
+      color: #0B1A38;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      padding: 5px 11px;
-      border-radius: 6px;
-      box-shadow: 0 4px 12px var(--primary-glow);
+      padding: 6px 12px;
+      border-radius: 100px;
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
     .hero__price-tag::before {
       content: '⚡';
-      font-size: .85rem;
+      font-size: .9rem;
     }
     .hero__price-discount {
       font-family: var(--font-h);
-      font-size: .72rem;
-      font-weight: 800;
+      font-size: .68rem;
+      font-weight: 900;
       letter-spacing: .08em;
       color: #FFF;
       background: linear-gradient(135deg, #ef4444, #dc2626);
-      padding: 5px 11px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(239, 68, 68, .35);
+      padding: 6px 12px;
+      border-radius: 100px;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, .4);
+      animation: discountPulse 2s ease-in-out infinite;
     }
-    /* Linha 2, preços: antigo (com economia) + novo (gigante) */
+    @keyframes discountPulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.05); }
+    }
+    /* Linha 2, preços empilhados centralizados */
     .hero__price-main {
-      display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px;
     }
     .hero__price-old-block {
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: column; align-items: center;
       gap: 2px;
-      padding-bottom: 6px;
+      margin-bottom: 6px;
     }
     .hero__price-old {
-      font-size: 1rem;
+      font-size: .92rem;
       color: var(--text-subtle);
       text-decoration: line-through;
       text-decoration-color: var(--danger);
       text-decoration-thickness: 2px;
       font-weight: 600;
-      line-height: 1.1;
-    }
-    .hero__price-savings {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: .78rem;
-      color: #10b981;
-      font-weight: 800;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-    }
-    .hero__price-savings::before {
-      content: '↓';
-      font-size: .9rem;
-      font-weight: 900;
+      line-height: 1;
     }
     .hero__price-now {
-      display: flex; align-items: baseline; gap: 12px; flex: 1;
+      display: flex; align-items: flex-start; justify-content: center;
+      gap: 6px;
+      line-height: 1;
     }
     .hero__price-val {
-      display: inline-flex; align-items: flex-start; gap: 4px;
+      display: inline-flex; align-items: flex-start; gap: 2px;
       font-family: var(--font-h); font-weight: 900;
-      font-size: clamp(3.2rem, 8.5vw, 4.4rem);
+      font-size: clamp(3.6rem, 11vw, 5rem);
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       line-height: .9;
-      letter-spacing: -.03em;
-      filter: drop-shadow(0 4px 16px var(--primary-glow));
-      transform-origin: left center;
+      letter-spacing: -.04em;
+      filter: drop-shadow(0 4px 20px var(--primary-glow));
       animation: priceBreathe 3.4s ease-in-out infinite;
     }
     @keyframes priceBreathe {
       0%, 100% {
-        transform: scale(1);
-        filter: drop-shadow(0 4px 16px var(--primary-glow));
+        filter: drop-shadow(0 4px 20px var(--primary-glow));
       }
       50% {
-        transform: scale(1.035);
-        filter: drop-shadow(0 6px 28px var(--primary-glow))
-                drop-shadow(0 0 12px rgba(255, 214, 10, .35));
+        filter: drop-shadow(0 6px 32px var(--primary-glow))
+                drop-shadow(0 0 16px rgba(255, 214, 10, .4));
       }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -741,44 +735,64 @@
       font-size: 1.5rem;
       line-height: 1;
       font-weight: 800;
-      margin-top: 8px;
+      margin-top: 10px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
     .hero__price-meta {
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: column; align-items: center;
       line-height: 1.25;
-      padding-bottom: 8px;
+      margin-top: 6px;
     }
     .hero__price-meta strong {
       font-family: var(--font-h);
       font-weight: 800;
-      font-size: .92rem;
+      font-size: 1rem;
       color: var(--text);
-      letter-spacing: .01em;
     }
     .hero__price-meta span {
-      font-size: .76rem;
+      font-size: .82rem;
       color: var(--text-mute);
       font-weight: 500;
     }
-    /* Linha 3, trust bar com ícones */
+    /* Economia destaque, pílula verde abaixo do preço */
+    .hero__price-savings {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin: 14px auto 0;
+      font-size: .78rem;
+      color: #10b981;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      background: rgba(16, 185, 129, .1);
+      border: 1px dashed rgba(16, 185, 129, .35);
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+    .hero__price-savings::before {
+      content: '↓';
+      font-size: 1rem;
+      font-weight: 900;
+    }
+    /* Linha 3, trust bar com ícones (vertical em mobile, horizontal em desktop) */
     .hero__price-trust {
-      display: flex; align-items: center; flex-wrap: wrap;
-      gap: 8px 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-      font-size: .8rem;
-      color: var(--text-mute);
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding-top: 16px;
+      margin-top: 18px;
+      border-top: 1px solid rgba(255, 214, 10, .15);
+      font-size: .82rem;
+      color: var(--text);
       font-weight: 600;
     }
     .hero__price-trust span {
       display: inline-flex; align-items: center; gap: 6px;
     }
     .hero__price-trust .material-symbols-outlined {
-      font-size: 17px;
+      font-size: 16px;
       color: var(--primary);
     }
 
@@ -6190,19 +6204,19 @@
             <span class="hero__price-discount">−51% OFF</span>
           </div>
 
-          <!-- Preços: antigo (com economia) + novo (gigante) -->
+          <!-- Preços empilhados centralizados: De R$ 197 → R$ 97 → meta -->
           <div class="hero__price-main">
             <div class="hero__price-old-block">
               <span class="hero__price-old">De R$ 197</span>
-              <span class="hero__price-savings">economiza R$ 100</span>
             </div>
             <div class="hero__price-now">
               <span class="hero__price-val"><sup>R$</sup>97</span>
-              <span class="hero__price-meta">
-                <strong>Pagamento único</strong>
-                <span>sem mensalidade</span>
-              </span>
             </div>
+            <div class="hero__price-meta">
+              <strong>Pagamento único</strong>
+              <span>sem mensalidade</span>
+            </div>
+            <span class="hero__price-savings">Economiza R$ 100</span>
           </div>
 
           <!-- Trust bar com ícones próprios da marca -->
