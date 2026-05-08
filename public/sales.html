@@ -4670,7 +4670,13 @@
         0 0 0 4px rgba(0, 0, 0, .35),
         inset 0 0 0 4px rgba(0, 0, 0, .15);
     }
-    /* Texto curvo de verdade — segue o círculo via SVG textPath */
+    /* Texto curvo de verdade — segue o círculo via SVG textPath.
+       Ambos os arcos são percorridos LEFT→RIGHT pra que as letras fiquem
+       UPRIGHT (não invertidas head-down). Top usa sweep=1 (clockwise pelo
+       topo) e bottom usa sweep=0 (counter-clockwise pelo fundo).
+       Raios diferentes pra letras caberem na faixa do anel:
+       - Top: raio 88 (letras estendem pra fora, 88→106, dentro de 80-110)
+       - Bot: raio 102 (letras estendem pra dentro, 102→84, dentro de 80-110) */
     .guarantee-seal__svg {
       position: absolute;
       inset: 0;
@@ -4682,8 +4688,8 @@
     .guarantee-seal__svg-text {
       font-family: var(--font-h);
       font-weight: 900;
-      font-size: 19px;
-      letter-spacing: 5px;
+      font-size: 15px;
+      letter-spacing: 3px;
       fill: var(--on-primary);
       text-transform: uppercase;
     }
@@ -6814,10 +6820,12 @@
         <div class="guarantee-seal__ring"></div>
         <svg class="guarantee-seal__svg" viewBox="0 0 220 220" aria-hidden="true">
           <defs>
-            <!-- Arco superior: vai pelo topo (left → right, sweep clockwise) -->
-            <path id="sealTopPath" d="M 28 110 A 82 82 0 0 1 192 110" fill="none" />
-            <!-- Arco inferior: vai pelo fundo (right → left, sweep clockwise) -->
-            <path id="sealBotPath" d="M 192 110 A 82 82 0 0 1 28 110" fill="none" />
+            <!-- Arco superior: left→right pelo TOPO (sweep=1, raio 88).
+                 Letras estendem pra FORA do círculo. -->
+            <path id="sealTopPath" d="M 22 110 A 88 88 0 0 1 198 110" fill="none" />
+            <!-- Arco inferior: left→right pelo FUNDO (sweep=0, raio 102).
+                 Letras estendem pra DENTRO do círculo, mas ficam UPRIGHT. -->
+            <path id="sealBotPath" d="M 8 110 A 102 102 0 0 0 212 110" fill="none" />
           </defs>
           <text class="guarantee-seal__svg-text">
             <textPath href="#sealTopPath" startOffset="50%" text-anchor="middle">GARANTIA</textPath>
