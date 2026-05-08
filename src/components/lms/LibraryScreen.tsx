@@ -262,16 +262,6 @@ const FEATURED_COURSES = [
     lessons: 6,
     duration: "1h30",
   },
-  {
-    id: "featured-3",
-    title: "O Manual do Motorista de Aplicativo",
-    description: "Faça renda extra ao volante: cadastro na Uber e 99, primeiras corridas sem medo, dicas de segurança e como começar a faturar.",
-    icon: "local_taxi",
-    color: "from-emerald-600 to-green-500",
-    image: "/modulos/manual-motorista-aplicativo.jpg",
-    lessons: 10,
-    duration: "3h00",
-  },
 ];
 
 export function LibraryScreen() {
