@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Medo de Dirigir Nunca Mais — Sua Liberdade ao Volante</title>
+  <title>Medo de Dirigir Nunca Mais | Sua Liberdade ao Volante</title>
   <meta name="description" content="O método gamificado que ajudou centenas de pessoas a vencer o medo de dirigir. No seu ritmo, no seu celular, com método validado." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,10 +14,10 @@
   <style>
     /* ─── THEME TOKENS ──────────────────────────────────── */
     /* Paleta nova:
-       Azul-marinho #0A1F5C — dominante (fundo)
-       Amarelo      #FFD60A — destaque (títulos, logo, CTAs)
-       Branco       #FFFFFF — apoio (textos secundários)
-       Preto        #000000 — detalhe (contornos)
+       Azul-marinho #0A1F5C, dominante (fundo)
+       Amarelo      #FFD60A, destaque (títulos, logo, CTAs)
+       Branco       #FFFFFF, apoio (textos secundários)
+       Preto        #000000, detalhe (contornos)
        Os nomes das vars (--primary, --bg etc.) ficam pra não quebrar o resto. */
     :root {
       --primary:       #FFD60A; /* amarelo de destaque */
@@ -33,7 +33,7 @@
       --font-b:        'Inter', sans-serif;
       --radius:        14px;
     }
-    /* Tema único — paleta navy + amarelo. Navy mais escuro pra ficar
+    /* Tema único, paleta navy + amarelo. Navy mais escuro pra ficar
        premium/profundo, alinhado com a comunicação da Auto Escola Jó. */
     [data-theme="dark"], :root {
       --bg:            #0B1A38;
@@ -54,7 +54,7 @@
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-b);
-      /* Gradiente sutil no body pra dar profundidade — spot luz no topo */
+      /* Gradiente sutil no body pra dar profundidade, spot luz no topo */
       background-color: var(--bg);
       background-image:
         radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 255, 255, .04) 0%, transparent 60%),
@@ -213,7 +213,7 @@
       background: var(--hero-grad);
       transition: background .35s ease;
     }
-    /* Foto 1 (Carla solo) como detalhe sutil de fundo — opacity baixa pra não competir com a Carla protagonista */
+    /* Foto 1 (Carla solo) como detalhe sutil de fundo, opacity baixa pra não competir com a Carla protagonista */
     .hero__bg-photo {
       position: absolute; inset: 0; z-index: 0;
       background-image: url('/hero/instrutora.jpg');
@@ -284,7 +284,7 @@
       );
       pointer-events: none;
     }
-    /* Etiqueta com o nome da Carla sobreposta — alinhada à DIREITA pra não conflitar com phone mockup à esquerda */
+    /* Etiqueta com o nome da Carla sobreposta, alinhada à DIREITA pra não conflitar com phone mockup à esquerda */
     .hero-instructor__name {
       position: absolute;
       bottom: 24px;
@@ -395,7 +395,7 @@
     .hero__visual .phone-mockup .phone-profile-stat .material-symbols-outlined { font-size: 16px; }
     .hero__visual .phone-mockup .phone-page-title { font-size: .9rem; }
     .hero__visual .phone-mockup .phone-page-sub { font-size: .58rem; margin-bottom: 8px; }
-    /* Comunidade compacta — caber no phone reduzido do hero */
+    /* Comunidade compacta, caber no phone reduzido do hero */
     .hero__visual .phone-mockup .phone-stories { gap: 6px; margin-bottom: 8px; padding-bottom: 2px; }
     .hero__visual .phone-mockup .phone-story__avatar { width: 28px; height: 28px; font-size: .58rem; border-width: 1.5px; }
     .hero__visual .phone-mockup .phone-story__name { font-size: .42rem; max-width: 34px; }
@@ -451,7 +451,7 @@
       60%  { opacity: 1; transform: translateY(-2px) scale(1.03); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
     }
-    /* Tablet — bubble menor e ajustada à posição do phone reduzido */
+    /* Tablet, bubble menor e ajustada à posição do phone reduzido */
     @media(max-width: 1024px) {
       .phone-bubble {
         left: 185px;
@@ -460,7 +460,7 @@
         padding: 8px 12px;
       }
     }
-    /* Mobile — bubble abaixo do phone (fora do absolute), centralizado */
+    /* Mobile, bubble abaixo do phone (fora do absolute), centralizado */
     @media(max-width: 768px) {
       .phone-bubble {
         position: relative;
@@ -484,7 +484,7 @@
       .phone-bubble, .phone-bubble.is-changing { animation: none; }
     }
 
-    /* Polaroides com fotos de aprovados — flutuando ao redor da Carla */
+    /* Polaroides com fotos de aprovados, flutuando ao redor da Carla */
     .hero-portrait {
       position: absolute;
       z-index: 3;
@@ -531,7 +531,7 @@
       text-transform: uppercase;
       margin-top: 3px;
     }
-    /* Polaroide aluna — canto superior-direito da Carla */
+    /* Polaroide aluna, canto superior-direito da Carla */
     .hero-portrait--top-right {
       top: -8%;
       right: -8%;
@@ -541,7 +541,7 @@
     .hero-portrait--top-right:hover {
       transform: rotate(3deg) scale(1.06);
     }
-    /* Polaroide aluno — canto inferior-direito da Carla */
+    /* Polaroide aluno, canto inferior-direito da Carla */
     .hero-portrait--bottom-right {
       bottom: 5%;
       right: -10%;
@@ -563,7 +563,7 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, .15);
     }
 
-    /* Tablets — reduz Carla e ajusta posicionamento */
+    /* Tablets, reduz Carla e ajusta posicionamento */
     @media(max-width: 1024px) {
       .hero-instructor { max-width: 380px; }
       .hero__visual .phone-mockup { width: 180px; height: 400px; left: -5px; }
@@ -571,7 +571,7 @@
       .hero-portrait--bottom-right { width: 135px; right: -7%; }
     }
 
-    /* Mobile — empilha tudo, esconde polaroides do hero (vão pro carrossel) */
+    /* Mobile, empilha tudo, esconde polaroides do hero (vão pro carrossel) */
     @media(max-width: 768px) {
       .hero__visual { min-height: auto; padding: 10px 0; }
       .hero-instructor { max-width: 320px; aspect-ratio: 4 / 5; }
@@ -637,7 +637,7 @@
         0 12px 32px rgba(15, 23, 42, .12),
         0 0 0 1px var(--primary-soft) inset;
     }
-    /* Linha 1 — header: oferta + desconto na mesma linha */
+    /* Linha 1, header: oferta + desconto na mesma linha */
     .hero__price-header {
       display: flex; align-items: center; justify-content: space-between;
       gap: 10px; flex-wrap: wrap;
@@ -670,7 +670,7 @@
       border-radius: 6px;
       box-shadow: 0 3px 10px rgba(239, 68, 68, .35);
     }
-    /* Linha 2 — preços: antigo (com economia) + novo (gigante) */
+    /* Linha 2, preços: antigo (com economia) + novo (gigante) */
     .hero__price-main {
       display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap;
     }
@@ -760,7 +760,7 @@
       color: var(--text-mute);
       font-weight: 500;
     }
-    /* Linha 3 — trust bar com ícones */
+    /* Linha 3, trust bar com ícones */
     .hero__price-trust {
       display: flex; align-items: center; flex-wrap: wrap;
       gap: 8px 18px;
@@ -838,7 +838,7 @@
       font-size: .72rem; color: var(--text-mute);
       font-style: italic;
     }
-    /* Variante "esgotado" — vira lista de espera */
+    /* Variante "esgotado", vira lista de espera */
     .vagas-counter.is-waitlist {
       border-color: rgba(245, 158, 11, .4);
       background:
@@ -863,13 +863,13 @@
       background: linear-gradient(90deg, #f59e0b, #eab308);
     }
 
-    /* Variante compacta no modal — mais discreta */
+    /* Variante compacta no modal, mais discreta */
     .modal .vagas-counter {
       margin: 0 0 18px;
       padding: 10px 12px;
     }
 
-    /* Prova social rápida no hero — números entre subtítulo e price box */
+    /* Prova social rápida no hero, números entre subtítulo e price box */
     .hero__quick-proof {
       display: inline-flex; flex-wrap: wrap; align-items: baseline;
       gap: 12px;
@@ -962,7 +962,7 @@
     }
     /* Conteúdo do strip fica acima do fill */
     .hero__cta-pack__urgency > * { position: relative; z-index: 1; }
-    /* Crítico — quando >80% preenchido, strip fica vermelho pra urgência máxima */
+    /* Crítico, quando >80% preenchido, strip fica vermelho pra urgência máxima */
     .hero__cta-pack.is-critical .hero__cta-pack__urgency,
     .hero__cta-pack.is-waitlist .hero__cta-pack__urgency {
       border-color: rgba(239, 68, 68, .55);
@@ -1006,7 +1006,7 @@
       font-style: italic;
       margin-left: auto;
     }
-    /* Badge ESGOTADO! — aparece só quando vagas zeram */
+    /* Badge ESGOTADO!, aparece só quando vagas zeram */
     .hero__cta-pack__sold-out {
       display: none;
       font-family: var(--font-h);
@@ -1776,7 +1776,7 @@
       position: relative;
       overflow: hidden;
     }
-    /* Background sutil com pontos amarelos pulsando — clima de "scanner" */
+    /* Background sutil com pontos amarelos pulsando, clima de "scanner" */
     .pain-section::before {
       content: '';
       position: absolute; inset: 0;
@@ -1799,7 +1799,7 @@
       position: relative;
       z-index: 1;
     }
-    /* Card-diagnóstico — estilo "tela de app analisando" */
+    /* Card-diagnóstico, estilo "tela de app analisando" */
     .pain-diagnosis {
       position: sticky; top: 50px;
       padding: 0;
@@ -1833,7 +1833,7 @@
     .pain-diagnosis__inner {
       padding: 22px 24px 24px;
     }
-    /* Ícone grande do diagnóstico — visualiza "análise em andamento" */
+    /* Ícone grande do diagnóstico, visualiza "análise em andamento" */
     .pain-diagnosis__icon {
       width: 56px; height: 56px;
       border-radius: 16px;
@@ -1887,7 +1887,7 @@
       line-height: 1.55;
     }
     .pain-diagnosis__desc strong { color: var(--primary); }
-    /* Barra de progresso visual — substitui o "0/5 selecionadas" */
+    /* Barra de progresso visual, substitui o "0/5 selecionadas" */
     .pain-diagnosis__progress {
       margin-top: 18px;
       background: rgba(0, 0, 0, .35);
@@ -2123,7 +2123,7 @@
     }
 
     /* ─── QUEM SOMOS ────────────────────────────────────── */
-    /* Bridge entre seções — convida a conhecer a Carla */
+    /* Bridge entre seções, convida a conhecer a Carla */
     .section-bridge {
       background: var(--bg);
       padding: 56px 0 0;
@@ -2230,7 +2230,7 @@
       color: var(--text-mute);
       margin-top: 2px;
     }
-    /* Portrait da Carla — coluna direita do quem-somos */
+    /* Portrait da Carla, coluna direita do quem-somos */
     .quem-somos__portrait {
       display: flex; flex-direction: column;
       gap: 18px;
@@ -2292,7 +2292,7 @@
       font-weight: 600;
       margin-top: 2px;
     }
-    /* Polaroide flutuante com aluno aprovado — canto inferior esquerdo */
+    /* Polaroide flutuante com aluno aprovado, canto inferior esquerdo */
     .qs-portrait-polaroid {
       position: absolute;
       bottom: -30px;
@@ -2452,7 +2452,7 @@
     }
     .solution-card p strong { color: var(--primary); font-weight: 700; }
 
-    /* ─── MODULES (TRILHA — estrada vertical com fases alternadas) ─── */
+    /* ─── MODULES (TRILHA, estrada vertical com fases alternadas) ─── */
     .modules-section {
       background: var(--bg);
       padding: 80px 0;
@@ -2554,7 +2554,7 @@
       z-index: 0;
       pointer-events: none;
       background:
-        /* faixa lateral cruzada — outra estrada */
+        /* faixa lateral cruzada, outra estrada */
         linear-gradient(90deg,
           transparent 0%,
           #0a1124 10%,
@@ -2600,14 +2600,14 @@
       0%, 100% { transform: translateX(-50%) scale(1); }
       50%      { transform: translateX(-50%) scale(1.1); }
     }
-    /* Trilha — pista de asfalto vertical com fases zigzagueando */
+    /* Trilha, pista de asfalto vertical com fases zigzagueando */
     .trail-grid {
       position: relative;
       max-width: 920px;
       margin: 56px auto 0;
       padding: 8px 0;
     }
-    /* PISTA — asfalto cinza-azulado com center-line amarela tracejada */
+    /* PISTA, asfalto cinza-azulado com center-line amarela tracejada */
     .trail-grid::before {
       content: '';
       position: absolute;
@@ -2638,7 +2638,7 @@
         0 0 30px rgba(0, 0, 0, .4);
       z-index: 0;
     }
-    /* Cobertura cinza no trecho "em breve" (fases 4-7) — sobrepõe a amarela */
+    /* Cobertura cinza no trecho "em breve" (fases 4-7), sobrepõe a amarela */
     .trail-grid__future {
       position: absolute;
       top: calc(28px + (100% - 56px) * 0.428); /* depois da fase 3 */
@@ -2667,7 +2667,7 @@
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
       z-index: 1;
     }
-    /* CARRO — desce/sobe conforme scroll, vira na mudança de direção */
+    /* CARRO, desce/sobe conforme scroll, vira na mudança de direção */
     .trail-car {
       position: absolute;
       top: 28px;
@@ -2683,7 +2683,7 @@
       display: flex; align-items: center; justify-content: center;
       transition: transform .4s cubic-bezier(.32, 1.2, .35, 1);
     }
-    /* Direção do carro — descendo (default) ou subindo (mirror vertical) */
+    /* Direção do carro, descendo (default) ou subindo (mirror vertical) */
     .trail-car[data-direction="down"] .trail-car__inner {
       transform: rotate(90deg);
     }
@@ -2710,7 +2710,7 @@
       0%, 100% { transform: translateY(0) rotate(0deg); }
       50%      { transform: translateY(-1px) rotate(.5deg); }
     }
-    /* Motorista comemorando — aparece quando o carro chega no fim */
+    /* Motorista comemorando, aparece quando o carro chega no fim */
     .trail-car__driver {
       position: absolute;
       bottom: 100%;
@@ -2751,7 +2751,7 @@
       0%, 100% { transform: rotate(-12deg); }
       50%      { transform: rotate(20deg); }
     }
-    /* Estado "chegou no destino" — mostra motorista, contra-rotaciona o
+    /* Estado "chegou no destino", mostra motorista, contra-rotaciona o
        carro pra ficar reto (não inclinado), e dá um pulse */
     .trail-car.is-arrived .trail-car__inner {
       transform: rotate(0deg) !important;
@@ -2765,12 +2765,12 @@
       opacity: 1;
       transform: translateX(-50%) scale(1);
     }
-    /* Reduce motion — desliga animações de scroll-driven */
+    /* Reduce motion, desliga animações de scroll-driven */
     @media (prefers-reduced-motion: reduce) {
       .trail-car { display: none; }
     }
 
-    /* SERPENTINAS — chovem na TELA INTEIRA quando o carro chega no fim.
+    /* SERPENTINAS, chovem na TELA INTEIRA quando o carro chega no fim.
        position: fixed escapa do overflow:hidden do modules-section. */
     .confetti-burst {
       position: fixed;
@@ -2898,7 +2898,7 @@
       transform: translateY(-2px);
       box-shadow: 0 18px 44px rgba(0, 0, 0, .4), 0 0 0 1px var(--primary-soft) inset;
     }
-    /* HIGHLIGHT — quando o carro passa, a aula fica AMARELA */
+    /* HIGHLIGHT, quando o carro passa, a aula fica AMARELA */
     .trail-step.is-highlighted .trail-step__card {
       background: linear-gradient(160deg, rgba(255, 214, 10, .12) 0%, var(--surface) 100%);
       border-color: var(--primary);
@@ -2992,7 +2992,7 @@
       color: rgba(255, 255, 255, .55);
       border: 1px dashed rgba(255, 255, 255, .18);
     }
-    /* Variante "em breve" — dim card */
+    /* Variante "em breve", dim card */
     .trail-step--soon .trail-step__card {
       opacity: .68;
     }
@@ -3039,7 +3039,7 @@
     @media(max-width: 900px) { .modules-grid { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width: 540px) { .modules-grid { grid-template-columns: 1fr; } }
 
-    /* Card base — tipo "ficha de fase de jogo", com hierarquia visual forte */
+    /* Card base, tipo "ficha de fase de jogo", com hierarquia visual forte */
     .module-card {
       position: relative;
       padding: 32px 26px 28px;
@@ -3083,7 +3083,7 @@
       box-shadow: 0 0 0 1px rgba(255, 214, 10, .3) inset;
     }
 
-    /* Número da fase — peça gráfica grande no fundo */
+    /* Número da fase, peça gráfica grande no fundo */
     .module-card__num {
       position: absolute;
       top: 18px; right: 22px;
@@ -3101,7 +3101,7 @@
       -webkit-text-stroke-color: var(--primary);
     }
 
-    /* Badge de status — pílula menor, posicionada no topo-esquerdo */
+    /* Badge de status, pílula menor, posicionada no topo-esquerdo */
     .module-card__badge {
       display: inline-flex; align-items: center; gap: 5px;
       font-family: var(--font-h);
@@ -3140,7 +3140,7 @@
       border: 1px dashed rgba(255, 255, 255, .15);
     }
 
-    /* Variante "Em breve" — cinza esmaecido pra contrastar com disponíveis */
+    /* Variante "Em breve", cinza esmaecido pra contrastar com disponíveis */
     .module-card--soon::before {
       background: rgba(255, 255, 255, .15);
       box-shadow: none;
@@ -3164,7 +3164,7 @@
       box-shadow: 0 0 0 1px rgba(255, 255, 255, .12) inset;
     }
 
-    /* Ícone — círculo grande com gradiente da paleta */
+    /* Ícone, círculo grande com gradiente da paleta */
     .module-card__icon {
       width: 64px; height: 64px;
       border-radius: 18px;
@@ -3331,7 +3331,7 @@
       .vs-col--yes { border-bottom: 0; }
     }
 
-    /* Big blocks — 5 cards grandes que substituíram os 12 menores */
+    /* Big blocks, 5 cards grandes que substituíram os 12 menores */
     .big-blocks {
       display: flex; flex-direction: column;
       gap: 18px;
@@ -3348,16 +3348,16 @@
       border-left: 4px solid var(--primary);
       border-radius: 18px;
       transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-      /* Estado inicial — invisível, esperando o IntersectionObserver */
+      /* Estado inicial, invisível, esperando o IntersectionObserver */
       opacity: 0;
       will-change: opacity, transform;
     }
     /* Cada bloco tem uma entrada criativa diferente, baseada no tema do conteúdo */
-    .big-block[data-reveal="trail"]    { transform: translateX(-90px) rotate(-2deg); }   /* trilha — entra dirigindo da esquerda */
-    .big-block[data-reveal="medal"]    { transform: translateY(70px) scale(.92); }       /* medalha — sobe do chão como sendo entregue */
-    .big-block[data-reveal="crowd"]    { transform: translateX(90px) rotate(2deg); }     /* turma — chega da direita, como amigos */
-    .big-block[data-reveal="heart"]    { transform: scale(.6); }                          /* coração — pulsa do centro pra fora */
-    .big-block[data-reveal="gift"]     { transform: translateY(-70px) rotate(4deg); }    /* presente — cai de cima */
+    .big-block[data-reveal="trail"]    { transform: translateX(-90px) rotate(-2deg); }   /* trilha, entra dirigindo da esquerda */
+    .big-block[data-reveal="medal"]    { transform: translateY(70px) scale(.92); }       /* medalha, sobe do chão como sendo entregue */
+    .big-block[data-reveal="crowd"]    { transform: translateX(90px) rotate(2deg); }     /* turma, chega da direita, como amigos */
+    .big-block[data-reveal="heart"]    { transform: scale(.6); }                          /* coração, pulsa do centro pra fora */
+    .big-block[data-reveal="gift"]     { transform: translateY(-70px) rotate(4deg); }    /* presente, cai de cima */
     /* Revelado: anima pra posição final */
     .big-block.is-revealed {
       opacity: 1;
@@ -3366,7 +3366,7 @@
         opacity .9s ease,
         transform 1s cubic-bezier(.22, 1.4, .36, 1);
     }
-    /* Reduced motion — entra direto sem animação */
+    /* Reduced motion, entra direto sem animação */
     @media (prefers-reduced-motion: reduce) {
       .big-block { opacity: 1; transform: none; }
     }
@@ -3375,7 +3375,7 @@
       box-shadow: 0 14px 38px rgba(0, 0, 0, .35);
       border-left-color: var(--primary-2);
     }
-    /* Animação especial do ÍCONE de cada bloco — toca uma vez ao revelar,
+    /* Animação especial do ÍCONE de cada bloco, toca uma vez ao revelar,
        reforçando o tema visual (carro andando, medalha girando, etc.) */
     .big-block.is-revealed[data-reveal="trail"] .big-block__icon {
       animation: revealRoad .9s cubic-bezier(.22, 1.2, .36, 1) .2s both;
@@ -3548,7 +3548,7 @@
     }
 
     /* ─── DYNAMIC COURSES (auto-sync com Supabase) ────── */
-    /* Selo Habilitados Fundadores — chama atenção pra promoção limitada */
+    /* Selo Habilitados Fundadores, chama atenção pra promoção limitada */
     .founders-tag {
       display: flex;
       align-items: center;
@@ -3649,7 +3649,7 @@
       margin-bottom: 16px;
       flex: 1;
     }
-    /* Lista de tópicos (aulas/conteúdos) — substitui o desc quando há " · " */
+    /* Lista de tópicos (aulas/conteúdos), substitui o desc quando há " · " */
     .course-card__topics {
       list-style: none;
       padding: 0; margin: 0 0 16px;
@@ -3744,7 +3744,7 @@
       padding: 80px 0;
     }
 
-    /* ─── VALUE STACK — soma do que vai no pacote ───────── */
+    /* ─── VALUE STACK, soma do que vai no pacote ───────── */
     .value-stack {
       max-width: 720px;
       margin: 36px auto 0;
@@ -4204,10 +4204,10 @@
     .testi-col__inner--slow   { animation-duration: 22s; }
     .testi-col__inner--medium { animation-duration: 26s; }
     .testi-col__inner--fast   { animation-duration: 30s; }
-    /* ── Cards no estilo WhatsApp Dark — conversa real ──
+    /* ── Cards no estilo WhatsApp Dark, conversa real ──
        Cada card é uma "tela de chat aberta": header com avatar+nome em
        cima, e bolhas alternadas (aluno IN à esquerda + Carla OUT à direita)
-       imitando uma conversa de verdade — múltiplas mensagens curtas em
+       imitando uma conversa de verdade, múltiplas mensagens curtas em
        sequência, com timestamp por mensagem. */
     .testi-card {
       background: #0b141a;
@@ -4252,7 +4252,7 @@
       margin-top: 2px;
       font-weight: 500;
     }
-    /* Área de chat — bolhas empilhadas */
+    /* Área de chat, bolhas empilhadas */
     .testi-card__chat {
       display: flex; flex-direction: column;
       gap: 3px;
@@ -5466,7 +5466,7 @@
   </div>
   <div class="topbar__viewers" id="topbarViewers">
     <span class="topbar__viewers-dot"></span>
-    <span id="topbarViewersText">— pessoas vendo essa página agora</span>
+    <span id="topbarViewersText">Vendo essa página agora</span>
   </div>
 </div>
 
@@ -5513,7 +5513,7 @@
           </div>
         </div>
 
-        <!-- CTA com urgência integrada — bar preenche por trás do strip -->
+        <!-- CTA com urgência integrada, bar preenche por trás do strip -->
         <div class="hero__cta-pack" id="vagasCounter" data-vagas-mode="open">
           <div class="hero__cta-pack__urgency">
             <div id="vagasBarFill" class="hero__cta-pack__bar-fill"></div>
@@ -5536,15 +5536,15 @@
 
       <div class="hero__visual">
 
-        <!-- Carla — instrutora protagonista -->
+        <!-- Carla, instrutora protagonista -->
         <div class="hero-instructor">
-          <img src="/hero/instrutora.jpg" alt="Carla — sua instrutora" loading="eager" />
+          <img src="/hero/instrutora.jpg" alt="Carla, sua instrutora" loading="eager" />
           <div class="hero-instructor__name">
             <div class="hero-instructor__name-value">Carla</div>
           </div>
         </div>
 
-        <!-- Polaroide aluno aprovado — canto superior-direito -->
+        <!-- Polaroide aluno aprovado, canto superior-direito -->
         <div class="hero-portrait hero-portrait--top-right">
           <img class="hero-portrait__photo" src="/hero/aluna-aprovada.jpg" alt="Aluno aprovado" loading="eager" fetchpriority="high" />
           <div class="hero-portrait__caption">
@@ -5553,7 +5553,7 @@
           </div>
         </div>
 
-        <!-- Polaroide aluno aprovado — canto inferior-direito -->
+        <!-- Polaroide aluno aprovado, canto inferior-direito -->
         <div class="hero-portrait hero-portrait--bottom-right">
           <img class="hero-portrait__photo" src="/hero/aluno-aprovado.jpg" alt="Aluno aprovado" loading="eager" fetchpriority="high" />
           <div class="hero-portrait__caption">
@@ -5604,7 +5604,7 @@
                 </div>
               </div>
 
-              <!-- Slide 2: CURSOS — curso + aulas -->
+              <!-- Slide 2: CURSOS, curso + aulas -->
               <div class="phone-slide" data-screen="cursos">
                 <div class="phone-header">
                   <div class="phone-greeting">Olá, <strong>Aluna!</strong></div>
@@ -5821,7 +5821,7 @@
 
             </div><!-- /.phone-slides -->
 
-            <!-- Bottom nav (interactive — switches slides) -->
+            <!-- Bottom nav (interactive, switches slides) -->
             <div class="phone-bottom">
               <button class="phone-bottom__item" data-target="perfil">
                 <span class="material-symbols-outlined">person</span>
@@ -5868,7 +5868,7 @@
   <div class="container">
     <p class="eyebrow text-center">Aprovadas reais</p>
     <h2 class="section-title text-center">Quem <span>venceu o medo</span></h2>
-    <!-- Prova social numérica — abaixo do título, antes da galeria -->
+    <!-- Prova social numérica, abaixo do título, antes da galeria -->
     <div class="text-center">
       <div class="hero__quick-proof">
         <div class="qp-item">
@@ -5933,7 +5933,7 @@
           </li>
           <li data-pain="2" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">visibility_off</span></span>
-            <p><strong>Trava no trânsito de verdade</strong>Buzina, motoboy, carro do lado — o cérebro desliga.</p>
+            <p><strong>Trava no trânsito de verdade</strong>Buzina, motoboy, carro do lado. O cérebro desliga.</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="3" role="button" tabindex="0">
@@ -5981,7 +5981,7 @@
         <div class="quem-somos__credentials">
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">favorite</span></span>
-            <span>Método <strong>técnica + emoção</strong> — não só decoreba</span>
+            <span>Método <strong>técnica + emoção</strong>, não só decoreba</span>
           </div>
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">groups_2</span></span>
@@ -6295,7 +6295,7 @@
   </div>
 </section>
 
-<!-- ─── CURSOS PREMIUM (DINÂMICO — auto-sync com Supabase) ─── -->
+<!-- ─── CURSOS PREMIUM (DINÂMICO, auto-sync com Supabase) ─── -->
 <section class="dynamic-courses-section" id="dynamicCoursesSection">
   <div class="container--wide">
     <div class="founders-tag">
@@ -6398,7 +6398,7 @@
           <div class="vs-line__title">Garantia incondicional de 7 dias</div>
           <div class="vs-line__sub">Não gostou, devolve 100%</div>
         </div>
-        <div class="vs-line__price">— Risco zero —</div>
+        <div class="vs-line__price">Risco zero</div>
       </div>
 
       <div class="vs-total">
@@ -6561,7 +6561,7 @@
           <div class="guarantee-bullet"><span class="material-symbols-outlined">check_circle</span> Sem burocracia</div>
           <div class="guarantee-bullet"><span class="material-symbols-outlined">check_circle</span> 100% do valor</div>
         </div>
-        <p class="guarantee-signature">— Carla 🙏</p>
+        <p class="guarantee-signature">Carla 🙏</p>
       </div>
     </div>
   </div>
@@ -6606,7 +6606,7 @@
     <div class="faq-list">
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Sirvo se eu sou homem? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim, totalmente. O método não tem gênero — funciona pra qualquer pessoa que tem medo, ansiedade ou trava ao volante. Tem alunos homens vencendo o medo no app, igual.</div>
+        <div class="faq-a">Sim, totalmente. O método não tem gênero. Funciona pra qualquer pessoa que tem medo, ansiedade ou trava ao volante. Tem alunos homens vencendo o medo no app, igual.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Sirvo se eu nunca tirei CNH? <span class="chev material-symbols-outlined">expand_more</span></button>
@@ -6614,19 +6614,19 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Eu tirei CNH faz tempo e nunca dirigi. Funciona? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Funciona — esse é exatamente o perfil mais comum dos nossos alunos. Você revisa o básico no seu ritmo e vai destravando camada por camada, sem pressão de auto escola.</div>
+        <div class="faq-a">Funciona. Esse é exatamente o perfil mais comum dos nossos alunos. Você revisa o básico no seu ritmo e vai destravando camada por camada, sem pressão de auto escola.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Preciso ter carro pra começar? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Não. As aulas funcionam mesmo sem carro — você simula mentalmente os comandos, vê os vídeos e prepara a confiança. Quando for pra prática real (com auto escola, instrutor ou parente), vai com base.</div>
+        <div class="faq-a">Não. As aulas funcionam mesmo sem carro. Você simula mentalmente os comandos, vê os vídeos e prepara a confiança. Quando for pra prática real (com auto escola, instrutor ou parente), vai com base.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Quanto tempo até eu dirigir sozinho? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">A média dos alunos é de 21 dias pro primeiro trajeto sozinho com confiança. Mas depende do seu ritmo — alguns levam 7 dias, outros 60. O importante é não pular etapas.</div>
+        <div class="faq-a">A média dos alunos é de 21 dias pro primeiro trajeto sozinho com confiança. Mas depende do seu ritmo. Alguns levam 7 dias, outros 60. O importante é não pular etapas.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">É só pelas 100 vagas mesmo? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim. A oferta "Habilitados Fundadores" — 3 cursos juntos por R$ 97 — é só pros 100 primeiros acessos. Depois disso, os cursos viram pacote separado e o preço sobe. Você acompanha o número exato no card de vagas no topo da página.</div>
+        <div class="faq-a">Sim. A oferta "Habilitados Fundadores" (3 cursos juntos por R$ 97) é só pros 100 primeiros acessos. Depois disso, os cursos viram pacote separado e o preço sobe. Você acompanha o número exato no card de vagas no topo da página.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Como funciona o pagamento? Posso parcelar? <span class="chev material-symbols-outlined">expand_more</span></button>
@@ -6638,11 +6638,11 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">E se eu não gostar? Tem reembolso? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Garantia incondicional de 7 dias. Não gostou — manda um email dentro do prazo e devolvo 100% do valor. Sem pergunta, sem burocracia.</div>
+        <div class="faq-a">Garantia incondicional de 7 dias. Não gostou? Manda um email dentro do prazo e devolvo 100% do valor. Sem pergunta, sem burocracia.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Funciona no iPhone, Android e computador? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Funciona em tudo. O app roda direto no navegador do celular (iOS, Android) e no desktop. Não precisa baixar nada — é só fazer login.</div>
+        <div class="faq-a">Funciona em tudo. O app roda direto no navegador do celular (iOS, Android) e no desktop. Não precisa baixar nada, é só fazer login.</div>
       </div>
     </div>
 
@@ -6697,12 +6697,12 @@
 
   <div class="footer__bottom">
     <p>
-      © 2026 Medo de Dirigir Nunca Mais — Todos os direitos reservados.
+      © 2026 Medo de Dirigir Nunca Mais. Todos os direitos reservados.
       <br/>
       <small>
         Programa educacional sem vínculo institucional com o Detran.
         Resultados variam conforme dedicação de cada aluno.
-        Cidade do Rio de Janeiro — RJ.
+        Cidade do Rio de Janeiro / RJ.
       </small>
     </p>
   </div>
@@ -6833,7 +6833,7 @@
 </div>
 
 <script>
-  // Tema travado em "dark" — paleta navy + amarelo (sem opção de claro).
+  // Tema travado em "dark", paleta navy + amarelo (sem opção de claro).
 
   // ── BIG-BLOCKS REVEAL (entradas criativas conforme scroll) ─
   // Cada bloco tem data-reveal=trail|medal|crowd|heart|gift e entra com
@@ -6940,14 +6940,14 @@
         s.classList.toggle('is-highlighted', s === nearest && minDist < 120);
       });
 
-      // Estado "chegou" — quando passa de 90% da trilha (perto do último marker)
+      // Estado "chegou", quando passa de 90% da trilha (perto do último marker)
       const justArrived = progress > 0.9;
       if (justArrived !== arrived) {
         arrived = justArrived;
         car.classList.toggle('is-arrived', arrived);
       }
 
-      // Confetti DEVE acompanhar a visibilidade da mensagem "Conseguiu!" —
+      // Confetti DEVE acompanhar a visibilidade da mensagem "Conseguiu!" ,
       // ou seja, só roda quando o carro está visível na viewport E arrived=true.
       // Se o usuário rola pra fora da seção, a mensagem some e o confetti também.
       const carRect = car.getBoundingClientRect();
@@ -6980,22 +6980,22 @@
     const countEl = document.getElementById('painCount');
     if (!list) return;
 
-    // Cada diagnóstico aponta a SOLUÇÃO — qual fase do método trata aquele
+    // Cada diagnóstico aponta a SOLUÇÃO, qual fase do método trata aquele
     // sintoma. Linguagem neutra (homem + mulher). Combos de 2/3/4/5 sintomas
     // reforçam que o método tem fase pra cada um.
     const DIAGNOSES = {
-      // Estado inicial — nada selecionado
+      // Estado inicial, nada selecionado
       0: { t: 'Marque os sinais que você sente', d: 'Pra <strong>cada um</strong> deles o método tem uma fase específica. Vai marcando que eu te mostro.' },
       // Seleção única
       1:  { t: 'Ansiedade antes da chave', d: '<strong>Fase 1</strong> trabalha respiração + checkpoint pré-carro. Você chega ao volante já calmo.' },
-      2:  { t: 'Trava no trânsito real', d: '<strong>Fase 4</strong> te expõe aos gatilhos (buzina, motoboy, lateral) em camadas progressivas — sem o pânico do real.' },
-      4:  { t: 'Depende de carona pra tudo', d: 'Em <strong>21 dias</strong> você dirige sozinho pros lugares do dia a dia. Mercado, médico, escola — sem pedir favor.' },
+      2:  { t: 'Trava no trânsito real', d: '<strong>Fase 4</strong> te expõe aos gatilhos (buzina, motoboy, lateral) em camadas progressivas, sem o pânico do real.' },
+      4:  { t: 'Depende de carona pra tudo', d: 'Em <strong>21 dias</strong> você dirige sozinho pros lugares do dia a dia. Mercado, médico, escola. Sem pedir favor.' },
       8:  { t: 'CNH parada na gaveta', d: '<strong>75% dos nossos alunos</strong> já tinham CNH e travavam. O método foi desenhado pra exatamente esse perfil.' },
-      16: { t: 'Auto escola não resolveu', d: '<strong>Falta método pro emocional</strong> — não falta aula. Aqui você trabalha técnica + cabeça em paralelo.' },
+      16: { t: 'Auto escola não resolveu', d: '<strong>Falta método pro emocional</strong>, não falta aula. Aqui você trabalha técnica + cabeça em paralelo.' },
       // Combos (qualquer combinação de N sintomas)
       _combo2: { t: 'Dois sinais, um método só', d: 'Os dois sintomas que você marcou têm <strong>fase específica</strong> no programa. Trabalha um, depois o outro.' },
       _combo3: { t: 'Três sinais batendo juntos', d: 'Esse é o <strong>perfil principal</strong> dos nossos alunos. Cada sinal vira foco numa fase do método.' },
-      _combo4: { t: 'Você se identifica forte', d: '4 dos 5 sintomas — <strong>exatamente</strong> o público pra quem o método foi desenhado. Cada um tem tratamento.' },
+      _combo4: { t: 'Você se identifica forte', d: '4 dos 5 sintomas. <strong>Exatamente</strong> o público pra quem o método foi desenhado. Cada um tem tratamento.' },
       31:      { t: 'Combo completo do medo', d: 'Os 5 sintomas estão em você. <strong>Boa notícia:</strong> o método ataca todos em paralelo, fase por fase, em 21 dias.' }
     };
 
@@ -7030,7 +7030,7 @@
 
   // ── COUNT-UP STATS ────────────────────────────────────
   (function() {
-    // Selector ESPECÍFICO — não pega [data-target] genérico (a bottom nav do
+    // Selector ESPECÍFICO, não pega [data-target] genérico (a bottom nav do
     // mockup usa data-target pra navegação, e parsear "perfil" vira NaN).
     const nums = document.querySelectorAll(
       '.qs-stat__val[data-target], .proof-num__val[data-target]'
@@ -7309,7 +7309,7 @@
     } catch (e) {
       console.warn('[vagas] falha ao buscar contagem:', e);
     }
-    // Fallback caso a RPC ainda não exista — assume 73 vagas restantes
+    // Fallback caso a RPC ainda não exista, assume 73 vagas restantes
     // (urgência sem ser irrealista). Substitua por valor real quando criar a RPC.
     vagasRestantes = 73;
     renderVagas();
@@ -7344,7 +7344,7 @@
       el.textContent = vagasRestantes;
     });
 
-    // Barra preenche por trás do strip de acordo com quantos inscritos —
+    // Barra preenche por trás do strip de acordo com quantos inscritos ,
     // 1 inscrito = ~1% verde, 100 = 100% vermelho + ESGOTADO
     document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
       const isHeroFill = el.id === 'vagasBarFill'; // hero usa background com opacity
@@ -7371,7 +7371,7 @@
 
     document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
       el.classList.toggle('is-waitlist', modoListaEspera);
-      // Crítico — só passa pra vermelho quando >80% da turma já está preenchida
+      // Crítico, só passa pra vermelho quando >80% da turma já está preenchida
       el.classList.toggle('is-critical', !modoListaEspera && pctFilled >= 80);
       el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
     });
@@ -7389,7 +7389,7 @@
       el.textContent = modoListaEspera ? 'Lista de espera' : 'Vagas limitadas';
     });
 
-    // Modal — título, subtítulo, botão e CTAs externos mudam quando esgota
+    // Modal, título, subtítulo, botão e CTAs externos mudam quando esgota
     const modalTitle  = document.getElementById('modalTitle');
     const modalSub    = document.getElementById('modalSub');
     const modalSubmit = document.getElementById('modalSubmit');
@@ -7453,9 +7453,9 @@
     if (e.key === 'Escape') closeLeadModal();
   });
 
-  // ── APROVADAS — galeria horizontal em loop infinito (right→left) ────
+  // ── APROVADAS, galeria horizontal em loop infinito (right→left) ────
   // Popula com a lista do manifest.json e duplica pra criar o efeito de
-  // loop contínuo via translateX(-50%) em CSS. Sem botões, sem dots —
+  // loop contínuo via translateX(-50%) em CSS. Sem botões, sem dots ,
   // marquee puro com pause-on-hover. Pra mais fotos: atualizar manifest.
   (function() {
     const track = document.getElementById('approvedTrack');
@@ -7491,7 +7491,7 @@
   // ── DYNAMIC COURSES (auto-sync com Supabase) ─────────
   // Busca os cursos publicados no banco e renderiza os cards.
   // Quando o admin adicionar um novo curso pelo /admin/lms, ele aparece
-  // automaticamente aqui na próxima visita à página — zero deploy.
+  // automaticamente aqui na próxima visita à página, zero deploy.
   (function() {
     const SUPABASE_URL  = 'https://qkvinhzwiptfobdvsdtr.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdmluaHp3aXB0Zm9iZHZzZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzE5NzYsImV4cCI6MjA5MDA0Nzk3Nn0.HdleSrgGuymiA3a72aAITy0K5wHaYvcVmESYNzSGZ-M';
@@ -7620,7 +7620,7 @@
       }
     }
 
-    // Auto-rotate a cada 1,75s — ciclo permanente (não para com clique)
+    // Auto-rotate a cada 1,75s, ciclo permanente (não para com clique)
     let idx = 0;
     let paused = false;
     const INTERVAL = 1750;
@@ -7630,7 +7630,7 @@
       activate(SCREENS[idx].id);
     }, INTERVAL);
 
-    // Click handlers — pula pra tela mas mantém ciclo rodando a partir dali
+    // Click handlers, pula pra tela mas mantém ciclo rodando a partir dali
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         const targetIdx = SCREENS.findIndex(s => s.id === btn.dataset.target);
@@ -7690,7 +7690,7 @@
       if (t) t.classList.add('is-active');
     }
 
-    // Spin com efeito de "peso" — sempre cai num 10% OFF, com overshoot e volta
+    // Spin com efeito de "peso", sempre cai num 10% OFF, com overshoot e volta
     let isSpinning = false;
     window.spinRoulette = function() {
       if (isSpinning) return;
