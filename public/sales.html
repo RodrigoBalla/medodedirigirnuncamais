@@ -4414,15 +4414,14 @@
       display: flex;
       gap: 24px;
       width: max-content;
-      animation: approvedScroll 90s linear infinite;
+      animation: approvedScroll 30s linear infinite;
       will-change: transform;
-    }
-    .approved-marquee:hover .approved-marquee__track {
-      animation-play-state: paused;
+      transform: translateZ(0); /* força GPU layer no iOS */
+      backface-visibility: hidden;
     }
     @keyframes approvedScroll {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
+      from { transform: translate3d(0, 0, 0); }
+      to   { transform: translate3d(-50%, 0, 0); }
     }
     .approved-slide {
       flex: 0 0 auto;
@@ -4443,7 +4442,7 @@
       display: block;
     }
     @media (max-width: 768px) {
-      .approved-marquee__track { gap: 14px; animation-duration: 60s; }
+      .approved-marquee__track { gap: 14px; animation-duration: 22s; }
       .approved-slide { width: 200px; }
     }
 
