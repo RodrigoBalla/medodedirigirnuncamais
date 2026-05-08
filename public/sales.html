@@ -7930,9 +7930,13 @@
       }
       // Duplicamos a lista pra que, quando translateX(-50%) chegar ao fim,
       // a 2ª metade já esteja no lugar e o loop pareça contínuo.
+      // loading="eager" + decoding="async" garante que as imagens carreguem
+      // ANTES do marquee precisar mostrá-las (lazy quebra o efeito visual
+      // porque imagens fora do viewport visível não baixam até a animação
+      // chegar nelas, criando "buracos" brancos).
       const html = images.map(file => `
         <div class="approved-slide">
-          <img src="/aprovados/${file}" alt="Aluno aprovado" loading="lazy" />
+          <img src="/aprovados/${file}" alt="Aluno aprovado" loading="eager" decoding="async" fetchpriority="low" onerror="this.parentElement.style.display='none'" />
         </div>
       `).join('');
       track.innerHTML = html + html;
