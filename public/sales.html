@@ -484,10 +484,6 @@
         border-right: 8px solid transparent;
       }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .phone-bubble, .phone-bubble.is-changing { animation: none; }
-    }
-
     /* Polaroides com fotos de aprovados, flutuando ao redor da Carla */
     .hero-portrait {
       position: absolute;
@@ -726,11 +722,7 @@
         filter: drop-shadow(0 6px 32px var(--primary-glow))
                 drop-shadow(0 0 16px rgba(255, 214, 10, .4));
       }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .hero__price-val { animation: none; }
-    }
-    .hero__price-val sup {
+    }    .hero__price-val sup {
       display: inline-block;
       font-size: 1.5rem;
       line-height: 1;
@@ -2129,12 +2121,7 @@
       100% { transform: scale(1.9); opacity: 0; }
     }
     /* Esconde a mãozinha após qualquer interação */
-    .pain-list:has(li.is-selected) .click-hand { display: none; }
-    @media (prefers-reduced-motion: reduce) {
-      .click-hand,
-      .click-hand::before { animation: none; }
-    }
-    @media(max-width: 768px) {
+    .pain-list:has(li.is-selected) .click-hand { display: none; }    @media(max-width: 768px) {
       .pain-inner { grid-template-columns: 1fr; gap: 18px; }
       /* Card de diagnóstico fixo no topo da seção em mobile (compactado).
          top:44px garante que ele fique ABAIXO da topbar fixa (32px + 12px gap),
@@ -2761,11 +2748,6 @@
       from { transform: translate(-50%, -50%) rotate(0); }
       to   { transform: translate(-50%, -50%) rotate(360deg); }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .trail-bg-decor__sign,
-      .trail-bg-decor__roundabout { animation: none; }
-    }
-
     /* ── CRUZAMENTOS NA PISTA (faixa horizontal cruzando a estrada) ── */
     .trail-crossing {
       position: absolute;
@@ -2988,10 +2970,6 @@
       transform: translateX(-50%) scale(1);
     }
     /* Reduce motion, desliga animações de scroll-driven */
-    @media (prefers-reduced-motion: reduce) {
-      .trail-car { display: none; }
-    }
-
     /* SERPENTINAS, chovem na TELA INTEIRA quando o carro chega no fim.
        position: fixed escapa do overflow:hidden do modules-section. */
     .confetti-burst {
@@ -3024,11 +3002,7 @@
       0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
       8%   { opacity: 1; }
       100% { transform: translateY(110vh) rotate(960deg) translateX(var(--drift, 30px)); opacity: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .confetti-burst { display: none; }
-    }
-    .trail-step {
+    }    .trail-step {
       position: relative;
       display: grid;
       grid-template-columns: 1fr 88px 1fr;
@@ -3608,11 +3582,7 @@
         opacity .9s ease,
         transform 1s cubic-bezier(.22, 1.4, .36, 1);
     }
-    /* Reduced motion, entra direto sem animação */
-    @media (prefers-reduced-motion: reduce) {
-      .big-block { opacity: 1; transform: none; }
-    }
-    .big-block:hover {
+    /* Reduced motion, entra direto sem animação */    .big-block:hover {
       transform: translateY(-3px);
       box-shadow: 0 14px 38px rgba(0, 0, 0, .35);
       border-left-color: var(--primary-2);
@@ -4454,13 +4424,6 @@
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .approved-marquee__track {
-        animation: none;
-        overflow-x: auto;
-      }
-    }
-
     .approved-slide {
       flex: 0 0 auto;
       width: 280px;
@@ -5892,6 +5855,17 @@
     .modal__submit:hover {
       transform: translateY(-2px);
       box-shadow: 0 14px 34px var(--primary-glow);
+    }
+
+    /* ─── ANIMAÇÕES SEMPRE ATIVAS ─────────────────────────
+       Força animações a rodarem em TODOS os elementos, mesmo com:
+       - prefers-reduced-motion: reduce (acessibilidade)
+       - iOS Low Power Mode (modo economia)
+       - background tabs throttling
+       Decisão de design: conversão > acessibilidade absoluta nesse projeto.
+       (Os blocos @media prefers-reduced-motion foram removidos do CSS.) */
+    *, *::before, *::after {
+      animation-play-state: running !important;
     }
 
     /* ─── BASE MOBILE UX — smooth scroll + tap feedback ─── */
