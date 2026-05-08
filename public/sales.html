@@ -2122,10 +2122,12 @@
     }
     @media(max-width: 768px) {
       .pain-inner { grid-template-columns: 1fr; gap: 18px; }
-      /* Card de diagnóstico fixo no topo da seção em mobile (compactado) */
+      /* Card de diagnóstico fixo no topo da seção em mobile (compactado).
+         top:44px garante que ele fique ABAIXO da topbar fixa (32px + 12px gap),
+         senão o topo do card ficava atrás do ticker amarelo. */
       .pain-diagnosis {
         position: sticky;
-        top: 12px;
+        top: 44px;
         z-index: 5;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
