@@ -594,10 +594,10 @@
       grid-template-columns: 1fr 1fr;
       align-items: center;
       gap: 48px;
-      padding: 19px 0 80px; /* 24→19 (-20% no top) */
+      padding: 15px 0 64px; /* desktop: -20% adicional (19→15 / 80→64) */
     }
     .hero__content { min-width: 0; }
-    .hero__badge { margin-bottom: 22px; }
+    .hero__badge { margin-bottom: 18px; } /* -20%: 22→18 */
     .hero__title {
       font-family: var(--font-h);
       font-weight: 800;
@@ -6096,9 +6096,9 @@
 
     /* ─── RESPONSIVE ───────────────────────────────────── */
     @media(max-width: 768px) {
-      .hero__row { grid-template-columns: 1fr; gap: 32px; padding: 13px 0 48px; text-align: center; } /* 16→13 (-20% no top) */
+      .hero__row { grid-template-columns: 1fr; gap: 28px; padding: 10px 0 38px; text-align: center; } /* mobile: -20% adicional em todos */
       /* Hero também recebe padding-top reduzido (override do section { padding-top:56 }) */
-      .hero { padding-top: 45px !important; } /* 56→45 (-20%) */
+      .hero { padding-top: 36px !important; padding-bottom: 36px !important; } /* mobile: 45→36 / 56→36 (-20%) */
       .hero__visual { order: 2; }
       .hero__content { order: 1; }
       .hero__price-box { text-align: left; }
