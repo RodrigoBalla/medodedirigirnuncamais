@@ -4963,28 +4963,54 @@
       margin-top: 6px;
     }
 
-    /* ─── FAQ ──────────────────────────────────────────── */
-    .faq-section { background: var(--bg-2); padding: 80px 0; }
+    /* ─── FAQ (fundo amarelo, cards navy escuro pra contraste forte) ── */
+    .faq-section {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      padding: 80px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .faq-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, .12) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 100%, rgba(0, 0, 0, .08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .faq-section .container { position: relative; z-index: 1; }
+    /* Eyebrow + título virados em navy pra contrastar com fundo amarelo */
+    .faq-section .eyebrow { color: rgba(11, 26, 56, .7); }
+    .faq-section .section-title { color: #0B1A38; }
+    .faq-section .section-title span { color: rgba(11, 26, 56, .7); }
     .faq-list {
       max-width: 760px;
       margin: 32px auto 0;
       display: grid; gap: 10px;
     }
     .faq-item {
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius);
+      background: rgba(11, 26, 56, .92);
+      border: 1px solid rgba(11, 26, 56, .35);
+      border-radius: 14px;
       overflow: hidden;
-      transition: border-color .2s ease;
+      transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+      backdrop-filter: blur(4px);
     }
-    .faq-item:has(.faq-q.open) { border-color: var(--primary); }
+    .faq-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+    }
+    .faq-item:has(.faq-q.open) {
+      border-color: rgba(255, 255, 255, .15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+    }
     .faq-q {
       width: 100%;
       background: transparent;
       border: none;
-      color: var(--text);
+      color: #FFFFFF;
       font-family: var(--font-h);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1rem;
       text-align: left;
       padding: 20px 24px;
@@ -4995,7 +5021,7 @@
       gap: 12px;
       transition: background .2s ease;
     }
-    .faq-q:hover { background: var(--primary-soft); }
+    .faq-q:hover { background: rgba(255, 255, 255, .04); }
     .faq-q .chev {
       color: var(--primary);
       font-size: 1rem;
@@ -5006,11 +5032,12 @@
     .faq-a {
       display: none;
       padding: 0 24px 22px;
-      color: var(--text-mute);
+      color: rgba(255, 255, 255, .75);
       font-size: .95rem;
       line-height: 1.7;
     }
     .faq-a.open { display: block; }
+    .faq-a strong { color: var(--primary); }
 
     /* ─── FINAL CTA ────────────────────────────────────── */
     /* CTA final: fundo amarelo → texto navy escuro pra contraste AAA.
@@ -7105,16 +7132,6 @@
     <!-- Sentinel invisível: quando ele entra na viewport, dispara a roleta
          AUTOMATICAMENTE 1x por sessão (sem botão visível). -->
     <div id="rouletteTrigger" aria-hidden="true" style="height:1px"></div>
-  </div>
-</section>
-
-<!-- ─── FINAL CTA ─── -->
-<section class="final-cta">
-  <div class="container">
-    <h2>Vamos juntos?</h2>
-    <p>R$ 97 · uma vez só · acesso vitalício</p>
-    <button class="btn btn--primary" onclick="openLeadModal()">QUERO COMEÇAR AGORA</button>
-    <p class="final-cta__note">7 dias de garantia · Risco zero</p>
   </div>
 </section>
 
