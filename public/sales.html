@@ -5051,106 +5051,6 @@
       margin-top: 6px;
     }
 
-    /* ─── FINAL CLOSE (CTA de fechamento com urgência) ─── */
-    .final-close {
-      background: var(--bg);
-      padding: 80px 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .final-close::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 0%, var(--primary-soft) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 100%, rgba(255, 214, 10, .04) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .final-close .container { position: relative; z-index: 1; }
-    .final-close__card {
-      max-width: 720px; margin: 0 auto;
-      text-align: center;
-      padding: 48px 32px;
-      background: linear-gradient(160deg, var(--surface), var(--bg-3));
-      border: 2px solid var(--primary);
-      border-radius: 24px;
-      box-shadow:
-        0 30px 80px var(--primary-glow),
-        0 0 0 1px var(--primary-soft) inset;
-      position: relative;
-    }
-    .final-close__urgency {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(239, 68, 68, .12);
-      border: 1px solid rgba(239, 68, 68, .35);
-      color: #ef4444;
-      font-family: var(--font-h);
-      font-weight: 800;
-      font-size: .72rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      padding: 8px 16px;
-      border-radius: 100px;
-      margin-bottom: 24px;
-    }
-    .final-close__urgency .material-symbols-outlined {
-      font-size: 16px;
-      animation: dotPulse 1.4s ease-in-out infinite;
-    }
-    .final-close__urgency strong { font-size: .88rem; }
-    .final-close__title {
-      font-family: var(--font-h);
-      font-weight: 900;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      color: var(--text);
-      line-height: 1.2;
-      margin: 0 0 16px;
-      letter-spacing: -.02em;
-    }
-    .final-close__title span { color: var(--primary); }
-    .final-close__text {
-      color: var(--text-mute);
-      font-size: 1rem;
-      line-height: 1.65;
-      max-width: 520px;
-      margin: 0 auto 28px;
-    }
-    .final-close__text strong { color: var(--text); font-weight: 700; }
-    .final-close__btn {
-      display: inline-flex !important; align-items: center; justify-content: center; gap: 10px;
-      padding: 22px 36px !important;
-      font-size: 1.08rem !important;
-      width: 100%; max-width: 480px;
-    }
-    .final-close__btn .material-symbols-outlined { font-size: 22px; }
-    .final-close__trust {
-      display: flex; align-items: center; justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px 18px;
-      margin: 18px auto 8px;
-      font-size: .82rem;
-      color: var(--text-mute);
-      font-weight: 600;
-    }
-    .final-close__trust span {
-      display: inline-flex; align-items: center; gap: 5px;
-    }
-    .final-close__trust .material-symbols-outlined {
-      font-size: 16px;
-      color: var(--primary);
-    }
-    .final-close__signature {
-      margin-top: 14px;
-      font-family: 'Caveat', cursive;
-      color: var(--primary);
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
-    @media(max-width: 480px) {
-      .final-close__card { padding: 36px 22px; }
-      .final-close__title { font-size: 1.5rem; }
-      .final-close__urgency { font-size: .65rem; padding: 7px 12px; }
-    }
 
     /* ─── FAQ (fundo amarelo, cards navy escuro pra contraste forte) ── */
     .faq-section {
@@ -7176,36 +7076,6 @@
   </div>
 </section>
 
-<!-- ─── FINAL CTA (fechamento com urgência real) ─── -->
-<section class="final-close">
-  <div class="container">
-    <div class="final-close__card">
-      <div class="final-close__urgency">
-        <span class="material-symbols-outlined filled">bolt</span>
-        <span>Restam <strong id="finalCloseVagas">100</strong>/100 vagas de Fundador</span>
-      </div>
-      <h2 class="final-close__title">
-        Você pode dirigir <span>em 21 dias</span>.<br>
-        Ou continuar onde está.
-      </h2>
-      <p class="final-close__text">
-        <strong>R$ 97</strong> uma vez. <strong>7 dias de garantia</strong>. Sem mensalidade. Sem letra miúda.<br>
-        Se não funcionar pra você, devolvo 100%.
-      </p>
-      <button class="btn btn--primary final-close__btn" onclick="openLeadModal()">
-        <span class="material-symbols-outlined filled">directions_car</span>
-        QUERO MINHA VAGA AGORA
-      </button>
-      <div class="final-close__trust">
-        <span><span class="material-symbols-outlined">lock</span> Compra segura</span>
-        <span><span class="material-symbols-outlined">verified_user</span> 7 dias de garantia</span>
-        <span><span class="material-symbols-outlined">credit_card</span> Parcelado</span>
-      </div>
-      <p class="final-close__signature">— Carla 🙏</p>
-    </div>
-  </div>
-</section>
-
 <!-- ─── FOOTER ─── -->
 <footer class="footer">
   <div class="footer__bottom">
@@ -7947,8 +7817,8 @@
     const pctFilled = 100 - pct; // 1 inscrito = ~1% preenchido (verde) / 100 = vermelho
     modoListaEspera = vagasRestantes <= 0;
 
-    // Atualiza todos os contadores (hero + modal + final-close)
-    document.querySelectorAll('#vagasRemaining, #modalVagasRemaining, #finalCloseVagas').forEach(el => {
+    // Atualiza todos os contadores (hero + modal)
+    document.querySelectorAll('#vagasRemaining, #modalVagasRemaining').forEach(el => {
       el.textContent = vagasRestantes;
     });
 
