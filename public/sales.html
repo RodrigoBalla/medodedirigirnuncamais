@@ -4132,67 +4132,148 @@
       line-height: 1.55;
     }
 
-    /* ─── FOR WHO ──────────────────────────────────────── */
-    .for-section { background: var(--bg); padding: 80px 0; }
+    /* ─── FOR WHO (cards verticais com ícones e hover premium) ──── */
+    .for-section {
+      background: var(--bg);
+      padding: 80px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .for-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, var(--primary-soft) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 100%, rgba(255, 214, 10, .04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .for-section .container {
+      position: relative;
+      z-index: 1;
+    }
     .for-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-top: 32px;
+      gap: 18px;
+      margin-top: 40px;
     }
     @media(max-width: 768px) { .for-grid { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width: 480px) { .for-grid { grid-template-columns: 1fr; } }
     .for-item {
       position: relative;
-      background: var(--surface);
+      background: linear-gradient(160deg, var(--surface) 0%, var(--bg-3) 100%);
       border: 1px solid var(--border-strong);
-      border-radius: 14px;
-      padding: 22px 20px;
-      display: flex; gap: 14px;
-      transition: all .25s ease;
+      border-radius: 18px;
+      padding: 26px 24px 22px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition:
+        transform .35s cubic-bezier(.32, 1.2, .35, 1),
+        border-color .35s ease,
+        box-shadow .35s ease;
+    }
+    /* Glow ambiente no hover */
+    .for-item::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 100% 0%, var(--primary-soft) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .4s ease;
+      pointer-events: none;
     }
     .for-item:hover {
-      transform: translateY(-3px);
-      background: var(--primary-soft);
+      transform: translateY(-6px) scale(1.015);
       border-color: var(--primary);
+      box-shadow:
+        0 22px 50px var(--primary-glow),
+        0 0 0 1px var(--primary-soft) inset;
     }
+    .for-item:hover::before { opacity: 1; }
+
     .for-item__num {
+      position: absolute;
+      top: 18px; right: 22px;
       font-family: var(--font-h);
       font-weight: 800;
-      font-size: 1.8rem;
-      color: var(--primary);
-      opacity: .25;
-      line-height: 1;
-      transition: opacity .25s ease;
+      font-size: .72rem;
+      color: var(--text-subtle);
+      letter-spacing: .14em;
+      z-index: 2;
+      transition: color .35s ease;
     }
-    .for-item:hover .for-item__num { opacity: .6; }
+    .for-item:hover .for-item__num { color: var(--primary); }
+
+    .for-item__icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: rgba(255, 214, 10, .08);
+      border: 1px solid rgba(255, 214, 10, .25);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+      transition:
+        background .4s ease,
+        border-color .4s ease,
+        color .4s ease,
+        transform .45s cubic-bezier(.32, 1.5, .35, 1),
+        box-shadow .4s ease;
+    }
+    .for-item__icon .material-symbols-outlined { font-size: 30px; }
+    .for-item:hover .for-item__icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-color: var(--primary);
+      color: #0B1A38;
+      transform: rotate(-6deg) scale(1.08);
+      box-shadow: 0 10px 26px var(--primary-glow);
+    }
+
     .for-item__title {
       font-family: var(--font-h);
-      font-weight: 700;
-      font-size: 1rem;
+      font-weight: 800;
+      font-size: 1.08rem;
       color: var(--text);
-      margin-bottom: 4px;
+      margin: 0 0 6px;
+      letter-spacing: -.01em;
+      line-height: 1.25;
+      position: relative;
+      z-index: 1;
+      transition: color .35s ease;
     }
+    .for-item:hover .for-item__title { color: var(--primary); }
+
     .for-item__desc {
       color: var(--text-mute);
-      font-size: .82rem;
+      font-size: .88rem;
       line-height: 1.55;
+      margin: 0 0 16px;
+      position: relative;
+      z-index: 1;
     }
+
     .for-item__check {
-      position: absolute;
-      top: 14px; right: 14px;
-      width: 22px; height: 22px;
+      align-self: flex-start;
+      width: 30px; height: 30px;
       border-radius: 50%;
-      background: var(--primary-soft);
+      background: rgba(255, 214, 10, .15);
       color: var(--primary);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; font-weight: 800;
-      transition: all .25s ease;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      margin-top: auto;
+      position: relative;
+      z-index: 1;
+      transition: all .45s cubic-bezier(.32, 1.5, .35, 1);
     }
+    .for-item__check .material-symbols-outlined { font-size: 20px; }
     .for-item:hover .for-item__check {
       background: var(--primary);
-      color: #FFF;
-      transform: scale(1.1);
+      color: #0B1A38;
+      transform: scale(1.15) rotate(360deg);
+      box-shadow: 0 6px 20px var(--primary-glow);
     }
 
     /* ─── PROOF NUMBERS ────────────────────────────────── */
@@ -6619,52 +6700,46 @@
 
     <div class="for-grid">
       <div class="for-item">
-        <div class="for-item__num">01</div>
-        <div>
-          <div class="for-item__title">Tem CNH e não dirige</div>
-          <div class="for-item__desc">Carteira tirada, carro na vaga.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">01</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">id_card</span></div>
+        <h3 class="for-item__title">Tem CNH e não dirige</h3>
+        <p class="for-item__desc">Carteira tirada, carro na vaga.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
       <div class="for-item">
-        <div class="for-item__num">02</div>
-        <div>
-          <div class="for-item__title">Trava de ansiedade</div>
-          <div class="for-item__desc">Coração disparado, branco mental.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">02</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">monitor_heart</span></div>
+        <h3 class="for-item__title">Trava de ansiedade</h3>
+        <p class="for-item__desc">Coração disparado, branco mental.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
       <div class="for-item">
-        <div class="for-item__num">03</div>
-        <div>
-          <div class="for-item__title">Já tentou e não rolou</div>
-          <div class="for-item__desc">Auto escola, parente, aula extra.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">03</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">replay</span></div>
+        <h3 class="for-item__title">Já tentou e não rolou</h3>
+        <p class="for-item__desc">Auto escola, parente, aula extra.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
       <div class="for-item">
-        <div class="for-item__num">04</div>
-        <div>
-          <div class="for-item__title">Depende de carona</div>
-          <div class="for-item__desc">Mercado, médico, emergência.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">04</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">pan_tool</span></div>
+        <h3 class="for-item__title">Depende de carona</h3>
+        <p class="for-item__desc">Mercado, médico, emergência.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
       <div class="for-item">
-        <div class="for-item__num">05</div>
-        <div>
-          <div class="for-item__title">Quer no seu ritmo</div>
-          <div class="for-item__desc">Sem pressão, sem julgamento.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">05</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">self_improvement</span></div>
+        <h3 class="for-item__title">Quer no seu ritmo</h3>
+        <p class="for-item__desc">Sem pressão, sem julgamento.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
       <div class="for-item">
-        <div class="for-item__num">06</div>
-        <div>
-          <div class="for-item__title">Quer liberdade</div>
-          <div class="for-item__desc">Sair quando quiser, pra onde quiser.</div>
-        </div>
-        <div class="for-item__check">✓</div>
+        <span class="for-item__num">06</span>
+        <div class="for-item__icon"><span class="material-symbols-outlined filled">key</span></div>
+        <h3 class="for-item__title">Quer liberdade</h3>
+        <p class="for-item__desc">Sair quando quiser, pra onde quiser.</p>
+        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
       </div>
     </div>
 
