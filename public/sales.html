@@ -4402,48 +4402,53 @@
     }
     .approved-section .eyebrow { color: #10b981; }
 
-    /* Marquee horizontal contínuo da direita pra esquerda */
-    .approved-marquee {
-      margin-top: 40px;
-      width: 100%;
-      overflow: hidden;
-      mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
-    }
-    .approved-marquee__track {
-      display: flex;
-      gap: 24px;
-      width: max-content;
-      animation: approvedScroll 30s linear infinite;
-      will-change: transform;
-      transform: translateZ(0); /* força GPU layer no iOS */
-      backface-visibility: hidden;
-    }
-    @keyframes approvedScroll {
-      from { transform: translate3d(0, 0, 0); }
-      to   { transform: translate3d(-50%, 0, 0); }
-    }
-    .approved-slide {
-      flex: 0 0 auto;
+    /* SLIDESHOW LEVE: 1 polaroide por vez, fade suave a cada 4.5s.
+       Substitui a marquee pesada que precisava carregar 22+ imagens
+       simultaneamente. Aqui só 1 visível por vez = bem mais leve. */
+    .approved-slideshow {
+      position: relative;
       width: 280px;
-      aspect-ratio: 9 / 16;
-      border-radius: 14px;
+      max-width: 88vw;
+      aspect-ratio: 9 / 14;
+      margin: 36px auto 0;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
-      transition: transform .25s ease, box-shadow .25s ease;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, .5),
+        0 0 0 1px rgba(255, 214, 10, .25);
     }
-    .approved-slide:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 28px 60px rgba(0, 0, 0, .55);
+    .approved-slideshow__slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1s ease;
+      will-change: opacity;
     }
-    .approved-slide img {
+    .approved-slideshow__slide.is-active { opacity: 1; }
+    .approved-slideshow__slide img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    @media (max-width: 768px) {
-      .approved-marquee__track { gap: 14px; animation-duration: 22s; }
-      .approved-slide { width: 200px; }
+    /* Dotinhos de progresso embaixo */
+    .approved-slideshow__dots {
+      position: absolute;
+      bottom: 12px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 6px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .approved-slideshow__dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .4);
+      transition: background .35s ease, width .35s ease;
+    }
+    .approved-slideshow__dot.is-active {
+      background: var(--primary);
+      width: 20px;
+      border-radius: 100px;
     }
 
     .approved-counter {
@@ -6182,9 +6187,10 @@
       </div>
     </div>
   </div>
-  <!-- Track sai do container pra ocupar largura inteira sem cropping -->
-  <div class="approved-marquee" id="approvedMarquee">
-    <div class="approved-marquee__track" id="approvedTrack">
+  <!-- Slideshow leve: 1 foto por vez, fade a cada 4.5s -->
+  <div class="approved-slideshow" id="approvedSlideshow">
+    <div class="approved-slideshow__dots" id="approvedDots"></div>
+    <div id="approvedTrack">
       <!-- Imagens duplicadas via JS pra criar o loop sem corte visível -->
     </div>
   </div>
@@ -7904,12 +7910,12 @@
     if (e.key === 'Escape') closeLeadModal();
   });
 
-  // ── APROVADAS, galeria horizontal em loop infinito (right→left) ────
-  // Popula com a lista do manifest.json e duplica pra criar o efeito de
-  // loop contínuo via translateX(-50%) em CSS. Sem botões, sem dots ,
-  // marquee puro com pause-on-hover. Pra mais fotos: atualizar manifest.
+  // ── APROVADAS, slideshow leve (1 foto por vez, fade 4.5s) ─────
+  // Substitui a marquee pesada — agora carrega só a foto atual
+  // (eager) e a próxima (lazy preload via preloadNext). Animação fade.
   (function() {
     const track = document.getElementById('approvedTrack');
+    const dotsEl = document.getElementById('approvedDots');
     if (!track) return;
 
     async function loadManifest() {
@@ -7928,18 +7934,47 @@
         track.innerHTML = '<p style="text-align:center;color:var(--text-mute);padding:40px">Nenhuma foto disponível.</p>';
         return;
       }
-      // Duplicamos a lista pra que, quando translateX(-50%) chegar ao fim,
-      // a 2ª metade já esteja no lugar e o loop pareça contínuo.
-      // loading="eager" + decoding="async" garante que as imagens carreguem
-      // ANTES do marquee precisar mostrá-las (lazy quebra o efeito visual
-      // porque imagens fora do viewport visível não baixam até a animação
-      // chegar nelas, criando "buracos" brancos).
-      const html = images.map(file => `
-        <div class="approved-slide">
-          <img src="/aprovados/${file}" alt="Aluno aprovado" loading="eager" decoding="async" fetchpriority="low" onerror="this.parentElement.style.display='none'" />
+
+      // Renderiza slides — primeira eager, restante lazy
+      track.innerHTML = images.map((file, i) => `
+        <div class="approved-slideshow__slide${i === 0 ? ' is-active' : ''}">
+          <img src="/aprovados/${file}" alt="Aluno aprovado"
+               loading="${i === 0 ? 'eager' : 'lazy'}"
+               decoding="async"
+               onerror="this.parentElement.style.display='none'" />
         </div>
       `).join('');
-      track.innerHTML = html + html;
+
+      // Renderiza dots indicadores
+      if (dotsEl) {
+        dotsEl.innerHTML = images.map((_, i) =>
+          `<span class="approved-slideshow__dot${i === 0 ? ' is-active' : ''}"></span>`
+        ).join('');
+      }
+
+      const slides = track.querySelectorAll('.approved-slideshow__slide');
+      const dots = dotsEl ? dotsEl.querySelectorAll('.approved-slideshow__dot') : [];
+      let current = 0;
+
+      // Pré-carrega próxima imagem antes de mostrar (evita flicker)
+      function preloadNext() {
+        const nextIdx = (current + 1) % slides.length;
+        const nextImg = slides[nextIdx]?.querySelector('img');
+        if (nextImg && nextImg.loading === 'lazy') {
+          nextImg.loading = 'eager';
+        }
+      }
+      preloadNext();
+
+      // Avança a cada 4.5s
+      setInterval(() => {
+        slides[current].classList.remove('is-active');
+        if (dots[current]) dots[current].classList.remove('is-active');
+        current = (current + 1) % slides.length;
+        slides[current].classList.add('is-active');
+        if (dots[current]) dots[current].classList.add('is-active');
+        preloadNext();
+      }, 4500);
     });
   })();
 
