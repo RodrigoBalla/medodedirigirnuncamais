@@ -7096,12 +7096,9 @@
       </div>
     </div>
 
-    <!-- CTA pra abrir a roleta de desconto manualmente -->
-    <div class="faq-roulette-cta" onclick="openExitModal()" role="button" tabindex="0">
-      <div class="faq-roulette-cta__emoji">🎡</div>
-      <div class="faq-roulette-cta__title">Tem dúvida ainda? Gire a roleta!</div>
-      <div class="faq-roulette-cta__sub">Tente um <strong>desconto exclusivo</strong> antes de decidir.</div>
-    </div>
+    <!-- Sentinel invisível: quando ele entra na viewport, dispara a roleta
+         AUTOMATICAMENTE 1x por sessão (sem botão visível). -->
+    <div id="rouletteTrigger" aria-hidden="true" style="height:1px"></div>
   </div>
 </section>
 
@@ -8361,6 +8358,26 @@
       sessionStorage.setItem(EXIT_KEY, '1');
       openExitModal();
     });
+
+    // SCROLL-TRIGGER: quando o usuário rola até o fim da FAQ, dispara a
+    // roleta automaticamente. Mesma flag de sessão (EXIT_KEY) — só 1x.
+    const trigger = document.getElementById('rouletteTrigger');
+    if (trigger && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (!en.isIntersecting) return;
+          if (sessionStorage.getItem(EXIT_KEY)) {
+            io.unobserve(en.target);
+            return;
+          }
+          sessionStorage.setItem(EXIT_KEY, '1');
+          io.unobserve(en.target);
+          // Pequeno delay pra parecer natural (usuário acabou de chegar)
+          setTimeout(() => openExitModal(), 700);
+        });
+      }, { threshold: 1, rootMargin: '0px 0px -10% 0px' });
+      io.observe(trigger);
+    }
   })();
 </script>
 
