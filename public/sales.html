@@ -2292,6 +2292,60 @@
       font-weight: 600;
       margin-top: 2px;
     }
+    /* Polaroide flutuante com aluno aprovado — canto inferior esquerdo */
+    .qs-portrait-polaroid {
+      position: absolute;
+      bottom: -30px;
+      left: -36px;
+      z-index: 3;
+      width: 138px;
+      padding: 8px 8px 12px;
+      background: #FFF;
+      border-radius: 4px;
+      box-shadow:
+        0 16px 40px rgba(0, 0, 0, .55),
+        0 4px 12px rgba(0, 0, 0, .35);
+      transform: rotate(-7deg);
+      transition: transform .35s cubic-bezier(.32, 1.2, .35, 1);
+    }
+    .qs-portrait-polaroid:hover {
+      transform: rotate(-3deg) scale(1.05);
+    }
+    .qs-portrait-polaroid img {
+      width: 100%;
+      aspect-ratio: 1 / 1.1;
+      object-fit: cover;
+      object-position: center 25%;
+      display: block;
+      border-radius: 2px;
+    }
+    .qs-portrait-polaroid__caption {
+      margin-top: 8px;
+      text-align: center;
+      font-family: 'Caveat', 'Lexend', cursive;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0B1A38;
+      line-height: 1.1;
+    }
+    .qs-portrait-polaroid__caption small {
+      display: block;
+      font-size: .65rem;
+      font-weight: 500;
+      color: #555;
+      font-family: var(--font-h);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-top: 2px;
+    }
+    @media (max-width: 768px) {
+      .qs-portrait-polaroid {
+        bottom: -20px;
+        left: -20px;
+        width: 110px;
+      }
+    }
+
     /* Selo "Método oficial" no topo direito da foto */
     .qs-portrait-badge {
       position: absolute;
@@ -5954,6 +6008,14 @@
           <div class="qs-portrait-badge">
             <span class="material-symbols-outlined filled">workspace_premium</span>
             Método<br>oficial
+          </div>
+          <!-- Polaroide flutuante: aluno aprovado com a Carla -->
+          <div class="qs-portrait-polaroid">
+            <img src="/aprovados/aprovado-04.jpg" alt="Aluno aprovado com a Carla" loading="lazy" />
+            <div class="qs-portrait-polaroid__caption">
+              Aprovado!
+              <small>Mais um livre do medo</small>
+            </div>
           </div>
         </div>
         <div class="qs-portrait-stats">
