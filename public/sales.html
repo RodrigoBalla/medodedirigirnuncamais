@@ -7464,14 +7464,13 @@
         sessionStorage.setItem('mddnm-welcome-confetti', '1');
         // 50 peças, mais leve que o trail-end (80) — só pra dar boas-vindas
         window.dropConfetti(50);
+      } else {
+        // dropConfetti ainda não foi definido (script ainda inicializando) —
+        // tenta de novo em 80ms
+        setTimeout(trigger, 80);
       }
     };
-    // Espera a página assentar (1.2s) e o user notar que algo mágico aconteceu
-    if (document.readyState === 'complete') {
-      setTimeout(trigger, 1200);
-    } else {
-      window.addEventListener('load', () => setTimeout(trigger, 1200));
-    }
+    trigger(); // dispara IMEDIATAMENTE assim que esse IIFE é executado
   })();
 
   // ── PAIN DIAGNOSIS ────────────────────────────────────
