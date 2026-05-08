@@ -4776,66 +4776,155 @@
       font-weight: 800;
     }
 
-    /* ─── OFFER ────────────────────────────────────────── */
+    /* ─── OFFER (organizada em 3 grupos: Cursos / Bônus / Garantia) ── */
     .offer-section {
       background: var(--bg);
       padding: 80px 0;
     }
     .offer-box {
-      max-width: 560px;
-      margin: 32px auto 0;
-      background: var(--surface);
+      max-width: 600px;
+      margin: 40px auto 0;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-3) 100%);
       border: 2px solid var(--primary);
-      border-radius: 20px;
-      padding: 48px 36px;
+      border-radius: 24px;
+      padding: 44px 32px 36px;
       text-align: center;
       position: relative;
       overflow: hidden;
-      box-shadow: var(--shadow-2);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, .4),
+        0 0 0 1px var(--primary-soft) inset;
     }
     .offer-box::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--primary), var(--primary-2), var(--primary));
+      height: 5px;
+      background: linear-gradient(90deg,
+        transparent, var(--primary) 30%, var(--primary-2) 50%, var(--primary) 70%, transparent);
+      background-size: 200% 100%;
+      animation: scannerSlide 2.4s linear infinite;
     }
     .offer-box__title {
       font-family: var(--font-h);
       font-weight: 800;
       font-size: clamp(1.4rem, 3vw, 1.8rem);
       color: var(--text);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      letter-spacing: -.01em;
     }
     .offer-box__sub {
       color: var(--text-mute);
-      font-size: .98rem;
-      margin-bottom: 24px;
+      font-size: .92rem;
+      margin-bottom: 30px;
     }
-    .offer-items {
+    /* Grupo: header com label + lista */
+    .offer-group {
+      text-align: left;
+      margin: 0 auto 24px;
+      max-width: 500px;
+    }
+    .offer-group__head {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .68rem;
+      color: var(--primary);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(255, 214, 10, .35);
+    }
+    .offer-group__head .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--primary);
+    }
+    .offer-list {
       list-style: none;
-      max-width: 460px;
+      display: flex; flex-direction: column;
+      gap: 12px;
+      margin: 0; padding: 0;
+    }
+    .offer-list li {
+      display: flex; align-items: center; gap: 14px;
+      line-height: 1.4;
+    }
+    .offer-list__icon {
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      background: rgba(255, 214, 10, .08);
+      border: 1px solid rgba(255, 214, 10, .3);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .offer-list__icon .material-symbols-outlined { font-size: 20px; }
+    .offer-list__body { flex: 1; min-width: 0; }
+    .offer-list__title {
+      display: block;
+      font-family: var(--font-h);
+      font-weight: 700;
+      color: var(--text);
+      font-size: .98rem;
+    }
+    .offer-list__desc {
+      display: block;
+      font-size: .8rem;
+      color: var(--text-mute);
+      margin-top: 1px;
+    }
+    /* Garantia em destaque (card próprio) */
+    .offer-guarantee {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255, 214, 10, .08);
+      border: 1px solid var(--primary);
+      border-radius: 14px;
+      padding: 14px 18px;
       margin: 0 auto 28px;
+      max-width: 500px;
       text-align: left;
     }
-    .offer-items li {
-      display: flex; align-items: flex-start; gap: 12px;
-      font-size: .98rem;
-      color: var(--text);
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      line-height: 1.5;
-    }
-    .offer-items li:last-child { border-bottom: none; }
-    .offer-items li .tick {
-      color: var(--primary);
-      font-weight: 800;
+    .offer-guarantee__icon {
       flex-shrink: 0;
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      background: var(--primary-soft);
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
       display: flex; align-items: center; justify-content: center;
-      font-size: .8rem;
+      box-shadow: 0 6px 20px var(--primary-glow);
     }
+    .offer-guarantee__icon .material-symbols-outlined {
+      font-size: 26px;
+      color: #0B1A38;
+    }
+    .offer-guarantee strong {
+      display: block;
+      font-family: var(--font-h);
+      font-weight: 800;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .offer-guarantee small {
+      display: block;
+      font-size: .82rem;
+      color: var(--text-mute);
+      margin-top: 2px;
+    }
+    /* CTA com ícone */
+    .offer-cta {
+      display: flex !important; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      padding: 22px 32px !important;
+      font-size: 1.05rem !important;
+    }
+    .offer-cta .material-symbols-outlined { font-size: 22px; }
+    .offer-security {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: .78rem;
+      color: var(--text-subtle);
+      margin-top: 14px;
+    }
+    .offer-security .material-symbols-outlined { font-size: 14px; }
     .price-stack { margin-bottom: 24px; }
     .price-stack__old {
       font-size: .92rem;
@@ -6863,27 +6952,98 @@
     <p class="eyebrow text-center">Sua decisão</p>
     <h2 class="section-title text-center">Habilitados Fundadores <span>· R$ 97</span></h2>
     <div class="offer-box">
-      <div class="offer-box__title">O QUE VOCÊ LEVA</div>
+      <div class="offer-box__title">O que você leva</div>
       <div class="offer-box__sub">Acesso vitalício · Pagamento único · Garantia de 7 dias</div>
-      <ul class="offer-items">
-        <li><span class="tick">✓</span> Curso <strong>Medo de Dirigir Nunca Mais</strong> (8 aulas + bônus futuros)</li>
-        <li><span class="tick">✓</span> Curso <strong>Dominando as Ladeiras</strong></li>
-        <li><span class="tick">✓</span> Curso <strong>O Manual do Motorista de Aplicativo</strong></li>
-        <li><span class="tick">✓</span> Turma exclusiva no app (alunos na mesma jornada)</li>
-        <li><span class="tick">✓</span> Suporte direto com a Carla pelo WhatsApp</li>
-        <li><span class="tick">✓</span> Selos e conquistas a cada fase concluída</li>
-        <li><span class="tick">✓</span> Garantia incondicional de 7 dias · 100% de volta</li>
-      </ul>
+
+      <!-- Grupo 1: 3 cursos completos -->
+      <div class="offer-group">
+        <div class="offer-group__head">
+          <span class="material-symbols-outlined filled">school</span>
+          <span>3 cursos completos</span>
+        </div>
+        <ul class="offer-list">
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">directions_car</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Medo de Dirigir Nunca Mais</span>
+              <span class="offer-list__desc">8 aulas + bônus futuros</span>
+            </div>
+          </li>
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">altitude</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Dominando as Ladeiras</span>
+              <span class="offer-list__desc">Saída em rampa, freio de mão, baliza</span>
+            </div>
+          </li>
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">local_taxi</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Manual do Motorista de Aplicativo</span>
+              <span class="offer-list__desc">Cadastro Uber/99, faturar com o carro</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Grupo 2: Bônus exclusivos da turma -->
+      <div class="offer-group">
+        <div class="offer-group__head">
+          <span class="material-symbols-outlined filled">redeem</span>
+          <span>Bônus exclusivos da turma</span>
+        </div>
+        <ul class="offer-list">
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">groups</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Turma exclusiva no app</span>
+              <span class="offer-list__desc">Alunos na mesma jornada que você</span>
+            </div>
+          </li>
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Suporte direto com a Carla</span>
+              <span class="offer-list__desc">Resposta humana pelo WhatsApp</span>
+            </div>
+          </li>
+          <li>
+            <div class="offer-list__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
+            <div class="offer-list__body">
+              <span class="offer-list__title">Selos e conquistas</span>
+              <span class="offer-list__desc">Uma medalha a cada fase concluída</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Garantia em destaque -->
+      <div class="offer-guarantee">
+        <div class="offer-guarantee__icon">
+          <span class="material-symbols-outlined filled">verified_user</span>
+        </div>
+        <div>
+          <strong>Garantia de 7 dias</strong>
+          <small>Não gostou? Devolvo 100% sem perguntar.</small>
+        </div>
+      </div>
+
+      <!-- Price stack -->
       <div class="price-stack">
         <div class="price-stack__old">Valor real somado: R$ 738,00</div>
         <div class="price-stack__from">Promoção dos 100 primeiros</div>
         <div class="price-stack__val"><sup>R$</sup>97</div>
         <div class="price-stack__note">Pagamento único · Acesso vitalício</div>
       </div>
-      <button class="btn btn--primary btn--block" style="padding:22px 32px;font-size:1.1rem" onclick="openLeadModal()">
+
+      <button class="btn btn--primary btn--block offer-cta" onclick="openLeadModal()">
+        <span class="material-symbols-outlined">workspace_premium</span>
         GARANTIR MINHA VAGA DE FUNDADOR
       </button>
-      <p style="font-size:.78rem;color:var(--text-subtle);margin-top:14px"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">lock</span> Ambiente seguro · SSL · Parcelamento disponível</p>
+      <p class="offer-security">
+        <span class="material-symbols-outlined">lock</span>
+        Ambiente seguro · SSL · Parcelamento disponível
+      </p>
     </div>
   </div>
 </section>
