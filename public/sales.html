@@ -3184,6 +3184,26 @@
         border-left-color: transparent;
         filter: drop-shadow(-1px 0 0 var(--border));
       }
+      /* Carrinho acompanha a estrada que agora está na esquerda */
+      .trail-car {
+        left: 30px;
+        transform: translate(-50%, -50%);
+      }
+      /* Carro um pouco menor pra caber melhor sobre a estrada estreita */
+      .trail-car__inner {
+        width: 38px; height: 38px;
+      }
+      .trail-car__vehicle {
+        width: 38px; height: 38px;
+      }
+      .trail-car__vehicle .material-symbols-outlined {
+        font-size: 22px;
+      }
+      /* Balão "Conseguiu!" mais compacto e centralizado sobre o carro */
+      .trail-car__driver {
+        font-size: .72rem;
+        padding: 6px 12px;
+      }
     }
 
     /* Mantém compat com classes antigas pra não quebrar nada */
