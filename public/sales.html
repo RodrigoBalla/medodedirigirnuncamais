@@ -5809,6 +5809,29 @@
       box-shadow: 0 14px 34px var(--primary-glow);
     }
 
+    /* ─── BASE MOBILE UX — smooth scroll + tap feedback ─── */
+    html {
+      scroll-behavior: smooth;
+      /* Evita zoom acidental em iPhone Safari quando clica em campo */
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      /* Tap highlight customizado (não o azul/cinza padrão de mobile) */
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, a, [role="button"], input, label {
+      /* Tap min target 44x44 (Apple HIG + WCAG). Não impacta visual. */
+      touch-action: manipulation;
+    }
+    /* Inputs do modal: 16px+ pra Safari não dar zoom no foco */
+    .modal__field input,
+    .lead-modal input,
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"] {
+      font-size: 16px !important;
+    }
+
     /* ─── STICKY MOBILE CTA — barra fixa no bottom em telas menores ─── */
     .sticky-cta {
       display: none;
@@ -5916,19 +5939,44 @@
       .offer-group { margin-bottom: 18px; }
       .offer-list li { gap: 10px; }
       .offer-list__icon { width: 34px; height: 34px; }
-      /* Reduz tamanho dos elementos do hero pra caber melhor */
+      /* Hero compactado */
       .hero__price-val { font-size: 3rem; }
-      .hero__cta-pack__urgency { font-size: .82rem; padding: 8px 12px; }
-      .hero__cta-pack__count strong { font-size: .9rem; }
+      .hero__cta-pack__urgency { font-size: .78rem; padding: 8px 12px; gap: 4px 8px; }
+      .hero__cta-pack__count strong { font-size: .88rem; }
       .hero__cta-pack__tail { display: none; }
-      /* Trail (modules) compactado */
+      /* Trail */
       .trail-step__milestone { width: 44px; height: 44px; font-size: .9rem; }
       .trail-step__card { padding: 16px 18px; }
       .trail-step__title { font-size: .98rem; }
       .trail-step__text { font-size: .82rem; }
-      /* Solution steps menores */
+      /* Solution steps */
       .solution-step { padding: 22px 16px 18px; }
       .solution-step h3 { font-size: 1.2rem; }
+      /* FAQ: mais respiro nos cards + tap target maior */
+      .faq-q { padding: 18px 18px; font-size: .95rem; min-height: 52px; }
+      .faq-a { padding: 0 18px 18px; font-size: .9rem; }
+      /* CTAs principais com tap target garantido */
+      .btn--primary { min-height: 52px; }
+      /* Sticky CTA: botão menor mas tap target garantido */
+      .sticky-cta__btn { min-height: 44px; padding: 12px 14px; font-size: .88rem; }
+      .sticky-cta__price-new { font-size: 1.18rem; }
+      /* Headers pesados em mobile: menos peso = mais leve no rendering */
+      .hero__title, .section-title { letter-spacing: -.02em; }
+      /* Comparativo (vs-section) compactado */
+      .vs-row { font-size: .9rem; }
+      /* Testimonials cards: bolhas menores caem melhor */
+      .testi-card { padding: 10px; }
+      .testi-msg { max-width: 92%; }
+      /* Modal lead em mobile fica fullscreen-ish */
+      .modal { width: calc(100% - 24px); margin: 12px; }
+    }
+    /* Tablets (entre 480-768): grid de testimonials de 3 → 2 colunas */
+    @media (min-width: 481px) and (max-width: 768px) {
+      .testi-columns-wrap { gap: 12px; }
+    }
+    /* Garante que body tem espaço pro sticky CTA não cobrir conteúdo */
+    @media(max-width: 768px) {
+      body.has-sticky-cta { padding-bottom: 96px; }
     }
   </style>
 </head>
@@ -7399,14 +7447,26 @@
   // Tema travado em "dark", paleta navy + amarelo (sem opção de claro).
 
   // ── STICKY CTA MOBILE (barra fixa após scrollar) ─────────
-  // Aparece quando o BOTÃO CTA do hero sai de vista. Esconde se o lead
-  // modal estiver aberto. Não duplica CTA enquanto o hero CTA tá visível.
+  // Aparece quando o BOTÃO CTA do hero sai de vista, esconde se outro
+  // CTA amarelo está visível (não duplica), e some quando modais abrem.
   (function() {
     const stickyCta = document.getElementById('stickyCta');
     const heroCtaBtn = document.querySelector('.hero__cta-btn');
     if (!stickyCta || !heroCtaBtn) return;
+    // Outros CTAs amarelos da page que podem competir com o sticky.
+    // Quando QUALQUER um desses está na viewport, escondemos o sticky.
+    const competingCtas = Array.from(document.querySelectorAll(
+      '.btn--primary:not(.sticky-cta__btn), .solution-cta, .offer-cta'
+    )).filter(el => !el.closest('.modal') && !el.closest('.exit-modal'));
+
     const isMobile = () => window.innerWidth <= 768;
     let raf = null;
+    function isInViewport(el) {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // 30% da altura do botão visível conta como "visível pro usuário"
+      return r.top < vh * 0.95 && r.bottom > vh * 0.05;
+    }
     function update() {
       raf = null;
       if (!isMobile()) {
@@ -7414,7 +7474,7 @@
         document.body.classList.remove('has-sticky-cta');
         return;
       }
-      // Esconde se um modal está aberto
+      // Esconde se modal aberto
       const modalOpen = document.querySelector(
         '.modal-overlay.is-open, .exit-overlay.is-open'
       );
@@ -7423,16 +7483,23 @@
         document.body.classList.remove('has-sticky-cta');
         return;
       }
-      // Mostra quando o CTA do hero saiu de vista (top do botão acima do viewport)
-      const ctaRect = heroCtaBtn.getBoundingClientRect();
-      const heroCtaOut = ctaRect.bottom < 0;
-      if (heroCtaOut) {
-        stickyCta.classList.add('is-visible');
-        document.body.classList.add('has-sticky-cta');
-      } else {
+      // CTA do hero ainda visível: não mostra sticky
+      const heroCtaRect = heroCtaBtn.getBoundingClientRect();
+      if (heroCtaRect.bottom > 0) {
         stickyCta.classList.remove('is-visible');
         document.body.classList.remove('has-sticky-cta');
+        return;
       }
+      // Outro CTA amarelo visível? Esconde pra não duplicar.
+      const otherCtaVisible = competingCtas.some(isInViewport);
+      if (otherCtaVisible) {
+        stickyCta.classList.remove('is-visible');
+        document.body.classList.remove('has-sticky-cta');
+        return;
+      }
+      // Sem competição, mostra
+      stickyCta.classList.add('is-visible');
+      document.body.classList.add('has-sticky-cta');
     }
     function onScroll() {
       if (raf) return;
@@ -7440,7 +7507,6 @@
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
-    // Reage quando modal abre/fecha
     new MutationObserver(update).observe(document.body, {
       attributes: true, attributeFilter: ['style']
     });
