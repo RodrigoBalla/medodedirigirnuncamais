@@ -1774,6 +1774,21 @@
       background: var(--bg-2);
       padding: 80px 0;
       position: relative;
+      overflow: hidden;
+    }
+    /* Background sutil com pontos amarelos pulsando — clima de "scanner" */
+    .pain-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle 200px at 15% 30%, var(--primary-soft) 0%, transparent 60%),
+        radial-gradient(circle 250px at 85% 70%, rgba(255, 214, 10, .04) 0%, transparent 65%);
+      pointer-events: none;
+      animation: painGlowShift 8s ease-in-out infinite;
+    }
+    @keyframes painGlowShift {
+      0%, 100% { opacity: .6; }
+      50%      { opacity: 1; }
     }
     .pain-inner {
       display: grid;
@@ -1781,19 +1796,66 @@
       gap: 40px;
       max-width: 1100px; margin: 0 auto;
       align-items: start;
+      position: relative;
+      z-index: 1;
     }
+    /* Card-diagnóstico — estilo "tela de app analisando" */
     .pain-diagnosis {
       position: sticky; top: 50px;
-      padding: 22px;
-      background: var(--surface);
+      padding: 0;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg-3) 100%);
       border: 1px solid var(--primary);
+      border-radius: 22px;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, .45),
+        0 0 0 1px var(--primary-soft) inset,
+        0 0 40px var(--primary-glow);
+      overflow: hidden;
+    }
+    /* Faixa-scanner deslizando no topo do card (linha amarela animada) */
+    .pain-diagnosis::before {
+      content: '';
+      display: block;
+      height: 5px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--primary) 30%,
+        var(--primary-2) 50%,
+        var(--primary) 70%,
+        transparent 100%);
+      background-size: 200% 100%;
+      animation: scannerSlide 2.4s linear infinite;
+    }
+    @keyframes scannerSlide {
+      0%   { background-position: -100% 0; }
+      100% { background-position: 100% 0; }
+    }
+    .pain-diagnosis__inner {
+      padding: 22px 24px 24px;
+    }
+    /* Ícone grande do diagnóstico — visualiza "análise em andamento" */
+    .pain-diagnosis__icon {
+      width: 56px; height: 56px;
       border-radius: 16px;
-      box-shadow: var(--shadow-1);
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #0B1A38;
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 28px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .pain-diagnosis__icon .material-symbols-outlined {
+      font-size: 32px;
+      animation: stethoscopeWave 3s ease-in-out infinite;
+    }
+    @keyframes stethoscopeWave {
+      0%, 100% { transform: rotate(0); }
+      50%      { transform: rotate(-8deg); }
     }
     .pain-diagnosis__label {
       display: inline-flex; align-items: center; gap: 8px;
       font-family: var(--font-h);
-      font-size: .68rem;
+      font-size: .65rem;
       color: var(--primary);
       letter-spacing: .14em;
       text-transform: uppercase;
@@ -1813,27 +1875,55 @@
     .pain-diagnosis__title {
       font-family: var(--font-h);
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       color: var(--primary);
-      line-height: 1.25;
-      margin-bottom: 8px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      letter-spacing: -.01em;
     }
     .pain-diagnosis__desc {
       color: var(--text);
-      font-size: .92rem;
+      font-size: .95rem;
       line-height: 1.55;
     }
     .pain-diagnosis__desc strong { color: var(--primary); }
-    .pain-diagnosis__count {
-      display: inline-block;
-      margin-top: 12px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-family: var(--font-h); font-weight: 700;
-      font-size: .72rem;
-      padding: 6px 14px;
+    /* Barra de progresso visual — substitui o "0/5 selecionadas" */
+    .pain-diagnosis__progress {
+      margin-top: 18px;
+      background: rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255, 214, 10, .25);
       border-radius: 100px;
-      border: 1px solid var(--primary);
+      height: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pain-diagnosis__progress-fill {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      border-radius: 100px;
+      transition: width .55s cubic-bezier(.32, 1.2, .35, 1);
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+    .pain-diagnosis__progress-text {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      font-family: var(--font-h);
+      font-size: .78rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      filter: invert(1);
+    }
+    .pain-diagnosis__count {
+      display: none; /* substituído pela barra de progresso */
     }
     .pain-chip {
       display: inline-flex; align-items: center; gap: 8px;
@@ -1862,71 +1952,124 @@
       margin-bottom: 24px;
       max-width: 540px;
     }
-    .pain-list { list-style: none; display: grid; gap: 14px; }
+    .pain-list { list-style: none; display: grid; gap: 14px; padding: 0; margin: 0; }
     .pain-list li {
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 16px; align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--border-strong);
-      border-left: 3px solid var(--primary);
-      border-radius: 0 var(--radius) var(--radius) 0;
+      grid-template-columns: 56px 1fr auto;
+      gap: 18px; align-items: center;
+      background: linear-gradient(160deg, var(--surface) 0%, var(--bg-3) 100%);
+      border: 1px solid var(--border);
+      border-left: 4px solid rgba(255, 214, 10, .35);
+      border-radius: 14px;
       padding: 18px 22px;
       cursor: pointer;
-      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease;
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform .35s cubic-bezier(.32, 1.2, .35, 1),
+        border-color .35s ease,
+        box-shadow .35s ease,
+        background .35s ease;
+    }
+    /* Glow ambiente que aparece quando selecionado */
+    .pain-list li::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 100% 50%, var(--primary-soft) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity .4s ease;
+      pointer-events: none;
     }
     .pain-list li:hover {
       transform: translateX(6px);
       border-color: var(--primary);
-      box-shadow: var(--shadow-1);
+      border-left-color: var(--primary);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .35);
     }
     .pain-list li.is-selected {
-      background: var(--primary-soft);
-      border-left-width: 5px;
-      box-shadow: 0 8px 24px var(--primary-glow);
+      background: linear-gradient(160deg, var(--surface) 0%, rgba(255, 214, 10, .1) 100%);
+      border-color: var(--primary);
+      border-left-width: 4px;
+      border-left-color: var(--primary);
+      box-shadow: 0 14px 40px var(--primary-glow), 0 0 0 1px var(--primary-soft) inset;
+      transform: translateX(8px);
     }
+    .pain-list li.is-selected::before { opacity: 1; }
     .pain-list li .ico-wrap {
-      width: 42px; height: 42px;
-      border-radius: 12px;
-      background: var(--primary-soft);
-      border: 1px solid var(--primary);
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: rgba(255, 214, 10, .08);
+      border: 1px solid rgba(255, 214, 10, .25);
       display: inline-flex; align-items: center; justify-content: center;
       flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      transition:
+        background .4s ease,
+        border-color .4s ease,
+        transform .4s cubic-bezier(.32, 1.5, .35, 1),
+        box-shadow .4s ease;
     }
     .pain-list li .ico-wrap .material-symbols-outlined {
       color: var(--primary);
-      font-size: 22px;
+      font-size: 26px;
+      transition: color .35s ease;
+    }
+    .pain-list li.is-selected .ico-wrap {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-color: var(--primary);
+      box-shadow: 0 8px 24px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,.35);
+      animation: iconPop .5s cubic-bezier(.32, 1.5, .35, 1);
+    }
+    .pain-list li.is-selected .ico-wrap .material-symbols-outlined {
+      color: #0B1A38;
+    }
+    @keyframes iconPop {
+      0%   { transform: scale(.7) rotate(-15deg); }
+      55%  { transform: scale(1.18) rotate(8deg); }
+      100% { transform: scale(1) rotate(0); }
     }
     .pain-list li p {
       color: var(--text-mute);
       font-size: .9rem;
       line-height: 1.5;
+      margin: 0;
+      position: relative;
+      z-index: 1;
     }
     .pain-list li p strong {
       display: block;
       color: var(--text);
       font-family: var(--font-h);
-      font-weight: 700;
+      font-weight: 800;
       font-size: 1.05rem;
       margin-bottom: 4px;
+      letter-spacing: -.01em;
+      transition: color .35s ease;
     }
+    .pain-list li.is-selected p strong { color: var(--primary); }
     .pain-check {
-      width: 26px; height: 26px;
+      width: 32px; height: 32px;
       border-radius: 50%;
-      border: 2px solid var(--border-strong);
+      border: 2px solid rgba(255, 214, 10, .3);
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      transition: all .25s ease;
+      position: relative;
+      z-index: 1;
+      transition: all .3s cubic-bezier(.32, 1.5, .35, 1);
     }
     .pain-list li.is-selected .pain-check {
       background: var(--primary);
       border-color: var(--primary);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px var(--primary-glow);
     }
     .pain-list li.is-selected .pain-check::after {
       content: '✓';
-      color: #FFF;
-      font-weight: 800;
-      font-size: .9rem;
+      color: #0B1A38;
+      font-weight: 900;
+      font-size: 1rem;
     }
 
     /* Mãozinha que indica "clica aqui" no primeiro item da lista de dores.
@@ -5704,10 +5847,18 @@
   <div class="container">
     <div class="pain-inner">
       <div class="pain-diagnosis" id="painDiagnosis">
-        <span class="pain-diagnosis__label">Diagnóstico instantâneo</span>
-        <h3 class="pain-diagnosis__title" id="painDiagTitle">Marque os sinais que você sente</h3>
-        <p class="pain-diagnosis__desc" id="painDiagDesc">Pra <strong>cada um</strong> deles o método tem uma fase específica. Vai marcando que eu te mostro.</p>
-        <span class="pain-diagnosis__count"><strong id="painCount">0</strong>/5 selecionadas</span>
+        <div class="pain-diagnosis__inner">
+          <div class="pain-diagnosis__icon">
+            <span class="material-symbols-outlined filled">stethoscope</span>
+          </div>
+          <span class="pain-diagnosis__label">Diagnóstico instantâneo</span>
+          <h3 class="pain-diagnosis__title" id="painDiagTitle">Marque os sinais que você sente</h3>
+          <p class="pain-diagnosis__desc" id="painDiagDesc">Pra <strong>cada um</strong> deles o método tem uma fase específica. Vai marcando que eu te mostro.</p>
+          <div class="pain-diagnosis__progress" aria-label="Progresso do diagnóstico">
+            <div class="pain-diagnosis__progress-fill" id="painProgressFill"></div>
+            <span class="pain-diagnosis__progress-text"><strong id="painCount">0</strong>/5 sintomas</span>
+          </div>
+        </div>
       </div>
       <div>
         <div class="pain-chip">
@@ -6802,6 +6953,7 @@
       31:      { t: 'Combo completo do medo', d: 'Os 5 sintomas estão em você. <strong>Boa notícia:</strong> o método ataca todos em paralelo, fase por fase, em 21 dias.' }
     };
 
+    const progressFillEl = document.getElementById('painProgressFill');
     let mask = 0;
     function update() {
       const bits = (mask.toString(2).match(/1/g) || []).length;
@@ -6815,6 +6967,8 @@
       titleEl.textContent = diag.t;
       descEl.innerHTML = diag.d;
       countEl.textContent = bits;
+      // Atualiza largura da barra de progresso (0/5 → 5/5 = 0% → 100%)
+      if (progressFillEl) progressFillEl.style.width = (bits / 5 * 100) + '%';
     }
     list.querySelectorAll('li').forEach(li => {
       li.addEventListener('click', () => {
