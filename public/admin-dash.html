@@ -1727,7 +1727,12 @@
     let data;
     let serverError = null;
 
-    if (CONFIG.USE_SERVER && !isDataCleared()) {
+    if (CONFIG.USE_SERVER) {
+      // Em modo server, a flag local de "cleared" não importa — o DELETE
+      // já limpou no Supabase, qualquer dado novo virá do servidor.
+      // Auto-limpa a flag pra não bagunçar futuros refreshes.
+      if (isDataCleared()) unsetDataCleared();
+
       try {
         const fresh = await fetchServerEvents(_currentRange);
         if (fresh) {
@@ -1862,7 +1867,7 @@
     const ok = await openConfirm();
     if (!ok) return;
 
-    // 1. Servidor (quando USE_SERVER) — DELETE no endpoint
+    // 1. Servidor (quando USE_SERVER) — DELETE no endpoint Supabase
     if (CONFIG.USE_SERVER) {
       try {
         const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
@@ -1875,19 +1880,28 @@
         showToast('Falhou ao limpar no servidor: ' + err.message, 'error');
         return;
       }
+      // Limpa flag local que pudesse estar sobrando (modo legacy mock)
+      unsetDataCleared();
+      // Re-render: vai buscar do server (que agora está vazio)
+      await renderAll();
+      showToast('Todos os dados foram limpos.', 'success');
+      return;
     }
 
-    // 2. Local: persistir flag + limpar caches do Track helper
+    // 2. Modo MOCK: só persiste flag e limpa caches do Track helper
     setDataCleared();
-
-    // 3. Re-render (vai mostrar tudo zerado + banner)
     renderAll();
-
-    // 4. Feedback
     showToast('Todos os dados foram limpos.', 'success');
   }
 
   function restoreDemo() {
+    if (CONFIG.USE_SERVER) {
+      // Em modo server, "restaurar demo" não faz sentido — só re-busca dados
+      unsetDataCleared();
+      renderAll();
+      showToast('Buscando dados do servidor...', 'info');
+      return;
+    }
     unsetDataCleared();
     renderAll();
     showToast('Dados de demonstração restaurados.', 'info');
