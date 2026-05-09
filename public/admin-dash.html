@@ -55,6 +55,9 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    /* IMPORTANTE: força [hidden] a funcionar mesmo com display: flex/grid em classes
+       (sem isso, .login { display: flex } ganha do user-agent [hidden] { display: none }) */
+    [hidden] { display: none !important; }
     body {
       font-family: var(--font-b);
       background: radial-gradient(ellipse 90% 70% at 50% 0%, #16264E 0%, #0B1A38 55%, #061027 100%);
@@ -730,48 +733,70 @@
     .toast__icon .material-symbols-outlined { font-size: 20px; }
 
     /* ─── EMPTY STATE BANNER (quando dados foram limpos) ── */
+    /* Usa classe is-hidden + display:flex !important pra evitar conflito com [hidden]
+       que tem mesma specificity de .cleared-banner. */
     .cleared-banner {
-      grid-column: 1 / -1;
-      display: flex; align-items: center; gap: 14px;
+      display: flex !important;
+      align-items: center;
+      gap: 14px;
       padding: 16px 20px;
-      background: linear-gradient(135deg, rgba(255, 214, 10, .08), rgba(255, 214, 10, .02));
+      background: linear-gradient(135deg, rgba(255, 214, 10, .12), rgba(255, 214, 10, .03));
       border: 1px dashed var(--border-strong);
       border-radius: var(--radius);
       margin-bottom: 22px;
     }
+    .cleared-banner.is-hidden { display: none !important; }
     .cleared-banner__icon {
-      width: 36px; height: 36px;
+      width: 40px; height: 40px;
       display: flex; align-items: center; justify-content: center;
       background: var(--primary-soft);
       color: var(--primary);
       border-radius: 10px;
       flex-shrink: 0;
     }
+    .cleared-banner__icon .material-symbols-outlined { font-size: 22px; }
     .cleared-banner__text {
-      flex: 1; min-width: 0;
-      font-size: .82rem;
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: .86rem;
       color: var(--text-mute);
-      line-height: 1.4;
+      line-height: 1.45;
     }
     .cleared-banner__text strong { color: var(--text); }
     .cleared-banner__btn {
-      padding: 8px 14px;
-      background: var(--primary);
-      color: var(--on-primary);
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: var(--primary) !important;
+      color: var(--on-primary) !important;
       font-family: var(--font-h);
-      font-weight: 700;
-      font-size: .76rem;
+      font-weight: 800;
+      font-size: .78rem;
       letter-spacing: .04em;
       text-transform: uppercase;
+      border: none;
       border-radius: 100px;
       flex-shrink: 0;
-      transition: all .15s ease;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: transform .15s ease, box-shadow .25s ease;
+      -webkit-appearance: none;
+      appearance: none;
     }
-    .cleared-banner__btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px var(--primary-glow); }
-    @media (max-width: 600px) {
-      .cleared-banner { flex-wrap: wrap; }
-      .cleared-banner__text { flex: 1 1 100%; order: 2; }
-      .cleared-banner__btn { order: 3; flex: 1; }
+    .cleared-banner__btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(255, 214, 10, .55);
+    }
+    .cleared-banner__btn:active { transform: translateY(0); }
+    .cleared-banner__btn .material-symbols-outlined { font-size: 16px; }
+    @media (max-width: 640px) {
+      .cleared-banner { flex-wrap: wrap; padding: 14px 16px; }
+      .cleared-banner__icon { order: 1; }
+      .cleared-banner__text { flex: 1 1 calc(100% - 60px); order: 2; font-size: .82rem; }
+      .cleared-banner__btn { order: 3; flex: 1 1 100%; margin-top: 6px; padding: 12px 18px; font-size: .82rem; }
     }
   </style>
 </head>
@@ -870,7 +895,7 @@
       <div class="dash__body">
 
         <!-- Banner de "dados limpos" (aparece só quando o estado está zerado) -->
-        <div class="cleared-banner" id="clearedBanner" hidden>
+        <div class="cleared-banner is-hidden" id="clearedBanner">
           <div class="cleared-banner__icon">
             <span class="material-symbols-outlined">delete_sweep</span>
           </div>
@@ -879,6 +904,7 @@
             assim que o tracking gravar novos eventos.
           </div>
           <button type="button" class="cleared-banner__btn" id="restoreDemoBtn">
+            <span class="material-symbols-outlined">restart_alt</span>
             Restaurar demo
           </button>
         </div>
@@ -1545,9 +1571,9 @@
       : (CONFIG.USE_SERVER ? 'live · server' : 'mock data');
     document.getElementById('modeIndicator').textContent = mode;
 
-    // Banner "dados limpos" no topo
+    // Banner "dados limpos" no topo (usa classe pra evitar conflito com [hidden])
     const banner = document.getElementById('clearedBanner');
-    if (banner) banner.hidden = !cleared;
+    if (banner) banner.classList.toggle('is-hidden', !cleared);
 
     lastRender = Date.now();
     tickUpdatedLabel();
