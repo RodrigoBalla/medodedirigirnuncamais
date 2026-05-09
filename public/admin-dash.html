@@ -625,6 +625,154 @@
       .stat__num { font-size: 1.6rem; }
       .grid__col { padding: 18px; }
     }
+
+    /* ─── CONFIRM MODAL ───────────────────────────────────── */
+    .modal {
+      position: fixed; inset: 0;
+      z-index: 9000;
+      background: rgba(0, 0, 0, .65);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .modal.is-open { opacity: 1; pointer-events: auto; }
+    .modal__card {
+      width: 100%; max-width: 440px;
+      background: var(--bg-2);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 28px 26px 24px;
+      box-shadow: var(--shadow-2);
+      transform: scale(.95);
+      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .modal.is-open .modal__card { transform: scale(1); }
+    .modal__icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--danger-soft);
+      border-radius: 50%;
+      color: var(--danger);
+    }
+    .modal__icon .material-symbols-outlined { font-size: 32px; }
+    .modal__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .modal__text {
+      font-size: .88rem;
+      color: var(--text-mute);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .modal__text strong { color: var(--text); }
+    .modal__actions {
+      display: flex; gap: 10px;
+    }
+    .modal__btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .88rem;
+      letter-spacing: .02em;
+      transition: all .15s ease;
+    }
+    .modal__btn--cancel {
+      background: rgba(255, 255, 255, .06);
+      color: var(--text-mute);
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+    .modal__btn--cancel:hover { background: rgba(255, 255, 255, .1); color: var(--text); }
+    .modal__btn--danger {
+      background: var(--danger);
+      color: #FFF;
+      box-shadow: 0 6px 18px rgba(239, 68, 68, .35);
+    }
+    .modal__btn--danger:hover { background: #dc2626; transform: translateY(-1px); }
+    .modal__btn--danger:active { transform: translateY(0); }
+
+    /* ─── TOAST ───────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      top: 24px; left: 50%;
+      z-index: 9500;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px;
+      background: var(--bg-2);
+      border: 1px solid var(--border-strong);
+      border-radius: 100px;
+      box-shadow: var(--shadow-2);
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .88rem;
+      color: var(--text);
+      transform: translate(-50%, -120%);
+      transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+      max-width: calc(100% - 48px);
+    }
+    .toast.is-visible { transform: translate(-50%, 0); }
+    .toast--success { border-color: rgba(16, 185, 129, .4); }
+    .toast--success .toast__icon { color: var(--success); }
+    .toast--error   { border-color: rgba(239, 68, 68, .4); }
+    .toast--error   .toast__icon { color: var(--danger); }
+    .toast__icon { display: flex; align-items: center; }
+    .toast__icon .material-symbols-outlined { font-size: 20px; }
+
+    /* ─── EMPTY STATE BANNER (quando dados foram limpos) ── */
+    .cleared-banner {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(255, 214, 10, .08), rgba(255, 214, 10, .02));
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+    }
+    .cleared-banner__icon {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .cleared-banner__text {
+      flex: 1; min-width: 0;
+      font-size: .82rem;
+      color: var(--text-mute);
+      line-height: 1.4;
+    }
+    .cleared-banner__text strong { color: var(--text); }
+    .cleared-banner__btn {
+      padding: 8px 14px;
+      background: var(--primary);
+      color: var(--on-primary);
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .76rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      flex-shrink: 0;
+      transition: all .15s ease;
+    }
+    .cleared-banner__btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px var(--primary-glow); }
+    @media (max-width: 600px) {
+      .cleared-banner { flex-wrap: wrap; }
+      .cleared-banner__text { flex: 1 1 100%; order: 2; }
+      .cleared-banner__btn { order: 3; flex: 1; }
+    }
   </style>
 </head>
 <body>
@@ -670,6 +818,27 @@
     </div>
   </div>
 
+  <!-- ═══ TOAST + MODAL ═══════════════════════════════════════ -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="toast__icon"><span class="material-symbols-outlined">check_circle</span></span>
+    <span class="toast__msg" id="toastMsg">Tudo certo</span>
+  </div>
+
+  <div class="modal" id="confirmModal" role="dialog" aria-modal="true">
+    <div class="modal__card">
+      <div class="modal__icon"><span class="material-symbols-outlined">warning</span></div>
+      <div class="modal__title">Limpar todos os dados?</div>
+      <div class="modal__text">
+        Essa ação <strong>não tem volta</strong>. Todos os eventos, visitas, leads,
+        respostas do diagnóstico e atividade recente serão zerados.
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="modal__btn modal__btn--cancel" id="confirmCancel">Cancelar</button>
+        <button type="button" class="modal__btn modal__btn--danger" id="confirmOk">Sim, limpar tudo</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ DASHBOARD ═══════════════════════════════════════════ -->
   <div class="dash" id="dashScreen" hidden>
     <div class="dash__inner">
@@ -699,6 +868,20 @@
       </header>
 
       <div class="dash__body">
+
+        <!-- Banner de "dados limpos" (aparece só quando o estado está zerado) -->
+        <div class="cleared-banner" id="clearedBanner" hidden>
+          <div class="cleared-banner__icon">
+            <span class="material-symbols-outlined">delete_sweep</span>
+          </div>
+          <div class="cleared-banner__text">
+            <strong>Dados limpos.</strong> O painel está zerado e vai começar a contar do zero
+            assim que o tracking gravar novos eventos.
+          </div>
+          <button type="button" class="cleared-banner__btn" id="restoreDemoBtn">
+            Restaurar demo
+          </button>
+        </div>
 
         <!-- Live pill -->
         <div class="live" id="livePill">
@@ -937,11 +1120,89 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // MOCK DATA · gera dados realistas pra Balla ver o painel bonito
-  //          quando ligar o tracking, troque renderAll() pra usar
+  // ESTADO PERSISTIDO · flag de "dados limpos"
+  // ═══════════════════════════════════════════════════════════════
+  // Quando o admin clica em "Limpar dados", a gente seta essa flag.
+  // Enquanto a flag estiver ativa, getCurrentData() devolve estado vazio
+  // (em vez do mock demo). Persiste em localStorage pra sobreviver reload.
+  const CLEARED_FLAG_KEY  = 'mddnm_admin_data_cleared_v1';
+  const CLEARED_AT_KEY    = 'mddnm_admin_cleared_at_v1';
+
+  // Chaves do localStorage que podem ser povoadas pelo Track helper
+  // (quando Balla plugar o tracking no sales.html). Limpamos TODAS aqui.
+  const TRACK_KEYS_TO_PURGE = [
+    'mddnm_track_v1',          // Track helper futuro do MDDNM
+    'lobo_admin_v1',           // se Balla copiar o doc original do Lobo Studio
+    'mddnm_admin_recent_v1',   // qualquer cache local de eventos
+    'mddnm_admin_funnel_v1',
+    'mddnm_admin_diag_v1',
+  ];
+
+  function isDataCleared() {
+    try { return localStorage.getItem(CLEARED_FLAG_KEY) === '1'; }
+    catch { return false; }
+  }
+
+  function clearedAt() {
+    try {
+      const ts = parseInt(localStorage.getItem(CLEARED_AT_KEY) || '0', 10);
+      return ts > 0 ? ts : null;
+    } catch { return null; }
+  }
+
+  function setDataCleared() {
+    try {
+      localStorage.setItem(CLEARED_FLAG_KEY, '1');
+      localStorage.setItem(CLEARED_AT_KEY, String(Date.now()));
+      // Apaga TODOS os caches locais de eventos do Track, se existirem
+      TRACK_KEYS_TO_PURGE.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+    } catch {}
+  }
+
+  function unsetDataCleared() {
+    try {
+      localStorage.removeItem(CLEARED_FLAG_KEY);
+      localStorage.removeItem(CLEARED_AT_KEY);
+    } catch {}
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ESTADOS DE DADOS
+  //   defaultMockData() → demo bonito (pra ver o painel populado)
+  //   emptyMockData()   → tudo zerado (depois do "Limpar dados")
+  //   getCurrentData()  → escolhe um ou outro com base na flag
+  // ═══════════════════════════════════════════════════════════════
+  function emptyMockData() {
+    return {
+      stats: {
+        visits: 0, uniqueUsers: 0, leads: 0, purchases: 0,
+        deltas: { visits: 0, uniqueUsers: 0, leads: 0, purchases: 0 }
+      },
+      funnel:  [],
+      utms:    [],
+      ctas:    [],
+      modules: [],
+      vitals: {
+        LCP: { value: '—', rating: 'none' },
+        INP: { value: '—', rating: 'none' },
+        CLS: { value: '—', rating: 'none' },
+      },
+      diag:   [],
+      recent: []
+    };
+  }
+
+  function getCurrentData() {
+    if (isDataCleared()) return emptyMockData();
+    return defaultMockData();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MOCK DATA DEMO · gera dados realistas pra Balla ver o painel bonito
+  //          quando ligar o tracking, troque getCurrentData() pra usar
   //          dados do servidor via fetchServerEvents()
   // ═══════════════════════════════════════════════════════════════
-  function generateMockData() {
+  function defaultMockData() {
     const visits     = 1247 + Math.floor(Math.random() * 3);
     const uniqueUsers = 893  + Math.floor(Math.random() * 2);
     const leads      = 47   + (Math.random() < .15 ? 1 : 0);
@@ -1092,19 +1353,27 @@
       { icon: 'shopping_bag',     lbl: 'Vendas concluídas',   val: s.purchases,   delta: s.deltas.purchases   },
     ];
     el.innerHTML = items.map(it => {
+      // Quando tudo é zero (estado limpo) ou sem delta significativa, esconde o badge
+      const showDelta = it.val > 0 && Math.abs(it.delta) > 0.01;
       const isUp = it.delta >= 0;
       const deltaIcon = isUp ? 'trending_up' : 'trending_down';
       const deltaCls  = isUp ? 'stat__delta--up' : 'stat__delta--down';
       const sign      = isUp ? '+' : '';
+      const deltaHtml = showDelta
+        ? `<div class="stat__delta ${deltaCls}">
+             <span class="material-symbols-outlined">${deltaIcon}</span>
+             ${sign}${it.delta}% vs período anterior
+           </div>`
+        : `<div class="stat__delta" style="background:rgba(255,255,255,.04); color:var(--text-subtle);">
+             <span class="material-symbols-outlined">remove</span>
+             aguardando dados
+           </div>`;
       return `
         <div class="stat">
           <div class="stat__icon"><span class="material-symbols-outlined">${it.icon}</span></div>
           <div class="stat__num">${fmtNum(it.val)}</div>
           <div class="stat__lbl">${it.lbl}</div>
-          <div class="stat__delta ${deltaCls}">
-            <span class="material-symbols-outlined">${deltaIcon}</span>
-            ${sign}${it.delta}% vs período anterior
-          </div>
+          ${deltaHtml}
         </div>
       `;
     }).join('');
@@ -1247,13 +1516,13 @@
 
   async function renderAll() {
     let data;
-    if (CONFIG.USE_SERVER) {
+    if (CONFIG.USE_SERVER && !isDataCleared()) {
       // TODO: quando o tracking estiver no ar, descomentar e mapear:
       //   const fresh = await fetchServerEvents();
       //   data = mapServerToView(fresh, _currentRange);
-      data = generateMockData();
+      data = getCurrentData();
     } else {
-      data = generateMockData();
+      data = getCurrentData();
     }
 
     renderStats(data.stats);
@@ -1268,7 +1537,17 @@
     document.getElementById('totalEvents').textContent = fmtNum(
       data.stats.visits + data.stats.leads + data.stats.purchases
     );
-    document.getElementById('modeIndicator').textContent = CONFIG.USE_SERVER ? 'live · server' : 'mock data';
+
+    // Indicador de modo no footer
+    const cleared = isDataCleared();
+    const mode = cleared
+      ? 'limpo · aguardando eventos'
+      : (CONFIG.USE_SERVER ? 'live · server' : 'mock data');
+    document.getElementById('modeIndicator').textContent = mode;
+
+    // Banner "dados limpos" no topo
+    const banner = document.getElementById('clearedBanner');
+    if (banner) banner.hidden = !cleared;
 
     lastRender = Date.now();
     tickUpdatedLabel();
@@ -1301,20 +1580,99 @@
     if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
   }
 
-  // Header buttons
-  document.getElementById('btnRefresh').addEventListener('click', renderAll);
-  document.getElementById('btnLogout').addEventListener('click', logout);
-  document.getElementById('btnClear').addEventListener('click', () => {
-    if (!confirm('Tem certeza que quer limpar TODOS os dados? Essa ação não tem volta.')) return;
-    if (CONFIG.USE_SERVER) {
-      const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
-      fetch(CONFIG.SERVER_URL, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } })
-        .then(() => renderAll())
-        .catch(() => alert('Falhou ao limpar no servidor.'));
-    } else {
-      alert('Modo mock: nada pra limpar (os dados são gerados em memória).');
+  // ═══════════════════════════════════════════════════════════════
+  // TOAST + MODAL (UX feedback)
+  // ═══════════════════════════════════════════════════════════════
+  const toastEl    = document.getElementById('toast');
+  const toastMsgEl = document.getElementById('toastMsg');
+  const toastIconEl= toastEl.querySelector('.toast__icon .material-symbols-outlined');
+  let _toastTimer = null;
+
+  function showToast(msg, kind = 'success') {
+    toastMsgEl.textContent = msg;
+    toastIconEl.textContent = kind === 'error' ? 'error' : (kind === 'info' ? 'info' : 'check_circle');
+    toastEl.classList.remove('toast--success', 'toast--error', 'toast--info');
+    toastEl.classList.add('toast--' + kind);
+    toastEl.classList.add('is-visible');
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 3200);
+  }
+
+  const confirmModal = document.getElementById('confirmModal');
+  let _confirmResolver = null;
+  function openConfirm() {
+    return new Promise((resolve) => {
+      _confirmResolver = resolve;
+      confirmModal.classList.add('is-open');
+    });
+  }
+  function closeConfirm(result) {
+    confirmModal.classList.remove('is-open');
+    if (_confirmResolver) {
+      const r = _confirmResolver;
+      _confirmResolver = null;
+      r(result);
     }
+  }
+  document.getElementById('confirmCancel').addEventListener('click', () => closeConfirm(false));
+  document.getElementById('confirmOk').addEventListener('click',     () => closeConfirm(true));
+  // ESC fecha o modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && confirmModal.classList.contains('is-open')) closeConfirm(false);
   });
+  // Click no backdrop fecha
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) closeConfirm(false);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // CLEAR DATA · função principal · funciona em modo mock E server
+  // ═══════════════════════════════════════════════════════════════
+  async function clearAllData() {
+    const ok = await openConfirm();
+    if (!ok) return;
+
+    // 1. Servidor (quando USE_SERVER) — DELETE no endpoint
+    if (CONFIG.USE_SERVER) {
+      try {
+        const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
+        const res = await fetch(CONFIG.SERVER_URL, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('server returned ' + res.status);
+      } catch (err) {
+        showToast('Falhou ao limpar no servidor: ' + err.message, 'error');
+        return;
+      }
+    }
+
+    // 2. Local: persistir flag + limpar caches do Track helper
+    setDataCleared();
+
+    // 3. Re-render (vai mostrar tudo zerado + banner)
+    renderAll();
+
+    // 4. Feedback
+    showToast('Todos os dados foram limpos.', 'success');
+  }
+
+  function restoreDemo() {
+    unsetDataCleared();
+    renderAll();
+    showToast('Dados de demonstração restaurados.', 'info');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HEADER BUTTONS
+  // ═══════════════════════════════════════════════════════════════
+  document.getElementById('btnRefresh').addEventListener('click', () => {
+    renderAll();
+    showToast('Atualizado agora.', 'info');
+  });
+  document.getElementById('btnLogout').addEventListener('click', logout);
+  document.getElementById('btnClear').addEventListener('click', clearAllData);
+  document.getElementById('restoreDemoBtn').addEventListener('click', restoreDemo);
 
   // Tabs
   document.querySelectorAll('.tab').forEach(t => {
