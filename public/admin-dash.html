@@ -728,9 +728,12 @@
     .modal__btn--danger:active { transform: translateY(0); }
 
     /* ─── TOAST ───────────────────────────────────────────── */
+    /* Esconde com visibility+opacity (mais robusto que transform sozinho —
+       evita pedacinho visível enquanto fonts carregam ou em telas estreitas) */
     .toast {
       position: fixed;
-      top: 24px; left: 50%;
+      top: 0;
+      left: 50%;
       z-index: 9500;
       display: flex; align-items: center; gap: 10px;
       padding: 12px 18px;
@@ -742,15 +745,26 @@
       font-weight: 600;
       font-size: .88rem;
       color: var(--text);
-      transform: translate(-50%, -120%);
-      transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
       max-width: calc(100% - 48px);
+      visibility: hidden;
+      opacity: 0;
+      transform: translate(-50%, -16px);
+      pointer-events: none;
+      transition: opacity .22s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1), visibility 0s linear .35s;
     }
-    .toast.is-visible { transform: translate(-50%, 0); }
+    .toast.is-visible {
+      visibility: visible;
+      opacity: 1;
+      transform: translate(-50%, 28px);
+      pointer-events: auto;
+      transition: opacity .22s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1), visibility 0s linear 0s;
+    }
     .toast--success { border-color: rgba(16, 185, 129, .4); }
     .toast--success .toast__icon { color: var(--success); }
     .toast--error   { border-color: rgba(239, 68, 68, .4); }
     .toast--error   .toast__icon { color: var(--danger); }
+    .toast--info    { border-color: rgba(255, 214, 10, .4); }
+    .toast--info    .toast__icon { color: var(--primary); }
     .toast__icon { display: flex; align-items: center; }
     .toast__icon .material-symbols-outlined { font-size: 20px; }
 
