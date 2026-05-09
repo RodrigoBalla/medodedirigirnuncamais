@@ -1,4 +1,34 @@
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+// Cache do JWT do Panda Watermark — evita pedir um novo a cada aula
+// (o token vale 24h, então uma vez por sessão é suficiente).
+let _pandaWatermarkPromise: Promise<string | null> | null = null;
+let _pandaWatermarkExpiresAt = 0;
+
+async function getPandaWatermarkJWT(): Promise<string | null> {
+  // Reusa o promise existente se ainda estiver vivo
+  if (_pandaWatermarkPromise && Date.now() < _pandaWatermarkExpiresAt) {
+    return _pandaWatermarkPromise;
+  }
+  _pandaWatermarkExpiresAt = Date.now() + 23 * 60 * 60 * 1000; // 23h cache
+  _pandaWatermarkPromise = (async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("panda-jwt", {
+        method: "GET",
+      });
+      if (error) {
+        console.warn("[panda-jwt] erro:", error.message);
+        return null;
+      }
+      return (data as { token?: string })?.token || null;
+    } catch (e) {
+      console.warn("[panda-jwt] fetch falhou:", e);
+      return null;
+    }
+  })();
+  return _pandaWatermarkPromise;
+}
 
 // =============================================================================
 // VideoPlayer — abstrai 3 fontes (YouTube, Vimeo, nativo MP4) atrás de uma
@@ -227,13 +257,21 @@ export function VideoPlayer({
       }
 
       if (embed.kind === "panda") {
-        // Panda Video — abordagem em duas fases:
-        // 1. Cria iframe com autoplay e startTime via querystring (carrega
-        //    nativamente, sem depender de SDK pra reproduzir)
-        // 2. Após iframe.onload, instancia o SDK PandaPlayer pra capturar
+        // Panda Video — fluxo:
+        // 1. Busca JWT do Panda Watermark (Edge Function panda-jwt) em paralelo
+        //    pra adicionar &watermark={JWT} na URL do iframe (DRM por aluno)
+        // 2. Cria iframe com autoplay + startTime + watermark via querystring
+        // 3. Após iframe.onload, instancia o SDK PandaPlayer pra capturar
         //    eventos de timeupdate/ended sem reiniciar o player
-        // Isso evita o bug onde new PandaPlayer no setup força um reload
-        // que aborta o autoplay original.
+
+        // Pega watermark JWT (fire-and-forget — se falhar, vídeo carrega
+        // sem watermark em vez de quebrar tudo)
+        const watermarkPromise = getPandaWatermarkJWT();
+        const watermarkJWT = await Promise.race([
+          watermarkPromise,
+          new Promise<null>((r) => setTimeout(() => r(null), 2500)), // 2.5s timeout
+        ]);
+        if (cancelled) return;
 
         const iframeId = `panda-${embed.videoId}-${Date.now()}`;
         const iframe = document.createElement("iframe");
@@ -258,11 +296,16 @@ export function VideoPlayer({
         if (startAt > 0) {
           paramsObj.startTime = String(Math.floor(startAt));
         }
-        // DRM Watermark: identifica o aluno via Panda customParam — quando
-        // o admin criar um grupo DRM no painel apontando pra esse param,
-        // a marca d'água com o identificador do aluno é renderizada
-        // dinamicamente sobre o vídeo (anti-pirataria).
-        // Compatível com placeholders do Panda: customParam.user / .email
+        // DRM Watermark: o JWT vem da Edge Function panda-jwt (assinado
+        // com a chave secreta do Panda no servidor). Carrega:
+        // string1="Medo de Dirigir Nunca Mais", string2=email do aluno,
+        // string3="ID: <user_id_short>". Renderizado dinamicamente sobre
+        // o vídeo se o vídeo estiver no grupo DRM configurado no painel.
+        if (watermarkJWT) {
+          paramsObj.watermark = watermarkJWT;
+        }
+        // Fallback compat: passa email também como customParam pro caso de
+        // grupos DRM que usem placeholders diferentes
         if (viewerId) {
           paramsObj["customParam.user"]  = viewerId;
           paramsObj["customParam.email"] = viewerId;
