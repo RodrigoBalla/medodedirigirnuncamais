@@ -18,6 +18,17 @@
   to     = "/carla.html"
   status = 200
 
+# Painel admin de comportamento/analytics (estático, fora do SPA).
+# Permite acessar tanto /admin-dash quanto /admin-dash.html
+[[redirects]]
+  from   = "/admin-dash"
+  to     = "/admin-dash.html"
+  status = 200
+[[redirects]]
+  from   = "/dash"
+  to     = "/admin-dash.html"
+  status = 200
+
 # Fallback SPA (mesmo objetivo do public/_redirects, redundância proposital).
 [[redirects]]
   from   = "/*"
