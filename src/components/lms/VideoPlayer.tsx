@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 export type VideoEmbed =
   | { kind: "youtube"; videoId: string }
   | { kind: "vimeo"; videoId: string }
+  | { kind: "panda"; videoId: string; pullzone: string }
   | { kind: "native"; src: string };
 
 interface VideoPlayerProps {
@@ -35,6 +36,9 @@ export function parseVideoUrl(url: string | null | undefined): VideoEmbed | null
   if (yt) return { kind: "youtube", videoId: yt[1] };
   const vimeo = url.match(/(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/);
   if (vimeo) return { kind: "vimeo", videoId: vimeo[1] };
+  // Panda Video: https://player-vz-<pullzone>.tv.pandavideo.com.br/embed/?v=<UUID>
+  const panda = url.match(/player-(vz-[a-z0-9]+)\.tv\.pandavideo\.com\.br\/embed\/\?v=([0-9a-f-]{36})/i);
+  if (panda) return { kind: "panda", pullzone: panda[1], videoId: panda[2] };
   return { kind: "native", src: url };
 }
 
@@ -201,6 +205,68 @@ export function VideoPlayer({
         return;
       }
 
+      if (embed.kind === "panda") {
+        // Panda Video: iframe + postMessage API
+        // Docs: https://docs.pandavideo.com.br/embed/javascript/events
+        const iframe = document.createElement("iframe");
+        const params = new URLSearchParams({
+          v: embed.videoId,
+          autoplay: "true",
+          startTime: String(Math.floor(startAt) || 0),
+        });
+        iframe.src = `https://player-${embed.pullzone}.tv.pandavideo.com.br/embed/?${params}`;
+        iframe.allow = "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen";
+        iframe.setAttribute("allowfullscreen", "true");
+        iframe.setAttribute("frameborder", "0");
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.border = "0";
+        container.appendChild(iframe);
+        playerRef.current = iframe;
+        setIframeReady(true);
+
+        // Listen events do Panda via postMessage
+        let lastSent = 0;
+        let lastDuration = 0;
+        const onMessage = (ev: MessageEvent) => {
+          // Filtra só mensagens do iframe Panda
+          if (!ev.origin.includes("pandavideo.com.br")) return;
+          if (ev.source !== iframe.contentWindow) return;
+          const d: any = ev.data;
+          // Panda envia tanto string quanto objeto. Padroniza.
+          const msg = typeof d === "string" ? { message: d } : d;
+          if (!msg) return;
+          // panda_timeupdate { currentTime, duration }
+          if (msg.message === "panda_timeupdate" || msg.event === "timeupdate") {
+            const t = msg.currentTime ?? msg.data?.currentTime ?? 0;
+            const dur = msg.duration ?? msg.data?.duration ?? lastDuration;
+            if (dur > 0 && dur !== lastDuration) {
+              lastDuration = dur;
+              onDurationChange?.(dur);
+            }
+            if (Date.now() - lastSent > 5000) {
+              lastSent = Date.now();
+              onProgress?.(t, dur);
+            }
+          }
+          // panda_ended
+          if (msg.message === "panda_ended" || msg.event === "ended") {
+            onEnded?.();
+          }
+          // panda_loadedmetadata { duration }
+          if (msg.message === "panda_loadedmetadata" || msg.event === "loadedmetadata") {
+            const dur = msg.duration ?? msg.data?.duration ?? 0;
+            if (dur > 0) {
+              lastDuration = dur;
+              onDurationChange?.(dur);
+            }
+          }
+        };
+        window.addEventListener("message", onMessage);
+        cleanup.push(() => window.removeEventListener("message", onMessage));
+        return;
+      }
+
       // Native MP4
       const video = document.createElement("video");
       video.src = embed.src;
@@ -240,7 +306,7 @@ export function VideoPlayer({
     };
     // Reagimos só quando muda a aula. startAt é aplicado uma vez no setup.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [embed?.kind, (embed as any)?.videoId, (embed as any)?.src]);
+  }, [embed?.kind, (embed as any)?.videoId, (embed as any)?.src, (embed as any)?.pullzone]);
 
   // Salva posição final ao desmontar (caso usuário feche aba/pular aula)
   useEffect(() => {
@@ -255,6 +321,10 @@ export function VideoPlayer({
         } else if (embed.kind === "vimeo") {
           // Vimeo é assíncrono, getCurrentTime retorna Promise. No beforeunload
           // não dá tempo de await — o último onProgress já cuidou disso.
+          return;
+        } else if (embed.kind === "panda") {
+          // Panda também é via postMessage assíncrono. O último timeupdate já
+          // cuidou de salvar a posição via onProgress.
           return;
         } else {
           t = (p as HTMLVideoElement).currentTime ?? 0;
