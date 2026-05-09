@@ -58,9 +58,10 @@ async function supabase(path, opts = {}) {
     const text = await res.text().catch(() => '');
     throw new Error(`supabase ${res.status}: ${text.slice(0, 200)}`);
   }
-  // 204 No Content (INSERT sem return)
-  if (res.status === 204) return null;
-  return await res.json();
+  // 204 No Content ou 201 Created sem body (INSERT com Prefer: return=minimal)
+  const text = await res.text();
+  if (!text) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 // ────────────────────────────────────────────────────────────────
