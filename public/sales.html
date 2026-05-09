@@ -15,6 +15,9 @@
   <!-- Preload da imagem hero crítica (LCP) -->
   <link rel="preload" as="image" href="/hero/instrutora.jpg" fetchpriority="high" />
 
+  <!-- Tracking de comportamento (alimenta o painel /dash em tempo real) -->
+  <script src="/track.js" defer></script>
+
   <style>
     /* ─── THEME TOKENS ──────────────────────────────────── */
     /* Paleta nova:
@@ -4571,7 +4574,7 @@
             <span class="hero__cta-pack__sold-out">Esgotado!</span>
             <span class="hero__cta-pack__tail">depois vira lista de espera</span>
           </div>
-          <button class="btn btn--primary hero__cta-btn" onclick="openLeadModal()">
+          <button class="btn btn--primary hero__cta-btn" onclick="openLeadModal('hero')">
             <span class="material-symbols-outlined">directions_car</span>
             QUERO COMEÇAR AGORA
           </button>
@@ -4837,7 +4840,7 @@
       </span>
     </div>
 
-    <button class="btn btn--primary solution-cta" onclick="openLeadModal()">
+    <button class="btn btn--primary solution-cta" onclick="openLeadModal('solucao')">
       <span class="material-symbols-outlined">directions_car</span>
       ME COLOQUE NESSA TRILHA
     </button>
@@ -5261,7 +5264,7 @@
       <strong style="color:var(--primary)">Marcou pelo menos um?</strong> O método foi feito pra você.
     </p>
     <div style="text-align:center">
-      <button class="btn btn--primary" style="padding:18px 36px;font-size:1rem" onclick="openLeadModal()">
+      <button class="btn btn--primary" style="padding:18px 36px;font-size:1rem" onclick="openLeadModal('for')">
         ME ENCAIXO, QUERO ENTRAR
       </button>
     </div>
@@ -5397,7 +5400,7 @@
         <div class="price-stack__note">Pagamento único · 1 ano de acesso</div>
       </div>
 
-      <button class="btn btn--primary btn--block offer-cta" onclick="openLeadModal()">
+      <button class="btn btn--primary btn--block offer-cta" onclick="openLeadModal('oferta')">
         <span class="material-symbols-outlined">workspace_premium</span>
         QUERO MINHA VAGA DE LANÇAMENTO
       </button>
@@ -5629,7 +5632,7 @@
       <span class="sticky-cta__price-old">R$ 591</span>
       <span class="sticky-cta__price-new">R$ 97</span>
     </div>
-    <button class="sticky-cta__btn" onclick="openLeadModal()">
+    <button class="sticky-cta__btn" onclick="openLeadModal('sticky')">
       <span class="material-symbols-outlined filled">directions_car</span>
       QUERO COMEÇAR
     </button>
@@ -6074,8 +6077,14 @@
 
   // ── FAQ ───────────────────────────────────────────────
   function toggleFaq(btn) {
+    const isOpening = !btn.classList.contains('open');
     btn.classList.toggle('open');
     btn.nextElementSibling.classList.toggle('open');
+    if (isOpening && window.Track) {
+      // Pega só a pergunta (sem o texto do chevron)
+      const pergunta = btn.firstChild?.textContent?.trim().slice(0, 100) || '';
+      window.Track.event('faq_aberto', { pergunta });
+    }
   }
 
   // ── TESTIMONIALS ──────────────────────────────────────
@@ -6414,7 +6423,13 @@
   setInterval(carregarVagas, 60000);
 
   // ── LEAD MODAL ───────────────────────────────────────
-  function openLeadModal() {
+  function openLeadModal(origem) {
+    // Tracking: registra o CTA específico que abriu o modal
+    if (window.Track) {
+      const label = origem || 'desconhecido';
+      window.Track.event('clicou_cta_' + label, { label });
+      window.Track.event('abriu_modal_lead', { origem: label });
+    }
     document.getElementById('leadModal').classList.add('is-open');
     document.body.style.overflow = 'hidden';
     // Revalida vagas ao abrir o modal (caso esgotaram nesse meio tempo)
@@ -6437,6 +6452,7 @@
 
     if (modoListaEspera) {
       // Modo lista de espera: salva o lead e mostra confirmação (sem ir pro checkout)
+      if (window.Track) window.Track.event('lead_capturado', { tipo: 'lista_espera' });
       // TODO: enviar pra um webhook/edge function de "lista de espera"
       const submitBtn = document.getElementById('modalSubmit');
       if (submitBtn) {
@@ -6447,6 +6463,11 @@
       return;
     }
 
+    // Tracking: lead capturado + iniciou checkout
+    if (window.Track) {
+      window.Track.event('lead_capturado', { tipo: 'checkout' });
+      window.Track.event('iniciou_checkout', null);
+    }
     // TODO: substituir por seu link de checkout (Eduzz/Hotmart/Kiwify)
     window.location.href = 'https://sun.eduzz.com/SEU_LINK_AQUI?nome=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
   }
@@ -6687,6 +6708,7 @@
     let isSpinning = false;
     window.spinRoulette = function() {
       if (isSpinning) return;
+      if (window.Track) window.Track.event('exit_spin_clicado', null);
       const disc = document.getElementById('wheelDisc');
       const labels = document.getElementById('wheelLabels');
       const hub = document.getElementById('wheelHub');
@@ -6779,6 +6801,10 @@
       exitGoStage('coupon');
       fireExitConfetti();
       startCouponTimer(end);
+      if (window.Track) {
+        window.Track.event('lead_capturado', { tipo: 'cupom_exit' });
+        window.Track.event('cupom_gerado', { code });
+      }
     };
 
     window.copyCoupon = function() {
@@ -6827,8 +6853,9 @@
         if (lead.email) document.getElementById('leadEmail').value = lead.email;
         if (lead.phone) document.getElementById('leadPhone').value = lead.phone;
       } catch (e) {}
+      if (window.Track) window.Track.event('exit_to_checkout', null);
       closeExitModal();
-      openLeadModal();
+      openLeadModal('exit_cupom');
     };
 
     // Enter/Espaço no card do cupom também copia

@@ -2,6 +2,12 @@
   command   = "npm run build"
   publish   = "dist"
 
+# Netlify Functions (analytics tracking endpoint /.netlify/functions/events)
+[functions]
+  directory = "netlify/functions"
+  # node_bundler = "esbuild" — REMOVIDO de propósito.
+  # @netlify/blobs precisa do auto-detect de contexto que esbuild quebra.
+
 # Página de vendas estática — servida diretamente, fora do SPA.
 [[redirects]]
   from   = "/vendas"

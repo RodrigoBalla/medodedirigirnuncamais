@@ -1082,8 +1082,9 @@
     //   sha256('mddnm-salt-v1' + 'NOVA_SENHA').then(console.log)
     ADMIN_PWD_HASH:  '3c38b8be3648336c727ec09f088923caa8eb385745e38f2fff5c5103273d09bf',
 
-    // Quando você plugar o tracking real, troque pra true
-    USE_SERVER:      false,
+    // Tracking real ligado: lê do /.netlify/functions/events
+    // Pra rodar offline ou ver o demo: troque pra false
+    USE_SERVER:      true,
     SERVER_URL:      '/.netlify/functions/events',
 
     // Refresh do dashboard (ms)
@@ -1386,7 +1387,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // SERVER FETCH (placeholder · liga quando o tracking estiver no ar)
+  // SERVER FETCH · busca o agregado do /.netlify/functions/events
   // ═══════════════════════════════════════════════════════════════
   async function fetchServerEvents() {
     if (!CONFIG.USE_SERVER) return null;
@@ -1401,6 +1402,149 @@
       const j = await res.json();
       return j.ok ? j : null;
     } catch { return null; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAP SERVER → VIEW
+  // Converte o agregado da Netlify Function pro shape que os render*()
+  // já consomem (mesmo formato do defaultMockData).
+  //
+  // Range: '24h' | '7d' | '30d' | 'all'
+  // ═══════════════════════════════════════════════════════════════
+  function mapServerToView(srv, range) {
+    if (!srv) return emptyMockData();
+
+    const bucket   = srv.buckets?.[range] || srv.buckets?.['24h'] || { events: {}, sessions: 0 };
+    const prev     = srv.prevBuckets?.[range] || null;
+    const ev       = bucket.events || {};
+    const sessions = bucket.sessions || 0;
+
+    // ── KPIs ───────────────────────────────────────────────
+    const visits     = ev['pagina_visitada'] || 0;
+    const uniqueUsers = sessions;
+    const leads      = ev['lead_capturado']  || 0;
+    const purchases  = ev['compra_completa'] || 0;
+
+    // Delta% comparando com período anterior (mesma duração)
+    function calcDelta(curr, prevVal) {
+      if (!prevVal) return curr > 0 ? 100 : 0;
+      const diff = ((curr - prevVal) / prevVal) * 100;
+      return Math.round(diff * 10) / 10;
+    }
+    const prevEv = prev?.events || {};
+    const deltas = {
+      visits:     calcDelta(visits,     prevEv['pagina_visitada'] || 0),
+      uniqueUsers: calcDelta(uniqueUsers, prev?.sessions || 0),
+      leads:      calcDelta(leads,      prevEv['lead_capturado']  || 0),
+      purchases:  calcDelta(purchases,  prevEv['compra_completa'] || 0),
+    };
+
+    // ── FUNIL ──────────────────────────────────────────────
+    const ctaTotal = Object.keys(ev)
+      .filter(k => k.startsWith('clicou_cta_'))
+      .reduce((sum, k) => sum + ev[k], 0);
+    const funnel = [
+      { name: 'Abriu a página',     value: visits },
+      { name: 'Rolou pra Trilha',   value: ev['scroll_25']        || 0 },
+      { name: 'Viu testimonials',   value: ev['scroll_50']        || 0 },
+      { name: 'Chegou na oferta',   value: ev['scroll_75']        || 0 },
+      { name: 'Clicou no CTA',      value: ctaTotal },
+      { name: 'Iniciou checkout',   value: ev['iniciou_checkout'] || 0 },
+      { name: 'Comprou',            value: purchases },
+    ];
+
+    // ── UTMs (top 7) ───────────────────────────────────────
+    // srv.utmSources tem todas as sessões, não filtra por bucket.
+    // Pra MVP, usa total geral (faz sentido como visão global de origem).
+    const utms = Object.entries(srv.utmSources || {})
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7);
+
+    // ── CTAs (top 5) ───────────────────────────────────────
+    // Filtra do bucket atual (timeline-aware)
+    const ctaLabels = {
+      hero: 'Hero · "Quero começar"',
+      solucao: 'Solução · "Me coloque na trilha"',
+      for: 'Pra quem é · "Quero entrar"',
+      oferta: 'Oferta · "Quero minha vaga"',
+      sticky: 'Sticky · "Garantir vaga"',
+      exit_cupom: 'Exit modal · cupom',
+      desconhecido: '(sem origem)',
+    };
+    const ctas = Object.keys(ev)
+      .filter(k => k.startsWith('clicou_cta_'))
+      .map(k => {
+        const slug = k.replace('clicou_cta_', '');
+        return { name: ctaLabels[slug] || slug, value: ev[k] };
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    // ── MÓDULOS (não temos clicks em módulos no sales.html ainda) ──
+    const modules = Object.entries(srv.moduleHits || {})
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+
+    // ── WEB VITALS ─────────────────────────────────────────
+    function vitalRating(metric, p75) {
+      if (p75 == null) return { value: '—', rating: 'none' };
+      // Thresholds oficiais do web.dev
+      const thresholds = {
+        LCP: { good: 2500, ni: 4000, fmt: ms => (ms/1000).toFixed(1) + 's' },
+        INP: { good: 200,  ni: 500,  fmt: ms => Math.round(ms) + 'ms' },
+        CLS: { good: 0.1,  ni: 0.25, fmt: v  => v.toFixed(2) },
+      };
+      const t = thresholds[metric];
+      if (!t) return { value: String(p75), rating: 'none' };
+      let rating = 'good';
+      if (p75 > t.ni)        rating = 'poor';
+      else if (p75 > t.good) rating = 'ni';
+      return { value: t.fmt(p75), rating };
+    }
+    const vitals = {
+      LCP: vitalRating('LCP', srv.webVitals?.LCP?.p75),
+      INP: vitalRating('INP', srv.webVitals?.INP?.p75),
+      CLS: vitalRating('CLS', srv.webVitals?.CLS?.p75),
+    };
+
+    // ── DIAGNÓSTICO ────────────────────────────────────────
+    // O sales.html ainda não tem quiz. Quando tiver, srv.diagAns vem
+    // populado. Aqui só convertemos se houver dados.
+    const diag = Object.entries(srv.diagAns || {}).map(([q, opts]) => ({
+      q,
+      options: Object.entries(opts).map(([name, value]) => ({ name, value }))
+                                   .sort((a, b) => b.value - a.value),
+    }));
+
+    // ── ATIVIDADE RECENTE ──────────────────────────────────
+    function eventToType(name) {
+      if (name.startsWith('clicou_cta_'))    return 'cta';
+      if (name.startsWith('scroll_'))         return 'scroll';
+      if (name === 'lead_capturado')          return 'lead';
+      if (name === 'iniciou_checkout')        return 'lead';
+      if (name === 'compra_completa')         return 'lead';
+      if (name === 'tempo_na_pagina')         return 'exit';
+      return 'visit';
+    }
+    const recent = (srv.recent || []).slice(0, 30).map(it => ({
+      name: it.name,
+      meta: it.meta,
+      ts:   it.ts,
+      type: eventToType(it.name),
+    }));
+
+    return {
+      stats:   { visits, uniqueUsers, leads, purchases, deltas },
+      funnel,
+      utms,
+      ctas,
+      modules,
+      vitals,
+      diag,
+      recent,
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1578,13 +1722,30 @@
 
   async function renderAll() {
     let data;
+    let serverError = null;
+
     if (CONFIG.USE_SERVER && !isDataCleared()) {
-      // TODO: quando o tracking estiver no ar, descomentar e mapear:
-      //   const fresh = await fetchServerEvents();
-      //   data = mapServerToView(fresh, _currentRange);
-      data = getCurrentData();
+      try {
+        const fresh = await fetchServerEvents();
+        if (fresh) {
+          data = mapServerToView(fresh, _currentRange);
+        } else {
+          serverError = 'Sem resposta do servidor';
+          data = emptyMockData();
+        }
+      } catch (err) {
+        serverError = err.message;
+        data = emptyMockData();
+      }
     } else {
       data = getCurrentData();
+    }
+
+    // Atualiza a live pill com indicador de erro se houver
+    const livePill = document.getElementById('livePill');
+    if (livePill) {
+      if (serverError) livePill.classList.add('live--error');
+      else             livePill.classList.remove('live--error');
     }
 
     renderStats(data.stats);
