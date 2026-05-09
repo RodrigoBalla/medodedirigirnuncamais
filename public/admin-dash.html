@@ -1417,16 +1417,19 @@
   function mapServerToView(srv, range) {
     if (!srv) return emptyMockData();
 
-    const bucket   = srv.buckets?.[range] || srv.buckets?.['24h'] || { events: {}, sessions: 0 };
+    const bucket   = srv.buckets?.[range] || srv.buckets?.['24h'] || { events: {}, sessionsByEvent: {}, sessions: 0 };
     const prev     = srv.prevBuckets?.[range] || null;
     const ev       = bucket.events || {};
+    const evSess   = bucket.sessionsByEvent || {};      // count distinct session por evento
     const sessions = bucket.sessions || 0;
 
     // ── KPIs ───────────────────────────────────────────────
-    const visits     = ev['pagina_visitada'] || 0;
+    // Visitas no site = total de pageviews (inclui refreshes da mesma sessão)
+    // Visitantes únicos = sessions únicas (1 pessoa = 1 unit)
+    const visits      = ev['pagina_visitada'] || 0;
     const uniqueUsers = sessions;
-    const leads      = ev['lead_capturado']  || 0;
-    const purchases  = ev['compra_completa'] || 0;
+    const leads       = ev['lead_capturado']  || 0;
+    const purchases   = ev['compra_completa'] || 0;
 
     // Delta% comparando com período anterior (mesma duração)
     function calcDelta(curr, prevVal) {
@@ -1443,17 +1446,29 @@
     };
 
     // ── FUNIL ──────────────────────────────────────────────
-    const ctaTotal = Object.keys(ev)
+    // SEMÂNTICA: cada etapa = quantas SESSÕES ÚNICAS chegaram nela
+    // (não count de eventos brutos). Pra "Abriu a página" usamos
+    // `sessions` direto, garantindo que o topo do funil bate com o
+    // KPI "Visitantes únicos". Pra etapas seguintes, usamos count
+    // distinct de sessions que tiveram aquele evento.
+    const ctaSessSet = new Set();
+    for (const r of (srv.recent || [])) {
+      if (r.name?.startsWith('clicou_cta_') && r.session) ctaSessSet.add(r.session);
+    }
+    // Fallback se recent for limitado: soma sessões dos eventos clicou_cta_*
+    const ctaSessFromEvents = Object.keys(evSess)
       .filter(k => k.startsWith('clicou_cta_'))
-      .reduce((sum, k) => sum + ev[k], 0);
+      .reduce((max, k) => Math.max(max, evSess[k]), 0);
+    const ctaUniqueSessions = Math.max(ctaSessSet.size, ctaSessFromEvents);
+
     const funnel = [
-      { name: 'Abriu a página',     value: visits },
-      { name: 'Rolou pra Trilha',   value: ev['scroll_25']        || 0 },
-      { name: 'Viu testimonials',   value: ev['scroll_50']        || 0 },
-      { name: 'Chegou na oferta',   value: ev['scroll_75']        || 0 },
-      { name: 'Clicou no CTA',      value: ctaTotal },
-      { name: 'Iniciou checkout',   value: ev['iniciou_checkout'] || 0 },
-      { name: 'Comprou',            value: purchases },
+      { name: 'Abriu a página',     value: sessions },
+      { name: 'Rolou pra Trilha',   value: evSess['scroll_25']        || 0 },
+      { name: 'Viu testimonials',   value: evSess['scroll_50']        || 0 },
+      { name: 'Chegou na oferta',   value: evSess['scroll_75']        || 0 },
+      { name: 'Clicou no CTA',      value: ctaUniqueSessions },
+      { name: 'Iniciou checkout',   value: evSess['iniciou_checkout'] || 0 },
+      { name: 'Comprou',            value: evSess['compra_completa']  || 0 },
     ];
 
     // ── UTMs (top 7) ───────────────────────────────────────
