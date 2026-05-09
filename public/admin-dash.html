@@ -527,96 +527,152 @@
       margin-left: 6px;
     }
 
-    /* Jornada das sessões */
+    /* Jornada das sessões — agrupado por stage final, ordenado por quantidade */
     .journey {
-      max-height: 480px;
-      overflow-y: auto;
       display: flex; flex-direction: column;
-      gap: 6px;
-      padding-right: 6px;
+      gap: 10px;
     }
-    .journey::-webkit-scrollbar { width: 6px; }
-    .journey::-webkit-scrollbar-track { background: transparent; }
-    .journey::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .08); border-radius: 3px; }
-    .journey::-webkit-scrollbar-thumb:hover { background: rgba(255, 214, 10, .25); }
-    .journey-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1.4fr) auto;
-      gap: 12px; align-items: center;
-      padding: 10px 12px;
+    .journey-empty {
+      font-size: .86rem;
+      color: var(--text-subtle);
+      font-style: italic;
+      text-align: center;
+      padding: 24px 0;
+    }
+    /* Insight de cabeçalho (% que ficou em cada stage) */
+    .journey-summary {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      padding: 12px 14px;
+      background: rgba(255, 214, 10, .06);
+      border: 1px solid rgba(255, 214, 10, .12);
+      border-radius: 10px;
+      margin-bottom: 6px;
+      font-size: .78rem;
+      color: var(--text-mute);
+    }
+    .journey-summary__item { display: flex; gap: 6px; align-items: center; }
+    .journey-summary__item strong { color: var(--text); font-family: var(--font-h); font-weight: 800; }
+    .journey-summary__item--win  strong { color: var(--success); }
+    .journey-summary__item--warn strong { color: var(--warn); }
+
+    /* Cada grupo (stage + count) */
+    .journey-group {
       background: rgba(255, 255, 255, .03);
-      border: 1px solid rgba(255, 214, 10, .06);
+      border: 1px solid rgba(255, 214, 10, .08);
       border-left: 3px solid var(--stage-color, var(--text-subtle));
-      border-radius: 8px;
-      font-size: .82rem;
-      transition: border-color .2s, background .2s;
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: background .2s;
     }
-    .journey-row:hover { background: rgba(255, 255, 255, .05); }
-    .journey-row__id {
+    .journey-group:hover { background: rgba(255, 255, 255, .05); }
+    .journey-group__head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .journey-group__label {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .92rem;
+      color: var(--stage-color, var(--text));
+      letter-spacing: -.01em;
+    }
+    .journey-group__count {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .82rem;
+      color: var(--text-mute);
+    }
+    .journey-group__count strong {
+      color: var(--text);
+      font-size: 1.1rem;
+      margin-right: 4px;
+    }
+    .journey-group__count-pct {
       font-family: var(--font-mono);
       font-size: .72rem;
       color: var(--text-subtle);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-left: 6px;
     }
-    .journey-row__id strong {
-      color: var(--text-mute);
-      font-weight: 600;
+    .journey-group__bar {
+      height: 8px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
     }
-    .journey-row__events {
+    .journey-group__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--stage-color, var(--primary)) 0%, var(--stage-color, var(--primary-2)) 100%);
+      border-radius: 4px;
+      box-shadow: 0 0 8px var(--stage-color, var(--primary-glow));
+      transition: width .45s cubic-bezier(.32, 1, .36, 1);
+    }
+    .journey-group__toggle {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+      padding: 2px 0;
+      transition: color .2s;
+    }
+    .journey-group__toggle:hover { color: var(--primary); }
+    .journey-group__toggle .material-symbols-outlined {
+      font-size: 14px;
+      transition: transform .2s ease;
+    }
+    .journey-group.is-open .journey-group__toggle .material-symbols-outlined { transform: rotate(180deg); }
+    .journey-group__sessions {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, margin-top .2s ease;
+    }
+    .journey-group.is-open .journey-group__sessions {
+      max-height: 600px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .journey-group__sessions::-webkit-scrollbar { width: 6px; }
+    .journey-group__sessions::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .08); border-radius: 3px; }
+    .journey-session {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px; align-items: center;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, .2);
+      border-radius: 6px;
+      margin-bottom: 4px;
       font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-mute);
+    }
+    .journey-session__id strong { color: var(--text); font-weight: 600; }
+    .journey-session__utm { color: var(--text-subtle); }
+    .journey-session__meta {
       font-size: .68rem;
       color: var(--text-subtle);
       white-space: nowrap;
     }
-    .journey-row__stage {
-      display: flex; align-items: center; gap: 8px;
-      min-width: 0;
-    }
-    .journey-row__stage-bar {
-      flex: 1;
-      height: 4px;
-      background: rgba(255, 255, 255, .06);
-      border-radius: 2px;
-      overflow: hidden;
-      min-width: 60px;
-    }
-    .journey-row__stage-fill {
-      height: 100%;
-      background: var(--stage-color, var(--primary));
-      border-radius: 2px;
-      transition: width .35s ease;
-    }
-    .journey-row__stage-label {
-      font-family: var(--font-h);
-      font-weight: 700;
-      font-size: .76rem;
-      color: var(--stage-color, var(--text));
-      white-space: nowrap;
-    }
-    .journey-row__meta {
-      display: flex; gap: 8px; align-items: center;
-      font-size: .7rem;
-      color: var(--text-subtle);
-      white-space: nowrap;
-      font-family: var(--font-mono);
-    }
-    .journey-row__device {
+    .journey-session__device {
       padding: 1px 6px;
       border-radius: 100px;
       background: rgba(255, 255, 255, .06);
       color: var(--text-mute);
-      font-size: .65rem;
+      font-size: .62rem;
       text-transform: uppercase;
       letter-spacing: .04em;
     }
-    @media (max-width: 720px) {
-      .journey-row {
+    @media (max-width: 600px) {
+      .journey-session {
         grid-template-columns: 1fr auto;
         gap: 6px;
       }
-      .journey-row__stage { grid-column: 1 / -1; order: 2; }
-      .journey-row__events { grid-column: 2; order: 0; text-align: right; }
-      .journey-row__meta { grid-column: 1 / -1; order: 3; flex-wrap: wrap; }
+      .journey-session__meta { grid-column: 2; }
+      .journey-session__device { grid-column: 1 / -1; justify-self: start; }
     }
 
     /* Recent activity */
@@ -1770,39 +1826,116 @@
     const countEl = document.getElementById('journeyCount');
     if (countEl) countEl.textContent = (sessions || []).length;
     if (!sessions || !sessions.length) {
-      el.innerHTML = '<div class="empty">Nenhuma sessão registrada ainda neste período.</div>';
+      el.innerHTML = '<div class="journey-empty">Nenhuma sessão registrada ainda neste período.</div>';
       return;
     }
-    el.innerHTML = sessions.map(s => {
-      const stage = s.max_stage ?? 0;
-      const color = JOURNEY_COLORS[stage] || '#64748b';
-      const widthPct = ((stage + 1) / 9) * 100;
-      const utm = s.utm
-        ? `${s.utm.source || '?'}/${s.utm.medium || '?'}`
-        : '(direct)';
-      const device = s.device || '—';
-      const evCount = s.events_count || 0;
-      const dur = fmtDuration(s.duration_s || 0);
-      const last = timeAgo(s.last_ts);
-      return `
-        <div class="journey-row" style="--stage-color:${color}">
-          <div class="journey-row__id" title="${s.session}">
-            <strong>${shortSession(s.session)}</strong> · ${utm}
-          </div>
-          <div class="journey-row__events">${evCount} ev · ${dur}</div>
-          <div class="journey-row__stage">
-            <div class="journey-row__stage-bar">
-              <div class="journey-row__stage-fill" style="width:${widthPct}%"></div>
+
+    // ── 1. Agrupa por stage final ────────────────────────────
+    const groups = new Map();
+    sessions.forEach(s => {
+      const key = s.stage_label || 'Desconhecido';
+      if (!groups.has(key)) {
+        groups.set(key, {
+          label: key,
+          max_stage: s.max_stage ?? 0,
+          count: 0,
+          sessions: [],
+        });
+      }
+      const g = groups.get(key);
+      g.count++;
+      g.sessions.push(s);
+    });
+
+    // ── 2. Ordena por count desc (maior em cima) ─────────────
+    const sorted = [...groups.values()].sort((a, b) => b.count - a.count);
+    const total = sessions.length;
+    const maxCount = sorted[0]?.count || 1;
+
+    // ── 3. Insight summary (insights acionáveis pro Balla) ──
+    const bounceCount = sessions.filter(s => (s.max_stage ?? 0) === 0).length;
+    const reachedOffer = sessions.filter(s => (s.max_stage ?? 0) >= 3).length;
+    const clickedCTA   = sessions.filter(s => (s.max_stage ?? 0) >= 5).length;
+    const converted    = sessions.filter(s => (s.max_stage ?? 0) >= 7).length;
+    const bouncePct    = total ? Math.round(bounceCount / total * 100) : 0;
+    const offerPct     = total ? Math.round(reachedOffer / total * 100) : 0;
+    const ctaPct       = total ? Math.round(clickedCTA / total * 100) : 0;
+    const convPct      = total ? Math.round(converted / total * 100 * 10) / 10 : 0;
+
+    const summaryHtml = `
+      <div class="journey-summary">
+        <div class="journey-summary__item ${bouncePct > 40 ? 'journey-summary__item--warn' : ''}">
+          Bounce: <strong>${bouncePct}%</strong> <span style="opacity:.6">(${bounceCount} sessões)</span>
+        </div>
+        <div class="journey-summary__item">
+          Chegou na oferta: <strong>${offerPct}%</strong> <span style="opacity:.6">(${reachedOffer})</span>
+        </div>
+        <div class="journey-summary__item">
+          Clicou no CTA: <strong>${ctaPct}%</strong> <span style="opacity:.6">(${clickedCTA})</span>
+        </div>
+        <div class="journey-summary__item ${convPct >= 2 ? 'journey-summary__item--win' : ''}">
+          Conversão: <strong>${convPct}%</strong> <span style="opacity:.6">(${converted})</span>
+        </div>
+      </div>
+    `;
+
+    // ── 4. Renderiza grupos ordenados ────────────────────────
+    const groupsHtml = sorted.map((g, idx) => {
+      const color = JOURNEY_COLORS[g.max_stage] || '#64748b';
+      const widthPct = (g.count / maxCount) * 100;
+      const totalPct = total ? Math.round(g.count / total * 100 * 10) / 10 : 0;
+      const groupId = `journey-group-${idx}`;
+
+      // Lista das sessões do grupo
+      const sessionsHtml = g.sessions.map(s => {
+        const utm = s.utm ? `${s.utm.source || '?'}/${s.utm.medium || '?'}` : '(direct)';
+        const dur = fmtDuration(s.duration_s || 0);
+        const last = timeAgo(s.last_ts);
+        return `
+          <div class="journey-session">
+            <div class="journey-session__id">
+              <strong>${shortSession(s.session)}</strong>
+              <span class="journey-session__utm"> · ${utm}</span>
             </div>
-            <div class="journey-row__stage-label">${s.stage_label || '—'}</div>
+            <div class="journey-session__meta">${s.events_count} ev · ${dur}</div>
+            <span class="journey-session__device">${s.device || '—'}</span>
           </div>
-          <div class="journey-row__meta">
-            <span class="journey-row__device">${device}</span>
-            <span>${last}</span>
+        `;
+      }).join('');
+
+      return `
+        <div class="journey-group" style="--stage-color:${color}" data-group="${groupId}">
+          <div class="journey-group__head">
+            <span class="journey-group__label">${g.label}</span>
+            <span class="journey-group__count">
+              <strong>${g.count}</strong> ${g.count === 1 ? 'pessoa' : 'pessoas'}
+              <span class="journey-group__count-pct">${totalPct}% do total</span>
+            </span>
+          </div>
+          <div class="journey-group__bar">
+            <div class="journey-group__fill" style="width:${widthPct}%"></div>
+          </div>
+          <button type="button" class="journey-group__toggle" data-toggle="${groupId}">
+            Ver as ${g.count} ${g.count === 1 ? 'sessão' : 'sessões'}
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="journey-group__sessions">
+            ${sessionsHtml}
           </div>
         </div>
       `;
     }).join('');
+
+    el.innerHTML = summaryHtml + groupsHtml;
+
+    // Wire dos toggles (expandir/colapsar)
+    el.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.toggle;
+        const group = el.querySelector(`[data-group="${id}"]`);
+        group?.classList.toggle('is-open');
+      });
+    });
   }
 
   function renderDiag(diag) {
