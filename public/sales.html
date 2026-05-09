@@ -5881,6 +5881,74 @@
       box-shadow: 0 14px 34px var(--primary-glow);
     }
 
+    /* ─── BARRA DE PROGRESSO DE LEITURA ────────────────
+       Bar fina amarela no topo do viewport que enche conforme scroll. */
+    .reading-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      z-index: 9100;
+      box-shadow: 0 0 10px var(--primary-glow);
+      transition: width .08s linear;
+      pointer-events: none;
+    }
+
+    /* ─── STICKY NAV COM ÂNCORAS ─────────────────────────
+       Aparece DEPOIS do hero rolar fora. Logo abaixo da topbar (top:32px).
+       Links pra: Carla / Trilha / Depoimentos / Oferta. */
+    .nav-anchors {
+      position: fixed;
+      top: 32px; left: 0; right: 0;
+      z-index: 8500;
+      background: rgba(11, 26, 56, .92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 214, 10, .25);
+      transform: translateY(-100%);
+      transition: transform .35s cubic-bezier(.32, 1, .36, 1);
+    }
+    .nav-anchors.is-visible { transform: translateY(0); }
+    .nav-anchors__inner {
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px;
+      padding: 8px 12px;
+      max-width: 760px; margin: 0 auto;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-anchors__inner::-webkit-scrollbar { display: none; }
+    .nav-anchors a {
+      flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, .75);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 100px;
+      letter-spacing: .04em;
+      transition: background .2s ease, color .2s ease;
+      white-space: nowrap;
+    }
+    .nav-anchors a:hover,
+    .nav-anchors a:active {
+      background: rgba(255, 214, 10, .12);
+      color: var(--primary);
+    }
+    .nav-anchors a.is-current {
+      background: var(--primary);
+      color: #0B1A38;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .nav-anchors .material-symbols-outlined { font-size: 14px; }
+    @media (max-width: 480px) {
+      .nav-anchors__inner { gap: 2px; padding: 6px 10px; }
+      .nav-anchors a { font-size: .66rem; padding: 5px 10px; }
+    }
+
     /* ─── ANIMAÇÕES SEMPRE ATIVAS ─────────────────────────
        Força animações a rodarem em TODOS os elementos, mesmo com:
        - prefers-reduced-motion: reduce (acessibilidade)
@@ -6069,6 +6137,19 @@
 </head>
 <body>
 
+<!-- Barra de progresso de leitura (fica acima da topbar) -->
+<div id="readingProgress" class="reading-progress" aria-hidden="true"></div>
+
+<!-- Nav sticky com âncoras (aparece após o hero rolar) -->
+<nav id="navAnchors" class="nav-anchors" aria-label="Navegação rápida">
+  <div class="nav-anchors__inner">
+    <a href="#quem-somos" data-anchor="quem-somos"><span class="material-symbols-outlined">person</span>Carla</a>
+    <a href="#trilha-section" data-anchor="trilha-section"><span class="material-symbols-outlined">route</span>Trilha</a>
+    <a href="#testimonials" data-anchor="testimonials"><span class="material-symbols-outlined">forum</span>Depoimentos</a>
+    <a href="#oferta" data-anchor="oferta"><span class="material-symbols-outlined">workspace_premium</span>Oferta</a>
+  </div>
+</nav>
+
 <!-- ─── TOP BAR ─── -->
 <div class="topbar" id="topbar">
   <div class="topbar__track" id="topbarTrack">
@@ -6113,8 +6194,8 @@
               <span class="hero__price-val"><sup>R$</sup>97</span>
             </div>
             <div class="hero__price-meta">
-              <strong>Pagamento único</strong>
-              <span>sem mensalidade</span>
+              <strong>Pague 1 vez</strong>
+              <span>1 ano completo · sem mensalidade</span>
             </div>
             <span class="hero__price-savings">Economiza R$ 100</span>
           </div>
@@ -6404,7 +6485,7 @@
 
     <button class="btn btn--primary solution-cta" onclick="openLeadModal()">
       <span class="material-symbols-outlined">directions_car</span>
-      QUERO COMEÇAR
+      ME COLOQUE NESSA TRILHA
     </button>
   </div>
 </section>
@@ -6456,7 +6537,7 @@
 </section>
 
 <!-- ─── MODULES (Trilha Completa) ─── -->
-<section class="modules-section">
+<section class="modules-section" id="trilha-section">
   <!-- Decoração: placas de trânsito de fundo + rotatória girando -->
   <div class="trail-bg-decor" aria-hidden="true">
     <span class="trail-bg-decor__sign" style="top:8%;left:6%"><span class="material-symbols-outlined">traffic</span></span>
@@ -6661,7 +6742,7 @@
   <div class="container--wide">
     <div class="founders-tag">
       <span class="material-symbols-outlined filled">workspace_premium</span>
-      <span>Promoção <strong>Habilitados Fundadores</strong> · só os 100 primeiros</span>
+      <span>Promoção <strong>de Lançamento</strong> · só pros 100 primeiros alunos</span>
     </div>
     <h2 class="section-title text-center">Os 2 cursos <span>juntos no mesmo pacote</span></h2>
     <p class="section-sub text-center" style="margin:8px auto 0;max-width:640px">
@@ -6827,7 +6908,7 @@
     </p>
     <div style="text-align:center">
       <button class="btn btn--primary" style="padding:18px 36px;font-size:1rem" onclick="openLeadModal()">
-        QUERO MINHA VAGA AGORA
+        ME ENCAIXO, QUERO ENTRAR
       </button>
     </div>
   </div>
@@ -6859,7 +6940,7 @@
 </section>
 
 <!-- ─── TESTIMONIALS ─── -->
-<section class="testi-section">
+<section class="testi-section" id="testimonials">
   <div class="container--wide">
     <p class="eyebrow text-center">Quem viveu</p>
     <h2 class="section-title text-center">Histórias <span>reais</span></h2>
@@ -6880,10 +6961,10 @@
 
 
 <!-- ─── OFFER ─── -->
-<section class="offer-section">
+<section class="offer-section" id="oferta">
   <div class="container">
     <p class="eyebrow text-center">Sua decisão</p>
-    <h2 class="section-title text-center">Habilitados Fundadores <span>· R$ 97</span></h2>
+    <h2 class="section-title text-center">Vagas de Lançamento <span>· R$ 97</span></h2>
     <div class="offer-box">
       <div class="offer-box__title">O que você leva</div>
       <div class="offer-box__sub">1 ano de acesso · Pagamento único · Garantia de 7 dias</div>
@@ -6964,7 +7045,7 @@
 
       <button class="btn btn--primary btn--block offer-cta" onclick="openLeadModal()">
         <span class="material-symbols-outlined">workspace_premium</span>
-        GARANTIR MINHA VAGA DE FUNDADOR
+        QUERO MINHA VAGA DE LANÇAMENTO
       </button>
       <p class="offer-security">
         <span class="material-symbols-outlined">lock</span>
@@ -7051,7 +7132,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">É só pelas 100 vagas mesmo? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Sim. A oferta "Habilitados Fundadores" (2 cursos juntos por R$ 97) é só pros 100 primeiros acessos. Depois disso, os cursos viram pacote separado e o preço sobe. Você acompanha o número exato no card de vagas no topo da página.</div>
+        <div class="faq-a">Sim. A oferta "Vagas de Lançamento" (2 cursos juntos por R$ 97) é só pros 100 primeiros acessos. Depois disso, os cursos viram pacote separado e o preço sobe. Você acompanha o número exato no card de vagas no topo da página.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Como funciona o pagamento? Posso parcelar? <span class="chev material-symbols-outlined">expand_more</span></button>
@@ -7451,6 +7532,75 @@
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  })();
+
+  // ── READING PROGRESS BAR ────────────────────────────
+  // Atualiza largura da barra amarela conforme scroll (0-100%)
+  (function() {
+    const bar = document.getElementById('readingProgress');
+    if (!bar) return;
+    let raf = null;
+    function update() {
+      raf = null;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  })();
+
+  // ── STICKY NAV COM ÂNCORAS ──────────────────────────
+  // Aparece depois que o hero rola fora. Marca link da seção atual.
+  (function() {
+    const nav = document.getElementById('navAnchors');
+    const hero = document.querySelector('.hero');
+    if (!nav || !hero) return;
+
+    const links = nav.querySelectorAll('a[data-anchor]');
+    let raf = null;
+    function update() {
+      raf = null;
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      nav.classList.toggle('is-visible', heroBottom < 80);
+
+      // Marca link da seção atual
+      let currentId = null;
+      let bestDist = Infinity;
+      links.forEach(link => {
+        const id = link.dataset.anchor;
+        const sec = document.getElementById(id);
+        if (!sec) return;
+        const top = sec.getBoundingClientRect().top;
+        const dist = Math.abs(top - 100);
+        if (top < 200 && dist < bestDist) {
+          bestDist = dist;
+          currentId = id;
+        }
+      });
+      links.forEach(link => link.classList.toggle('is-current', link.dataset.anchor === currentId));
+    }
+    window.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(update);
+    }, { passive: true });
+
+    // Smooth scroll com offset (compensa topbar 32px + nav 38px)
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.dataset.anchor;
+        const sec = document.getElementById(id);
+        if (!sec) return;
+        const navHeight = nav.offsetHeight + 36;
+        const target = sec.getBoundingClientRect().top + window.scrollY - navHeight;
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      });
+    });
     update();
   })();
 
