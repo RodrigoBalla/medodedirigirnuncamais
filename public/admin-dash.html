@@ -916,6 +916,9 @@
           </div>
         </div>
         <div class="dash__header-right">
+          <button class="dash__icon-btn" id="btnPause" title="Pausar/retomar tracking nas suas próprias visitas">
+            <span class="material-symbols-outlined">visibility_off</span>
+          </button>
           <button class="dash__icon-btn" id="btnRefresh" title="Atualizar agora">
             <span class="material-symbols-outlined">refresh</span>
           </button>
@@ -1900,6 +1903,40 @@
   document.getElementById('btnLogout').addEventListener('click', logout);
   document.getElementById('btnClear').addEventListener('click', clearAllData);
   document.getElementById('restoreDemoBtn').addEventListener('click', restoreDemo);
+
+  // ── Pausar/retomar tracking nas próprias visitas do admin ─────
+  // Liga a flag em localStorage, lida pelo /track.js no sales.html.
+  const PAUSE_KEY = 'mddnm_track_paused_v1';
+  const btnPause = document.getElementById('btnPause');
+  function syncPauseBtn() {
+    const paused = localStorage.getItem(PAUSE_KEY) === '1';
+    const icon = btnPause.querySelector('.material-symbols-outlined');
+    if (paused) {
+      btnPause.style.background = 'var(--primary-soft)';
+      btnPause.style.borderColor = 'var(--border-strong)';
+      btnPause.style.color = 'var(--primary)';
+      btnPause.title = 'Tracking PAUSADO nas suas visitas. Clique pra retomar.';
+      icon.textContent = 'visibility_off';
+    } else {
+      btnPause.style.background = '';
+      btnPause.style.borderColor = '';
+      btnPause.style.color = '';
+      btnPause.title = 'Pausar tracking nas suas próprias visitas (não polui métricas)';
+      icon.textContent = 'visibility';
+    }
+  }
+  btnPause.addEventListener('click', () => {
+    const paused = localStorage.getItem(PAUSE_KEY) === '1';
+    if (paused) {
+      localStorage.removeItem(PAUSE_KEY);
+      showToast('Tracking retomado nas suas visitas.', 'info');
+    } else {
+      localStorage.setItem(PAUSE_KEY, '1');
+      showToast('Tracking pausado. Suas visitas não contam mais.', 'success');
+    }
+    syncPauseBtn();
+  });
+  syncPauseBtn();
 
   // Tabs
   document.querySelectorAll('.tab').forEach(t => {

@@ -26,13 +26,18 @@
   const SESSION_KEY    = 'mddnm_track_session_v1';
   const SCROLL_KEY     = 'mddnm_track_scroll_v1';
   const ENTERED_KEY    = 'mddnm_track_entered_v1';
-  const ADMIN_AUTH_KEY = 'mddnm_admin_auth_v1';
+  const PAUSED_KEY     = 'mddnm_track_paused_v1';   // localStorage flag
 
-  // Não trackeia o próprio admin
-  function isAdmin() {
-    try { return sessionStorage.getItem(ADMIN_AUTH_KEY) === '1'; }
+  // Tracking pausado? (admin pode pausar via /dash → "Modo teste")
+  // Antes usava sessionStorage do admin auth, mas isso bagunçava quando
+  // o admin abria o sales.html na mesma aba (auth herdada bloqueava tudo).
+  // Agora é flag explícita em localStorage que admin liga/desliga.
+  function isPaused() {
+    try { return localStorage.getItem(PAUSED_KEY) === '1'; }
     catch { return false; }
   }
+  // Mantém isAdmin() exposto pra compat, mas não bloqueia mais o track
+  function isAdmin() { return false; }
 
   // Session ID (um por aba/refresh)
   function sessionId() {
@@ -81,7 +86,7 @@
 
   // Envia 1 evento (fire-and-forget, não trava nada)
   function send(name, meta) {
-    if (isAdmin()) return;
+    if (isPaused()) return;
     if (!name) return;
     const body = {
       name,
@@ -108,7 +113,7 @@
   // BOOT · pagina_visitada (1x por sessão)
   // ──────────────────────────────────────────────────────────
   function trackPageView() {
-    if (isAdmin()) return;
+    if (isPaused()) return;
     try {
       if (sessionStorage.getItem(ENTERED_KEY) === '1') return;
       sessionStorage.setItem(ENTERED_KEY, '1');
@@ -123,7 +128,7 @@
   // SCROLL MILESTONES
   // ──────────────────────────────────────────────────────────
   function setupScrollTracking() {
-    if (isAdmin()) return;
+    if (isPaused()) return;
     const milestones = [25, 50, 75, 100];
     const fired = new Set();
 
@@ -157,7 +162,7 @@
   // TEMPO NA PÁGINA (envia ao sair)
   // ──────────────────────────────────────────────────────────
   function setupTimeOnPage() {
-    if (isAdmin()) return;
+    if (isPaused()) return;
     const start = Date.now();
     let sent = false;
     function sendTime() {
@@ -176,7 +181,7 @@
   // WEB VITALS (LCP, INP, CLS) — sem dependência externa
   // ──────────────────────────────────────────────────────────
   function setupWebVitals() {
-    if (isAdmin() || !('PerformanceObserver' in window)) return;
+    if (isPaused() || !('PerformanceObserver' in window)) return;
 
     // LCP (Largest Contentful Paint)
     try {
