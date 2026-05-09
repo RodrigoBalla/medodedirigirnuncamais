@@ -293,6 +293,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                           <VideoPlayer
                              embed={parseVideoUrl(activeLesson.video_url)}
                              startAt={progressByLesson.get(activeLesson.id) ?? 0}
+                             viewerId={user?.email || user?.id}
                              onProgress={(seconds, duration) => {
                                 saveLessonProgress(activeLesson.id, seconds, duration);
                              }}

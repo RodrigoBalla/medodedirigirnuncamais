@@ -26,6 +26,9 @@ interface VideoPlayerProps {
   onEnded?: () => void;
   /** Disparado quando duração for conhecida (pra salvar no banco) */
   onDurationChange?: (durationSeconds: number) => void;
+  /** Email/identificador do aluno — usado pra marca d'água anti-pirataria
+   *  no Panda Video (parâmetros watermark/customParam.). */
+  viewerId?: string;
   className?: string;
 }
 
@@ -105,6 +108,7 @@ export function VideoPlayer({
   onProgress,
   onEnded,
   onDurationChange,
+  viewerId,
   className,
 }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -253,6 +257,15 @@ export function VideoPlayer({
         };
         if (startAt > 0) {
           paramsObj.startTime = String(Math.floor(startAt));
+        }
+        // DRM Watermark: identifica o aluno via Panda customParam — quando
+        // o admin criar um grupo DRM no painel apontando pra esse param,
+        // a marca d'água com o identificador do aluno é renderizada
+        // dinamicamente sobre o vídeo (anti-pirataria).
+        // Compatível com placeholders do Panda: customParam.user / .email
+        if (viewerId) {
+          paramsObj["customParam.user"]  = viewerId;
+          paramsObj["customParam.email"] = viewerId;
         }
         const params = new URLSearchParams(paramsObj);
         iframe.src = `https://player-${embed.pullzone}.tv.pandavideo.com.br/embed/?${params}`;
