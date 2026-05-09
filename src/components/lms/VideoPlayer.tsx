@@ -223,12 +223,13 @@ export function VideoPlayer({
       }
 
       if (embed.kind === "panda") {
-        // Panda Video usa SDK oficial (postMessage puro não funciona —
-        // o iframe só dispara events com a lib na página pai).
-        // Docs: https://player.pandavideo.com.br/api.js (10KB)
-        // API: getCurrentTime/getDuration/setCurrentTime/play/onEvent
-        await loadPandaApi();
-        if (cancelled) return;
+        // Panda Video — abordagem em duas fases:
+        // 1. Cria iframe com autoplay e startTime via querystring (carrega
+        //    nativamente, sem depender de SDK pra reproduzir)
+        // 2. Após iframe.onload, instancia o SDK PandaPlayer pra capturar
+        //    eventos de timeupdate/ended sem reiniciar o player
+        // Isso evita o bug onde new PandaPlayer no setup força um reload
+        // que aborta o autoplay original.
 
         const iframeId = `panda-${embed.videoId}-${Date.now()}`;
         const iframe = document.createElement("iframe");
@@ -247,51 +248,62 @@ export function VideoPlayer({
         iframe.style.height = "100%";
         iframe.style.border = "0";
         container.appendChild(iframe);
+        playerRef.current = iframe;
+        setIframeReady(true);
 
-        // @ts-expect-error PandaPlayer global injetado pelo api.js
-        const player = new window.PandaPlayer(iframeId, {
-          onReady: () => {
-            if (cancelled) return;
-            setIframeReady(true);
-            try {
-              const dur = player.getDuration?.();
-              if (typeof dur === "number" && dur > 0) onDurationChange?.(dur);
-              if (startAt > 0) player.setCurrentTime?.(startAt);
-            } catch {}
+        // Carrega SDK do Panda em paralelo (não bloqueia o autoplay)
+        loadPandaApi().then(() => {
+          if (cancelled) return;
+          // @ts-expect-error PandaPlayer global injetado pelo api.js
+          const PandaPlayer = window.PandaPlayer;
+          if (!PandaPlayer) return;
 
-            // onEvent: callback unificado pra TODOS os eventos
-            // Eventos relevantes do Panda (do api.js):
-            //   panda_play, panda_pause, panda_ended, panda_timeupdate,
-            //   panda_progress, panda_seeking, panda_seeked, panda_volumechange
-            let lastSent = 0;
-            let lastDuration = 0;
-            try {
-              player.onEvent?.((msg: any) => {
-                if (!msg) return;
-                const type = msg.message || msg.event || msg.type;
-                if (type === "panda_timeupdate" || type === "timeupdate") {
-                  const t = msg.currentTime ?? player.getCurrentTime?.() ?? 0;
-                  let dur = msg.duration ?? lastDuration;
-                  if (!dur || dur <= 0) {
-                    try { dur = player.getDuration?.() ?? 0; } catch {}
-                  }
-                  if (dur > 0 && dur !== lastDuration) {
+          let lastSent = 0;
+          let lastDuration = 0;
+
+          try {
+            // SDK observa o iframe existente (não recria)
+            const player = new PandaPlayer(iframeId, {
+              onReady: () => {
+                if (cancelled) return;
+                try {
+                  const dur = player.getDuration?.();
+                  if (typeof dur === "number" && dur > 0) {
                     lastDuration = dur;
                     onDurationChange?.(dur);
                   }
-                  if (Date.now() - lastSent > 5000) {
-                    lastSent = Date.now();
-                    onProgress?.(t, dur);
-                  }
-                }
-                if (type === "panda_ended" || type === "ended") {
-                  onEnded?.();
-                }
-              });
-            } catch {}
-          },
+                } catch {}
+                try {
+                  player.onEvent?.((msg: any) => {
+                    if (!msg) return;
+                    const type = msg.message || msg.event || msg.type;
+                    if (type === "panda_timeupdate" || type === "timeupdate") {
+                      const t = msg.currentTime ?? player.getCurrentTime?.() ?? 0;
+                      let dur = msg.duration ?? lastDuration;
+                      if ((!dur || dur <= 0) && player.getDuration) {
+                        try { dur = player.getDuration(); } catch {}
+                      }
+                      if (dur > 0 && dur !== lastDuration) {
+                        lastDuration = dur;
+                        onDurationChange?.(dur);
+                      }
+                      if (Date.now() - lastSent > 5000) {
+                        lastSent = Date.now();
+                        onProgress?.(t, dur);
+                      }
+                    }
+                    if (type === "panda_ended" || type === "ended") {
+                      onEnded?.();
+                    }
+                  });
+                } catch {}
+              },
+            });
+            // Substitui ref do iframe pelo player (pra saveFinalPosition usar getCurrentTime)
+            playerRef.current = player;
+          } catch {}
         });
-        playerRef.current = player;
+
         return;
       }
 
