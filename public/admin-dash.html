@@ -1389,12 +1389,12 @@
   // ═══════════════════════════════════════════════════════════════
   // SERVER FETCH · busca o agregado do /.netlify/functions/events
   // ═══════════════════════════════════════════════════════════════
-  async function fetchServerEvents() {
+  async function fetchServerEvents(range = '24h') {
     if (!CONFIG.USE_SERVER) return null;
     const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
     if (!token) return null;
     try {
-      const res = await fetch(CONFIG.SERVER_URL, {
+      const res = await fetch(CONFIG.SERVER_URL + '?range=' + encodeURIComponent(range), {
         headers: { 'Authorization': 'Bearer ' + token },
         cache: 'no-store'
       });
@@ -1726,7 +1726,7 @@
 
     if (CONFIG.USE_SERVER && !isDataCleared()) {
       try {
-        const fresh = await fetchServerEvents();
+        const fresh = await fetchServerEvents(_currentRange);
         if (fresh) {
           data = mapServerToView(fresh, _currentRange);
         } else {
