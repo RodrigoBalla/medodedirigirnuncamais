@@ -1226,8 +1226,9 @@
     USE_SERVER:      true,
     SERVER_URL:      '/.netlify/functions/events',
 
-    // Refresh do dashboard (ms)
-    REFRESH_MS:      4000,
+    // Refresh do dashboard (ms) — 3s (saudável: nem stress no servidor, nem
+    // demora visível pro admin)
+    REFRESH_MS:      3000,
 
     // Modo dev: aceita qualquer senha (use só localmente)
     DEV_BYPASS:      false,
@@ -1534,9 +1535,18 @@
     const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
     if (!token) return null;
     try {
-      const res = await fetch(CONFIG.SERVER_URL + '?range=' + encodeURIComponent(range), {
-        headers: { 'Authorization': 'Bearer ' + token },
-        cache: 'no-store'
+      // Cache-bust agressivo: ?range + ?_t (timestamp único) garantem que
+      // nenhum proxy/edge sirva resposta cacheada.
+      const url = CONFIG.SERVER_URL
+        + '?range=' + encodeURIComponent(range)
+        + '&_t=' + Date.now();
+      const res = await fetch(url, {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        cache: 'no-store',
       });
       if (!res.ok) return null;
       const j = await res.json();
@@ -2007,12 +2017,23 @@
   // REFRESH LOOP
   // ═══════════════════════════════════════════════════════════════
   let lastRender = Date.now();
+  let lastServerHit = null;   // timestamp da última fetch BEM-SUCEDIDA
   const updatedAtEl = document.getElementById('updatedAt');
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function fmtClock(d) {
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
   function tickUpdatedLabel() {
     const s = Math.floor((Date.now() - lastRender) / 1000);
-    if      (s < 5)  updatedAtEl.textContent = 'agora';
-    else if (s < 60) updatedAtEl.textContent = `há ${s}s`;
-    else             updatedAtEl.textContent = `há ${Math.floor(s/60)} min`;
+    let label;
+    if      (s < 5)  label = 'agora';
+    else if (s < 60) label = `há ${s}s`;
+    else             label = `há ${Math.floor(s/60)} min`;
+    // Adiciona hora exata da última fetch real (servidor bateu)
+    if (lastServerHit) {
+      label += ` · ${fmtClock(new Date(lastServerHit))}`;
+    }
+    updatedAtEl.textContent = label;
   }
   setInterval(tickUpdatedLabel, 1000);
 
@@ -2033,6 +2054,7 @@
         const fresh = await fetchServerEvents(_currentRange);
         if (fresh) {
           data = mapServerToView(fresh, _currentRange);
+          lastServerHit = Date.now();   // marca a hora da última fetch boa
         } else {
           serverError = 'Sem resposta do servidor';
           data = emptyMockData();
@@ -2084,11 +2106,17 @@
     _refreshTimer = setInterval(renderAll, CONFIG.REFRESH_MS);
   }
 
-  // Refresh quando aba ganha foco (o doc do Lobo Studio cita esse padrão)
+  // Refresh em diversos eventos pra garantir que dados não fiquem defasados:
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && isAuthed()) renderAll();
   });
   window.addEventListener('focus', () => { if (isAuthed()) renderAll(); });
+  // pageshow é disparado quando o navegador restaura a página da bfcache
+  // (botão voltar/avançar). Sem isso, dados viajam no tempo. event.persisted=true
+  // = veio da bfcache.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted && isAuthed()) renderAll();
+  });
 
   // ═══════════════════════════════════════════════════════════════
   // SCREEN MGMT
