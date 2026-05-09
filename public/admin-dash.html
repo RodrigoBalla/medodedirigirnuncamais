@@ -638,40 +638,43 @@
     }
 
     /* ─── CONFIRM MODAL ───────────────────────────────────── */
-    /* top/right/bottom/left explícitos (mais resilientes que `inset`)
-       e max-height/overflow no card pra nunca cortar em viewports baixos. */
+    /* Modal simples e blindado: position fixed com 100vw/vh, sem overflow no
+       container nem no card (o card é compacto, ~270px, cabe em qualquer
+       tela razoável). align-items: center centraliza vertical. */
     .modal {
-      position: fixed;
-      top: 0; right: 0; bottom: 0; left: 0;
-      z-index: 9999;
-      background: rgba(0, 0, 0, .65);
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      background: rgba(0, 0, 0, .72);
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       opacity: 0;
       pointer-events: none;
-      transition: opacity .25s ease;
-      overflow-y: auto;
+      transition: opacity .2s ease;
     }
     .modal.is-open { opacity: 1; pointer-events: auto; }
     .modal__card {
       width: 100%;
       max-width: 440px;
-      max-height: calc(100vh - 48px);
-      overflow-y: auto;
       background: var(--bg-2);
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-lg);
-      padding: 28px 26px 24px;
+      padding: 26px 24px 22px;
       box-shadow: var(--shadow-2);
       transform: scale(.95);
-      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
-      margin: auto;
+      transition: transform .2s cubic-bezier(.34, 1.56, .64, 1);
     }
     .modal.is-open .modal__card { transform: scale(1); }
+    /* Body lock — quando modal abre, trava o scroll de fundo pra evitar
+       o card "rolar" junto com a página */
+    body.modal-locked { overflow: hidden; }
     .modal__icon {
       width: 56px; height: 56px;
       margin: 0 auto 14px;
@@ -1649,10 +1652,14 @@
     return new Promise((resolve) => {
       _confirmResolver = resolve;
       confirmModal.classList.add('is-open');
+      document.body.classList.add('modal-locked');
+      // Foca o botão de cancelar (mais seguro que ok no autofocus)
+      setTimeout(() => document.getElementById('confirmCancel')?.focus(), 50);
     });
   }
   function closeConfirm(result) {
     confirmModal.classList.remove('is-open');
+    document.body.classList.remove('modal-locked');
     if (_confirmResolver) {
       const r = _confirmResolver;
       _confirmResolver = null;
