@@ -66,6 +66,22 @@ function loadYouTubeApi(): Promise<void> {
   return ytApiPromise;
 }
 
+let pandaApiPromise: Promise<void> | null = null;
+function loadPandaApi(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  // @ts-expect-error PandaPlayer global
+  if (window.PandaPlayer) return Promise.resolve();
+  if (pandaApiPromise) return pandaApiPromise;
+  pandaApiPromise = new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://player.pandavideo.com.br/api.js";
+    script.async = true;
+    script.onload = () => resolve();
+    document.body.appendChild(script);
+  });
+  return pandaApiPromise;
+}
+
 let vimeoApiPromise: Promise<void> | null = null;
 function loadVimeoApi(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
@@ -207,64 +223,75 @@ export function VideoPlayer({
       }
 
       if (embed.kind === "panda") {
-        // Panda Video: iframe + postMessage API
-        // Docs: https://docs.pandavideo.com.br/embed/javascript/events
+        // Panda Video usa SDK oficial (postMessage puro não funciona —
+        // o iframe só dispara events com a lib na página pai).
+        // Docs: https://player.pandavideo.com.br/api.js (10KB)
+        // API: getCurrentTime/getDuration/setCurrentTime/play/onEvent
+        await loadPandaApi();
+        if (cancelled) return;
+
+        const iframeId = `panda-${embed.videoId}-${Date.now()}`;
         const iframe = document.createElement("iframe");
+        iframe.id = iframeId;
         const params = new URLSearchParams({
           v: embed.videoId,
           autoplay: "true",
           startTime: String(Math.floor(startAt) || 0),
         });
         iframe.src = `https://player-${embed.pullzone}.tv.pandavideo.com.br/embed/?${params}`;
-        iframe.allow = "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen";
+        iframe.allow =
+          "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen";
         iframe.setAttribute("allowfullscreen", "true");
         iframe.setAttribute("frameborder", "0");
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.border = "0";
         container.appendChild(iframe);
-        playerRef.current = iframe;
-        setIframeReady(true);
 
-        // Listen events do Panda via postMessage
-        let lastSent = 0;
-        let lastDuration = 0;
-        const onMessage = (ev: MessageEvent) => {
-          // Filtra só mensagens do iframe Panda
-          if (!ev.origin.includes("pandavideo.com.br")) return;
-          if (ev.source !== iframe.contentWindow) return;
-          const d: any = ev.data;
-          // Panda envia tanto string quanto objeto. Padroniza.
-          const msg = typeof d === "string" ? { message: d } : d;
-          if (!msg) return;
-          // panda_timeupdate { currentTime, duration }
-          if (msg.message === "panda_timeupdate" || msg.event === "timeupdate") {
-            const t = msg.currentTime ?? msg.data?.currentTime ?? 0;
-            const dur = msg.duration ?? msg.data?.duration ?? lastDuration;
-            if (dur > 0 && dur !== lastDuration) {
-              lastDuration = dur;
-              onDurationChange?.(dur);
-            }
-            if (Date.now() - lastSent > 5000) {
-              lastSent = Date.now();
-              onProgress?.(t, dur);
-            }
-          }
-          // panda_ended
-          if (msg.message === "panda_ended" || msg.event === "ended") {
-            onEnded?.();
-          }
-          // panda_loadedmetadata { duration }
-          if (msg.message === "panda_loadedmetadata" || msg.event === "loadedmetadata") {
-            const dur = msg.duration ?? msg.data?.duration ?? 0;
-            if (dur > 0) {
-              lastDuration = dur;
-              onDurationChange?.(dur);
-            }
-          }
-        };
-        window.addEventListener("message", onMessage);
-        cleanup.push(() => window.removeEventListener("message", onMessage));
+        // @ts-expect-error PandaPlayer global injetado pelo api.js
+        const player = new window.PandaPlayer(iframeId, {
+          onReady: () => {
+            if (cancelled) return;
+            setIframeReady(true);
+            try {
+              const dur = player.getDuration?.();
+              if (typeof dur === "number" && dur > 0) onDurationChange?.(dur);
+              if (startAt > 0) player.setCurrentTime?.(startAt);
+            } catch {}
+
+            // onEvent: callback unificado pra TODOS os eventos
+            // Eventos relevantes do Panda (do api.js):
+            //   panda_play, panda_pause, panda_ended, panda_timeupdate,
+            //   panda_progress, panda_seeking, panda_seeked, panda_volumechange
+            let lastSent = 0;
+            let lastDuration = 0;
+            try {
+              player.onEvent?.((msg: any) => {
+                if (!msg) return;
+                const type = msg.message || msg.event || msg.type;
+                if (type === "panda_timeupdate" || type === "timeupdate") {
+                  const t = msg.currentTime ?? player.getCurrentTime?.() ?? 0;
+                  let dur = msg.duration ?? lastDuration;
+                  if (!dur || dur <= 0) {
+                    try { dur = player.getDuration?.() ?? 0; } catch {}
+                  }
+                  if (dur > 0 && dur !== lastDuration) {
+                    lastDuration = dur;
+                    onDurationChange?.(dur);
+                  }
+                  if (Date.now() - lastSent > 5000) {
+                    lastSent = Date.now();
+                    onProgress?.(t, dur);
+                  }
+                }
+                if (type === "panda_ended" || type === "ended") {
+                  onEnded?.();
+                }
+              });
+            } catch {}
+          },
+        });
+        playerRef.current = player;
         return;
       }
 
@@ -324,9 +351,11 @@ export function VideoPlayer({
           // não dá tempo de await — o último onProgress já cuidou disso.
           return;
         } else if (embed.kind === "panda") {
-          // Panda também é via postMessage assíncrono. O último timeupdate já
-          // cuidou de salvar a posição via onProgress.
-          return;
+          // SDK Panda tem getters síncronos
+          try {
+            t = p.getCurrentTime?.() ?? 0;
+            d = p.getDuration?.() ?? 0;
+          } catch { return; }
         } else {
           t = (p as HTMLVideoElement).currentTime ?? 0;
           d = (p as HTMLVideoElement).duration ?? 0;
