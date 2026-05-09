@@ -37,7 +37,8 @@ export function parseVideoUrl(url: string | null | undefined): VideoEmbed | null
   const vimeo = url.match(/(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/);
   if (vimeo) return { kind: "vimeo", videoId: vimeo[1] };
   // Panda Video: https://player-vz-<pullzone>.tv.pandavideo.com.br/embed/?v=<UUID>
-  const panda = url.match(/player-(vz-[a-z0-9]+)\.tv\.pandavideo\.com\.br\/embed\/\?v=([0-9a-f-]{36})/i);
+  // Pullzone tem múltiplos hífens (ex: vz-438412f4-a64), então usa [a-z0-9-]+
+  const panda = url.match(/player-(vz-[a-z0-9-]+)\.tv\.pandavideo\.com\.br\/embed\/\?v=([0-9a-f-]{36})/i);
   if (panda) return { kind: "panda", pullzone: panda[1], videoId: panda[2] };
   return { kind: "native", src: url };
 }
