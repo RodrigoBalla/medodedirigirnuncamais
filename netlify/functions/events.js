@@ -111,14 +111,24 @@ export const handler = async (event) => {
     }
     const range = (event.queryStringParameters?.range || '24h').toString();
     try {
-      const data = await supabase('/rest/v1/rpc/analytics_get', {
-        method: 'POST',
-        body: JSON.stringify({ p_range: range }),
+      // Faz as 2 RPCs em paralelo: agregação geral + jornada por sessão
+      const [agg, journey] = await Promise.all([
+        supabase('/rest/v1/rpc/analytics_get', {
+          method: 'POST',
+          body: JSON.stringify({ p_range: range }),
+        }),
+        supabase('/rest/v1/rpc/analytics_sessions_journey', {
+          method: 'POST',
+          body: JSON.stringify({ p_range: range }),
+        }),
+      ]);
+      // Anexa a jornada ao payload
+      return jsonResponse(200, {
+        ...(agg || {}),
+        sessionsJourney: journey?.sessions || [],
       });
-      // O RPC já retorna o objeto agregado completo
-      return jsonResponse(200, data);
     } catch (err) {
-      console.error('analytics_get RPC failed:', err.message);
+      console.error('analytics RPCs failed:', err.message);
       return jsonResponse(500, { ok: false, error: 'aggregate_failed', detail: err.message });
     }
   }

@@ -527,6 +527,98 @@
       margin-left: 6px;
     }
 
+    /* Jornada das sessões */
+    .journey {
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 6px;
+      padding-right: 6px;
+    }
+    .journey::-webkit-scrollbar { width: 6px; }
+    .journey::-webkit-scrollbar-track { background: transparent; }
+    .journey::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .08); border-radius: 3px; }
+    .journey::-webkit-scrollbar-thumb:hover { background: rgba(255, 214, 10, .25); }
+    .journey-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1.4fr) auto;
+      gap: 12px; align-items: center;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 214, 10, .06);
+      border-left: 3px solid var(--stage-color, var(--text-subtle));
+      border-radius: 8px;
+      font-size: .82rem;
+      transition: border-color .2s, background .2s;
+    }
+    .journey-row:hover { background: rgba(255, 255, 255, .05); }
+    .journey-row__id {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-subtle);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .journey-row__id strong {
+      color: var(--text-mute);
+      font-weight: 600;
+    }
+    .journey-row__events {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+    }
+    .journey-row__stage {
+      display: flex; align-items: center; gap: 8px;
+      min-width: 0;
+    }
+    .journey-row__stage-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, .06);
+      border-radius: 2px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+    .journey-row__stage-fill {
+      height: 100%;
+      background: var(--stage-color, var(--primary));
+      border-radius: 2px;
+      transition: width .35s ease;
+    }
+    .journey-row__stage-label {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .76rem;
+      color: var(--stage-color, var(--text));
+      white-space: nowrap;
+    }
+    .journey-row__meta {
+      display: flex; gap: 8px; align-items: center;
+      font-size: .7rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+    .journey-row__device {
+      padding: 1px 6px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--text-mute);
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    @media (max-width: 720px) {
+      .journey-row {
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+      .journey-row__stage { grid-column: 1 / -1; order: 2; }
+      .journey-row__events { grid-column: 2; order: 0; text-align: right; }
+      .journey-row__meta { grid-column: 1 / -1; order: 3; flex-wrap: wrap; }
+    }
+
     /* Recent activity */
     .recent {
       max-height: 360px;
@@ -1018,28 +1110,16 @@
             <div class="bars" id="ctaBars"></div>
           </div>
 
-          <!-- Módulos com mais interesse -->
-          <div class="grid__col">
-            <div class="block-h">
-              <div>
-                <h3 class="block-h__title">Módulos com mais interesse</h3>
-                <p class="block-h__sub">Quais aulas chamam mais atenção na trilha.</p>
-              </div>
-              <span class="block-h__pill">Trilha</span>
-            </div>
-            <div class="bars" id="modulesBars"></div>
-          </div>
-
-          <!-- Diagnóstico -->
+          <!-- Jornada de cada sessão (substitui Módulos + Diagnóstico) -->
           <div class="grid__col grid__col--full">
             <div class="block-h">
               <div>
-                <h3 class="block-h__title">Diagnóstico do visitante</h3>
-                <p class="block-h__sub">Respostas das perguntas-chave de qualificação no site.</p>
+                <h3 class="block-h__title">Jornada das sessões</h3>
+                <p class="block-h__sub">Cada visitante e até onde ele foi no funil. Ordenado por mais recente.</p>
               </div>
-              <span class="block-h__pill">Quiz</span>
+              <span class="block-h__pill"><span id="journeyCount">0</span> sessões</span>
             </div>
-            <div class="diag" id="diagGrid"></div>
+            <div class="journey" id="journeyList"></div>
           </div>
 
           <!-- Atividade recente -->
@@ -1254,7 +1334,8 @@
         CLS: { value: '—', rating: 'none' },
       },
       diag:   [],
-      recent: []
+      recent: [],
+      sessionsJourney: [],
     };
   }
 
@@ -1562,6 +1643,7 @@
       vitals,
       diag,
       recent,
+      sessionsJourney: srv.sessionsJourney || [],
     };
   }
 
@@ -1651,6 +1733,72 @@
           <div class="vital__rating vital__rating--${it.rating}">
             <span class="material-symbols-outlined">${r.icon}</span>
             ${r.lbl}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // RENDER JOURNEY · lista cada sessão com o stage máximo atingido
+  // ──────────────────────────────────────────────────────────
+  // Cores por stage (gradiente: cinza → amarelo → verde, conforme avança)
+  const JOURNEY_COLORS = {
+    8: '#10b981',  // Comprou — verde forte
+    7: '#34d399',  // Lead capturado — verde
+    6: '#84cc16',  // Iniciou checkout — lima
+    5: '#FFD60A',  // Clicou CTA — amarelo principal
+    4: '#FFC700',  // Rolou 100% — amarelo escuro
+    3: '#f59e0b',  // Chegou na oferta — laranja
+    2: '#fb923c',  // Viu testimonials — laranja claro
+    1: '#94a3b8',  // Rolou 25% — cinza
+    0: '#64748b',  // Apenas abriu — cinza escuro (bounce)
+  };
+  function fmtDuration(s) {
+    if (s < 60)    return `${s}s`;
+    if (s < 3600)  return `${Math.floor(s / 60)}m ${s % 60}s`;
+    return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+  }
+  function shortSession(sid) {
+    if (!sid) return '—';
+    // s_xxxxx_yyyyy → mostra os últimos 6 chars como "id"
+    const parts = sid.split('_');
+    return parts[parts.length - 1] || sid.slice(-6);
+  }
+  function renderJourney(sessions) {
+    const el = document.getElementById('journeyList');
+    const countEl = document.getElementById('journeyCount');
+    if (countEl) countEl.textContent = (sessions || []).length;
+    if (!sessions || !sessions.length) {
+      el.innerHTML = '<div class="empty">Nenhuma sessão registrada ainda neste período.</div>';
+      return;
+    }
+    el.innerHTML = sessions.map(s => {
+      const stage = s.max_stage ?? 0;
+      const color = JOURNEY_COLORS[stage] || '#64748b';
+      const widthPct = ((stage + 1) / 9) * 100;
+      const utm = s.utm
+        ? `${s.utm.source || '?'}/${s.utm.medium || '?'}`
+        : '(direct)';
+      const device = s.device || '—';
+      const evCount = s.events_count || 0;
+      const dur = fmtDuration(s.duration_s || 0);
+      const last = timeAgo(s.last_ts);
+      return `
+        <div class="journey-row" style="--stage-color:${color}">
+          <div class="journey-row__id" title="${s.session}">
+            <strong>${shortSession(s.session)}</strong> · ${utm}
+          </div>
+          <div class="journey-row__events">${evCount} ev · ${dur}</div>
+          <div class="journey-row__stage">
+            <div class="journey-row__stage-bar">
+              <div class="journey-row__stage-fill" style="width:${widthPct}%"></div>
+            </div>
+            <div class="journey-row__stage-label">${s.stage_label || '—'}</div>
+          </div>
+          <div class="journey-row__meta">
+            <span class="journey-row__device">${device}</span>
+            <span>${last}</span>
           </div>
         </div>
       `;
@@ -1775,9 +1923,8 @@
     renderBars('funnelBars',  data.funnel,  { showPct: true });
     renderBars('utmBars',     data.utms);
     renderBars('ctaBars',     data.ctas);
-    renderBars('modulesBars', data.modules);
     renderVitals(data.vitals);
-    renderDiag(data.diag);
+    renderJourney(data.sessionsJourney);
     renderRecent(data.recent);
 
     document.getElementById('totalEvents').textContent = fmtNum(
