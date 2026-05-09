@@ -234,11 +234,27 @@ export function VideoPlayer({
         const iframeId = `panda-${embed.videoId}-${Date.now()}`;
         const iframe = document.createElement("iframe");
         iframe.id = iframeId;
-        const params = new URLSearchParams({
+        // Parâmetros do iframe (Panda Video):
+        //   v: ID do vídeo
+        //   autoplay: tenta auto-play (browser pode forçar mute primeiro)
+        //   startTime: posição inicial (resume) — só passa se >0 pra evitar bug
+        //              de scrub-trava em modo preview com startTime=0
+        //   muted: começa mudo (necessário pra autoplay funcionar em browsers)
+        //   hideShareButton: oculta botão de compartilhar URL
+        //   hidePopupButton: oculta botão "abrir em nova aba" (anti-share)
+        //   hidePlayerControls: false — mantém play/seek/volume etc
+        //   smartAutoplay: deixa o Panda decidir se faz autoplay safe
+        const paramsObj: Record<string, string> = {
           v: embed.videoId,
-          autoplay: "true",
-          startTime: String(Math.floor(startAt) || 0),
-        });
+          smartAutoplay: "true",
+          muted: "true",
+          hideShareButton: "true",
+          hidePopupButton: "true",
+        };
+        if (startAt > 0) {
+          paramsObj.startTime = String(Math.floor(startAt));
+        }
+        const params = new URLSearchParams(paramsObj);
         iframe.src = `https://player-${embed.pullzone}.tv.pandavideo.com.br/embed/?${params}`;
         iframe.allow =
           "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen";
