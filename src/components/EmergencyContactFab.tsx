@@ -19,7 +19,7 @@ const SUPPORT = {
   // Número no formato internacional sem espaços/parênteses — ajuste quando o
   // contato real for definido. Mensagem pré-preenchida vai no `text=`.
   whatsapp: "5511999999999",
-  whatsappMessage: "Oi Carla, travei aqui e preciso de uma força.",
+  whatsappMessage: "Oi Carla, preciso de uma força aqui.",
   // Avatar opcional (URL ou inicial). Por enquanto usa a letra inicial.
 };
 
@@ -60,7 +60,7 @@ export function EmergencyContactFab() {
         whileTap={{ scale: 0.92 }}
         className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-40 size-14 md:size-16 rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_8px_30px_rgba(244,63,94,.5)] flex items-center justify-center group"
         aria-label="Pedir ajuda"
-        title="Travou? Me chama"
+        title="Fala com a Carla"
       >
         {/* Pulse aura quando ainda não foi descoberto */}
         {showTip && (
@@ -81,7 +81,7 @@ export function EmergencyContactFab() {
             animate={{ opacity: 1, x: 0 }}
             className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap bg-foreground text-background text-xs font-black uppercase tracking-widest px-3 py-2 rounded-xl shadow-lg pointer-events-none"
           >
-            Travou? Me chama
+            Fala com a Carla
             <span className="absolute left-full top-1/2 -translate-y-1/2 size-0 border-l-[6px] border-y-[6px] border-y-transparent border-l-foreground" />
           </motion.div>
         )}
@@ -128,7 +128,7 @@ export function EmergencyContactFab() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-0.5">
-                      🆘 Travou? Eu te ajudo
+                      Fala comigo
                     </p>
                     <h2 className="font-black text-xl text-foreground leading-tight">
                       {SUPPORT.name}
@@ -137,15 +137,14 @@ export function EmergencyContactFab() {
                   </div>
                 </div>
 
-                {/* Mensagem acolhedora */}
+                {/* Mensagem da Carla — tom natural, como se ela tivesse digitado */}
                 <div className="bg-rose-500/5 border border-rose-500/15 rounded-2xl p-4 mb-4">
                   <p className="text-sm text-foreground leading-relaxed">
-                    Oi, sou eu. Se travou — no carro, na aula, na cabeça — me manda
-                    um zap. <span className="font-black">Áudio de 30 segundos contando o que tá rolando</span> já me ajuda
-                    a te ajudar. Não tem pergunta boba.
+                    Oi, é a Carla. Travou? Me chama no zap. Pode ser texto ou áudio,
+                    do jeito que for mais fácil pra você.
                   </p>
-                  <p className="text-xs text-muted-foreground mt-3 italic">
-                    Você não tá sozinha nessa. 💛
+                  <p className="text-sm text-foreground leading-relaxed mt-2">
+                    Às vezes demoro um pouquinho, mas respondo sempre.
                   </p>
                 </div>
 
@@ -157,11 +156,11 @@ export function EmergencyContactFab() {
                   className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-black text-base uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-transform"
                 >
                   <span className="material-symbols-outlined">chat</span>
-                  Mandar mensagem
+                  Abrir conversa no WhatsApp
                 </a>
 
                 <p className="text-[11px] text-center text-muted-foreground mt-3">
-                  Atendo de seg a sáb, 9h-21h. Em emergências de trânsito ligue <strong className="text-foreground">190</strong>.
+                  Respondo de seg a sáb, das 9h às 21h. Se for emergência no trânsito, liga <strong className="text-foreground">190</strong>.
                 </p>
               </div>
             </motion.div>
