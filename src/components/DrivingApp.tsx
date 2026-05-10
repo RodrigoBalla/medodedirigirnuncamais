@@ -25,6 +25,8 @@ import { LibraryScreen } from "@/components/lms/LibraryScreen";
 import { CoursePlayerScreen } from "@/components/lms/CoursePlayerScreen";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { LevelUpOverlay } from "@/components/lms/LevelUpOverlay";
+import { useBadgeRules } from "@/hooks/useBadgeRules";
+import { BadgeUnlockedModal } from "@/components/BadgeUnlockedModal";
 import { DrivingMap } from "@/components/lms/DrivingMap";
 import { DailyBonusGrid } from "@/components/lms/DailyBonusGrid";
 import { DailyMissions } from "@/components/lms/DailyMissions";
@@ -57,7 +59,10 @@ const DrivingApp = () => {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [lastLevel, setLastLevel] = useState<number | null>(null);
 
-  // Level Up Detection
+  // Level Up Detection — modal "Você subiu de nível!".
+  // Atribuição de medalhas migrou pro hook useBadgeRules (centraliza
+  // as 6 regras: primeiros_km, corajoso, estudioso, maratonista,
+  // colecionador, investidor). Não duplicar aqui.
   useEffect(() => {
     if (lastLevel === null) {
       setLastLevel(globalLevel);
@@ -66,9 +71,13 @@ const DrivingApp = () => {
     if (globalLevel > lastLevel) {
       setShowLevelUp(true);
       setLastLevel(globalLevel);
-      if (globalLevel >= 2) addBadge("primeiros_km");
     }
-  }, [globalLevel, lastLevel, addBadge]);
+  }, [globalLevel, lastLevel]);
+
+  // ─── Regras de medalha — roda em QUALQUER tela do app.
+  // Verifica condições no banco e dispara addBadge automaticamente.
+  // justUnlocked = medalha que acabou de ser ganha (1 render).
+  const { justUnlocked, clearJustUnlocked } = useBadgeRules();
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -684,6 +693,9 @@ const DrivingApp = () => {
       <AnimatePresence>
         {showLevelUp && <LevelUpOverlay level={globalLevel} onClose={() => setShowLevelUp(false)} />}
       </AnimatePresence>
+      {/* Modal celebratório de medalha — aparece em QUALQUER tela quando o
+          aluno desbloqueia. O hook useBadgeRules detecta e seta justUnlocked. */}
+      <BadgeUnlockedModal badge={justUnlocked} onClose={clearJustUnlocked} />
       {showOnboarding && (
         <OnboardingGuide
           onComplete={() => {

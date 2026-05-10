@@ -13,6 +13,8 @@ import { useUserStats } from "@/hooks/useUserStats";
 import { MissionsPanel } from "@/components/lms/MissionsPanel";
 import { DailyWheelCard } from "@/components/lms/DailyWheelCard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+// Modal de medalha desbloqueada vive no DrivingApp (cobre todas as telas).
+// Aqui no perfil só renderizamos o GRID estático das medalhas.
 
 interface ProfileScreenProps {
   displayName: string;
@@ -22,13 +24,15 @@ interface ProfileScreenProps {
   totalPhases: number;
 }
 
+// ─── Catálogo de medalhas — descrição PRECISA bater com as regras
+// definidas em src/hooks/useBadgeRules.ts. Se mudar uma, mude a outra.
 const ALL_BADGES = [
-  { id: "primeiros_km", name: "Primeiros KM", icon: "tire_repair", color: "text-blue-500", description: "Atinja o Nível 2 para desbloquear." },
-  { id: "motorista_corajoso", name: "Corajoso", icon: "electric_bolt", color: "text-yellow-500", description: "Complete todas as fases sem perder vidas." },
-  { id: "mestre_ladeira", name: "Mestre da Ladeira", icon: "terrain", color: "text-green-500", description: "Complete o treino de Ladeira no Mapa." },
-  { id: "rei_da_baliza", name: "Rei da Baliza", icon: "local_parking", color: "text-purple-500", description: "Complete o treino de Estacionamento." },
-  { id: "olho_de_aguia", name: "Olho de Águia", icon: "visibility", color: "text-red-500", description: "Acerte 10 perguntas seguidas." },
-  { id: "estudioso", name: "Estudioso", icon: "menu_book", color: "text-cyan-500", description: "Estude por 7 dias seguidos." },
+  { id: "primeiros_km", name: "Primeiros KM", icon: "tire_repair", color: "text-blue-500", description: "Atinja o Nível 2 (100 XP)." },
+  { id: "corajoso", name: "Corajoso", icon: "local_fire_department", color: "text-orange-500", description: "Mantenha um streak de 7 dias seguidos." },
+  { id: "estudioso", name: "Estudioso", icon: "menu_book", color: "text-cyan-500", description: "Complete 10 aulas no app." },
+  { id: "maratonista", name: "Maratonista", icon: "directions_run", color: "text-emerald-500", description: "Estude em 30 dias diferentes." },
+  { id: "colecionador", name: "Colecionador", icon: "redeem", color: "text-purple-500", description: "Ganhe 5 prêmios na Roleta da Sorte." },
+  { id: "investidor", name: "Investidor", icon: "savings", color: "text-amber-500", description: "Gere seu primeiro cupom de cashback." },
 ];
 
 // ─── Cor da Liga por nível ───────────────────────────────────────────────────
