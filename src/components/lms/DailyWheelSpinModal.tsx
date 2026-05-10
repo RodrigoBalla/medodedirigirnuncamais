@@ -139,12 +139,12 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
         {showOverlay && <FullScreenConfetti />}
       </AnimatePresence>
 
-      {/* Modal box */}
+      {/* Modal box — mobile: max-w-md (coluna única). desktop: max-w-4xl (2 cols) */}
       <motion.div
         initial={{ scale: 0.85, y: 30, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 24 }}
-        className="relative z-10 w-full max-w-md bg-gradient-to-br from-[#0E1B3F] to-[#050D24] border-2 border-primary rounded-3xl shadow-[0_0_140px_rgba(255,214,10,.5)] p-6 md:p-8"
+        className="relative z-10 w-full max-w-md md:max-w-4xl bg-gradient-to-br from-[#0E1B3F] to-[#050D24] border-2 border-primary rounded-3xl shadow-[0_0_140px_rgba(255,214,10,.5)] p-6 md:p-10 max-h-[95vh] overflow-y-auto"
       >
         <button
           onClick={onClose}
@@ -155,32 +155,37 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
           <span className="material-symbols-outlined text-base">close</span>
         </button>
 
-        {/* Header dinâmico */}
-        <div className="text-center mb-5">
-          <span className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
-            ⚡ Roleta da Sorte
-          </span>
-          <h2 className="font-black text-2xl md:text-3xl text-white leading-tight">
-            {phase === "revealed"
-              ? "🎉 Parabéns!!"
-              : phase === "revealing"
-              ? "Abrindo o cadeado…"
-              : phase === "spinning"
-              ? "Girando…"
-              : "Toque pra girar!"}
-          </h2>
-          {phase === "idle" && (
-            <p className="text-xs text-white/60 mt-1">
-              Cada fatia tem um cadeado · 1 prêmio sorteado a cada 24h
-            </p>
-          )}
-          {phase === "revealed" && result && (
-            <p className="text-sm text-white/80 mt-1">Você ganhou:</p>
-          )}
-        </div>
+        {/* Grid: 1 coluna no mobile, 2 colunas no desktop (roleta + painel lateral) */}
+        <div className="md:grid md:grid-cols-2 md:gap-10 md:items-center">
 
-        {/* ROLETA */}
-        <div className="relative w-full aspect-square max-w-[300px] mx-auto mb-5">
+          {/* ── COLUNA ESQUERDA: header + roleta ──────────────────────────── */}
+          <div>
+            {/* Header dinâmico */}
+            <div className="text-center mb-5">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
+                ⚡ Roleta da Sorte
+              </span>
+              <h2 className="font-black text-2xl md:text-4xl text-white leading-tight">
+                {phase === "revealed"
+                  ? "🎉 Parabéns!!"
+                  : phase === "revealing"
+                  ? "Abrindo o cadeado…"
+                  : phase === "spinning"
+                  ? "Girando…"
+                  : "Toque pra girar!"}
+              </h2>
+              {phase === "idle" && (
+                <p className="text-xs md:text-sm text-white/60 mt-1 md:mt-2">
+                  Cada fatia tem um cadeado · 1 prêmio sorteado a cada 24h
+                </p>
+              )}
+              {phase === "revealed" && result && (
+                <p className="text-sm md:hidden text-white/80 mt-1">Você ganhou:</p>
+              )}
+            </div>
+
+            {/* ROLETA — em desktop fica maior (380px) */}
+            <div className="relative w-full aspect-square max-w-[300px] md:max-w-[380px] mx-auto mb-5 md:mb-0">
           {/* Pointer */}
           <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 size-0 border-l-[14px] border-r-[14px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary drop-shadow-[0_2px_8px_rgba(255,214,10,.7)]" />
 
@@ -259,10 +264,30 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+            </div>
+          </div>
 
-        {/* Banner do prêmio (só quando revealed) */}
-        <AnimatePresence>
+          {/* ── COLUNA DIREITA: banner do prêmio + botão ──────────────────── */}
+          <div className="md:flex md:flex-col md:justify-center md:min-h-[400px]">
+
+            {/* Quando idle/spinning/revealing em desktop: mostra teaser */}
+            {phase !== "revealed" && (
+              <div className="hidden md:flex md:flex-col md:items-center md:justify-center md:text-center md:gap-4 md:py-8">
+                <span className="material-symbols-outlined filled-icon text-[80px] text-primary/40 animate-pulse">
+                  {phase === "spinning" ? "casino" : phase === "revealing" ? "key" : "lock"}
+                </span>
+                <p className="text-white/60 text-base font-medium leading-relaxed max-w-xs">
+                  {phase === "spinning"
+                    ? "A sorte está sendo decidida agora…"
+                    : phase === "revealing"
+                    ? "Quase lá! Seu prêmio está abrindo…"
+                    : "Clique em GIRAR e descubra o que ganhou hoje. Pode ser moedas, escudo de streak, vidas extras ou turbo XP."}
+                </p>
+              </div>
+            )}
+
+            {/* Banner do prêmio (só quando revealed) */}
+            <AnimatePresence>
           {phase === "revealed" && result && (
             <motion.div
               key={`prize-${result.prize_id}`}
@@ -339,6 +364,10 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
             ✨ Fechar e usar
           </button>
         )}
+          </div>
+          {/* ── /COLUNA DIREITA ────────────────────────────────────────── */}
+        </div>
+        {/* /grid 2-cols */}
       </motion.div>
     </div>
   );

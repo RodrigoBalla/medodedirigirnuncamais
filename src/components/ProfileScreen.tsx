@@ -54,9 +54,9 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 mb-20">
-      {/* Profile Header */}
-      <div className="bg-card rounded-[32px] p-8 border border-border shadow-sm mb-6 text-center relative overflow-hidden">
+    <div className="max-w-lg md:max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 mb-20">
+      {/* Profile Header — full width sempre */}
+      <div className="bg-card rounded-[32px] p-8 md:p-10 border border-border shadow-sm mb-6 text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         <div className="mx-auto mb-4 w-fit">
           <AvatarUploader displayName={liveName} size={96} />
@@ -102,19 +102,20 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
         ))}
       </div>
 
-      {/* Roleta diária — 1 giro a cada 24h, prêmios variados (moedas,
-          streak freeze, XP boost, vida) com expiração de 30 dias */}
-      <ErrorBoundary label="Roleta da Sorte">
-        <DailyWheelCard />
-      </ErrorBoundary>
+      {/* Roleta + Missões — em desktop ficam lado a lado;
+          em mobile mantém empilhado como antes */}
+      <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
+        <ErrorBoundary label="Roleta da Sorte">
+          <DailyWheelCard />
+        </ErrorBoundary>
 
-      {/* Painel de missões mensais — engajamento + retenção */}
-      <ErrorBoundary label="Missões">
-        <MissionsPanel />
-      </ErrorBoundary>
+        <ErrorBoundary label="Missões">
+          <MissionsPanel />
+        </ErrorBoundary>
+      </div>
 
       {/* Badges (Medalhas) */}
-      <div className="bg-card rounded-[32px] p-6 border border-border shadow-sm mb-6">
+      <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2">
              <span className="material-symbols-outlined text-primary">military_tech</span>
@@ -122,7 +123,7 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
           </h3>
           <span className="text-[10px] font-bold text-muted-foreground">{badges.length}/{ALL_BADGES.length}</span>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           {ALL_BADGES.map((b) => {
             const hasBadge = badges.includes(b.id);
             return (
@@ -172,38 +173,41 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
         </AnimatePresence>
       </div>
 
-      {/* Backpack (Inventory) */}
-      <div className="bg-card rounded-[32px] p-6 border border-border shadow-sm mb-6">
-        <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2 mb-4">
-           <span className="material-symbols-outlined text-primary">backpack</span>
-           Mochila de Itens
-        </h3>
-        <div className="space-y-3">
-           <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50 border border-border">
-              <div className="flex items-center gap-3">
-                 <span className="material-symbols-outlined text-blue-500 filled-icon">shield</span>
-                 <div>
-                    <p className="text-xs font-black uppercase">Escudo de Ofensiva</p>
-                    <p className="text-[10px] text-muted-foreground">Protege seu recorde</p>
-                 </div>
-              </div>
-              <span className="text-lg font-black">{streakFreezeCount}</span>
-           </div>
-           <div className={`flex items-center justify-between p-3 rounded-xl border ${isXpBoostActive ? 'bg-purple-500/10 border-purple-500/20' : 'bg-accent/50 border-border opacity-50'}`}>
-              <div className="flex items-center gap-3">
-                 <span className={`material-symbols-outlined ${isXpBoostActive ? 'text-purple-500' : 'text-muted-foreground'} filled-icon`}>rocket_launch</span>
-                 <div>
-                    <p className="text-xs font-black uppercase">Turbo XP (2x)</p>
-                    <p className="text-[10px] text-muted-foreground">{isXpBoostActive ? "Ativado no momento!" : "Inativo"}</p>
-                 </div>
-              </div>
-              <span className="text-[10px] font-black uppercase">{isXpBoostActive ? "ON" : "OFF"}</span>
-           </div>
+      {/* Mochila + Cashback — lado a lado em desktop */}
+      <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
+        {/* Backpack (Inventory) */}
+        <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
+          <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2 mb-4">
+             <span className="material-symbols-outlined text-primary">backpack</span>
+             Mochila de Itens
+          </h3>
+          <div className="space-y-3">
+             <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50 border border-border">
+                <div className="flex items-center gap-3">
+                   <span className="material-symbols-outlined text-blue-500 filled-icon">shield</span>
+                   <div>
+                      <p className="text-xs font-black uppercase">Escudo de Ofensiva</p>
+                      <p className="text-[10px] text-muted-foreground">Protege seu recorde</p>
+                   </div>
+                </div>
+                <span className="text-lg font-black">{streakFreezeCount}</span>
+             </div>
+             <div className={`flex items-center justify-between p-3 rounded-xl border ${isXpBoostActive ? 'bg-purple-500/10 border-purple-500/20' : 'bg-accent/50 border-border opacity-50'}`}>
+                <div className="flex items-center gap-3">
+                   <span className={`material-symbols-outlined ${isXpBoostActive ? 'text-purple-500' : 'text-muted-foreground'} filled-icon`}>rocket_launch</span>
+                   <div>
+                      <p className="text-xs font-black uppercase">Turbo XP (2x)</p>
+                      <p className="text-[10px] text-muted-foreground">{isXpBoostActive ? "Ativado no momento!" : "Inativo"}</p>
+                   </div>
+                </div>
+                <span className="text-[10px] font-black uppercase">{isXpBoostActive ? "ON" : "OFF"}</span>
+             </div>
+          </div>
         </div>
-      </div>
 
-      {/* Cashback — moedas viram cupom de desconto */}
-      <CashbackCard />
+        {/* Cashback — moedas viram cupom de desconto */}
+        <CashbackCard />
+      </div>
 
       {/* Settings List — toggle de tema removido (mantemos só 1 modo). */}
       <div className="bg-card rounded-[32px] border border-border shadow-sm overflow-hidden">
