@@ -11,6 +11,7 @@ import { useDisplayName } from "@/hooks/useDisplayName";
 import { useUserStats } from "@/hooks/useUserStats";
 import { MissionsPanel } from "@/components/lms/MissionsPanel";
 import { DailyWheelCard } from "@/components/lms/DailyWheelCard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface ProfileScreenProps {
   displayName: string;
@@ -103,10 +104,14 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
 
       {/* Roleta diária — 1 giro a cada 24h, prêmios variados (moedas,
           streak freeze, XP boost, vida) com expiração de 30 dias */}
-      <DailyWheelCard />
+      <ErrorBoundary label="Roleta da Sorte">
+        <DailyWheelCard />
+      </ErrorBoundary>
 
       {/* Painel de missões mensais — engajamento + retenção */}
-      <MissionsPanel />
+      <ErrorBoundary label="Missões">
+        <MissionsPanel />
+      </ErrorBoundary>
 
       {/* Badges (Medalhas) */}
       <div className="bg-card rounded-[32px] p-6 border border-border shadow-sm mb-6">
