@@ -2741,55 +2741,98 @@
 
     /* Total */
     .vs-total {
-      padding: 24px 26px 28px;
+      padding: 32px 26px 28px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: var(--on-primary);
       text-align: center;
+      display: flex; flex-direction: column;
+      align-items: center;
+      gap: 18px;
     }
-    .vs-total-row {
-      display: flex; align-items: baseline; justify-content: center;
-      gap: 12px;
-      margin-bottom: 4px;
+    /* "De R$ 591,00" — preço cortado, discreto no topo */
+    .vs-total__from {
+      display: inline-flex; align-items: baseline; gap: 10px;
+      opacity: .55;
     }
-    .vs-total-label {
+    .vs-total__from-label {
       font-family: var(--font-h);
       font-weight: 700;
-      font-size: .85rem;
-      letter-spacing: .14em;
+      font-size: .72rem;
+      letter-spacing: .2em;
       text-transform: uppercase;
-      opacity: .7;
     }
-    .vs-total-old {
+    .vs-total__from-price {
       font-family: var(--font-h);
       font-weight: 800;
-      font-size: 1.4rem;
+      font-size: 1.1rem;
       text-decoration: line-through;
-      opacity: .65;
+      text-decoration-thickness: 2px;
     }
-    .vs-total-row--final { margin-top: 6px; margin-bottom: 8px; }
-    .vs-total-new {
+    /* Linha divisória sutil entre "de" e "por" */
+    .vs-total__divider {
+      width: 56px; height: 2px;
+      background: rgba(11, 26, 56, .22);
+      border-radius: 2px;
+    }
+    /* Bloco principal "Por apenas R$ 97" */
+    .vs-total__final {
+      display: flex; flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .vs-total__final-label {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .72rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+    }
+    .vs-total__final-price {
+      display: inline-flex; align-items: flex-start;
+      gap: 6px;
+      line-height: .85;
+    }
+    .vs-total__final-price sup {
+      font-family: var(--font-h);
+      font-size: 1.7rem;
+      font-weight: 800;
+      margin-top: 16px;
+    }
+    .vs-total__final-num {
       font-family: var(--font-h);
       font-weight: 900;
-      font-size: 4.6rem;
-      line-height: 1;
-      letter-spacing: -.03em;
-      display: inline-flex;
-      align-items: flex-start;
-      gap: 4px;
+      font-size: 5.4rem;
+      letter-spacing: -.04em;
+      line-height: .9;
     }
-    .vs-total-new sup {
-      font-size: 1.6rem;
-      font-weight: 800;
-      margin-top: 8px;
+    .vs-total__final-note {
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .82rem;
+      opacity: .72;
+      letter-spacing: .04em;
     }
-    .vs-total-save {
+    /* Pilha de economia em destaque (estilo pílula) */
+    .vs-total__save-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(11, 26, 56, .14);
+      border: 1.5px solid rgba(11, 26, 56, .28);
+      padding: 9px 16px;
+      border-radius: 999px;
       font-family: var(--font-h);
       font-weight: 700;
-      font-size: .95rem;
-      margin-top: 6px;
-      opacity: .85;
+      font-size: .8rem;
+      letter-spacing: .02em;
     }
-    .vs-total-save strong { font-weight: 900; }
+    .vs-total__save-pill strong { font-weight: 900; }
+    .vs-total__save-pill .material-symbols-outlined { font-size: 18px; }
+    @media(max-width: 540px) {
+      .vs-total { padding: 26px 20px 22px; gap: 14px; }
+      .vs-total__final-num { font-size: 4.4rem; }
+      .vs-total__final-price sup { font-size: 1.4rem; margin-top: 10px; }
+      .vs-total__from-price { font-size: 1rem; }
+      .vs-total__save-pill { font-size: .74rem; padding: 8px 14px; }
+    }
     @media(max-width: 540px) {
       .vs-line { grid-template-columns: 40px 1fr auto; padding: 14px 16px; gap: 12px; }
       .vs-line__icon { width: 36px; height: 36px; border-radius: 10px; }
@@ -3786,6 +3829,9 @@
       position: relative;
       width: 320px; height: 320px;
       margin: 10px auto 24px;
+      /* Raio do círculo onde as labels orbitam.
+         Mobile sobrescreve com valor menor pra labels não sairem do disco. */
+      --wheel-r: 105px;
     }
     .wheel-disc {
       position: absolute; inset: 0;
@@ -4134,17 +4180,62 @@
       100% { opacity: 0; transform: translateY(600px) rotate(720deg); }
     }
 
-    /* CTA na FAQ pra abrir manualmente */
-      50%      { transform: rotate(8deg); }
+    /* @keyframes pra pulse sutil do CTA da FAQ que abre a roleta */
+    @keyframes exitSpinPulse {
+      0%, 100% { transform: scale(1) rotate(0); }
+      50%      { transform: scale(1.03) rotate(2deg); }
     }
 
     @media(max-width:560px){
-      .exit-modal { padding: 36px 20px 28px; }
-      .wheel-wrap { width: min(280px, 78vw); height: min(280px, 78vw); }
-      .wheel-hub { width: 66px; height: 66px; margin-left: -33px; margin-top: -33px; font-size: .72rem; }
-      .wheel-label { width: 64px; margin-left: -32px; font-size: .68rem; }
-      .wheel-label--dark { font-size: .52rem; }
+      /* Modal: padding lateral menor pra liberar área pra roleta */
+      .exit-modal { padding: 32px 16px 24px; }
+      /* Roleta proporcional ao viewport, raio das labels reduzido (88px)
+         pra elas orbitarem DENTRO do disco (não estourar a borda) */
+      .wheel-wrap {
+        width: min(290px, 82vw);
+        height: min(290px, 82vw);
+        /* Raio das labels orbitam a 105px do centro (proporção ~36% do disco) */
+        --wheel-r: 105px;
+        margin: 8px auto 20px;
+      }
+      .wheel-hub {
+        width: 60px; height: 60px;
+        margin-left: -30px; margin-top: -30px;
+        font-size: .66rem;
+        border-width: 2.5px;
+      }
+      /* Labels mais estreitas + font menor pra cada slot de ~50px de
+         circunferência local não sobrepor com vizinhas */
+      .wheel-label {
+        width: 56px;
+        margin-left: -28px;
+        font-size: .66rem;
+      }
+      /* Labels GOLD ("10% OFF") orbitam no raio externo (105px herdado).
+         Labels DARK ("Vish/Quase!/etc") usam um raio MENOR (60px) — assim
+         elas ficam num "anel interno" e não sobrepõem as gold. Trick:
+         o transform inline usa var(--wheel-r), então sobrescrever a var
+         dentro do seletor muda só o raio dele sem mexer nos inline. */
+      .wheel-label--gold {
+        font-size: .76rem;
+        width: 64px;
+        margin-left: -32px;
+      }
+      /* Labels DARK no MESMO raio das GOLD (anel externo único) — todas
+         padronizadas. Width pequeno (50px) e fonte minima (.5rem) pra
+         caber no perímetro local junto das GOLD sem sobrepor. */
+      .wheel-label--dark {
+        --wheel-r: 105px;
+        width: 50px;
+        margin-left: -25px;
+        font-size: .5rem;
+        gap: 1px;
+        line-height: 1;
+      }
+      .wheel-label__emoji { font-size: 1em; }
       .exit-header h2 { font-size: 1.3rem; }
+      /* Pointer um pouco menor pra não dominar a roleta menor */
+      .wheel-pointer { width: 28px; height: 34px; }
     }
 
     /* ─── FOOTER ───────────────────────────────────────── */
@@ -4627,7 +4718,7 @@
             <span class="hero__cta-pack__sold-out">Esgotado!</span>
             <span class="hero__cta-pack__tail">depois vira lista de espera</span>
           </div>
-          <button class="btn btn--primary hero__cta-btn" onclick="openLeadModal('hero')">
+          <button class="btn btn--primary hero__cta-btn" onclick="goToCheckout('hero')">
             <span class="material-symbols-outlined">directions_car</span>
             QUERO COMEÇAR AGORA
           </button>
@@ -4745,12 +4836,12 @@
           </li>
           <li data-pain="2" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">visibility_off</span></span>
-            <p><strong>Trava no trânsito de verdade</strong>Buzina, motoboy, carro do lado. O cérebro desliga.</p>
+            <p><strong>Trava no trânsito de verdade</strong>Buzina, motoboy, carro do lado. O carro morre.</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="3" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">no_accounts</span></span>
-            <p><strong>Depende de carona pra tudo</strong>Mercado, médico, aniversário. Cansa.</p>
+            <p><strong>Depende de carona pra tudo</strong>Mercado, médico, aniversário. Essa rotina cansa..</p>
             <span class="pain-check"></span>
           </li>
           <li data-pain="4" role="button" tabindex="0">
@@ -4760,7 +4851,7 @@
           </li>
           <li data-pain="5" role="button" tabindex="0">
             <span class="ico-wrap"><span class="material-symbols-outlined">trending_down</span></span>
-            <p><strong>Aula tradicional não resolveu</strong>Auto escola, parente, aula extra. O medo segue.</p>
+            <p><strong>Aula tradicional não resolveu</strong>Auto escola, parente, aula extra. A insegurança continua..</p>
             <span class="pain-check"></span>
           </li>
         </ul>
@@ -4784,24 +4875,23 @@
   <div class="container--wide">
     <div class="quem-somos__grid">
       <div class="quem-somos__content">
-        <p class="eyebrow">Quem cuida de você</p>
-        <h2 class="section-title">Quem entende <span>quem trava</span></h2>
+        <h2 class="section-title">A pessoa que entende quando você <span>trava</span>.</h2>
         <p style="color:var(--text-mute);font-size:1.05rem;line-height:1.7;margin-bottom:28px">
-          Sou a <strong style="color:var(--primary)">Carla</strong>. Há 25 anos como instrutora, ensinando do jeito de cada aluno. Não do jeito da prova.
+          Sou a <strong style="color:var(--primary)">Carla</strong>. Há 25 anos como instrutora, ensinando cada aluno a passar de primeira, sem deixar o carro morrer, mesmo que na ladeira.
         </p>
 
         <div class="quem-somos__credentials">
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">favorite</span></span>
-            <span>Método <strong>técnica + emoção</strong>, não só decoreba</span>
+            <span>Método <strong>técnica + emoção</strong>, não só decorebas</span>
           </div>
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">groups_2</span></span>
-            <span><strong>97 mil seguidoras</strong> acompanhando o método no Instagram</span>
+            <span><strong>250 mil seguidoras</strong> em todas as redes acompanhando o método no Instagram</span>
           </div>
           <div class="qs-cred">
             <span class="qs-cred__icon"><span class="material-symbols-outlined filled">school</span></span>
-            <span>Atende <strong>aluno e auto escola</strong> há 2 décadas em SP</span>
+            <span>Atende <strong>alunos e auto escolas</strong> há mais de 2 décadas</span>
           </div>
         </div>
       </div>
@@ -4814,7 +4904,7 @@
             <span class="material-symbols-outlined filled">verified</span>
             <div>
               <strong>Carla Margareth</strong>
-              <small>Há 25 anos no volante · São Paulo</small>
+              <small>Há 25 anos no volante · Brasil</small>
             </div>
           </div>
           <div class="qs-portrait-badge">
@@ -4832,7 +4922,7 @@
             <div class="qs-stat__lbl">recomendam<br/>pra um amigo</div>
           </div>
           <div class="qs-stat qs-stat--mini">
-            <div class="qs-stat__val" data-target="21" data-suffix="d">0d</div>
+            <div class="qs-stat__val" data-target="21" data-suffix=" Dias">0 Dias</div>
             <div class="qs-stat__lbl">até dirigir<br/>sozinho</div>
           </div>
         </div>
@@ -4847,7 +4937,7 @@
     <div class="solution-header">
       <p class="eyebrow">O caminho leve</p>
       <h2 class="section-title">Uma marcha <span>de cada vez</span></h2>
-      <p class="solution-sub">A ordem certa pra você não travar. Nada de tudo de uma vez.</p>
+      <p class="solution-sub">A ordem certa pra você não travar.<br><br>O seu carro nunca morre e você passa na prova.</p>
     </div>
 
     <!-- 3 fases visuais conectadas por setas animadas -->
@@ -4864,7 +4954,7 @@
         <span class="solution-step__num">2</span>
         <div class="solution-step__icon"><span class="material-symbols-outlined filled">explore</span></div>
         <h3>Volante</h3>
-        <p>Direção, curvas, troca de marcha. Só depois dos pés.</p>
+        <p>Direção, curvas, troca de marcha.</p>
       </div>
       <div class="solution-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
 
@@ -4872,7 +4962,7 @@
         <span class="solution-step__num">3</span>
         <div class="solution-step__icon"><span class="material-symbols-outlined filled">traffic</span></div>
         <h3>Trânsito</h3>
-        <p>Rua de verdade. Por último, com base sólida.</p>
+        <p>Aplicação segura, depois que você ja entendeu tudo.</p>
       </div>
     </div>
 
@@ -4887,12 +4977,12 @@
         Sem julgamento
       </span>
       <span class="solution-chip">
-        <span class="material-symbols-outlined">spa</span>
-        Sem se forçar
+        <span class="material-symbols-outlined">trending_up</span>
+        Ganhando confiança
       </span>
     </div>
 
-    <button class="btn btn--primary solution-cta" onclick="openLeadModal('solucao')">
+    <button class="btn btn--primary solution-cta" onclick="goToCheckout('solucao')">
       <span class="material-symbols-outlined">directions_car</span>
       ME COLOQUE NESSA TRILHA
     </button>
@@ -4947,23 +5037,8 @@
 
 <!-- ─── MODULES (Trilha Completa) ─── -->
 <section class="modules-section" id="trilha-section">
-  <!-- Decoração: placas de trânsito de fundo + rotatória girando -->
-  <div class="trail-bg-decor" aria-hidden="true">
-    <span class="trail-bg-decor__sign" style="top:8%;left:6%"><span class="material-symbols-outlined">traffic</span></span>
-    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:14%;right:9%"><span class="material-symbols-outlined">priority_high</span></span>
-    <span class="trail-bg-decor__sign" style="top:24%;left:11%"><span class="material-symbols-outlined">signpost</span></span>
-    <span class="trail-bg-decor__sign trail-bg-decor__sign--lg" style="top:33%;right:5%"><span class="material-symbols-outlined">roundabout_right</span></span>
-    <span class="trail-bg-decor__sign" style="top:48%;left:4%"><span class="material-symbols-outlined">local_parking</span></span>
-    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:56%;right:13%"><span class="material-symbols-outlined">do_not_disturb_on</span></span>
-    <span class="trail-bg-decor__sign" style="top:67%;left:8%"><span class="material-symbols-outlined">merge</span></span>
-    <span class="trail-bg-decor__sign" style="top:76%;right:6%"><span class="material-symbols-outlined">straight</span></span>
-    <span class="trail-bg-decor__sign trail-bg-decor__sign--triangle" style="top:85%;left:12%"><span class="material-symbols-outlined">warning</span></span>
-    <span class="trail-bg-decor__sign" style="top:91%;right:10%"><span class="material-symbols-outlined">u_turn_right</span></span>
-    <!-- Rotatória decorativa girando lentamente atrás da pista -->
-    <div class="trail-bg-decor__roundabout">
-      <span class="material-symbols-outlined">roundabout_right</span>
-    </div>
-  </div>
+  <!-- Decoração de fundo (placas de trânsito + rotatória) removida a pedido
+       do Balla — estava poluindo a leitura dos cards das fases. -->
 
   <div class="container">
     <p class="eyebrow text-center">A trilha</p>
@@ -4973,13 +5048,9 @@
       <!-- Container das serpentinas amarelas/pretas que caem quando o carro chega -->
       <div class="confetti-burst" id="trailConfetti" aria-hidden="true"></div>
 
-      <!-- Cruzamentos: outra rua cruzando a pista, com faixa de pedestre -->
-      <div class="trail-crossing" style="top:22%">
-        <span class="trail-crossing__sign">!</span>
-      </div>
-      <div class="trail-crossing" style="top:62%">
-        <span class="trail-crossing__sign">!</span>
-      </div>
+      <!-- Cruzamentos decorativos removidos a pedido do Balla — estavam
+           atrapalhando a leitura dos cards das fases. -->
+
 
       <!-- Carrinho que segue o scroll -->
       <div class="trail-car" id="trailCar" data-direction="down" aria-hidden="true">
@@ -4999,7 +5070,7 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">airline_seat_recline_normal</span></div>
           <h3 class="trail-step__title">Conhecendo o carro</h3>
-          <p class="trail-step__text">Painel, banco, retrovisores. Você se sente em casa antes de ligar.</p>
+          <p class="trail-step__text">Painel, banco, retrovisores. Você se sente habilitada antes de passar na prova.</p>
           <span class="trail-step__badge trail-step__badge--live">Aula 01</span>
         </div>
       </div>
@@ -5009,7 +5080,7 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">accessibility_new</span></div>
           <h3 class="trail-step__title">Postura e cinto</h3>
-          <p class="trail-step__text">Ergonomia certa pra dirigir relaxado. Cinto, espelhos, posição.</p>
+          <p class="trail-step__text">Ergonomia certa pra dirigir relaxado. Cinto, espelhos e posição correta do condutor.</p>
           <span class="trail-step__badge trail-step__badge--live">Aula 02</span>
         </div>
       </div>
@@ -5019,7 +5090,7 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">footprint</span></div>
           <h3 class="trail-step__title">O jogo dos pés</h3>
-          <p class="trail-step__text">Embreagem, freio, acelerador. Você sai sem matar o carro.</p>
+          <p class="trail-step__text">Embreagem, freio, acelerador. O seu carro nunca morre e você fica segura.</p>
           <span class="trail-step__badge trail-step__badge--live">Aula 03</span>
         </div>
       </div>
@@ -5039,7 +5110,7 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">auto_mode</span></div>
           <h3 class="trail-step__title">Câmbio: marchas e automático</h3>
-          <p class="trail-step__text">Manual sem matar o carro + D, R, P, N do automático.</p>
+          <p class="trail-step__text">Manual da direção + como usar as marchas do jeito certo.</p>
           <span class="trail-step__badge trail-step__badge--live">Aula 05</span>
         </div>
       </div>
@@ -5049,7 +5120,7 @@
         <div class="trail-step__card">
           <div class="trail-step__icon"><span class="material-symbols-outlined filled">altitude</span></div>
           <h3 class="trail-step__title">Saída em rampa e baliza</h3>
-          <p class="trail-step__text">Ladeira sem rolar pra trás + manobra de baliza sem trava.</p>
+          <p class="trail-step__text">Ladeira sem rolar pra trás + manobra de baliza sem medo de bater.</p>
           <span class="trail-step__badge trail-step__badge--live">Aula 06</span>
         </div>
       </div>
@@ -5065,9 +5136,6 @@
       </div>
     </div>
 
-    <p style="text-align:center;color:var(--text-mute);font-size:.92rem;margin-top:24px">
-      <strong style="color:var(--primary)">Atualizações grátis:</strong> novas fases entram sem custo extra durante o ano.
-    </p>
   </div>
 </section>
 
@@ -5085,7 +5153,6 @@
           <p>Pés. Volante. Trânsito. Nessa ordem.</p>
           <ul class="big-block__list">
             <li>Fases curtinhas e progressivas</li>
-            <li>Missão de 5 minutos por dia</li>
             <li>1 ano de acesso completo</li>
           </ul>
         </div>
@@ -5111,8 +5178,7 @@
           <p>Você não está sozinha.</p>
           <ul class="big-block__list">
             <li>Alunas na mesma jornada</li>
-            <li>Carla e Anna respondendo</li>
-            <li>WhatsApp se travar</li>
+            <li>Suporte no WhatsApp</li>
           </ul>
         </div>
       </div>
@@ -5123,7 +5189,6 @@
           <h3>Erre sem culpa</h3>
           <p>Errar aqui é treinar.</p>
           <ul class="big-block__list">
-            <li>Vidas pra recomeçar</li>
             <li>Sem prazo apertado</li>
             <li>Sem julgamento</li>
           </ul>
@@ -5136,7 +5201,6 @@
           <h3>Recompensa diária</h3>
           <p>Pequena vitória todo dia.</p>
           <ul class="big-block__list">
-            <li>Moedas pelo esforço</li>
             <li>Roleta da Sorte</li>
             <li>Bônus surpresa</li>
           </ul>
@@ -5151,12 +5215,9 @@
   <div class="container--wide">
     <div class="founders-tag">
       <span class="material-symbols-outlined filled">workspace_premium</span>
-      <span>Promoção <strong>de Lançamento</strong> · só pros 100 primeiros alunos</span>
+      <span>Promoção <strong>de Lançamento</strong></span>
     </div>
     <h2 class="section-title text-center">Os 2 cursos <span>juntos no mesmo pacote</span></h2>
-    <p class="section-sub text-center" style="margin:8px auto 0;max-width:640px">
-      Quem entrar nos primeiros <strong style="color:var(--primary)">100 acessos</strong> leva os <strong>2 cursos completos</strong> num único pagamento de R$ 97. Depois disso, viram pacote separado.
-    </p>
 
     <div class="dynamic-courses-grid" id="dynamicCoursesGrid">
       <!-- Loading skeleton -->
@@ -5196,7 +5257,7 @@
 </section>
 
 <!-- ─── VALUE STACK (somando tudo que vai dentro do pacote) ─── -->
-<section class="includes-section">
+<section class="includes-section" id="oferta">
   <div class="container">
     <p class="eyebrow text-center">Quanto vale tudo isso</p>
     <h2 class="section-title text-center">O que você leva por <span>R$ 97</span></h2>
@@ -5230,7 +5291,7 @@
       <div class="vs-line">
         <div class="vs-line__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
         <div class="vs-line__info">
-          <div class="vs-line__title">Suporte direto Carla pelo WhatsApp</div>
+          <div class="vs-line__title">Suporte no WhatsApp</div>
           <div class="vs-line__sub">Resposta humana em até 24h</div>
         </div>
         <div class="vs-line__price">R$ 50</div>
@@ -5245,15 +5306,21 @@
       </div>
 
       <div class="vs-total">
-        <div class="vs-total-row">
-          <span class="vs-total-label">De</span>
-          <span class="vs-total-old">R$ 591,00</span>
+        <div class="vs-total__from">
+          <span class="vs-total__from-label">De</span>
+          <span class="vs-total__from-price">R$ 591,00</span>
         </div>
-        <div class="vs-total-row vs-total-row--final">
-          <span class="vs-total-label">Por</span>
-          <span class="vs-total-new"><sup>R$</sup>97</span>
+        <div class="vs-total__divider"></div>
+        <div class="vs-total__final">
+          <span class="vs-total__final-label">Por apenas</span>
+          <div class="vs-total__final-price">
+            <sup>R$</sup>
+            <span class="vs-total__final-num">97</span>
+          </div>
+          <span class="vs-total__final-note">à vista · sem mensalidade</span>
         </div>
-        <div class="vs-total-save">
+        <div class="vs-total__save-pill">
+          <span class="material-symbols-outlined filled">savings</span>
           Você economiza <strong>R$ 494</strong> · <strong>84% OFF</strong>
         </div>
       </div>
@@ -5261,67 +5328,7 @@
   </div>
 </section>
 
-<!-- ─── FOR WHO ─── -->
-<section class="for-section">
-  <div class="container">
-    <p class="eyebrow text-center">É pra você se</p>
-    <h2 class="section-title text-center">Você <span>se encaixa</span></h2>
-
-    <div class="for-grid">
-      <div class="for-item">
-        <span class="for-item__num">01</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">id_card</span></div>
-        <h3 class="for-item__title">Tem CNH e não dirige</h3>
-        <p class="for-item__desc">Carteira tirada, carro na vaga.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-      <div class="for-item">
-        <span class="for-item__num">02</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">monitor_heart</span></div>
-        <h3 class="for-item__title">Trava de ansiedade</h3>
-        <p class="for-item__desc">Coração disparado, branco mental.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-      <div class="for-item">
-        <span class="for-item__num">03</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">replay</span></div>
-        <h3 class="for-item__title">Já tentou e não rolou</h3>
-        <p class="for-item__desc">Auto escola, parente, aula extra.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-      <div class="for-item">
-        <span class="for-item__num">04</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">pan_tool</span></div>
-        <h3 class="for-item__title">Depende de carona</h3>
-        <p class="for-item__desc">Mercado, médico, emergência.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-      <div class="for-item">
-        <span class="for-item__num">05</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">self_improvement</span></div>
-        <h3 class="for-item__title">Quer no seu ritmo</h3>
-        <p class="for-item__desc">Sem pressão, sem julgamento.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-      <div class="for-item">
-        <span class="for-item__num">06</span>
-        <div class="for-item__icon"><span class="material-symbols-outlined filled">key</span></div>
-        <h3 class="for-item__title">Quer liberdade</h3>
-        <p class="for-item__desc">Sair quando quiser, pra onde quiser.</p>
-        <div class="for-item__check"><span class="material-symbols-outlined filled">check</span></div>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:var(--text-mute);margin:32px auto 18px;font-size:1.05rem;max-width:580px">
-      <strong style="color:var(--primary)">Marcou pelo menos um?</strong> O método foi feito pra você.
-    </p>
-    <div style="text-align:center">
-      <button class="btn btn--primary" style="padding:18px 36px;font-size:1rem" onclick="openLeadModal('for')">
-        ME ENCAIXO, QUERO ENTRAR
-      </button>
-    </div>
-  </div>
-</section>
+<!-- ─── FOR WHO ─── (seção removida a pedido do Balla) -->
 
 <!-- ─── PROOF ─── -->
 <section class="proof-section">
@@ -5369,100 +5376,8 @@
 </section>
 
 
-<!-- ─── OFFER ─── -->
-<section class="offer-section" id="oferta">
-  <div class="container">
-    <p class="eyebrow text-center">Sua decisão</p>
-    <h2 class="section-title text-center">Vagas de Lançamento <span>· R$ 97</span></h2>
-    <div class="offer-box">
-      <div class="offer-box__title">O que você leva</div>
-      <div class="offer-box__sub">1 ano de acesso · Pagamento único · Garantia de 7 dias</div>
-
-      <!-- Grupo 1: 2 cursos completos -->
-      <div class="offer-group">
-        <div class="offer-group__head">
-          <span class="material-symbols-outlined filled">school</span>
-          <span>2 cursos completos</span>
-        </div>
-        <ul class="offer-list">
-          <li>
-            <div class="offer-list__icon"><span class="material-symbols-outlined filled">directions_car</span></div>
-            <div class="offer-list__body">
-              <span class="offer-list__title">Medo de Dirigir Nunca Mais</span>
-              <span class="offer-list__desc">8 aulas + bônus futuros</span>
-            </div>
-          </li>
-          <li>
-            <div class="offer-list__icon"><span class="material-symbols-outlined filled">altitude</span></div>
-            <div class="offer-list__body">
-              <span class="offer-list__title">Dominando as Ladeiras</span>
-              <span class="offer-list__desc">Saída em rampa, freio de mão, baliza</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Grupo 2: Bônus exclusivos da turma -->
-      <div class="offer-group">
-        <div class="offer-group__head">
-          <span class="material-symbols-outlined filled">redeem</span>
-          <span>Bônus exclusivos da turma</span>
-        </div>
-        <ul class="offer-list">
-          <li>
-            <div class="offer-list__icon"><span class="material-symbols-outlined filled">groups</span></div>
-            <div class="offer-list__body">
-              <span class="offer-list__title">Turma exclusiva no app</span>
-              <span class="offer-list__desc">Alunos na mesma jornada que você</span>
-            </div>
-          </li>
-          <li>
-            <div class="offer-list__icon"><span class="material-symbols-outlined filled">support_agent</span></div>
-            <div class="offer-list__body">
-              <span class="offer-list__title">Suporte direto com a Carla</span>
-              <span class="offer-list__desc">Resposta humana pelo WhatsApp</span>
-            </div>
-          </li>
-          <li>
-            <div class="offer-list__icon"><span class="material-symbols-outlined filled">workspace_premium</span></div>
-            <div class="offer-list__body">
-              <span class="offer-list__title">Selos e conquistas</span>
-              <span class="offer-list__desc">Uma medalha a cada fase concluída</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Garantia em destaque -->
-      <div class="offer-guarantee">
-        <div class="offer-guarantee__icon">
-          <span class="material-symbols-outlined filled">verified_user</span>
-        </div>
-        <div>
-          <strong>Garantia de 7 dias</strong>
-          <small>Não gostou? Devolvo 100% sem perguntar.</small>
-        </div>
-      </div>
-
-      <!-- Price stack -->
-      <div class="price-stack">
-        <div class="price-stack__old">Valor real somado: R$ 591,00</div>
-        <div class="price-stack__from">Promoção dos 100 primeiros</div>
-        <div class="price-stack__val"><sup>R$</sup>97</div>
-        <div class="price-stack__note">Pagamento único · 1 ano de acesso</div>
-      </div>
-
-      <button class="btn btn--primary btn--block offer-cta" onclick="openLeadModal('oferta')">
-        <span class="material-symbols-outlined">workspace_premium</span>
-        QUERO MINHA VAGA DE LANÇAMENTO
-      </button>
-      <p class="offer-security">
-        <span class="material-symbols-outlined">lock</span>
-        Ambiente seguro · SSL · Parcelamento disponível
-      </p>
-    </div>
-  </div>
-</section>
+<!-- ─── OFFER ─── (seção removida a pedido do Balla — a includes-section
+     acima ja serve de "oferta principal" e o id="oferta" foi movido pra la) -->
 
 <!-- ─── GUARANTEE (selo visual forte como medalha) ─── -->
 <section class="guarantee-section">
@@ -5525,7 +5440,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Sirvo se eu nunca tirei CNH? <span class="chev material-symbols-outlined">expand_more</span></button>
-        <div class="faq-a">Esse curso é desenhado pra quem já tem habilitação mas trava. Se você ainda não tirou CNH, o método ajuda a se preparar emocionalmente antes da prova prática, mas o ideal é fazer junto com a auto escola.</div>
+        <div class="faq-a">Esse curso é desenhado pra quem já tem habilitação mas trava. Se você ainda não tirou CNH, o método ajuda a se preparar emocionalmente antes da prova prática, mas o ideal é fazer junto com o seu instrutor.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Eu tirei CNH faz tempo e nunca dirigi. Funciona? <span class="chev material-symbols-outlined">expand_more</span></button>
@@ -5610,18 +5525,18 @@
         </div>
         <div class="wheel-disc" id="wheelDisc"></div>
         <div class="wheel-labels" id="wheelLabels">
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(0deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(30deg) translateY(-105px)"><span>Vish...</span><span class="wheel-label__emoji">🥲</span></div>
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(60deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(90deg) translateY(-105px)"><span>Quase!</span><span class="wheel-label__emoji">😅</span></div>
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(120deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(150deg) translateY(-105px)"><span>Tá frio</span><span class="wheel-label__emoji">🥶</span></div>
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(180deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(210deg) translateY(-105px)"><span>Hmmm</span><span class="wheel-label__emoji">🤔</span></div>
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(240deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(270deg) translateY(-105px)"><span>Por pouco</span><span class="wheel-label__emoji">😬</span></div>
-          <div class="wheel-label wheel-label--gold" style="transform: rotate(300deg) translateY(-105px)">10% OFF</div>
-          <div class="wheel-label wheel-label--dark" style="transform: rotate(330deg) translateY(-105px)"><span>Tenta lá</span><span class="wheel-label__emoji">🙃</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(0deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(30deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Vish...</span><span class="wheel-label__emoji">🥲</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(60deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(90deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Quase!</span><span class="wheel-label__emoji">😅</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(120deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(150deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Tá frio</span><span class="wheel-label__emoji">🥶</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(180deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(210deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Hmmm</span><span class="wheel-label__emoji">🤔</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(240deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(270deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Por pouco</span><span class="wheel-label__emoji">😬</span></div>
+          <div class="wheel-label wheel-label--gold" style="transform: rotate(300deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)">10% OFF</div>
+          <div class="wheel-label wheel-label--dark" style="transform: rotate(330deg) translateY(calc(var(--wheel-r) * -1)) rotate(90deg)"><span>Tenta lá</span><span class="wheel-label__emoji">🙃</span></div>
         </div>
         <div class="wheel-hub" id="wheelHub">GIRAR</div>
       </div>
@@ -5631,33 +5546,15 @@
       </button>
     </div>
 
-    <!-- STAGE 2: FORM -->
-    <div class="exit-stage" data-stage="form">
-      <div class="exit-prize-banner">
-        <div class="exit-prize-banner__label">🎉 Você ganhou</div>
-        <div class="exit-prize-banner__value">10% <small>OFF</small></div>
-      </div>
-      <p class="exit-form-instr">Preencha seus dados pra <strong>liberar seu cupom</strong> exclusivo:</p>
-      <div class="exit-field">
-        <input type="text" id="exitName" placeholder="Seu nome completo" autocomplete="name" />
-      </div>
-      <div class="exit-field">
-        <input type="email" id="exitEmail" placeholder="seu@email.com" autocomplete="email" />
-      </div>
-      <div class="exit-field">
-        <input type="tel" id="exitPhone" placeholder="(11) 99999-9999" autocomplete="tel" />
-      </div>
-      <button class="exit-submit" type="button" onclick="generateCoupon()">
-        LIBERAR MEU CUPOM →
-      </button>
-    </div>
+    <!-- STAGE 2 (FORM) removida — spin agora vai direto pro cupom sem
+         coletar nome/email/telefone (pedido do Balla). -->
 
     <!-- STAGE 3: COUPON -->
     <div class="exit-stage" data-stage="coupon">
       <div class="exit-trophy">🏆</div>
       <div class="exit-coupon-label">Seu cupom de 10% OFF está pronto</div>
       <div class="exit-coupon" id="couponCard" onclick="copyCoupon()" role="button" tabindex="0" aria-label="Clique para copiar o cupom">
-        <span class="exit-coupon__code" id="couponCode">CARLA10</span>
+        <span class="exit-coupon__code" id="couponCode">VOLANTE10</span>
         <button class="exit-coupon__copy" id="copyBtn" type="button" onclick="event.stopPropagation();copyCoupon()">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
           COPIAR
@@ -5684,7 +5581,7 @@
       <span class="sticky-cta__price-old">R$ 591</span>
       <span class="sticky-cta__price-new">R$ 97</span>
     </div>
-    <button class="sticky-cta__btn" onclick="openLeadModal('sticky')">
+    <button class="sticky-cta__btn" onclick="goToCheckout('sticky')">
       <span class="material-symbols-outlined filled">directions_car</span>
       QUERO COMEÇAR
     </button>
@@ -6526,6 +6423,27 @@
   carregarVagas();
   setInterval(carregarVagas, 60000);
 
+  // ── CHECKOUT DIRETO ─────────────────────────────────
+  // Link único do produto na Eduzz. Todos os CTAs (hero, solução, sticky)
+  // mandam DIRETO pra cá — sem coletar dados antes. O cupom da roleta
+  // adiciona ?cupom=VOLANTE10 via exitToCheckout.
+  const CHECKOUT_URL = 'https://chk.eduzz.com/R9JXDZDE0X';
+
+  function goToCheckout(source, extra) {
+    const label = source || 'cta';
+    if (window.Track) {
+      window.Track.event('clicou_cta_' + label, { label });
+      window.Track.event('iniciou_checkout', { source: label });
+    }
+    let url = CHECKOUT_URL;
+    if (extra && extra.cupom) {
+      url += (url.includes('?') ? '&' : '?') + 'cupom=' + encodeURIComponent(extra.cupom);
+    }
+    window.location.href = url;
+  }
+  // Expõe global pra usar no onclick=
+  window.goToCheckout = goToCheckout;
+
   // ── LEAD MODAL ───────────────────────────────────────
   function openLeadModal(origem) {
     // Tracking: registra o CTA específico que abriu o modal
@@ -6862,11 +6780,18 @@
               isSpinning = false;
               btn.disabled = false;
               btn.textContent = 'GIRAR A ROLETA';
-              exitGoStage('form');
-              setTimeout(() => {
-                const f = document.getElementById('exitName');
-                if (f) f.focus();
-              }, 350);
+              // Pula o formulário — vai direto pro cupom (sem coletar dados)
+              const code = 'VOLANTE10';
+              let end = parseInt(localStorage.getItem(COUPON_END_KEY) || '0');
+              if (end < Date.now()) {
+                end = Date.now() + 30 * 60 * 1000;
+                localStorage.setItem(COUPON_END_KEY, String(end));
+              }
+              localStorage.setItem(COUPON_KEY, code);
+              const codeEl = document.getElementById('couponCode');
+              if (codeEl) codeEl.textContent = code;
+              exitGoStage('coupon');
+              if (window.Track) window.Track.event('exit_cupom_gerado', { code });
             }, 800);
           }, phase2 * 1000 + 50);
         }, 250);
@@ -6890,7 +6815,7 @@
       if (phone.replace(/\D/g, '').length < 10)    { phoneEl.classList.add('is-error'); valid = false; }
       if (!valid) return;
 
-      const code = 'CARLA10';
+      const code = 'VOLANTE10';
       let end = parseInt(localStorage.getItem(COUPON_END_KEY) || '0');
       if (end < Date.now()) {
         end = Date.now() + 30 * 60 * 1000;
@@ -6950,16 +6875,17 @@
     }
 
     window.exitToCheckout = function() {
-      // Pré-preenche o lead modal com os dados que veio da roleta e abre o checkout
-      try {
-        const lead = JSON.parse(localStorage.getItem(EXIT_LEAD_KEY) || '{}');
-        if (lead.name)  document.getElementById('leadName').value  = lead.name;
-        if (lead.email) document.getElementById('leadEmail').value = lead.email;
-        if (lead.phone) document.getElementById('leadPhone').value = lead.phone;
-      } catch (e) {}
-      if (window.Track) window.Track.event('exit_to_checkout', null);
-      closeExitModal();
-      openLeadModal('exit_cupom');
+      // Vai DIRETO pro checkout Eduzz com o cupom — sem coletar dados.
+      // O cupom VOLANTE10 já vai aplicado via query param.
+      const code = (document.getElementById('couponCode')?.textContent || 'VOLANTE10').trim();
+      try { navigator.clipboard?.writeText(code); } catch (e) {}
+      if (window.Track) window.Track.event('exit_to_checkout', { code });
+      // Reaproveita goToCheckout pra centralizar o link do checkout
+      if (window.goToCheckout) {
+        window.goToCheckout('exit_cupom', { cupom: code });
+      } else {
+        window.location.href = 'https://chk.eduzz.com/R9JXDZDE0X?cupom=' + encodeURIComponent(code);
+      }
     };
 
     // Enter/Espaço no card do cupom também copia
