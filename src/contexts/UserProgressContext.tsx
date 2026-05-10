@@ -77,11 +77,13 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
         setLives(data.lives ?? 5);
         setCoins(data.coins ?? 0);
         setTotalXP(data.total_xp ?? 0);
-        setCompletedPhases(data.completed_phases ?? []);
-        setCompletedLessons(data.completed_lessons ?? []);
+        // Defensivo: jsonb pode vir como {} (objeto) se a coluna teve default
+        // errado em alguma migration antiga. Force pra array.
+        setCompletedPhases(Array.isArray(data.completed_phases) ? data.completed_phases : []);
+        setCompletedLessons(Array.isArray(data.completed_lessons) ? data.completed_lessons : []);
         setConfidence(data.confidence ?? 3);
         setLeague(data.league ?? "Bronze");
-        setBadges(data.badges ?? []);
+        setBadges(Array.isArray(data.badges) ? data.badges : []);
         setDailyXP(data.daily_xp ?? 0);
         setDailyLessons(data.daily_lessons ?? 0);
         setStreakFreezeCount(data.streak_freeze_count ?? 0);
