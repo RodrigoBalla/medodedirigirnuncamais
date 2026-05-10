@@ -1,12 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// ─── Feature flag: Panda DRM Watermark ───────────────────────────────────────
+// Quando TRUE  → pede JWT à Edge Function panda-jwt e injeta &watermark=… no
+//                iframe (vídeos PRECISAM estar no grupo DRM "MDDNM - Watermark
+//                Email do Aluno" no painel Panda — re-encode obrigatório).
+// Quando FALSE → pula a watermark e o vídeo carrega como streaming normal
+//                (mais rápido e sem dependência do re-encode).
+//
+// Estado atual: LIGADO. Os 8 vídeos do módulo "Conhecendo o Carro" estão
+// associados ao grupo DRM no Panda — o JWT vai como &watermark={JWT} e o
+// player renderiza email + ID do aluno flutuando sobre o vídeo (anti-share).
+const PANDA_WATERMARK_ENABLED = true;
+
 // Cache do JWT do Panda Watermark — evita pedir um novo a cada aula
 // (o token vale 24h, então uma vez por sessão é suficiente).
 let _pandaWatermarkPromise: Promise<string | null> | null = null;
 let _pandaWatermarkExpiresAt = 0;
 
 async function getPandaWatermarkJWT(): Promise<string | null> {
+  if (!PANDA_WATERMARK_ENABLED) return null;
   // Reusa o promise existente se ainda estiver vivo
   if (_pandaWatermarkPromise && Date.now() < _pandaWatermarkExpiresAt) {
     return _pandaWatermarkPromise;
