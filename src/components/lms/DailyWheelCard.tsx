@@ -128,8 +128,9 @@ export function DailyWheelCard() {
         {/* Disco animado */}
         <div className="relative shrink-0">
           <motion.div
-            animate={spinning ? { rotate: 360 * 6 } : { rotate: 0 }}
-            transition={{ duration: 1.6, ease: [0.17, 0.67, 0.25, 1.05] }}
+            // Disco do CARD fica estatico — a animacao real acontece dentro
+            // do DailyWheelSpinModal quando o user clica em "Girar Agora"
+            animate={{ rotate: 0 }}
             className="size-28 md:size-32 rounded-full border-4 border-primary shadow-xl shadow-primary/30"
             style={{
               background: "conic-gradient(from -22.5deg, #FFD60A 0 45deg, #0B1A38 45deg 90deg, #FFD60A 90deg 135deg, #0B1A38 135deg 180deg, #FFD60A 180deg 225deg, #0B1A38 225deg 270deg, #FFD60A 270deg 315deg, #0B1A38 315deg 360deg)",
