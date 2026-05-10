@@ -4559,11 +4559,19 @@
     }
     .sticky-cta__guarantee strong { color: var(--primary); font-weight: 700; }
 
-    /* Aparece SÓ em mobile e DEPOIS que o usuário rolou um pouco */
-    @media(max-width: 768px) {
-      .sticky-cta.is-visible { display: block; }
-      /* Padding extra no body pra não sobrepor o último conteúdo */
-      body.has-sticky-cta { padding-bottom: 80px; }
+    /* Aparece em TODAS as larguras (mobile + desktop) depois que o usuário
+       rolou um pouco. Antes era só mobile a pedido — Balla pediu pra
+       persistir no desktop também. */
+    .sticky-cta.is-visible { display: block; }
+    /* Padding extra no body pra não sobrepor o último conteúdo da página */
+    body.has-sticky-cta { padding-bottom: 80px; }
+    /* Em telas grandes, limita largura interna pra ficar elegante (não esticar
+       o botão de borda a borda) — caixa centralizada com max-width. */
+    @media(min-width: 769px) {
+      .sticky-cta__inner { max-width: 720px; margin: 0 auto; gap: 16px; }
+      .sticky-cta__btn   { flex: 0 1 auto; padding: 14px 32px; font-size: 1rem; }
+      .sticky-cta__price-new { font-size: 1.5rem; }
+      .sticky-cta__price-old { font-size: .76rem; }
     }
 
     /* ─── RESPONSIVE ───────────────────────────────────── */
@@ -4686,10 +4694,10 @@
             <span class="hero__price-discount">−51% OFF</span>
           </div>
 
-          <!-- Preços empilhados centralizados: De R$ 197 → R$ 97 → meta -->
+          <!-- Preços empilhados centralizados: De R$ 591 → R$ 97 → meta -->
           <div class="hero__price-main">
             <div class="hero__price-old-block">
-              <span class="hero__price-old">De R$ 197</span>
+              <span class="hero__price-old">De R$ 591</span>
             </div>
             <div class="hero__price-now">
               <span class="hero__price-val"><sup>R$</sup>97</span>
@@ -4705,7 +4713,7 @@
           <div class="hero__price-trust">
             <span><span class="material-symbols-outlined">bolt</span> Acesso imediato</span>
             <span><span class="material-symbols-outlined">verified_user</span> 7 dias de garantia</span>
-            <span><span class="material-symbols-outlined">smartphone</span> 100% no celular</span>
+            <span><span class="material-symbols-outlined">smartphone</span> 100% Online</span>
           </div>
         </div>
 
