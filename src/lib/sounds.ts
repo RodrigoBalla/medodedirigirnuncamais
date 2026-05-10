@@ -1,80 +1,132 @@
-// Sound utilities - Professional audio with preloading and fallbacks
-const SOUND_URLS = {
-  correct: "https://www.soundjay.com/buttons/sounds/button-3.mp3",
-  wrong: "https://www.soundjay.com/buttons/sounds/button-10.mp3",
-  check: "https://www.soundjay.com/buttons/sounds/button-4.mp3",
-  allDone: "https://www.soundjay.com/misc/sounds/success-fanfare-trumpet-1.mp3",
-  conquest: "https://www.soundjay.com/misc/sounds/bell-ring-01.mp3",
-  cash: "https://www.soundjay.com/misc/sounds/cash-register-05.mp3",
-  fanfare: "https://www.soundjay.com/misc/sounds/magic-chime-01.mp3",
-  horn: "https://www.soundjay.com/mechanical/sounds/car-horn-1.mp3",
-  combo: "https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3",
-  chestOpen: "https://www.soundjay.com/misc/sounds/magic-chime-02.mp3",
-  levelUp: "https://www.soundjay.com/misc/sounds/success-fanfare-trumpet-2.mp3",
-  streak: "https://www.soundjay.com/misc/sounds/bell-ring-01.mp3",
-};
+// ─── sounds.ts ───────────────────────────────────────────────────────────────
+// Audio 100% sintético via Web Audio API.
+//
+// Antes carregava 12 mp3 do soundjay.com, mas:
+//   1) Soundjay bloqueia hotlink (sempre falhava em prod)
+//   2) CSP do Netlify bloqueava as URLs externas
+//   3) Aumentava o tempo de boot do app por nada
+//
+// Agora todos os sons são gerados via osciladores. Carrega instantâneo,
+// zero rede, zero CSP. Cada função produz um "envelope" característico
+// (sino, moeda, fanfarra, etc.) com timing e harmônicos próprios.
+// =============================================================================
 
-const audioCache: Record<string, HTMLAudioElement> = {};
-
-Object.entries(SOUND_URLS).forEach(([key, url]) => {
+let _ctx: AudioContext | null = null;
+function ctx(): AudioContext | null {
   try {
-    const audio = new Audio(url);
-    audio.preload = "auto";
-    audioCache[key] = audio;
-  } catch (e) {}
-});
-
-const playSound = (key: keyof typeof SOUND_URLS, volume = 0.5, fallbackFreq?: number) => {
-  try {
-    const cached = audioCache[key];
-    if (cached) {
-      const clone = cached.cloneNode() as HTMLAudioElement;
-      clone.volume = volume;
-      clone.play().catch(() => { if (fallbackFreq) playSynthetic(fallbackFreq); });
-    } else if (fallbackFreq) {
-      playSynthetic(fallbackFreq);
+    if (!_ctx) {
+      const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      _ctx = new Ctor();
     }
-  } catch (e) {
-    if (fallbackFreq) playSynthetic(fallbackFreq);
+    return _ctx;
+  } catch {
+    return null;
   }
-};
-
-function playSynthetic(freq: number) {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.connect(g); g.connect(ctx.destination);
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    g.gain.setValueAtTime(0.2, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
-    osc.start(); osc.stop(ctx.currentTime + 0.35);
-  } catch {}
 }
 
-export const playCorrectSound = () => playSound("correct", 0.4, 880);
-export const playWrongSound = () => playSound("wrong", 0.4, 220);
-export const playCheckSound = () => playSound("check", 0.3, 440);
-export const playAllDoneSound = () => playSound("allDone", 0.5, 1320);
-export const playConquestSound = () => playSound("conquest", 0.5, 1760);
-export const playHornSound = () => playSound("horn", 0.4, 400);
-export const playCelebrationSound = () => playSound("fanfare", 0.6, 2200);
-export const playCoinSound = () => playSound("cash", 0.5, 3300);
-export const playComboSound = () => playSound("combo", 0.5, 1500);
-export const playChestSound = () => playSound("chestOpen", 0.6, 1800);
-export const playLevelUpSound = () => playSound("levelUp", 0.6, 2000);
-export const playStreakSound = () => playSound("streak", 0.5, 1200);
-
-export function createTone(ctx: AudioContext, type: OscillatorType, freq: number, startTime: number, duration: number, gainPeak = 0.28) {
-  const osc = ctx.createOscillator();
-  const gainNode = ctx.createGain();
-  osc.connect(gainNode);
-  gainNode.connect(ctx.destination);
+/** Tom puro com envelope ADSR rápido */
+function tone(freq: number, duration = 0.25, gainPeak = 0.18, type: OscillatorType = "sine", delay = 0) {
+  const c = ctx();
+  if (!c) return;
+  const start = c.currentTime + delay;
+  const osc = c.createOscillator();
+  const g = c.createGain();
   osc.type = type;
-  osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
-  gainNode.gain.setValueAtTime(0, ctx.currentTime + startTime);
-  gainNode.gain.linearRampToValueAtTime(gainPeak, ctx.currentTime + startTime + 0.012);
-  gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
-  osc.start(ctx.currentTime + startTime);
-  osc.stop(ctx.currentTime + startTime + duration + 0.05);
+  osc.frequency.setValueAtTime(freq, start);
+  g.gain.setValueAtTime(0, start);
+  g.gain.linearRampToValueAtTime(gainPeak, start + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(g);
+  g.connect(c.destination);
+  osc.start(start);
+  osc.stop(start + duration + 0.05);
+}
+
+/** Toca uma sequência de tons (melodia) */
+function sequence(notes: Array<[freq: number, dur: number, type?: OscillatorType, gain?: number]>) {
+  let t = 0;
+  for (const [f, d, ty = "sine", g = 0.18] of notes) {
+    tone(f, d, g, ty, t);
+    t += d * 0.7;
+  }
+}
+
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+export const playCorrectSound = () => sequence([
+  [880, 0.12, "sine", 0.20],
+  [1320, 0.18, "sine", 0.22],
+]);
+
+export const playWrongSound = () => sequence([
+  [220, 0.18, "sawtooth", 0.16],
+  [180, 0.22, "sawtooth", 0.14],
+]);
+
+export const playCheckSound = () => tone(660, 0.10, 0.15, "sine");
+
+export const playAllDoneSound = () => sequence([
+  [523, 0.10, "triangle", 0.18],
+  [659, 0.10, "triangle", 0.18],
+  [784, 0.10, "triangle", 0.18],
+  [1047, 0.30, "triangle", 0.22],
+]);
+
+export const playConquestSound = () => sequence([
+  [1760, 0.10, "sine", 0.18],
+  [2093, 0.20, "sine", 0.22],
+]);
+
+export const playHornSound = () => tone(400, 0.35, 0.20, "square");
+
+export const playCelebrationSound = () => sequence([
+  [523, 0.08],
+  [659, 0.08],
+  [784, 0.08],
+  [1047, 0.08],
+  [1319, 0.25, "sine", 0.24],
+]);
+
+export const playCoinSound = () => sequence([
+  [988, 0.06, "square", 0.14],
+  [1319, 0.10, "square", 0.16],
+]);
+
+export const playComboSound = () => sequence([
+  [1500, 0.08, "square", 0.18],
+  [1800, 0.12, "square", 0.20],
+]);
+
+export const playChestSound = () => sequence([
+  [400, 0.10, "triangle", 0.18],
+  [800, 0.10, "triangle", 0.18],
+  [1200, 0.25, "sine", 0.22],
+]);
+
+export const playLevelUpSound = () => sequence([
+  [523, 0.10, "triangle", 0.20],
+  [784, 0.10, "triangle", 0.20],
+  [1047, 0.10, "triangle", 0.20],
+  [1568, 0.30, "triangle", 0.24],
+]);
+
+export const playStreakSound = () => sequence([
+  [880, 0.08, "sine", 0.18],
+  [1320, 0.10, "sine", 0.20],
+  [1760, 0.15, "sine", 0.22],
+]);
+
+/** Versão exportada do tom — usada por DrivingApp em sequências custom */
+export function createTone(c: AudioContext, type: OscillatorType, freq: number, startTime: number, duration: number, gainPeak = 0.28) {
+  const osc = c.createOscillator();
+  const gainNode = c.createGain();
+  osc.connect(gainNode);
+  gainNode.connect(c.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, c.currentTime + startTime);
+  gainNode.gain.setValueAtTime(0, c.currentTime + startTime);
+  gainNode.gain.linearRampToValueAtTime(gainPeak, c.currentTime + startTime + 0.012);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + startTime + duration);
+  osc.start(c.currentTime + startTime);
+  osc.stop(c.currentTime + startTime + duration + 0.05);
 }

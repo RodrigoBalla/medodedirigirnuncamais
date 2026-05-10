@@ -65,6 +65,38 @@ const RARITY_COPY: Record<string, { tag: string; color: string; bg: string; ring
   epic:   { tag: "🏆 Prêmio ÉPICO",     color: "text-amber-200", bg: "from-amber-700/80 to-yellow-900/80", ring: "ring-amber-400/60" },
 };
 
+// Explicação de cada tipo de prêmio: o que é + benefício + como usar.
+// Mostrada no banner depois do reveal pra aluna entender o valor do que ganhou.
+function prizeExplanation(result: SpinResult): { whatItIs: string; howToUse: string } {
+  switch (result.prize_type) {
+    case "coins":
+      return {
+        whatItIs: `Você ganhou ${result.prize_value} moedas 🪙 pra usar na loja do app.`,
+        howToUse: "Use moedas pra comprar vidas extras, escudos de streak ou turbo XP. Elas também viram cupom de desconto em cursos novos.",
+      };
+    case "streak_freeze":
+      return {
+        whatItIs: "Um escudo que protege sua sequência de dias estudando 🛡️",
+        howToUse: "Se você esquecer de estudar um dia, o escudo é ativado AUTOMATICAMENTE e seu recorde de dias seguidos não cai. Olhe na Mochila do perfil pra ver quantos você tem.",
+      };
+    case "xp_boost":
+      return {
+        whatItIs: `Turbo XP 2× ativado por ${result.prize_value} hora${result.prize_value > 1 ? "s" : ""} ⚡`,
+        howToUse: `Por ${result.prize_value}h o XP que você ganhar em qualquer aula vai ser DOBRADO. Bom pra quando estiver com pique de estudar — começa a contar agora.`,
+      };
+    case "extra_life":
+      return {
+        whatItIs: "Uma vida extra ❤️ pra continuar errando sem esperar recarga",
+        howToUse: "Foi adicionada AGORA aos seus corações. Quando errar uma resposta, você usa essa vida e segue na fase. Recarrega automaticamente, mas a extra te dá uma chance a mais.",
+      };
+    default:
+      return {
+        whatItIs: result.prize_label,
+        howToUse: "Confira o seu inventário no perfil pra ver detalhes.",
+      };
+  }
+}
+
 export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onClose }: Props) {
   const [prizes, setPrizes] = useState<WheelPrize[]>([]);
 
@@ -243,7 +275,7 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
               <p className={`text-[10px] font-black uppercase tracking-widest ${RARITY_COPY[result.rarity]?.color ?? "text-white/70"} mb-2`}>
                 {RARITY_COPY[result.rarity]?.tag ?? "✨ Recompensa"}
               </p>
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-3 mb-3">
                 <span className="material-symbols-outlined filled-icon text-5xl text-primary drop-shadow-[0_2px_8px_rgba(255,214,10,.6)]">
                   {result.prize_icon}
                 </span>
@@ -251,8 +283,29 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
                   {result.prize_label}
                 </span>
               </div>
-              <p className="text-[11px] text-white/70 mt-2">
-                Válido até {new Date(result.expires_at).toLocaleDateString("pt-BR")}
+
+              {/* Explicação contextual: o que é + como usar */}
+              {(() => {
+                const exp = prizeExplanation(result);
+                return (
+                  <div className="text-left bg-black/30 rounded-xl p-3 mt-1 space-y-2 border border-white/10">
+                    <p className="text-[12px] text-white/90 leading-snug font-medium">
+                      {exp.whatItIs}
+                    </p>
+                    <div className="flex items-start gap-2 pt-1.5 border-t border-white/10">
+                      <span className="material-symbols-outlined text-amber-300 text-base mt-px flex-shrink-0">
+                        lightbulb
+                      </span>
+                      <p className="text-[11px] text-white/75 leading-snug">
+                        <span className="font-black text-amber-200">Como usar:</span> {exp.howToUse}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <p className="text-[10px] text-white/60 mt-3 font-medium">
+                ⏳ Válido até <span className="text-white/90 font-bold">{new Date(result.expires_at).toLocaleDateString("pt-BR")}</span>
               </p>
             </motion.div>
           )}
