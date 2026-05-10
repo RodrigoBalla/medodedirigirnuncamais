@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOnlineUsers } from "@/hooks/usePresence";
 import { PHASES } from "@/data/driving-data";
+import { LiveActivityDashboard } from "./LiveActivityDashboard";
 
 /* ─── Types ─── */
 interface PageView {
@@ -255,7 +256,10 @@ export default function AnalyticsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* ── Dashboard ao Vivo (KPIs + candles + feed realtime) ──────────── */}
+      <LiveActivityDashboard />
+
+      {/* ── Funil do aluno (analytics existente) ─────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-black">Jornada do Aluno</h2>
