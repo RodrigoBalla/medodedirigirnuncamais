@@ -10,6 +10,7 @@ import { EditableDisplayName } from "@/components/EditableDisplayName";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { useUserStats } from "@/hooks/useUserStats";
 import { MissionsPanel } from "@/components/lms/MissionsPanel";
+import { DailyWheelCard } from "@/components/lms/DailyWheelCard";
 
 interface ProfileScreenProps {
   displayName: string;
@@ -99,6 +100,10 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
           </motion.div>
         ))}
       </div>
+
+      {/* Roleta diária — 1 giro a cada 24h, prêmios variados (moedas,
+          streak freeze, XP boost, vida) com expiração de 30 dias */}
+      <DailyWheelCard />
 
       {/* Painel de missões mensais — engajamento + retenção */}
       <MissionsPanel />
