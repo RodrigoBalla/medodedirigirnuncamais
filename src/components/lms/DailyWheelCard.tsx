@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { DailyWheelSpinModal } from "./DailyWheelSpinModal";
 
 // ─── DailyWheelCard ──────────────────────────────────────────────────────────
 // Roleta diária no /perfil. 1 giro a cada 24h. Sorteia 1 prêmio entre 8
@@ -46,9 +47,9 @@ export function DailyWheelCard() {
   const [canSpin, setCanSpin] = useState(false);
   const [nextAt, setNextAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [spinning, setSpinning] = useState(false);
   const [lastResult, setLastResult] = useState<SpinResult | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [modalOpen, setModalOpen] = useState(false);
 
   const loadStatus = useCallback(async () => {
     if (!user) return;
@@ -83,42 +84,28 @@ export function DailyWheelCard() {
     if (nextAt - now <= 0) loadStatus();
   }, [now, nextAt, canSpin, loadStatus]);
 
-  const handleSpin = useCallback(async () => {
-    if (!canSpin || spinning) return;
-    setSpinning(true);
+  // Abre modal full-screen com a animação cinematográfica + cadeados.
+  // O modal cuida do RPC e da animação; aqui só recebemos o resultado pra
+  // atualizar o cooldown e mostrar o último prêmio no card.
+  const handleOpenModal = useCallback(() => {
+    if (!canSpin) return;
     setLastResult(null);
-    try {
-      // Pequeno delay artificial pra UX (animação roda 1.8s)
-      const [{ data, error }] = await Promise.all([
-        supabase.rpc("spin_daily_wheel"),
-        new Promise((r) => setTimeout(r, 1800)),
-      ]);
-      if (error) throw error;
-      const row = (data as SpinResult[])?.[0];
-      if (row) {
-        setLastResult(row);
-        const valueLabel =
-          row.prize_type === "coins" ? `+${row.prize_value} 🪙`
-          : row.prize_type === "xp_boost" ? `+${row.prize_value}h ⚡`
-          : row.prize_type === "extra_life" ? "+1 ❤️"
-          : "+1 🛡️";
-        toast.success(`🎉 ${row.prize_label}!`, {
-          description: valueLabel + " · válido por 30 dias",
-          duration: 5000,
-        });
-      }
-      await loadStatus();
-    } catch (err: any) {
-      console.warn("[wheel] spin error:", err);
-      toast.error("Não foi possível girar agora", {
-        description: err?.message?.includes("cooldown")
-          ? "Volte em algumas horas pra girar de novo."
-          : "Tenta de novo em instantes.",
-      });
-    } finally {
-      setSpinning(false);
-    }
-  }, [canSpin, spinning, loadStatus]);
+    setModalOpen(true);
+  }, [canSpin]);
+
+  const handleSpinComplete = useCallback(async (result: SpinResult) => {
+    setLastResult(result);
+    const valueLabel =
+      result.prize_type === "coins" ? `+${result.prize_value} 🪙`
+      : result.prize_type === "xp_boost" ? `+${result.prize_value}h ⚡`
+      : result.prize_type === "extra_life" ? "+1 ❤️"
+      : "+1 🛡️";
+    toast.success(`🎉 ${result.prize_label}!`, {
+      description: valueLabel + " · válido por 30 dias",
+      duration: 5000,
+    });
+    await loadStatus();
+  }, [loadStatus]);
 
   if (loading) {
     return (
@@ -173,11 +160,10 @@ export function DailyWheelCard() {
 
           {canSpin ? (
             <button
-              onClick={handleSpin}
-              disabled={spinning}
-              className="self-center md:self-start px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-yellow-500 text-primary-foreground font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-transform disabled:opacity-60"
+              onClick={handleOpenModal}
+              className="self-center md:self-start px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-yellow-500 text-primary-foreground font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/30 hover:scale-[1.03] active:scale-95 transition-transform"
             >
-              {spinning ? "Girando…" : "🎰 Girar Agora"}
+              🎰 Girar Agora
             </button>
           ) : (
             <div className="self-center md:self-start inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent/40 border border-border">
@@ -214,6 +200,13 @@ export function DailyWheelCard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modal full-screen com animação cinematográfica + cadeados + reveal */}
+      <DailyWheelSpinModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSpinComplete={handleSpinComplete}
+      />
     </div>
   );
 }
