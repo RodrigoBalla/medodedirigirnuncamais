@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCheckSound, playCoinSound } from "@/lib/sounds";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrackMission } from "@/hooks/useTrackMission";
 
 // =============================================================================
 // COMUNIDADE — agora 100% conectada ao Supabase.
@@ -66,6 +67,7 @@ function formatTimeAgo(iso: string): string {
 
 export function CommunityScreen() {
   const { user } = useAuth();
+  const { trackProgress } = useTrackMission();
   const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [postText, setPostText] = useState("");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -73,6 +75,37 @@ export function CommunityScreen() {
   const [posting, setPosting] = useState(false);
   const [selectedStory, setSelectedStory] = useState<string | null>(null);
   const [isQuestion, setIsQuestion] = useState(false);
+
+  // ── Auto-track de tempo na comunidade (community_read_time) ──────────
+  // Soma segundos enquanto o user está com a aba ativa. Reporta a cada
+  // 60s pra evitar muito chatter, e pausa quando aba perde foco.
+  const readSecondsRef = useRef(0);
+  useEffect(() => {
+    let interval: number | null = null;
+    let isVisible = !document.hidden;
+
+    function tick() {
+      if (!isVisible) return;
+      readSecondsRef.current += 1;
+      if (readSecondsRef.current >= 60) {
+        const toReport = readSecondsRef.current;
+        readSecondsRef.current = 0;
+        trackProgress("community_read_time", toReport);
+      }
+    }
+    function onVis() { isVisible = !document.hidden; }
+    document.addEventListener("visibilitychange", onVis);
+    interval = window.setInterval(tick, 1000);
+    return () => {
+      if (interval) window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVis);
+      // Flush ao sair: reporta o restante pra não perder
+      if (readSecondsRef.current > 0) {
+        trackProgress("community_read_time", readSecondsRef.current);
+        readSecondsRef.current = 0;
+      }
+    };
+  }, [trackProgress]);
 
   // ── Carrega posts + curtidas + saves do usuário ──────────────────────
   async function loadPosts() {
@@ -198,6 +231,11 @@ export function CommunityScreen() {
       });
       if (error) throw error;
       playCoinSound();
+      // Auto-track missões de post na comunidade (intro/win/fear/tip/etc.)
+      trackProgress("community_post", 1);
+      // Bônus: post de manhã (antes das 9h) — missão "morning_post"
+      const hour = new Date().getHours();
+      if (hour < 9) trackProgress("community_morning_post", 1);
       toast.success("Postagem enviada! +5 XP 🎉");
       setPostText("");
       setIsQuestion(false);
@@ -241,6 +279,8 @@ export function CommunityScreen() {
           post_id: postId,
           user_id: user.id,
         });
+        // Auto-track missões de like (first_like, like_5, like_10)
+        trackProgress("community_like", 1);
       }
     } catch (err) {
       console.error("[community] handleLike error:", err);

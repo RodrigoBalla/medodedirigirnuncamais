@@ -20,7 +20,8 @@ export interface UserMission {
   title: string;
   description: string;
   icon: string;
-  category: "login" | "watch" | "engage" | "social";
+  category: "login" | "watch" | "engage" | "social" | "wellness" | "learn" | "practice";
+  trigger_type: string;
   reward_coins: number;
   difficulty: "easy" | "medium" | "hard";
   trigger_target: number;
@@ -69,5 +70,14 @@ export function useMissions() {
     return row;
   }, [refresh]);
 
-  return { missions, cycleEnd, loading, refresh, claim };
+  /** Pra missões trigger_type='self_report': marca como feito + claim em 1 chamada. */
+  const selfReport = useCallback(async (userMissionId: string) => {
+    const { data, error } = await supabase.rpc("self_report_mission", { p_user_mission_id: userMissionId });
+    if (error) throw error;
+    const row = (data as Array<{ ok: boolean; granted_coins: number; total_balance: number }>)?.[0];
+    await refresh();
+    return row;
+  }, [refresh]);
+
+  return { missions, cycleEnd, loading, refresh, claim, selfReport };
 }

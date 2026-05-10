@@ -16,17 +16,23 @@ import { useMissions, type UserMission } from "@/hooks/useMissions";
 // =============================================================================
 
 const CATEGORY_LABEL: Record<string, string> = {
-  login: "Acesso",
-  watch: "Estudo",
-  engage: "Progresso",
-  social: "Comunidade",
+  login:    "Acesso",
+  watch:    "Estudo",
+  engage:   "Progresso",
+  social:   "Comunidade",
+  wellness: "Bem-estar",
+  learn:    "Conhecimento",
+  practice: "Prática",
 };
 
 const CATEGORY_COLOR: Record<string, string> = {
-  login: "text-blue-500",
-  watch: "text-orange-500",
-  engage: "text-primary",
-  social: "text-emerald-500",
+  login:    "text-blue-500",
+  watch:    "text-orange-500",
+  engage:   "text-primary",
+  social:   "text-emerald-500",
+  wellness: "text-pink-500",
+  learn:    "text-purple-500",
+  practice: "text-cyan-500",
 };
 
 const DIFFICULTY_LABEL: Record<string, string> = {
@@ -43,9 +49,18 @@ function daysUntil(dateStr: string | null): number {
   return diff;
 }
 
-function MissionCard({ mission, onClaim }: { mission: UserMission; onClaim: () => void }) {
+function MissionCard({
+  mission,
+  onClaim,
+  onSelfReport,
+}: {
+  mission: UserMission;
+  onClaim: () => void;
+  onSelfReport: () => void;
+}) {
   const isClaimed = !!mission.claimed_at;
   const isReady = !!mission.completed_at && !isClaimed;
+  const isSelfReport = mission.trigger_type === "self_report";
   const progress = Math.min(mission.progress_value, mission.trigger_target);
   const pct = mission.trigger_target > 0
     ? Math.round((progress / mission.trigger_target) * 100)
@@ -79,8 +94,8 @@ function MissionCard({ mission, onClaim }: { mission: UserMission; onClaim: () =
           </div>
           <p className="text-xs text-muted-foreground leading-snug mb-2">{mission.description}</p>
 
-          {/* Barra de progresso (só pra missões cumulativas) */}
-          {mission.trigger_target > 1 && !isClaimed && (
+          {/* Barra de progresso (só pra missões cumulativas E não self-report) */}
+          {mission.trigger_target > 1 && !isClaimed && !isSelfReport && (
             <div className="mb-2">
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
@@ -103,6 +118,15 @@ function MissionCard({ mission, onClaim }: { mission: UserMission; onClaim: () =
                 <span className="material-symbols-outlined text-base">check_circle</span>
                 Resgatado
               </span>
+            ) : isSelfReport ? (
+              // Botão "Marcar como feita" pra missões manuais
+              <button
+                onClick={onSelfReport}
+                className="px-3 py-1.5 text-[11px] font-black uppercase tracking-widest bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors inline-flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-base">check</span>
+                Fiz isso
+              </button>
             ) : isReady ? (
               <button
                 onClick={onClaim}
@@ -123,7 +147,7 @@ function MissionCard({ mission, onClaim }: { mission: UserMission; onClaim: () =
 }
 
 export function MissionsPanel() {
-  const { missions, cycleEnd, loading, claim } = useMissions();
+  const { missions, cycleEnd, loading, claim, selfReport } = useMissions();
   const [claiming, setClaiming] = useState<string | null>(null);
 
   const counts = useMemo(() => {
@@ -135,11 +159,11 @@ export function MissionsPanel() {
 
   const daysLeft = daysUntil(cycleEnd);
 
-  async function handleClaim(m: UserMission) {
+  async function handleAction(m: UserMission, kind: "claim" | "self") {
     if (claiming) return;
     setClaiming(m.id);
     try {
-      const result = await claim(m.id);
+      const result = kind === "self" ? await selfReport(m.id) : await claim(m.id);
       if (result?.granted_coins && result.granted_coins > 0) {
         toast.success(`+${result.granted_coins} 🪙 moedas!`, {
           description: `Pela missão "${m.title}"`,
@@ -153,8 +177,8 @@ export function MissionsPanel() {
         });
       }
     } catch (err: any) {
-      console.warn("[missions] claim error:", err);
-      toast.error("Não foi possível resgatar agora", {
+      console.warn("[missions] action error:", err);
+      toast.error("Não foi possível registrar agora", {
         description: "Tenta de novo em instantes.",
       });
     } finally {
@@ -195,7 +219,12 @@ export function MissionsPanel() {
       <div className="space-y-3">
         <AnimatePresence mode="popLayout">
           {missions.map((m) => (
-            <MissionCard key={m.id} mission={m} onClaim={() => handleClaim(m)} />
+            <MissionCard
+              key={m.id}
+              mission={m}
+              onClaim={() => handleAction(m, "claim")}
+              onSelfReport={() => handleAction(m, "self")}
+            />
           ))}
         </AnimatePresence>
       </div>
