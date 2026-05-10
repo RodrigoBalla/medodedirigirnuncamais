@@ -3,30 +3,27 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { DailyWheelSpinModal } from "./DailyWheelSpinModal";
+import { DailyWheelSpinModal, type SpinPhase, type SpinResult } from "./DailyWheelSpinModal";
 
 // ─── DailyWheelCard ──────────────────────────────────────────────────────────
-// Roleta diária no /perfil. 1 giro a cada 24h. Sorteia 1 prêmio entre 8
-// (moedas / streak freeze / xp boost / vida extra) com pesos calibrados
-// pra ~70%+ ganhar moedas e SEMPRE ganhar algo. Prêmios expiram em 30 dias.
+// Roleta diária no /perfil. 1 giro a cada 24h. Sorteia 1 prêmio entre 8.
+//
+// IMPORTANTE: o estado do giro (phase, result, rotation) vive AQUI no parent,
+// pra evitar que remounts do modal abortem a animação de reveal. O modal é
+// um componente "burro" que só desenha o que recebe via props.
 //
 // Fluxo:
 //   1. Busca can_spin_daily_wheel() — habilita botão ou mostra countdown
-//   2. Click "Girar" → spin_daily_wheel() (RPC) → animação + toast com prêmio
-//   3. Re-busca cooldown e mostra "Volta em XX:XX:XX"
+//   2. Click "Girar Agora" → abre modal (phase="idle")
+//   3. User clica "Girar Roleta" no modal → onSpin → handleSpin()
+//   4. handleSpin: chama RPC, calcula rotação, anima 3.5s, revela
+//   5. Atualiza cooldown + toast
 // =============================================================================
 
-interface SpinResult {
-  prize_id: string;
-  prize_code: string;
-  prize_label: string;
-  prize_type: "coins" | "streak_freeze" | "xp_boost" | "extra_life";
-  prize_value: number;
-  prize_icon: string;
-  rarity: "common" | "rare" | "epic";
-  expires_at: string;
-  total_balance: number;
-}
+const SLICE_COUNT = 8;
+const DEG_PER_SLICE = 360 / SLICE_COUNT; // 45°
+const SPIN_DURATION_MS = 3500;
+const REVEAL_DELAY_MS = 700;
 
 function formatCountdown(targetMs: number): string {
   const diff = Math.max(0, targetMs - Date.now());
@@ -41,9 +38,13 @@ export function DailyWheelCard() {
   const [canSpin, setCanSpin] = useState(false);
   const [nextAt, setNextAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  // (lastResult removido — modal full-screen mostra prêmio internamente)
   const [now, setNow] = useState(Date.now());
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Estado do giro vive AQUI pra sobreviver a remounts do modal
+  const [phase, setPhase] = useState<SpinPhase>("idle");
+  const [spinResult, setSpinResult] = useState<SpinResult | null>(null);
+  const [rotation, setRotation] = useState(0);
 
   const loadStatus = useCallback(async () => {
     if (!user) return;
@@ -78,26 +79,95 @@ export function DailyWheelCard() {
     if (nextAt - now <= 0) loadStatus();
   }, [now, nextAt, canSpin, loadStatus]);
 
-  // Abre modal full-screen com a animação cinematográfica + cadeados.
-  // O modal cuida do RPC e da animação; aqui só recebemos o resultado pra
-  // atualizar o cooldown e mostrar o último prêmio no card.
   const handleOpenModal = useCallback(() => {
     if (!canSpin) return;
+    // Reset defensivo pra garantir que abre em "idle"
+    setPhase("idle");
+    setSpinResult(null);
+    setRotation(0);
     setModalOpen(true);
   }, [canSpin]);
 
-  const handleSpinComplete = useCallback(async (result: SpinResult) => {
-    const valueLabel =
-      result.prize_type === "coins" ? `+${result.prize_value} 🪙`
-      : result.prize_type === "xp_boost" ? `+${result.prize_value}h ⚡`
-      : result.prize_type === "extra_life" ? "+1 ❤️"
-      : "+1 🛡️";
-    toast.success(`🎉 ${result.prize_label}!`, {
-      description: valueLabel + " · válido por 30 dias",
-      duration: 5000,
-    });
-    await loadStatus();
-  }, [loadStatus]);
+  // ─── handleSpin ──────────────────────────────────────────────────────────
+  // Chama RPC, calcula rotação correta pra fatia sorteada, anima e revela.
+  const handleSpin = useCallback(async () => {
+    if (phase !== "idle") return;
+    setPhase("spinning");
+
+    try {
+      // 1) Chama RPC e busca catálogo em paralelo (catálogo ajuda a saber o
+      //    display_order do prêmio sorteado)
+      const [{ data: spinData, error: spinErr }, { data: prizesData }] = await Promise.all([
+        supabase.rpc("spin_daily_wheel"),
+        supabase
+          .from("daily_wheel_prizes")
+          .select("id, display_order")
+          .eq("active", true)
+          .order("display_order"),
+      ]);
+
+      if (spinErr) throw spinErr;
+      const row = (spinData as Array<SpinResult>)?.[0];
+      if (!row) throw new Error("Sem resultado da RPC");
+
+      // 2) Calcula índice da fatia e ângulo final
+      const prizes = (prizesData ?? []) as Array<{ id: string; display_order: number }>;
+      const prizeIndex = prizes.findIndex((p) => p.id === row.prize_id);
+      const targetSlice = prizeIndex >= 0 ? prizeIndex : 0;
+
+      // O conic-gradient começa em -22.5deg, então a fatia 0 fica centrada
+      // no topo. Pra alinhar a fatia `i` com o pointer (topo), o disco deve
+      // girar -i * 45° (mod 360). Adicionamos 5 voltas pra dar drama.
+      const finalRotation = 360 * 5 - targetSlice * DEG_PER_SLICE;
+
+      setRotation(finalRotation);
+      setSpinResult(row);
+
+      // 3) Espera a animação do disco terminar
+      await new Promise((r) => setTimeout(r, SPIN_DURATION_MS));
+
+      // 4) Mostra cadeado abrindo
+      setPhase("revealing");
+      await new Promise((r) => setTimeout(r, REVEAL_DELAY_MS));
+
+      // 5) Reveal final — banner + confetti + "Parabéns!"
+      setPhase("revealed");
+
+      // Toast no card (o banner do modal mostra detalhes)
+      const valueLabel =
+        row.prize_type === "coins" ? `+${row.prize_value} 🪙`
+        : row.prize_type === "xp_boost" ? `+${row.prize_value}h ⚡`
+        : row.prize_type === "extra_life" ? "+1 ❤️"
+        : "+1 🛡️";
+      toast.success(`🎉 ${row.prize_label}!`, {
+        description: valueLabel + " · válido por 30 dias",
+        duration: 5000,
+      });
+
+      // Atualiza cooldown
+      await loadStatus();
+    } catch (err) {
+      console.warn("[wheel] spin error:", err);
+      const msg = (err as { message?: string })?.message ?? "Erro desconhecido";
+      toast.error("Não foi possível girar a roleta", { description: msg });
+      setPhase("idle");
+      setSpinResult(null);
+      setRotation(0);
+    }
+  }, [phase, loadStatus]);
+
+  // ─── handleClose ─────────────────────────────────────────────────────────
+  // Não fecha durante a animação. Após fechar, reseta o estado com um leve
+  // delay pra não causar flicker enquanto o modal sai.
+  const handleClose = useCallback(() => {
+    if (phase === "spinning" || phase === "revealing") return;
+    setModalOpen(false);
+    window.setTimeout(() => {
+      setPhase("idle");
+      setSpinResult(null);
+      setRotation(0);
+    }, 400);
+  }, [phase]);
 
   if (loading) {
     return (
@@ -117,11 +187,9 @@ export function DailyWheelCard() {
       />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center md:items-stretch gap-4">
-        {/* Disco animado */}
+        {/* Disco do card (estático) */}
         <div className="relative shrink-0">
           <motion.div
-            // Disco do CARD fica estatico — a animacao real acontece dentro
-            // do DailyWheelSpinModal quando o user clica em "Girar Agora"
             animate={{ rotate: 0 }}
             className="size-28 md:size-32 rounded-full border-4 border-primary shadow-xl shadow-primary/30"
             style={{
@@ -169,16 +237,15 @@ export function DailyWheelCard() {
         </div>
       </div>
 
-      {/* Banner do prêmio removido — o modal full-screen já mostra o
-          prêmio com banner próprio, raridade e validade. Duplicar aqui
-          causava remount do DailyWheelSpinModal via AnimatePresence
-          adjacente, abortando o reveal cinematográfico. */}
-
-      {/* Modal full-screen com animação cinematográfica + cadeados + reveal */}
+      {/* Modal full-screen com animação cinematográfica + cadeados + reveal.
+          Estado do giro vive aqui no card pra não ser perdido em remounts. */}
       <DailyWheelSpinModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSpinComplete={handleSpinComplete}
+        phase={phase}
+        result={spinResult}
+        rotation={rotation}
+        onSpin={handleSpin}
+        onClose={handleClose}
       />
     </div>
   );
