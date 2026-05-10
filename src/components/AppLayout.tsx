@@ -6,6 +6,7 @@ import { useUserProgress } from "@/contexts/UserProgressContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShopModal } from "@/components/lms/ShopModal";
+import { CashbackModal } from "@/components/lms/CashbackModal";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useDisplayName } from "@/hooks/useDisplayName";
 
@@ -80,6 +81,7 @@ export function AppLayout({
   const { level, title, current, next } = getLevel(totalXP);
   const car = getCarInfo(level);
   const [showShop, setShowShop] = useState(false);
+  const [showCashback, setShowCashback] = useState(false);
 
   // ─── Sidebar colapsável (só desktop) ──────────────────────────────────────
   // Persiste a preferência no localStorage pra não esquecer entre navegações.
@@ -157,12 +159,15 @@ export function AppLayout({
                 </motion.div>
               )}
 
-              {/* Moedas 🪙 */}
+              {/* Moedas 🪙 — clique abre o CashbackModal pra ver/converter
+                  o saldo em cupom de desconto. Antes abria o ShopModal
+                  (que continua acessível pela loja interna). */}
               <motion.div
                 id="onboarding-coins"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowShop(true)}
+                onClick={() => setShowCashback(true)}
+                title="Ver saldo e converter em cupom de desconto"
                 className="flex items-center gap-1.5 bg-accent px-3 py-1.5 rounded-full border border-border cursor-pointer group relative"
               >
                 <span className="material-symbols-outlined text-yellow-500 text-base filled-icon group-hover:rotate-12 transition-transform">database</span>
@@ -378,6 +383,9 @@ export function AppLayout({
 
       {/* Shop Modal */}
       <ShopModal isOpen={showShop} onClose={() => setShowShop(false)} />
+
+      {/* Cashback Modal — acionado pelo clique no contador de moedas no header */}
+      <CashbackModal open={showCashback} onClose={() => setShowCashback(false)} />
 
       {/* Mobile Bottom Navigation — fita de advertência fininha logo acima */}
       <div className="caution-tape lg:hidden fixed bottom-[70px] left-0 right-0 h-1 z-50" aria-hidden="true" />
