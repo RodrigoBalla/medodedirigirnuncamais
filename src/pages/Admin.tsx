@@ -113,28 +113,30 @@ export default function Admin() {
   }
 
   async function resetStudentProgress(userId: string) {
-    const { error } = await supabase
-      .from("user_progress")
-      .update({
-        completed_phases: [],
-        total_xp: 0,
-        confidence: 0,
-        welcome_video_views: 0,
-        coins: 0,
-        lives: 5,
-        streak: 0,
-        badges: [],
-        daily_xp: 0,
-        daily_lessons: 0,
-      })
-      .eq("user_id", userId);
+    // Chama a RPC admin_reset_student que zera TUDO transacionalmente:
+    // user_progress, lesson_progress, lesson_comments, lesson_reports,
+    // community_posts/likes/saves, user_missions, coin_transactions,
+    // daily_wheel_spins, discount_coupons, active_sessions (forca logout)
+    // e profiles.avatar_url. Aluno vira "novo aluno" de novo.
+    const { data, error } = await supabase.rpc("admin_reset_student", {
+      p_user_id: userId,
+    });
 
     if (error) {
-      toast.error("Erro ao resetar progresso");
-    } else {
-      toast.success("Progresso zerado completamente! 🔄");
-      fetchStudents();
+      console.warn("[admin] reset error:", error);
+      toast.error("Erro ao resetar aluno", { description: error.message });
+      return;
     }
+
+    const summary = (data as Array<{ ok: boolean; summary: any }>)?.[0]?.summary;
+    toast.success("Aluno resetado completamente! 🔄", {
+      description: "Aulas, missões, moedas, roleta, comentários, posts e sessão zerados.",
+      duration: 6000,
+    });
+    if (summary) {
+      console.info("[admin] reset summary:", summary);
+    }
+    fetchStudents();
   }
 
   async function updateStudentField(userId: string, field: string, value: any) {
@@ -638,7 +640,7 @@ export default function Admin() {
 
                               <button
                                 onClick={() => {
-                                  if (confirm(`⚠️ ATENÇÃO! Isso vai ZERAR TUDO de ${s.display_name}:\n\n• XP → 0\n• Moedas → 0\n• Vidas → 5\n• Ofensiva → 0\n• Fases → 0\n• Medalhas → 0\n\nDeseja continuar?`)) {
+                                  if (confirm(`⚠️ ATENÇÃO! Isso vai zerar ${s.display_name} pra estado de NOVO ALUNO:\n\n• XP, Moedas, Vidas, Ofensiva, Medalhas\n• Aulas concluídas e progresso de vídeo\n• Missões e cashback\n• Roleta diária (cooldown some)\n• Comentários, posts e curtidas\n• Cupons gerados\n• Avatar e nome customizado\n• Sessão ativa (faz logout automático)\n\nDeseja continuar?`)) {
                                     resetStudentProgress(s.user_id);
                                   }
                                 }}
