@@ -4565,13 +4565,34 @@
     .sticky-cta.is-visible { display: block; }
     /* Padding extra no body pra não sobrepor o último conteúdo da página */
     body.has-sticky-cta { padding-bottom: 80px; }
-    /* Em telas grandes, limita largura interna pra ficar elegante (não esticar
-       o botão de borda a borda) — caixa centralizada com max-width. */
+    /* Em telas grandes, distribui preço (esquerda) + botão (direita) com
+       espaço entre eles, igual barra de checkout do iFood/Mercado Livre.
+       max-width 720px centraliza pra não estourar em monitores ultra-wide. */
     @media(min-width: 769px) {
-      .sticky-cta__inner { max-width: 720px; margin: 0 auto; gap: 16px; }
-      .sticky-cta__btn   { flex: 0 1 auto; padding: 14px 32px; font-size: 1rem; }
-      .sticky-cta__price-new { font-size: 1.5rem; }
-      .sticky-cta__price-old { font-size: .76rem; }
+      .sticky-cta__inner {
+        max-width: 720px;
+        margin: 0 auto;
+        gap: 24px;
+        justify-content: space-between;  /* preço esquerda, botão direita */
+        align-items: center;
+      }
+      .sticky-cta__price {
+        flex-direction: row;             /* lado a lado em vez de empilhado */
+        align-items: baseline;
+        gap: 10px;
+      }
+      .sticky-cta__price-new { font-size: 1.6rem; }
+      .sticky-cta__price-old { font-size: .9rem; }
+      .sticky-cta__btn {
+        flex: 0 1 auto;
+        padding: 14px 38px;
+        font-size: 1rem;
+        min-width: 280px;                /* botão consistente, não ridículo */
+      }
+      .sticky-cta__guarantee {
+        font-size: .72rem;
+        margin-top: 6px;
+      }
     }
 
     /* ─── RESPONSIVE ───────────────────────────────────── */
