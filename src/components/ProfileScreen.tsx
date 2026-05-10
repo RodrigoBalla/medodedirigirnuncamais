@@ -62,7 +62,8 @@ function timeAgo(iso: string): string {
 export function ProfileScreen({ displayName, totalXP, confidence: _confidence, completedPhases, totalPhases }: ProfileScreenProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { league, badges, streakFreezeCount, xpBoostExpiresAt, streak, lives } = useUserProgress();
+  // Após remoção da Mochila, só precisamos de league + badges aqui
+  const { league, badges } = useUserProgress();
   // Nome vem do hook (sincronizado em tempo real com header/sidebar)
   const liveName = useDisplayName(displayName);
   // Stats reais (aulas concluídas, cursos liberados, dias estudando, última aula)
@@ -70,7 +71,6 @@ export function ProfileScreen({ displayName, totalXP, confidence: _confidence, c
   const progressPercent = Math.round((completedPhases / totalPhases) * 100);
   const [selectedBadge, setSelectedBadge] = useState<typeof ALL_BADGES[0] | null>(null);
 
-  const isXpBoostActive = xpBoostExpiresAt && new Date(xpBoostExpiresAt) > new Date();
   const ligaStyle = leagueStyle(league);
 
   // Item 6: medalhas ordenadas — obtidas primeiro, depois bloqueadas
@@ -299,50 +299,11 @@ export function ProfileScreen({ displayName, totalXP, confidence: _confidence, c
         </AnimatePresence>
       </div>
 
-      {/* Mochila — seção full-width estilo LP. Item 12: inclui Vidas atuais */}
-      <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
-          <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2 mb-4">
-             <span className="material-symbols-outlined text-primary">backpack</span>
-             Mochila de Itens
-          </h3>
-          <div className="space-y-3">
-             {/* Vidas atuais — sempre visível */}
-             <div className="flex items-center justify-between p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                <div className="flex items-center gap-3">
-                   <span className="material-symbols-outlined text-rose-500 filled-icon">favorite</span>
-                   <div>
-                      <p className="text-xs font-black uppercase">Vidas</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {lives >= 5 ? "Cheio · pronto pra estudar" : "Recarregam ao longo do dia"}
-                      </p>
-                   </div>
-                </div>
-                <span className="text-lg font-black text-rose-500">{lives}/5</span>
-             </div>
-
-             <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className="flex items-center gap-3">
-                   <span className="material-symbols-outlined text-blue-500 filled-icon">shield</span>
-                   <div>
-                      <p className="text-xs font-black uppercase">Escudo de Ofensiva</p>
-                      <p className="text-[10px] text-muted-foreground">Protege seu recorde de {streak} dia{streak === 1 ? '' : 's'}</p>
-                   </div>
-                </div>
-                <span className="text-lg font-black text-blue-500">{streakFreezeCount}</span>
-             </div>
-
-             <div className={`flex items-center justify-between p-3 rounded-xl border ${isXpBoostActive ? 'bg-purple-500/10 border-purple-500/20' : 'bg-accent/50 border-border opacity-60'}`}>
-                <div className="flex items-center gap-3">
-                   <span className={`material-symbols-outlined ${isXpBoostActive ? 'text-purple-500' : 'text-muted-foreground'} filled-icon`}>rocket_launch</span>
-                   <div>
-                      <p className="text-xs font-black uppercase">Turbo XP (2x)</p>
-                      <p className="text-[10px] text-muted-foreground">{isXpBoostActive ? "Ativado no momento!" : "Inativo"}</p>
-                   </div>
-                </div>
-                <span className="text-[10px] font-black uppercase">{isXpBoostActive ? "ON" : "OFF"}</span>
-             </div>
-        </div>
-      </div>
+      {/* Bloco "Mochila de Itens" removido — informação redundante:
+          - Vidas: já no header (sempre visível)
+          - Escudo de Ofensiva: ativa automaticamente, ver contagem não muda nada
+          - Turbo XP: quando ativo, badge no contador de moedas do header
+          Mantemos só Cashback, que é interativo de verdade (converter cupom). */}
 
       {/* Cashback — seção full-width estilo LP. Moedas viram cupom de desconto */}
       <CashbackCard />
