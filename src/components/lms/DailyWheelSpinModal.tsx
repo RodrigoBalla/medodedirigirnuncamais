@@ -148,17 +148,14 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
 
   return (
     <AnimatePresence>
-      <motion.div
-        key="wheel-modal"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
+      {/* Container ROOT — opacity FIXA em 1 (sem animacao) pra garantir
+          que o backdrop fique opaco do primeiro render. Animacao de entrada
+          aplicada SO no modal-box interno. */}
+      <div
+        key="wheel-modal-root"
         className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       >
-        {/* Backdrop OPACO — sem deixar conteúdo da página vazar.
-            Usa style inline pra garantir 98% de opacidade (Tailwind nao
-            suporta opacity-modifier em cor arbitraria). */}
+        {/* Backdrop totalmente opaco — bloqueia o conteúdo da página atrás. */}
         <div
           className="absolute inset-0 backdrop-blur-2xl"
           style={{ background: "rgba(2, 6, 17, 0.98)" }}
@@ -325,7 +322,7 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
             </button>
           )}
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }
