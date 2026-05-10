@@ -210,17 +210,15 @@ export function ProfileScreen({ displayName, totalXP, confidence: _confidence, c
         ))}
       </div>
 
-      {/* Roleta + Missões — em desktop ficam lado a lado;
-          em mobile mantém empilhado como antes */}
-      <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
-        <ErrorBoundary label="Roleta da Sorte">
-          <DailyWheelCard />
-        </ErrorBoundary>
+      {/* Roleta — seção full-width estilo LP */}
+      <ErrorBoundary label="Roleta da Sorte">
+        <DailyWheelCard />
+      </ErrorBoundary>
 
-        <ErrorBoundary label="Missões">
-          <MissionsPanel />
-        </ErrorBoundary>
-      </div>
+      {/* Missões — seção full-width estilo LP */}
+      <ErrorBoundary label="Missões">
+        <MissionsPanel />
+      </ErrorBoundary>
 
       {/* Badges (Medalhas) — Item 6: ordenadas + progress bar no topo */}
       <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
@@ -301,10 +299,8 @@ export function ProfileScreen({ displayName, totalXP, confidence: _confidence, c
         </AnimatePresence>
       </div>
 
-      {/* Mochila + Cashback — lado a lado em desktop */}
-      <div className="md:grid md:grid-cols-2 md:gap-6 md:items-start">
-        {/* Backpack (Inventory) — Item 12: incluir Vidas atuais como 3º slot */}
-        <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
+      {/* Mochila — seção full-width estilo LP. Item 12: inclui Vidas atuais */}
+      <div className="bg-card rounded-[32px] p-6 md:p-7 border border-border shadow-sm mb-6">
           <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2 mb-4">
              <span className="material-symbols-outlined text-primary">backpack</span>
              Mochila de Itens
@@ -345,12 +341,11 @@ export function ProfileScreen({ displayName, totalXP, confidence: _confidence, c
                 </div>
                 <span className="text-[10px] font-black uppercase">{isXpBoostActive ? "ON" : "OFF"}</span>
              </div>
-          </div>
         </div>
-
-        {/* Cashback — moedas viram cupom de desconto */}
-        <CashbackCard />
       </div>
+
+      {/* Cashback — seção full-width estilo LP. Moedas viram cupom de desconto */}
+      <CashbackCard />
 
       {/* Settings — Item 11+13: confirmação no logout + ícone mais ameno */}
       <div className="bg-card rounded-[32px] border border-border shadow-sm overflow-hidden">
