@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserProgress } from "@/contexts/UserProgressContext";
 import { toast } from "sonner";
 
 // ─── CashbackCard ────────────────────────────────────────────────────────────
@@ -29,23 +28,26 @@ interface Coupon {
 
 export function CashbackCard() {
   const { user } = useAuth();
-  const { coins } = useUserProgress();
   const [config, setConfig] = useState<Config | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [converting, setConverting] = useState(false);
   const [amount, setAmount] = useState(0);
+  // Saldo VÁLIDO (ignora moedas expiradas) — vem do RPC get_valid_coins_balance
+  const [coins, setCoins] = useState(0);
 
   const loadData = useCallback(async () => {
     if (!user) return;
-    const [c, k] = await Promise.all([
+    const [c, k, b] = await Promise.all([
       supabase.from("cashback_config").select("*").eq("id", 1).maybeSingle(),
       supabase.from("discount_coupons").select("code, value_brl, used, expires_at, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+      supabase.rpc("get_valid_coins_balance"),
     ]);
     if (c.data) {
       setConfig(c.data as Config);
       setAmount(c.data.min_coins_to_convert);
     }
     if (k.data) setCoupons(k.data as Coupon[]);
+    if (typeof b.data === "number") setCoins(b.data);
   }, [user]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -98,7 +100,7 @@ export function CashbackCard() {
           R$ {totalCashbackBrl}
         </p>
         <p className="text-[11px] text-muted-foreground mt-1">
-          Use como desconto no próximo curso (até {config.max_discount_pct}% do valor)
+          Use como desconto no próximo curso
         </p>
       </div>
 

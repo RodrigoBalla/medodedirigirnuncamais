@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrackMission } from "@/hooks/useTrackMission";
 import { toast } from "sonner";
 
 // ─── ReportProblemButton ─────────────────────────────────────────────────────
@@ -22,6 +23,7 @@ interface Props {
 
 export function ReportProblemButton({ lessonId, getCurrentTime, className }: Props) {
   const { user } = useAuth();
+  const { trackProgress } = useTrackMission();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +49,7 @@ export function ReportProblemButton({ lessonId, getCurrentTime, className }: Pro
         page_url: window.location.href.slice(0, 250),
       });
       if (error) throw error;
+      trackProgress("report_problem", 1);
       toast.success("📨 Reporte enviado! A Carla vai dar uma olhada.");
       setText("");
       setOpen(false);

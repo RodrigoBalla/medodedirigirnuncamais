@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTrackMission } from "@/hooks/useTrackMission";
 
 // ─── useStreak ───────────────────────────────────────────────────────────────
 // Chama RPC tick_user_streak() uma vez por mount (idempotente — Postgres
@@ -23,6 +24,7 @@ interface StreakState {
 
 export function useStreak(): StreakState {
   const { user } = useAuth();
+  const { trackProgress } = useTrackMission();
   const [state, setState] = useState<StreakState>({
     streak: 0, longestYet: 0, loading: true,
   });
@@ -53,6 +55,19 @@ export function useStreak(): StreakState {
           return;
         }
         setState({ streak: row.streak, longestYet: row.longest_yet, loading: false });
+
+        // Auto-track de missões de login: streak + horário
+        // (login_streak, early_bird, night_owl, weekend_study)
+        try {
+          trackProgress("login_streak", row.streak);
+          trackProgress("login_count", 1);
+          const now = new Date();
+          const h = now.getHours();
+          if (h < 7)         trackProgress("early_bird", 1);
+          else if (h >= 22)  trackProgress("night_owl", 1);
+          const day = now.getDay();
+          if (day === 0 || day === 6) trackProgress("weekend_study", 1);
+        } catch {}
 
         // Celebra recompensas só se ganhou algo (evita spam em re-mount)
         if (row.gained_coins > 0 && row.streak > 1) {

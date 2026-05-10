@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { playCheckSound } from "@/lib/sounds";
 import { CashbackCard } from "@/components/lms/CashbackCard";
+import { AvatarUploader } from "@/components/AvatarUploader";
+import { EditableDisplayName } from "@/components/EditableDisplayName";
+import { useDisplayName } from "@/hooks/useDisplayName";
+import { useUserStats } from "@/hooks/useUserStats";
+import { MissionsPanel } from "@/components/lms/MissionsPanel";
 
 interface ProfileScreenProps {
   displayName: string;
@@ -26,8 +30,11 @@ const ALL_BADGES = [
 
 export function ProfileScreen({ displayName, totalXP, confidence, completedPhases, totalPhases }: ProfileScreenProps) {
   const { user, signOut } = useAuth();
-  const { toggleTheme, isDark } = useTheme();
   const { league, badges, streakFreezeCount, xpBoostExpiresAt, streak } = useUserProgress();
+  // Nome vem do hook (sincronizado em tempo real com header/sidebar)
+  const liveName = useDisplayName(displayName);
+  // Stats reais (aulas concluídas, cursos liberados, dias estudando)
+  const { lessonsCompleted, coursesUnlocked, daysStudied } = useUserStats();
   const progressPercent = Math.round((completedPhases / totalPhases) * 100);
   const [selectedBadge, setSelectedBadge] = useState<typeof ALL_BADGES[0] | null>(null);
 
@@ -49,13 +56,10 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
       {/* Profile Header */}
       <div className="bg-card rounded-[32px] p-8 border border-border shadow-sm mb-6 text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          className="w-24 h-24 rounded-full bg-primary/10 border-4 border-primary/20 flex items-center justify-center text-4xl font-black text-primary mx-auto mb-4 shadow-xl cursor-pointer"
-        >
-          {displayName ? displayName.charAt(0).toUpperCase() : "?"}
-        </motion.div>
-        <h1 className="text-2xl font-black tracking-tight">{displayName || "Motorista"}</h1>
+        <div className="mx-auto mb-4 w-fit">
+          <AvatarUploader displayName={liveName} size={96} />
+        </div>
+        <EditableDisplayName value={liveName} />
         <div className="flex items-center justify-center gap-2 mt-1">
            <span className="px-3 py-1 rounded-full bg-accent text-[10px] font-black uppercase tracking-widest border border-border">Liga {league}</span>
            <span className="text-xs text-muted-foreground font-medium opacity-70">{user?.email}</span>
@@ -73,13 +77,16 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
         <p className="text-[10px] font-bold text-muted-foreground mt-1">{progressPercent}% do curso completo</p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid — métricas reais que o aluno afeta hoje:
+          Aulas concluídas, Cursos comprados, Dias estudando, XP Total.
+          (Removidos os antigos "Fases" e "Confiança" que dependiam das
+           Missões Diárias bloqueadas com "Em breve") */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {[
-          { icon: "auto_stories", value: completedPhases, label: "Fases", color: "text-primary" },
+          { icon: "school", value: lessonsCompleted, label: "Aulas", color: "text-primary" },
+          { icon: "library_books", value: coursesUnlocked, label: "Cursos", color: "text-blue-500" },
+          { icon: "local_fire_department", value: `${daysStudied}`, label: "Dias", color: "text-orange-500" },
           { icon: "database", value: totalXP, label: "XP Total", color: "text-yellow-500" },
-          { icon: "local_fire_department", value: `${streak}d`, label: "Ofensiva", color: "text-orange-500" },
-          { icon: "verified_user", value: `${confidence}/5`, label: "Confiança", color: "text-green-500" },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -92,6 +99,9 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
           </motion.div>
         ))}
       </div>
+
+      {/* Painel de missões mensais — engajamento + retenção */}
+      <MissionsPanel />
 
       {/* Badges (Medalhas) */}
       <div className="bg-card rounded-[32px] p-6 border border-border shadow-sm mb-6">
@@ -185,13 +195,8 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
       {/* Cashback — moedas viram cupom de desconto */}
       <CashbackCard />
 
-      {/* Settings List */}
+      {/* Settings List — toggle de tema removido (mantemos só 1 modo). */}
       <div className="bg-card rounded-[32px] border border-border shadow-sm overflow-hidden">
-        <button onClick={toggleTheme} className="flex items-center gap-3 w-full px-6 py-5 hover:bg-muted/50 transition-colors text-left border-b border-border">
-          <span className="material-symbols-outlined text-muted-foreground">{isDark ? "light_mode" : "dark_mode"}</span>
-          <span className="font-bold text-sm uppercase tracking-tight">{isDark ? "Modo Claro" : "Modo Escuro"}</span>
-          <span className="material-symbols-outlined ml-auto text-muted-foreground opacity-30">chevron_right</span>
-        </button>
         <button onClick={signOut} className="flex items-center gap-3 w-full px-6 py-5 hover:bg-destructive/5 transition-colors text-left text-destructive">
           <span className="material-symbols-outlined">logout</span>
           <span className="font-bold text-sm uppercase tracking-tight">Sair da conta</span>

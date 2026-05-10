@@ -17,6 +17,7 @@ import { useAntiPiracy } from "@/hooks/useAntiPiracy";
 import { useVideoKeyboardShortcuts } from "@/hooks/useVideoKeyboardShortcuts";
 import { useTeacherOnline } from "@/hooks/useTeacherPresence";
 import { StreakBadge } from "./StreakBadge";
+import { useTrackMission } from "@/hooks/useTrackMission";
 
 interface Props {
   productId: string;
@@ -44,6 +45,13 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const [progressByLesson, setProgressByLesson] = useState<Map<string, number>>(new Map());
   // Posição atual no vídeo (atualizada via onProgress) — usada pra timestamp de comentários
   const currentTimeRef = useRef<number>(0);
+  // Watch tracking pra missões: acumula segundos assistidos, dispara
+  // track_mission_progress a cada 60s (granular pra missão watch_seconds)
+  const watchAccumRef = useRef<number>(0);
+  const lastWatchSecRef = useRef<number>(0);
+  const sessionWatchRef = useRef<number>(0); // segundos contínuos nesta sessão (mesma aula, sem fechar)
+  const consecutiveLessonsRef = useRef<number>(0);
+  const { trackProgress } = useTrackMission();
 
   // ─── Modo foco / Auto-play / Anti-pirataria / Atalhos ──────────────────────
   // Modo foco: esconde sidebar, comentários e info pra deixar só vídeo+toolbar
@@ -134,6 +142,25 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const saveLessonProgress = useCallback(
     async (lessonId: string, seconds: number, durationSeconds: number) => {
       if (!user || !lessonId) return;
+      // Calcula delta de tempo assistido pra missões (só conta avanço real,
+      // não rebobinar). Se delta > 30s, descarta (provavelmente skip).
+      const last = lastWatchSecRef.current;
+      const delta = seconds - last;
+      if (delta > 0 && delta < 30) {
+        watchAccumRef.current += delta;
+        sessionWatchRef.current += delta;
+        // Cada 60s acumulados, dispara batch pra missão watch_seconds
+        if (watchAccumRef.current >= 60) {
+          const toReport = Math.floor(watchAccumRef.current);
+          watchAccumRef.current = 0;
+          trackProgress("watch_seconds", toReport);
+        }
+        // watch_session = sessão contínua sem trocar de aula
+        if (sessionWatchRef.current >= 60) {
+          trackProgress("watch_session", Math.floor(sessionWatchRef.current));
+        }
+      }
+      lastWatchSecRef.current = seconds;
       currentTimeRef.current = seconds;
       try {
         await supabase.from('lesson_progress').upsert({
@@ -153,7 +180,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
         console.warn('[lesson-progress] save error:', err);
       }
     },
-    [user],
+    [user, trackProgress],
   );
 
   // Marca aula como concluída no banco (lesson_progress) e dispara avanço
@@ -176,6 +203,10 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       console.warn('[lesson-progress] complete error:', err);
     }
     await completeLesson(activeLessonId); // atualiza UserProgressContext (XP, badges)
+    // Auto-track de missões: lessons_completed + consecutive_lessons (sequência)
+    consecutiveLessonsRef.current += 1;
+    trackProgress("lessons_completed", 1);
+    trackProgress("consecutive_lessons", consecutiveLessonsRef.current);
     // Toast premium com recompensa visual — substitui o "indo pra próxima"
     toast.success("Aula concluída!", {
       description: "+1 ⭐ XP · +5 🪙 moedas",
@@ -193,6 +224,9 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
 
   function goToNextLesson() {
     setShowAutoplay(false);
+    // Reset sessão de watch (mas mantém consecutive_lessons — sequência continua)
+    sessionWatchRef.current = 0;
+    lastWatchSecRef.current = 0;
     const idx = lessons.findIndex((l) => l.id === activeLessonId);
     if (idx >= 0 && idx < lessons.length - 1) {
       setActiveLessonId(lessons[idx + 1].id);

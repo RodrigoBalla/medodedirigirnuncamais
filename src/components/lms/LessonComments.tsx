@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrackMission } from "@/hooks/useTrackMission";
 
 // =============================================================================
 // LessonComments — comentários de uma aula com aprovação do admin
@@ -52,6 +53,7 @@ function formatRelative(iso: string): string {
 
 export function LessonComments({ lessonId }: Props) {
   const { user } = useAuth();
+  const { trackProgress } = useTrackMission();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -141,6 +143,7 @@ export function LessonComments({ lessonId }: Props) {
       });
       if (error) throw error;
       setText("");
+      trackProgress("comment_count", 1);
       toast.success("Comentário enviado! Aguarde a aprovação 🎯");
       // Realtime já vai trazer; redundância garante UI snappy
       loadComments();

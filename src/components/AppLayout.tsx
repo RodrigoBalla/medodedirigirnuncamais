@@ -6,6 +6,8 @@ import { useUserProgress } from "@/contexts/UserProgressContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShopModal } from "@/components/lms/ShopModal";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useDisplayName } from "@/hooks/useDisplayName";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -67,6 +69,9 @@ export function AppLayout({
   streakDays = 1,
 }: AppLayoutProps) {
   const { signOut } = useAuth();
+  // Nome do user vem do hook (sincronizado com edição no /perfil em tempo real).
+  // O `displayName` da prop fica como fallback inicial até o hook resolver.
+  const liveName = useDisplayName(displayName);
   // Tema fixo em dark — sem necessidade de toggle
 
   const { isAdmin } = useAdmin();
@@ -176,10 +181,9 @@ export function AppLayout({
               <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
             </button>
           )}
-          {/* Avatar */}
-          <div className="size-9 rounded-full border-2 border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-            {displayName ? displayName.charAt(0).toUpperCase() : "?"}
-          </div>
+          {/* Avatar — mostra a foto que o user subiu (via UserAvatar +
+              hook useAvatarUrl). Cada user vê só a sua foto. */}
+          <UserAvatar displayName={liveName} size={36} />
         </div>
       </header>
 
@@ -190,28 +194,47 @@ export function AppLayout({
           <div className="caution-tape--vertical absolute top-0 right-0 bottom-0 w-1.5" aria-hidden="true" />
           <div className="flex flex-col gap-6 h-full justify-between">
             <div className="flex flex-col gap-4">
-              {/* Profile mini card — fundo levemente clareado pra destacar do preto */}
-              <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-xl border border-white/10">
-                <div className="size-11 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary font-bold text-lg">
-                  {displayName ? displayName.charAt(0).toUpperCase() : "?"}
-                </div>
+              {/* Profile mini card — clicável: leva pra aba Perfil (edição
+                  da conta + cashback). Hover destaca pra deixar claro que é
+                  um atalho, não só info estática. */}
+              <button
+                type="button"
+                onClick={() => handleNavClick("perfil")}
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl border text-left transition-all w-full group ${
+                  activeTab === "perfil"
+                    ? "bg-primary/10 border-primary/40 shadow-sm shadow-primary/20"
+                    : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30 cursor-pointer"
+                }`}
+                title="Abrir meu perfil"
+                aria-label="Abrir meu perfil"
+              >
+                <UserAvatar
+                  displayName={liveName}
+                  size={44}
+                  borderClassName="border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate">{displayName || "Motorista"}</p>
+                  <p className="font-bold text-sm truncate flex items-center gap-1">
+                    {liveName || "Motorista"}
+                    <span className="material-symbols-outlined text-xs text-muted-foreground/50 group-hover:text-primary transition-colors">
+                      chevron_right
+                    </span>
+                  </p>
                   <p className="text-[11px] text-muted-foreground">Nível {level} - {title}</p>
                   {/* XP Progress bar */}
                   <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <motion.div 
+                      <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${(current / next) * 100}%` }}
                         transition={{ type: "spring", stiffness: 50, damping: 15 }}
-                        className="h-full bg-primary rounded-full" 
+                        className="h-full bg-primary rounded-full"
                       />
                     </div>
                     <span className="text-[10px] font-bold text-primary">{current}/{next}</span>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* Nav */}
               <nav className="flex flex-col gap-1">
@@ -243,21 +266,24 @@ export function AppLayout({
                 })}
               </nav>
 
-              {/* Pro upsell — embrulhado em fitas de advertência (identidade trânsito) */}
-              <div className="rounded-xl overflow-hidden">
-                <div className="caution-tape h-2" aria-hidden="true" />
-                <div className="bg-gradient-to-br from-primary to-yellow-500 p-4 text-primary-foreground">
-                  <p className="font-black text-sm mb-1 uppercase tracking-wider">Desbloqueie o Pro!</p>
-                  <p className="text-xs opacity-90 mb-3 leading-relaxed">Acesso ilimitado a simulados e revisões em vídeo.</p>
-                  <button
-                    onClick={() => setShowShop(true)}
-                    className="w-full bg-black text-primary font-black text-xs py-2.5 rounded-lg hover:bg-black/85 transition-colors uppercase tracking-widest"
-                  >
-                    Ver Planos
-                  </button>
+              {/* Pro upsell — só aparece na aba "Missões Diárias" (treinos),
+                  que está bloqueada com "Em breve". Não polui as outras abas. */}
+              {activeTab === "treinos" && (
+                <div className="rounded-xl overflow-hidden">
+                  <div className="caution-tape h-2" aria-hidden="true" />
+                  <div className="bg-gradient-to-br from-primary to-yellow-500 p-4 text-primary-foreground">
+                    <p className="font-black text-sm mb-1 uppercase tracking-wider">Desbloqueie o Pro!</p>
+                    <p className="text-xs opacity-90 mb-3 leading-relaxed">Acesso ilimitado a simulados e revisões em vídeo.</p>
+                    <button
+                      onClick={() => setShowShop(true)}
+                      className="w-full bg-black text-primary font-black text-xs py-2.5 rounded-lg hover:bg-black/85 transition-colors uppercase tracking-widest"
+                    >
+                      Ver Planos
+                    </button>
+                  </div>
+                  <div className="caution-tape h-2" aria-hidden="true" />
                 </div>
-                <div className="caution-tape h-2" aria-hidden="true" />
-              </div>
+              )}
             </div>
 
             {/* Bottom actions */}
