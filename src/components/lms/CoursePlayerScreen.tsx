@@ -16,6 +16,7 @@ import { ReportProblemButton } from "./ReportProblemButton";
 import { useAntiPiracy } from "@/hooks/useAntiPiracy";
 import { useVideoKeyboardShortcuts } from "@/hooks/useVideoKeyboardShortcuts";
 import { useTeacherOnline } from "@/hooks/useTeacherPresence";
+import { StreakBadge } from "./StreakBadge";
 
 interface Props {
   productId: string;
@@ -308,6 +309,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          </div>
 
          <div className="flex items-center gap-3">
+            {/* Streak diário — 🔥 X dias */}
+            <StreakBadge />
             {/* Carla online — badge real-time via Supabase Presence */}
             {carlaOnline && (
                <div

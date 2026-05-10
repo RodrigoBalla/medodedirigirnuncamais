@@ -5,6 +5,7 @@ import { useUserProgress } from "@/contexts/UserProgressContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { playCheckSound } from "@/lib/sounds";
+import { CashbackCard } from "@/components/lms/CashbackCard";
 
 interface ProfileScreenProps {
   displayName: string;
@@ -180,6 +181,9 @@ export function ProfileScreen({ displayName, totalXP, confidence, completedPhase
            </div>
         </div>
       </div>
+
+      {/* Cashback — moedas viram cupom de desconto */}
+      <CashbackCard />
 
       {/* Settings List */}
       <div className="bg-card rounded-[32px] border border-border shadow-sm overflow-hidden">
