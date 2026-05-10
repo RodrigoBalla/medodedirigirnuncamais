@@ -98,17 +98,30 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
 
   // Reset APENAS quando o modal fecha (não durante operações)
   useEffect(() => {
+    console.log("[wheel] open changed:", open);
     if (!open) {
+      console.log("[wheel] RESETTING because open=false");
       setPhase("idle");
       setRotation(0);
       setResult(null);
     }
   }, [open]);
 
+  // Debug: rastrear lifecycle
+  useEffect(() => {
+    console.log("[wheel] MOUNTED");
+    return () => console.log("[wheel] UNMOUNTED");
+  }, []);
+
+  useEffect(() => {
+    console.log("[wheel] phase state changed to:", phase);
+  }, [phase]);
+
   const conicGradient = useMemo(() => buildConicGradient(), []);
 
   async function handleSpin() {
     if (phase !== "idle" || prizes.length === 0) return;
+    console.log("[wheel] phase: spinning");
     setPhase("spinning");
 
     try {
@@ -119,6 +132,7 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
       if (error) throw error;
       const row = (data as SpinResult[])?.[0];
       if (!row) throw new Error("no_result");
+      console.log("[wheel] rpc returned:", row.prize_label);
 
       const idx = prizes.findIndex((p) => p.id === row.prize_id);
       const safeIdx = idx >= 0 ? idx : 0;
@@ -127,13 +141,13 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
       const finalRotation = fullSpins - targetSliceCenter;
       setRotation(finalRotation);
 
-      // Aguarda animação de parada (1.6s) antes de revelar
       await new Promise((r) => setTimeout(r, 1600));
+      console.log("[wheel] phase: revealing");
       setResult(row);
       setPhase("revealing");
 
-      // Cadeado abre lentamente (~2s)
       await new Promise((r) => setTimeout(r, 2000));
+      console.log("[wheel] phase: revealed (calling onSpinComplete)");
       setPhase("revealed");
       onSpinComplete?.(row);
     } catch (err) {
