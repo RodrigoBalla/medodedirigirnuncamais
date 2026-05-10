@@ -156,9 +156,12 @@ export function DailyWheelSpinModal({ open, onClose, onSpinComplete }: Props) {
         transition={{ duration: 0.25 }}
         className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       >
-        {/* Backdrop OPACO 100% — sem deixar conteúdo da página vazar */}
+        {/* Backdrop OPACO — sem deixar conteúdo da página vazar.
+            Usa style inline pra garantir 98% de opacidade (Tailwind nao
+            suporta opacity-modifier em cor arbitraria). */}
         <div
-          className="absolute inset-0 bg-[#020611]/98 backdrop-blur-2xl"
+          className="absolute inset-0 backdrop-blur-2xl"
+          style={{ background: "rgba(2, 6, 17, 0.98)" }}
           aria-hidden
           onClick={() => { if (phase === "idle") onClose(); }}
         />
