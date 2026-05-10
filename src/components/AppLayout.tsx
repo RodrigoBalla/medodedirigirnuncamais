@@ -7,6 +7,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShopModal } from "@/components/lms/ShopModal";
 import { CashbackModal } from "@/components/lms/CashbackModal";
+import { EmergencyContactFab } from "@/components/EmergencyContactFab";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useDisplayName } from "@/hooks/useDisplayName";
 
@@ -386,6 +387,11 @@ export function AppLayout({
 
       {/* Cashback Modal — acionado pelo clique no contador de moedas no header */}
       <CashbackModal open={showCashback} onClose={() => setShowCashback(false)} />
+
+      {/* FAB "Travou? Me chama" — sempre visível em toda tela do app.
+          Pra quem tem ataque de pânico no volante, ter contato a 1 clique
+          vale mais que gamificação. */}
+      <EmergencyContactFab />
 
       {/* Mobile Bottom Navigation — fita de advertência fininha logo acima */}
       <div className="caution-tape lg:hidden fixed bottom-[70px] left-0 right-0 h-1 z-50" aria-hidden="true" />

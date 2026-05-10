@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
+import { WeeklyPlanCard } from "./WeeklyPlanCard";
 
 // =============================================================================
 // CourseGallery — galeria 3D com cards empilhados em profundidade
@@ -319,7 +320,11 @@ export function LibraryScreen() {
     // Container ocupa altura disponível (descontando header) e centraliza
     // o conteúdo verticalmente — sem cabeçalho redundante e sem necessidade
     // de scroll na maioria das viewports desktop.
-    <div className="max-w-5xl mx-auto px-4 py-4 min-h-[calc(100vh-53px)] flex flex-col justify-center">
+    <div className="max-w-5xl mx-auto px-4 py-4 min-h-[calc(100vh-53px)] flex flex-col">
+      {/* Plano semanal — "Esta semana você vai..." (1 prática + 1 aula + 1 missão).
+          Aparece no topo pra reduzir fricção de decisão. */}
+      {!loading && <WeeklyPlanCard />}
+
       {/* Continue de onde parou — banner discreto que some se não houver progresso */}
       {!loading && <ContinueWatchingBanner />}
       {loading ? (
