@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +80,17 @@ export function AppLayout({
   const { level, title, current, next } = getLevel(totalXP);
   const car = getCarInfo(level);
   const [showShop, setShowShop] = useState(false);
+
+  // ─── Sidebar colapsável (só desktop) ──────────────────────────────────────
+  // Persiste a preferência no localStorage pra não esquecer entre navegações.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("mddnm:sidebar:collapsed") === "1";
+  });
+  useEffect(() => {
+    try { localStorage.setItem("mddnm:sidebar:collapsed", sidebarCollapsed ? "1" : "0"); } catch {}
+  }, [sidebarCollapsed]);
+  const toggleSidebar = () => setSidebarCollapsed((s) => !s);
 
   const isXpBoostActive = xpBoostExpiresAt && new Date(xpBoostExpiresAt) > new Date();
 
@@ -188,87 +199,122 @@ export function AppLayout({
       </header>
 
       <div className="flex flex-1">
-        {/* Desktop Sidebar — fundo preto puro como detalhe da paleta (navy + amarelo + preto)
-            + fita de advertência vertical fina na borda direita pra reforçar identidade trânsito */}
-        <aside className="hidden lg:flex flex-col w-64 bg-black p-4 sticky top-[53px] h-[calc(100vh-53px)] relative">
+        {/* Desktop Sidebar COLAPSÁVEL — w-64 (expandido) ou w-16 (só ícones).
+            User pode recolher pra ganhar largura útil pro conteúdo. */}
+        <aside
+          className={`hidden lg:flex flex-col bg-black p-3 sticky top-[53px] h-[calc(100vh-53px)] relative transition-[width] duration-300 ease-out ${
+            sidebarCollapsed ? "w-16" : "w-64"
+          }`}
+        >
           <div className="caution-tape--vertical absolute top-0 right-0 bottom-0 w-1.5" aria-hidden="true" />
-          <div className="flex flex-col gap-6 h-full justify-between">
-            <div className="flex flex-col gap-4">
-              {/* Profile mini card — clicável: leva pra aba Perfil (edição
-                  da conta + cashback). Hover destaca pra deixar claro que é
-                  um atalho, não só info estática. */}
+
+          {/* Botão TOGGLE — escondido/expandido com chevron */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+            aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+            className="absolute -right-3 top-4 z-30 size-6 rounded-full bg-primary text-primary-foreground border-2 border-background shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+          >
+            <span className="material-symbols-outlined text-[14px]">
+              {sidebarCollapsed ? "chevron_right" : "chevron_left"}
+            </span>
+          </button>
+
+          <div className="flex flex-col gap-4 h-full justify-between overflow-hidden">
+            <div className={`flex flex-col ${sidebarCollapsed ? "gap-2 items-center" : "gap-4"}`}>
+              {/* Profile mini card — expandido: card completo. Colapsado: só avatar. */}
               <button
                 type="button"
                 onClick={() => handleNavClick("perfil")}
-                className={`flex items-center gap-3 px-3 py-3 rounded-xl border text-left transition-all w-full group ${
-                  activeTab === "perfil"
-                    ? "bg-primary/10 border-primary/40 shadow-sm shadow-primary/20"
-                    : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30 cursor-pointer"
+                className={`flex items-center text-left transition-all group ${
+                  sidebarCollapsed
+                    ? `justify-center p-1.5 rounded-xl ${activeTab === "perfil" ? "bg-primary/20 ring-2 ring-primary/40" : "hover:bg-white/10"}`
+                    : `gap-3 px-3 py-3 rounded-xl border w-full ${
+                        activeTab === "perfil"
+                          ? "bg-primary/10 border-primary/40 shadow-sm shadow-primary/20"
+                          : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/30 cursor-pointer"
+                      }`
                 }`}
-                title="Abrir meu perfil"
+                title={sidebarCollapsed ? `Perfil — ${liveName}` : "Abrir meu perfil"}
                 aria-label="Abrir meu perfil"
               >
                 <UserAvatar
                   displayName={liveName}
-                  size={44}
+                  size={sidebarCollapsed ? 32 : 44}
                   borderClassName="border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate flex items-center gap-1">
-                    {liveName || "Motorista"}
-                    <span className="material-symbols-outlined text-xs text-muted-foreground/50 group-hover:text-primary transition-colors">
-                      chevron_right
-                    </span>
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">Nível {level} - {title}</p>
-                  {/* XP Progress bar */}
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(current / next) * 100}%` }}
-                        transition={{ type: "spring", stiffness: 50, damping: 15 }}
-                        className="h-full bg-primary rounded-full"
-                      />
+                {!sidebarCollapsed && (
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate flex items-center gap-1">
+                      {liveName || "Motorista"}
+                      <span className="material-symbols-outlined text-xs text-muted-foreground/50 group-hover:text-primary transition-colors">
+                        chevron_right
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">Nível {level} - {title}</p>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(current / next) * 100}%` }}
+                          transition={{ type: "spring", stiffness: 50, damping: 15 }}
+                          className="h-full bg-primary rounded-full"
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold text-primary">{current}/{next}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-primary">{current}/{next}</span>
                   </div>
-                </div>
+                )}
               </button>
 
-              {/* Nav */}
-              <nav className="flex flex-col gap-1">
+              {/* Nav — colapsado: só ícone centralizado. Expandido: ícone + label. */}
+              <nav className={`flex flex-col ${sidebarCollapsed ? "gap-1 items-center" : "gap-1"}`}>
                 {SIDEBAR_ITEMS.map((item) => {
                   const isLocked = LOCKED_TABS.includes(item.tab);
                   return (
                     <button
                       key={item.tab}
                       onClick={() => handleNavClick(item.tab)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-left ${
-                        activeTab === item.tab
-                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                          : isLocked
-                          ? "text-muted-foreground/60 hover:bg-accent/50 cursor-not-allowed"
-                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      title={sidebarCollapsed ? item.label + (isLocked ? " (Em breve)" : "") : undefined}
+                      className={`flex items-center font-medium transition-all text-left ${
+                        sidebarCollapsed
+                          ? `size-11 rounded-xl justify-center ${
+                              activeTab === item.tab
+                                ? "bg-primary text-primary-foreground"
+                                : isLocked
+                                ? "text-muted-foreground/60 hover:bg-accent/50"
+                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            }`
+                          : `gap-3 px-4 py-3 rounded-xl w-full ${
+                              activeTab === item.tab
+                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                : isLocked
+                                ? "text-muted-foreground/60 hover:bg-accent/50 cursor-not-allowed"
+                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            }`
                       }`}
                     >
                       <span className={`material-symbols-outlined text-xl ${activeTab === item.tab ? "filled-icon" : ""}`}>
                         {isLocked ? "lock" : item.icon}
                       </span>
-                      <span className="text-sm flex-1">{item.label}</span>
-                      {isLocked && (
-                        <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-500/30">
-                          Em breve
-                        </span>
+                      {!sidebarCollapsed && (
+                        <>
+                          <span className="text-sm flex-1">{item.label}</span>
+                          {isLocked && (
+                            <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-500/30">
+                              Em breve
+                            </span>
+                          )}
+                        </>
                       )}
                     </button>
                   );
                 })}
               </nav>
 
-              {/* Pro upsell — só aparece na aba "Missões Diárias" (treinos),
-                  que está bloqueada com "Em breve". Não polui as outras abas. */}
-              {activeTab === "treinos" && (
+              {/* Pro upsell — escondido quando sidebar colapsado pra não inflar */}
+              {activeTab === "treinos" && !sidebarCollapsed && (
                 <div className="rounded-xl overflow-hidden">
                   <div className="caution-tape h-2" aria-hidden="true" />
                   <div className="bg-gradient-to-br from-primary to-yellow-500 p-4 text-primary-foreground">
@@ -287,24 +333,38 @@ export function AppLayout({
             </div>
 
             {/* Bottom actions */}
-            <div className="flex flex-col gap-1">
+            <div className={`flex flex-col ${sidebarCollapsed ? "gap-1 items-center" : "gap-1"}`}>
               <button
                 onClick={() => onTabChange("perfil")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-left ${
-                  activeTab === "perfil"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                title={sidebarCollapsed ? "Perfil" : undefined}
+                className={`flex items-center font-medium transition-all ${
+                  sidebarCollapsed
+                    ? `size-11 rounded-xl justify-center ${
+                        activeTab === "perfil"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`
+                    : `gap-3 px-4 py-3 rounded-xl text-left ${
+                        activeTab === "perfil"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`
                 }`}
               >
                 <span className="material-symbols-outlined text-xl">person</span>
-                <span className="text-sm">Perfil</span>
+                {!sidebarCollapsed && <span className="text-sm">Perfil</span>}
               </button>
               <button
                 onClick={signOut}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-all font-medium"
+                title={sidebarCollapsed ? "Sair" : undefined}
+                className={`flex items-center text-destructive hover:bg-destructive/10 transition-all font-medium ${
+                  sidebarCollapsed
+                    ? "size-11 rounded-xl justify-center"
+                    : "gap-3 px-4 py-3 rounded-xl"
+                }`}
               >
                 <span className="material-symbols-outlined text-xl">logout</span>
-                <span className="text-sm">Sair</span>
+                {!sidebarCollapsed && <span className="text-sm">Sair</span>}
               </button>
             </div>
           </div>
