@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DailyWheelSpinModal, type SpinPhase, type SpinResult } from "./DailyWheelSpinModal";
+import { playWheelTickSound, playPrizeRevealSound } from "@/lib/sounds";
 
 // ─── DailyWheelCard ──────────────────────────────────────────────────────────
 // Roleta diária no /perfil. 1 giro a cada 24h. Sorteia 1 prêmio entre 8.
@@ -123,15 +124,24 @@ export function DailyWheelCard() {
       setRotation(finalRotation);
       setSpinResult(row);
 
-      // 3) Espera a animação do disco terminar
+      // 3) Espera a animação do disco terminar, com sons "tic-tic" desacelerando
+      const tickTimings = [0, 150, 320, 510, 720, 950, 1200, 1480, 1780, 2100, 2440, 2800, 3170];
+      const tickTimers: number[] = [];
+      tickTimings.forEach((ms) => {
+        if (ms < SPIN_DURATION_MS) {
+          tickTimers.push(window.setTimeout(() => playWheelTickSound(), ms));
+        }
+      });
       await new Promise((r) => setTimeout(r, SPIN_DURATION_MS));
+      tickTimers.forEach(clearTimeout);
 
       // 4) Mostra cadeado abrindo
       setPhase("revealing");
       await new Promise((r) => setTimeout(r, REVEAL_DELAY_MS));
 
-      // 5) Reveal final — banner + confetti + "Parabéns!"
+      // 5) Reveal final — banner + confetti + "Parabéns!" + fanfarra
       setPhase("revealed");
+      playPrizeRevealSound();
 
       // Toast no card (o banner do modal mostra detalhes)
       const valueLabel =
@@ -187,21 +197,26 @@ export function DailyWheelCard() {
       />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center md:items-stretch gap-4">
-        {/* Disco do card (estático) */}
+        {/* Disco do card (estático) — maior em desktop pra ficar imponente */}
         <div className="relative shrink-0">
           <motion.div
-            animate={{ rotate: 0 }}
-            className="size-28 md:size-32 rounded-full border-4 border-primary shadow-xl shadow-primary/30"
+            animate={canSpin ? { rotate: [0, 360] } : { rotate: 0 }}
+            transition={canSpin ? { duration: 12, repeat: Infinity, ease: "linear" } : { duration: 0 }}
+            className="size-28 md:size-44 rounded-full border-4 border-primary shadow-xl shadow-primary/30"
             style={{
               background: "conic-gradient(from -22.5deg, #FFD60A 0 45deg, #0B1A38 45deg 90deg, #FFD60A 90deg 135deg, #0B1A38 135deg 180deg, #FFD60A 180deg 225deg, #0B1A38 225deg 270deg, #FFD60A 270deg 315deg, #0B1A38 315deg 360deg)",
             }}
           />
-          {/* Pointer */}
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 size-0 border-l-[8px] border-r-[8px] border-t-[12px] border-l-transparent border-r-transparent border-t-primary drop-shadow" />
-          {/* Hub central */}
+          {/* Pointer pulsa quando pode girar */}
+          <motion.div
+            animate={canSpin ? { y: [0, 3, 0] } : { y: 0 }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-1 left-1/2 -translate-x-1/2 size-0 border-l-[8px] md:border-l-[12px] border-r-[8px] md:border-r-[12px] border-t-[12px] md:border-t-[16px] border-l-transparent border-r-transparent border-t-primary drop-shadow"
+          />
+          {/* Hub central — maior em desktop */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="size-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-              <span className="material-symbols-outlined filled-icon text-xl">redeem</span>
+            <div className="size-10 md:size-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+              <span className="material-symbols-outlined filled-icon text-xl md:text-2xl">redeem</span>
             </div>
           </div>
         </div>

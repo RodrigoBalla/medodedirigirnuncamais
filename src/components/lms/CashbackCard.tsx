@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -82,10 +83,14 @@ export function CashbackCard() {
     }
   }
 
+  // Item 8: progress bar quando saldo < mínimo, e CTA proeminente quando >= mínimo
+  const progressToMin = Math.min(100, Math.round((coins / config.min_coins_to_convert) * 100));
+  const coinsToNext = Math.max(0, config.min_coins_to_convert - coins);
+
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-bold text-base flex items-center gap-2">
+    <div className="bg-card border border-border rounded-[32px] p-6 md:p-7 shadow-sm mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-black text-sm uppercase tracking-widest flex items-center gap-2">
           <span className="material-symbols-outlined text-amber-500">savings</span>
           Cashback
         </h3>
@@ -94,14 +99,48 @@ export function CashbackCard() {
         </span>
       </div>
 
-      <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/5 border border-amber-500/20 rounded-xl p-4 mb-4">
+      <div className="bg-gradient-to-br from-amber-500/15 to-yellow-500/5 border border-amber-500/30 rounded-2xl p-4 md:p-5 mb-4">
         <p className="text-xs text-muted-foreground mb-1">Suas moedas valem</p>
-        <p className="text-2xl font-black text-amber-600 dark:text-amber-400">
+        <p className="text-3xl md:text-4xl font-black text-amber-600 dark:text-amber-400">
           R$ {totalCashbackBrl}
         </p>
         <p className="text-[11px] text-muted-foreground mt-1">
           Use como desconto no próximo curso
         </p>
+
+        {/* Item 8: Progress até o mínimo OU CTA proeminente quando atinge */}
+        {coins < config.min_coins_to_convert ? (
+          <div className="mt-3 pt-3 border-t border-amber-500/20">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                Próximo cupom
+              </p>
+              <p className="text-[10px] font-mono text-muted-foreground">
+                {coins}/{config.min_coins_to_convert}
+              </p>
+            </div>
+            <div className="h-2 bg-amber-500/15 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progressToMin}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full"
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">
+              Faltam <span className="text-amber-700 dark:text-amber-300 font-black">{coinsToNext} 🪙</span> pro seu próximo cupom de <span className="font-black">R$ {(config.min_coins_to_convert / config.coins_per_brl).toFixed(2)}</span>
+            </p>
+          </div>
+        ) : (
+          <div className="mt-3 pt-3 border-t border-amber-500/20">
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-widest mb-1.5">
+              ✓ Pronto pra resgatar
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Você já tem moedas suficientes pra gerar um cupom abaixo 👇
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2 mb-3">

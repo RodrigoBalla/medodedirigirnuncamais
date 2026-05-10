@@ -116,6 +116,18 @@ export const playStreakSound = () => sequence([
   [1760, 0.15, "sine", 0.22],
 ]);
 
+/** Tic curto pra simular a roleta girando (tipo "click" de catraca). */
+export const playWheelTickSound = () => tone(2400, 0.04, 0.10, "square");
+
+/** Fanfarra mais elaborada pra reveal de prêmio. */
+export const playPrizeRevealSound = () => sequence([
+  [523, 0.08, "triangle", 0.20],
+  [659, 0.08, "triangle", 0.22],
+  [784, 0.08, "triangle", 0.24],
+  [1047, 0.12, "triangle", 0.26],
+  [1568, 0.30, "sine", 0.28],
+]);
+
 /** Versão exportada do tom — usada por DrivingApp em sequências custom */
 export function createTone(c: AudioContext, type: OscillatorType, freq: number, startTime: number, duration: number, gainPeak = 0.28) {
   const osc = c.createOscillator();

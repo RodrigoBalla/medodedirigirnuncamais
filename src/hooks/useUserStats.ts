@@ -12,10 +12,18 @@ import { useAuth } from "@/contexts/AuthContext";
 // UserProgressContext em paralelo.
 // =============================================================================
 
+export interface LastLesson {
+  lesson_id: string;
+  title: string;
+  product_id: string | null;
+  updated_at: string;
+}
+
 export interface UserStats {
   lessonsCompleted: number;
   coursesUnlocked: number;
   daysStudied: number;
+  lastLesson: LastLesson | null;
   loading: boolean;
 }
 
@@ -25,12 +33,13 @@ export function useUserStats(): UserStats {
     lessonsCompleted: 0,
     coursesUnlocked: 0,
     daysStudied: 0,
+    lastLesson: null,
     loading: true,
   });
 
   useEffect(() => {
     if (!user) {
-      setStats({ lessonsCompleted: 0, coursesUnlocked: 0, daysStudied: 0, loading: false });
+      setStats({ lessonsCompleted: 0, coursesUnlocked: 0, daysStudied: 0, lastLesson: null, loading: false });
       return;
     }
 
@@ -69,11 +78,35 @@ export function useUserStats(): UserStats {
         );
         uniqueDays.delete("");
 
+        // Última aula que o aluno tocou (pra mostrar "Continue de onde parou")
+        let lastLesson: LastLesson | null = null;
+        try {
+          const { data: lastProg } = await supabase
+            .from("lesson_progress")
+            .select("lesson_id, updated_at, lessons(title, product_id)")
+            .eq("user_id", user!.id)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (lastProg) {
+            const lessonRel = (lastProg as { lessons?: { title?: string; product_id?: string } }).lessons;
+            lastLesson = {
+              lesson_id: (lastProg as { lesson_id: string }).lesson_id,
+              title: lessonRel?.title ?? "Aula sem título",
+              product_id: lessonRel?.product_id ?? null,
+              updated_at: (lastProg as { updated_at: string }).updated_at,
+            };
+          }
+        } catch {
+          // se a tabela lessons não estiver acessível por RLS, ignora
+        }
+
         if (!cancelled) {
           setStats({
             lessonsCompleted: completedCount || 0,
             coursesUnlocked: courses,
             daysStudied: uniqueDays.size,
+            lastLesson,
             loading: false,
           });
         }

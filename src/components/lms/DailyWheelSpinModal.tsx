@@ -186,8 +186,12 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
 
             {/* ROLETA — em desktop fica maior (380px) */}
             <div className="relative w-full aspect-square max-w-[300px] md:max-w-[380px] mx-auto mb-5 md:mb-0">
-          {/* Pointer */}
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 size-0 border-l-[14px] border-r-[14px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary drop-shadow-[0_2px_8px_rgba(255,214,10,.7)]" />
+          {/* Pointer — pulsa suavemente quando idle pra chamar atenção */}
+          <motion.div
+            animate={phase === "idle" ? { y: [0, 3, 0], scale: [1, 1.05, 1] } : { y: 0, scale: 1 }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 size-0 border-l-[14px] border-r-[14px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary drop-shadow-[0_2px_12px_rgba(255,214,10,.9)]"
+          />
 
           {/* Disco */}
           <motion.div
@@ -268,7 +272,7 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
           </div>
 
           {/* ── COLUNA DIREITA: banner do prêmio + botão ──────────────────── */}
-          <div className="md:flex md:flex-col md:justify-center md:min-h-[400px]">
+          <div className="md:flex md:flex-col md:justify-between md:min-h-[480px] md:py-2">
 
             {/* Quando idle/spinning/revealing em desktop: mostra teaser */}
             {phase !== "revealed" && (
@@ -295,15 +299,23 @@ export function DailyWheelSpinModal({ open, phase, result, rotation, onSpin, onC
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.15, type: "spring", stiffness: 240, damping: 22 }}
-              className={`relative bg-gradient-to-br ${RARITY_COPY[result.rarity]?.bg ?? RARITY_COPY.common.bg} border-2 border-white/30 rounded-2xl p-5 text-center mb-4 ring-2 ${RARITY_COPY[result.rarity]?.ring ?? "ring-white/20"} ring-offset-2 ring-offset-[#0E1B3F]`}
+              className={`relative bg-gradient-to-br ${RARITY_COPY[result.rarity]?.bg ?? RARITY_COPY.common.bg} border-2 border-white/30 rounded-2xl p-5 md:p-6 text-center mb-4 ring-2 ${RARITY_COPY[result.rarity]?.ring ?? "ring-white/20"} ring-offset-2 ring-offset-[#0E1B3F]`}
             >
               <p className={`text-[10px] font-black uppercase tracking-widest ${RARITY_COPY[result.rarity]?.color ?? "text-white/70"} mb-2`}>
                 {RARITY_COPY[result.rarity]?.tag ?? "✨ Recompensa"}
               </p>
               <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="material-symbols-outlined filled-icon text-5xl text-primary drop-shadow-[0_2px_8px_rgba(255,214,10,.6)]">
+                <motion.span
+                  initial={{ scale: 0.4, rotate: -180 }}
+                  animate={{
+                    scale: [1, 1.25, 1, 1.15, 1],
+                    rotate: [0, -8, 8, -4, 0],
+                  }}
+                  transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+                  className="material-symbols-outlined filled-icon text-5xl text-primary drop-shadow-[0_2px_12px_rgba(255,214,10,.8)] inline-block"
+                >
                   {result.prize_icon}
-                </span>
+                </motion.span>
                 <span className="font-black text-3xl text-white tracking-tight">
                   {result.prize_label}
                 </span>
