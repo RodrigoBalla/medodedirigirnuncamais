@@ -896,7 +896,10 @@
     }
     /* Card-diagnóstico, estilo "tela de app analisando" */
     .pain-diagnosis {
-      position: sticky; top: 50px;
+      /* top: 80px = 32px topbar amarela + ~38px nav-anchors + 10px folga.
+         Antes era 50px, mas o card ficava parcialmente coberto pela
+         barra de ancoras (Carla/Trilha/Depoimentos/Oferta). */
+      position: sticky; top: 80px;
       padding: 0;
       background: linear-gradient(180deg, var(--surface) 0%, var(--bg-3) 100%);
       border: 1px solid var(--primary);
@@ -1206,11 +1209,12 @@
     .pain-list:has(li.is-selected) .click-hand { display: none; }    @media(max-width: 768px) {
       .pain-inner { grid-template-columns: 1fr; gap: 18px; }
       /* Card de diagnóstico fixo no topo da seção em mobile (compactado).
-         top:44px garante que ele fique ABAIXO da topbar fixa (32px + 12px gap),
-         senão o topo do card ficava atrás do ticker amarelo. */
+         top:80px = topbar (32px) + nav-anchors (44px) + 4px de folga. Antes
+         era 44px e cobria parcialmente atrás da barra de ancoras quando
+         visível. */
       .pain-diagnosis {
         position: sticky;
-        top: 44px;
+        top: 80px;
         z-index: 5;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
@@ -4303,6 +4307,12 @@
     /* ─── STICKY NAV COM ÂNCORAS ─────────────────────────
        Aparece DEPOIS do hero rolar fora. Logo abaixo da topbar (top:32px).
        Links pra: Carla / Trilha / Depoimentos / Oferta. */
+    /* Scroll-margin global pra anchor links (#quem-somos, #trilha-section,
+       #testimonials, #oferta) NÃO ficarem cobertos pela topbar+nav-anchors.
+       Sem isso, clicar em "Trilha" rola até o título atrás da navbar. */
+    section[id], div[id="quem-somos"] {
+      scroll-margin-top: 80px;
+    }
     .nav-anchors {
       position: fixed;
       top: 32px; left: 0; right: 0;
@@ -4666,7 +4676,6 @@
 <!-- ─── APROVADAS (galeria horizontal em loop infinito) ─── -->
 <section class="approved-section">
   <div class="container">
-    <p class="eyebrow text-center">Aprovadas reais</p>
     <h2 class="section-title text-center">Quem <span>venceu o medo</span></h2>
     <!-- Prova social numérica, abaixo do título, antes da galeria -->
     <div class="text-center">
