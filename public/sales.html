@@ -5650,7 +5650,6 @@
       '.btn--primary:not(.sticky-cta__btn), .solution-cta, .offer-cta'
     )).filter(el => !el.closest('.modal') && !el.closest('.exit-modal'));
 
-    const isMobile = () => window.innerWidth <= 768;
     let raf = null;
     function isInViewport(el) {
       const r = el.getBoundingClientRect();
@@ -5660,11 +5659,8 @@
     }
     function update() {
       raf = null;
-      if (!isMobile()) {
-        stickyCta.classList.remove('is-visible');
-        document.body.classList.remove('has-sticky-cta');
-        return;
-      }
+      // (removido o early-return mobile-only — sticky agora aparece em
+      //  qualquer largura, mesma regra de visibilidade pra todos)
       // Esconde se modal aberto
       const modalOpen = document.querySelector(
         '.modal-overlay.is-open, .exit-overlay.is-open'
