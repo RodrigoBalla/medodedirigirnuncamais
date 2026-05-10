@@ -3198,11 +3198,54 @@
       font-weight: 500;
     }
     .testi-msg__meta svg { flex-shrink: 0; }
-    /* Mensagem recebida (do aluno, à esquerda, cinza) */
-
-    /* Mensagem enviada (Carla respondendo, à direita, verde) */
-
-    /* Mensagens consecutivas do mesmo lado: sem tail, full radius */
+    /* Mensagem recebida (do aluno, à esquerda, cinza WhatsApp dark) */
+    .testi-msg--in {
+      align-self: flex-start;
+      background: #202c33;
+      border-radius: 8px 8px 8px 0;
+      margin-left: 8px;
+    }
+    .testi-msg--in::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -8px;
+      width: 8px; height: 13px;
+      background: #202c33;
+      clip-path: polygon(100% 0, 100% 100%, 0 0);
+    }
+    /* Mensagem enviada (Carla respondendo, à direita, verde WhatsApp dark) */
+    .testi-msg--out {
+      align-self: flex-end;
+      background: #005c4b;
+      border-radius: 8px 8px 0 8px;
+      margin-right: 8px;
+    }
+    .testi-msg--out::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -8px;
+      width: 8px; height: 13px;
+      background: #005c4b;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+    }
+    /* Mensagens consecutivas do mesmo lado: sem tail (segunda+ não tem o triângulo)
+       e mais coladas verticalmente — replica o agrupamento do WhatsApp. */
+    .testi-msg--in + .testi-msg--in,
+    .testi-msg--out + .testi-msg--out {
+      margin-top: -1px;
+    }
+    .testi-msg--in + .testi-msg--in::before,
+    .testi-msg--out + .testi-msg--out::before {
+      display: none;
+    }
+    .testi-msg--in + .testi-msg--in {
+      border-top-left-radius: 8px;
+    }
+    .testi-msg--out + .testi-msg--out {
+      border-top-right-radius: 8px;
+    }
 
     /* ─── GUARANTEE ────────────────────────────────────── */
     .guarantee-section {
@@ -6093,130 +6136,182 @@
   // Fotos: i.pravatar.cc (serviço gratuito de fotos de perfil reais).
   // Cada `?img=NN` é uma foto fixa diferente (não muda no reload).
   (function() {
-    // Cada testimonial agora é uma CONVERSA real: várias mensagens curtas
-    // do aluno (in) + uma resposta da Carla (out), como WhatsApp de verdade.
+    // Cada testimonial é uma CONVERSA REAL: alterna mensagens da aluna (in)
+    // com respostas da Carla (out) — não é monólogo, é diálogo. Maioria
+    // SP/RJ (público concentrado), com algumas outras capitais misturadas.
     const testimonials = [
+      // ─── 1 ─── São Paulo
       {
-        name: "Marina S., 38", role: "São Paulo", photo: "https://i.pravatar.cc/150?img=44",
+        name: "Marina S., 38", role: "São Paulo · SP", photo: "https://i.pravatar.cc/150?img=44",
         msgs: [
           { who: 'in',  t: 'Carla, lembra de mim?',                                              time: '14:32' },
           { who: 'in',  t: 'tirei minha carteira em 2018 e nunca dirigi 😔',                     time: '14:32' },
-          { who: 'in',  t: 'fiz seu programa em 3 semanas e tô dirigindo SOZINHA 😭',            time: '14:33' },
-          { who: 'in',  t: 'obrigada de coração ❤️',                                              time: '14:33' },
-          { who: 'out', t: 'Marina meu Deus 🥹 lembro SIMM',                                     time: '14:38' }
+          { who: 'out', t: 'Marina meu Deus 🥹 lembro SIMM',                                     time: '14:33' },
+          { who: 'out', t: 'cê tava super travada quando entrou',                                time: '14:33' },
+          { who: 'in',  t: 'pois é, fiz seu programa em 3 semanas',                              time: '14:34' },
+          { who: 'in',  t: 'tô dirigindo SOZINHA agora 😭',                                       time: '14:34' },
+          { who: 'in',  t: 'ontem fui ate o trabalho e voltei',                                  time: '14:35' },
+          { who: 'out', t: 'caraaa q orgulho de vc 💛',                                           time: '14:36' },
+          { who: 'out', t: 'manda uma foto qnd der!',                                            time: '14:36' }
         ]
       },
+      // ─── 2 ─── Rio de Janeiro
       {
-        name: "Camila R., 29", role: "Belo Horizonte", photo: "https://i.pravatar.cc/150?img=49",
+        name: "Juliana M., 33", role: "Rio de Janeiro · RJ", photo: "https://i.pravatar.cc/150?img=23",
+        msgs: [
+          { who: 'in',  t: 'Carla bom dia 🌞',                                                    time: '21:48' },
+          { who: 'in',  t: 'tô passando só pra agradecer',                                       time: '21:48' },
+          { who: 'in',  t: "em 28 dias sai de 'nao consigo nem entrar no carro'",                 time: '21:49' },
+          { who: 'out', t: 'JULIANA QUE LINDO 🥲',                                                time: '21:50' },
+          { who: 'out', t: 'me conta tudo!',                                                     time: '21:50' },
+          { who: 'in',  t: 'ontem dirigi ate a casa da minha mãe',                               time: '21:51' },
+          { who: 'in',  t: 'ela chorou qnd me viu chegando 🚗',                                   time: '21:51' },
+          { who: 'in',  t: 'FUNCIONA msm seu programa',                                          time: '21:52' },
+          { who: 'out', t: 'Juliana queridaaa 💛',                                                time: '21:53' },
+          { who: 'out', t: 'manda foto da viagem hein',                                          time: '21:53' }
+        ]
+      },
+      // ─── 3 ─── São Paulo
+      {
+        name: "Camila R., 29", role: "Guarulhos · SP", photo: "https://i.pravatar.cc/150?img=49",
         msgs: [
           { who: 'in',  t: 'achei q ia ser mais um curso q eu ia abandonar kkk',                 time: 'ontem' },
-          { who: 'in',  t: 'mas a forma q td é dividido em fases pequenas mudou tudo',           time: 'ontem' },
+          { who: 'out', t: 'kkkk eu entendoo',                                                   time: 'ontem' },
+          { who: 'out', t: 'mt gente chega assim, desconfiada',                                  time: 'ontem' },
+          { who: 'in',  t: 'mas a forma q td é dividido em fases pequenas',                      time: 'ontem' },
+          { who: 'in',  t: 'isso mudou tudo',                                                    time: 'ontem' },
           { who: 'in',  t: 'hj vou pro trabalho dirigindo, sem ansiedade ❤️',                    time: 'ontem' },
           { who: 'out', t: 'Camilaaa que alegria ler isso 🥲',                                    time: 'ontem' }
         ]
       },
+      // ─── 4 ─── Rio de Janeiro
       {
-        name: "Carlos M., 45", role: "Brasília", photo: "https://i.pravatar.cc/150?img=12",
+        name: "Patrícia L., 47", role: "Niterói · RJ", photo: "https://i.pravatar.cc/150?img=24",
         msgs: [
+          { who: 'in',  t: 'comprei depois de anos travada',                                     time: '10:08' },
+          { who: 'in',  t: 'mais de 5 anos sem encostar no volante',                             time: '10:08' },
+          { who: 'out', t: 'Patrícia 🥲 fico feliz q vc deu o passo',                             time: '10:09' },
+          { who: 'in',  t: 'a turma foi o diferencial sabe',                                     time: '10:10' },
+          { who: 'in',  t: 'saber q tem outras pessoas na mesma jornada',                        time: '10:10' },
+          { who: 'in',  t: 'me deu uma força q eu nao tinha sozinha',                            time: '10:11' },
+          { who: 'out', t: 'é EXATAMENTE isso q a gente quer ❤️',                                  time: '10:12' },
+          { who: 'out', t: 'continua firme, vc tá indo lindo',                                   time: '10:12' }
+        ]
+      },
+      // ─── 5 ─── São Paulo
+      {
+        name: "Beatriz O., 27", role: "São Paulo · SP", photo: "https://i.pravatar.cc/150?img=16",
+        msgs: [
+          { who: 'in',  t: 'a parte de fases me prendeu',                                        time: '19:55' },
+          { who: 'in',  t: 'parecia jogo kkk',                                                   time: '19:55' },
+          { who: 'out', t: 'kkkkk Bia esse era o plano!',                                        time: '19:56' },
+          { who: 'in',  t: 'cada conquista q eu destravava era um passo a mais',                 time: '19:57' },
+          { who: 'in',  t: 'qnd vi ja tava na rua dirigindo 🚗',                                  time: '19:57' },
+          { who: 'out', t: 'fiquei feliz demais lendo isso 💛',                                   time: '19:58' },
+          { who: 'out', t: 'qual fase foi a mais marcante pra vc?',                              time: '19:58' },
+          { who: 'in',  t: 'a do nó na cabeça antes da embreagem',                               time: '19:59' },
+          { who: 'in',  t: 'foi onde eu chorei kkk',                                             time: '19:59' }
+        ]
+      },
+      // ─── 6 ─── Rio de Janeiro
+      {
+        name: "Larissa C., 31", role: "Barra da Tijuca · RJ", photo: "https://i.pravatar.cc/150?img=47",
+        msgs: [
+          { who: 'in',  t: 'Carlaaa AMEI o programa 💛',                                          time: 'ontem' },
+          { who: 'in',  t: 'comecei sem confiança nenhuma',                                      time: 'ontem' },
+          { who: 'out', t: 'awn Lari, conta mais',                                               time: 'ontem' },
+          { who: 'in',  t: 'em 2 meses dirigi até a praia nas férias 😍',                         time: 'ontem' },
+          { who: 'in',  t: 'coisa q nem nos meus melhores sonhos eu faria antes',                time: 'ontem' },
+          { who: 'out', t: 'EU AMO ISSO 💛💛',                                                     time: 'ontem' },
+          { who: 'out', t: 'quero foto da praia hein!!',                                         time: 'ontem' }
+        ]
+      },
+      // ─── 7 ─── São Paulo
+      {
+        name: "Aline N., 42", role: "Santo André · SP", photo: "https://i.pravatar.cc/150?img=10",
+        msgs: [
+          { who: 'in',  t: 'sou mãe de 2 e dependia do meu marido pra tudo',                     time: 'ontem' },
+          { who: 'in',  t: 'cansei',                                                             time: 'ontem' },
+          { who: 'out', t: 'Aline 🥲 já entendi tudo',                                            time: 'ontem' },
+          { who: 'in',  t: 'comprei seu curso decidida',                                         time: 'ontem' },
+          { who: 'in',  t: 'hj levo minha filha na escola, vou no mercado',                      time: 'ontem' },
+          { who: 'in',  t: 'medico, aniversario, td 💛',                                          time: 'ontem' },
+          { who: 'out', t: 'isso aqui é o q me move',                                            time: 'ontem' },
+          { who: 'out', t: 'liberdade pras mães é tudo 🙏',                                       time: 'ontem' }
+        ]
+      },
+      // ─── 8 ─── Rio de Janeiro
+      {
+        name: "Diego A., 24", role: "Tijuca · RJ", photo: "https://i.pravatar.cc/150?img=51",
+        msgs: [
+          { who: 'in',  t: 'Reprovei na prova prática 2x antes de comprar',                      time: '22:14' },
+          { who: 'in',  t: 'achei q nunca ia conseguir',                                         time: '22:14' },
+          { who: 'out', t: 'Diego, mt gente passa por isso',                                     time: '22:15' },
+          { who: 'out', t: 'a 3a com vc preparado é outra coisa',                                time: '22:15' },
+          { who: 'in',  t: 'refiz tudo no app',                                                  time: '22:16' },
+          { who: 'in',  t: 'fui na 3a tentativa',                                                time: '22:16' },
+          { who: 'in',  t: 'PASSEI 🎉🎉',                                                          time: '22:17' },
+          { who: 'in',  t: 'OBRIGADO!!',                                                         time: '22:17' },
+          { who: 'out', t: 'DIEGOOOO PARABÉNS 🎊🎊',                                              time: '22:18' },
+          { who: 'out', t: 'fiquei MT feliz lendo isso',                                         time: '22:18' }
+        ]
+      },
+      // ─── 9 ─── São Paulo
+      {
+        name: "Carlos M., 45", role: "Osasco · SP", photo: "https://i.pravatar.cc/150?img=12",
+        msgs: [
+          { who: 'in',  t: 'Carla',                                                              time: '09:15' },
           { who: 'in',  t: 'comprei pra minha esposa kkk',                                       time: '09:15' },
-          { who: 'in',  t: 'mas acabei usando junto',                                            time: '09:15' },
-          { who: 'in',  t: 'mudou minha relação com o volante tbm',                              time: '09:16' },
-          { who: 'in',  t: 'quem disse q homem nao tem medo? tem sim 😅',                         time: '09:16' },
-          { who: 'out', t: 'kkkkk amei isso Carlos!',                                            time: '09:22' }
+          { who: 'in',  t: 'mas acabei usando junto',                                            time: '09:16' },
+          { who: 'out', t: 'kkkk Carlos amei',                                                   time: '09:17' },
+          { who: 'in',  t: 'mudou minha relação com o volante tbm',                              time: '09:18' },
+          { who: 'in',  t: 'quem disse q homem nao tem medo? tem sim 😅',                         time: '09:18' },
+          { who: 'out', t: 'tem MTO, só nao fala 🤝',                                             time: '09:19' },
+          { who: 'out', t: 'q bom q vcs fizeram juntos',                                         time: '09:19' }
         ]
       },
+      // ─── 10 ─── Rio de Janeiro
       {
-        name: "Juliana M., 33", role: "Rio de Janeiro", photo: "https://i.pravatar.cc/150?img=23",
-        msgs: [
-          { who: 'in',  t: 'Carla bom dia',                                                      time: '21:48' },
-          { who: 'in',  t: 'tô passando só pra agradecer',                                       time: '21:48' },
-          { who: 'in',  t: "em 28 dias sai de 'nao consigo nem entrar no carro'",                 time: '21:49' },
-          { who: 'in',  t: 'pra dirigir ate a casa da minha mãe 🙌',                              time: '21:49' },
-          { who: 'in',  t: 'FUNCIONA msm!!',                                                     time: '21:50' },
-          { who: 'out', t: 'Juliana queridaaa 💛 manda foto da viagem hein',                      time: '21:55' }
-        ]
-      },
-      {
-        name: "Roberto F., 52", role: "Porto Alegre", photo: "https://i.pravatar.cc/150?img=68",
+        name: "Roberta F., 52", role: "Copacabana · RJ", photo: "https://i.pravatar.cc/150?img=45",
         msgs: [
           { who: 'in',  t: 'ja tinha feito 4 cursos antes do seu',                               time: '08:03' },
           { who: 'in',  t: 'esse foi o unico q entendeu',                                        time: '08:03' },
           { who: 'in',  t: 'q o problema nao era tecnica',                                       time: '08:04' },
           { who: 'in',  t: 'era a cabeça',                                                       time: '08:04' },
-          { who: 'in',  t: 'recomendo dms 👏',                                                    time: '08:04' },
-          { who: 'out', t: 'Roberto, é exatamente isso 🙏',                                       time: '08:10' }
+          { who: 'out', t: 'Roberta, é exatamente isso 🙏',                                       time: '08:05' },
+          { who: 'out', t: 'tecnica vc aprende em 1 semana',                                     time: '08:05' },
+          { who: 'out', t: 'a cabeça é o trabalho de verdade',                                   time: '08:05' },
+          { who: 'in',  t: 'recomendo dms 👏👏',                                                   time: '08:06' }
         ]
       },
+      // ─── 11 ─── Belo Horizonte (variedade)
       {
-        name: "Larissa C., 31", role: "Fortaleza", photo: "https://i.pravatar.cc/150?img=47",
-        msgs: [
-          { who: 'in',  t: 'Carlaaa AMEI o programa',                                            time: 'ontem' },
-          { who: 'in',  t: 'comecei sem confiança nenhuma',                                      time: 'ontem' },
-          { who: 'in',  t: 'em 2 meses dirigi até a praia nas férias 😍',                         time: 'ontem' },
-          { who: 'in',  t: 'coisa q nem nos meus melhores sonhos eu faria antes',                time: 'ontem' },
-          { who: 'out', t: 'Larissa eu amo isso 💛 quero ver foto da praia!',                     time: 'ontem' }
-        ]
-      },
-      {
-        name: "Lúcia M., 62", role: "Recife", photo: "https://i.pravatar.cc/150?img=45",
+        name: "Lúcia M., 62", role: "Belo Horizonte · MG", photo: "https://i.pravatar.cc/150?img=48",
         msgs: [
           { who: 'in',  t: 'Tirei minha CNH com 60 anos',                                        time: '16:20' },
           { who: 'in',  t: 'achei q era tarde demais...',                                        time: '16:20' },
-          { who: 'in',  t: 'mas vc me mostrou q nao tem idade pra isso',                         time: '16:21' },
-          { who: 'in',  t: 'hj saio sozinha pra padaria e volto sem tremer',                     time: '16:21' },
-          { who: 'in',  t: 'obrigada de coração 🙏',                                              time: '16:22' },
-          { who: 'out', t: 'Dona Lúcia 🥹 a senhora é minha inspiração',                          time: '16:30' }
+          { who: 'out', t: 'Dona Lúcia 🥹',                                                       time: '16:21' },
+          { who: 'out', t: 'tarde nada, a senhora é potencia',                                   time: '16:21' },
+          { who: 'in',  t: 'vc me mostrou q nao tem idade pra isso',                             time: '16:22' },
+          { who: 'in',  t: 'hj saio sozinha pra padaria e volto sem tremer',                     time: '16:22' },
+          { who: 'in',  t: 'obrigada de coração 🙏',                                              time: '16:23' },
+          { who: 'out', t: 'a senhora é minha inspiração',                                       time: '16:24' },
+          { who: 'out', t: 'amo ter a senhora aqui 💛',                                           time: '16:24' }
         ]
       },
+      // ─── 12 ─── São Paulo
       {
-        name: "Fernando P., 38", role: "Salvador", photo: "https://i.pravatar.cc/150?img=33",
+        name: "Fernando P., 38", role: "São Paulo · SP", photo: "https://i.pravatar.cc/150?img=33",
         msgs: [
           { who: 'in',  t: 'Olha',                                                               time: '12:47' },
           { who: 'in',  t: 'comprei pq o preço foi um insulto kkk',                              time: '12:47' },
-          { who: 'in',  t: 'por menos do q 2 aulas de auto escola peguei o programa todo',       time: '12:48' },
-          { who: 'in',  t: '1 ano completo, sem mensalidade',                                         time: '12:48' },
-          { who: 'in',  t: 'tá de boa demais',                                                   time: '12:48' },
-          { who: 'out', t: 'kkkk Fernando vc é demais',                                          time: '12:55' }
-        ]
-      },
-      {
-        name: "Aline N., 42", role: "Salvador", photo: "https://i.pravatar.cc/150?img=10",
-        msgs: [
-          { who: 'in',  t: 'sou mãe de 2 e dependia do meu marido pra tudo',                     time: 'ontem' },
-          { who: 'in',  t: 'hj levo minha filha na escola',                                      time: 'ontem' },
-          { who: 'in',  t: 'vou no mercado, medico, aniversário',                                time: 'ontem' },
-          { who: 'in',  t: 'liberdade de vdd 💛',                                                 time: 'ontem' },
-          { who: 'out', t: 'Aline, isso aqui é o que me move 🥲',                                 time: 'ontem' }
-        ]
-      },
-      {
-        name: "Beatriz O., 27", role: "Campinas", photo: "https://i.pravatar.cc/150?img=16",
-        msgs: [
-          { who: 'in',  t: 'a parte de fases me prendeu',                                        time: '19:55' },
-          { who: 'in',  t: 'cada conquista q eu destravava era um passo a mais',                 time: '19:55' },
-          { who: 'in',  t: 'qnd vi ja tava na rua dirigindo 🚗',                                  time: '19:56' },
-          { who: 'out', t: 'Bia 💛 fiquei feliz demais lendo isso',                               time: '20:02' }
-        ]
-      },
-      {
-        name: "Patrícia L., 47", role: "Curitiba", photo: "https://i.pravatar.cc/150?img=24",
-        msgs: [
-          { who: 'in',  t: 'comprei depois de anos travada',                                     time: '10:08' },
-          { who: 'in',  t: 'a turma foi o diferencial',                                          time: '10:08' },
-          { who: 'in',  t: 'saber q tem outras pessoas na mesma jornada',                        time: '10:09' },
-          { who: 'in',  t: 'me deu uma força q eu nao tinha sozinha',                            time: '10:09' },
-          { who: 'out', t: 'Patrícia, é isso q a gente quer ❤️',                                  time: '10:18' }
-        ]
-      },
-      {
-        name: "Diego A., 24", role: "Goiânia", photo: "https://i.pravatar.cc/150?img=51",
-        msgs: [
-          { who: 'in',  t: 'Reprovei na prova prática 2x antes de comprar',                      time: '22:14' },
-          { who: 'in',  t: 'achei q nunca ia conseguir',                                         time: '22:14' },
-          { who: 'in',  t: 'refiz tudo no app, fui na 3a tentativa',                             time: '22:15' },
-          { who: 'in',  t: 'PASSEI 🎉🎉',                                                          time: '22:15' },
-          { who: 'in',  t: 'OBRIGADO!!',                                                         time: '22:16' },
-          { who: 'out', t: 'DIEGOOOO PARABÉNS 🎊',                                                time: '22:30' }
+          { who: 'out', t: 'kkkkk Fernando',                                                     time: '12:48' },
+          { who: 'in',  t: 'por menos do q 2 aulas de auto escola',                              time: '12:49' },
+          { who: 'in',  t: 'peguei o programa todo, 1 ano completo',                             time: '12:49' },
+          { who: 'in',  t: 'sem mensalidade nada',                                               time: '12:50' },
+          { who: 'in',  t: 'tá de boa demais',                                                   time: '12:50' },
+          { who: 'out', t: 'foi pensado pra ser acessível mesmo 🙏',                              time: '12:51' },
+          { who: 'out', t: 'aproveita td!',                                                      time: '12:51' }
         ]
       }
     ];
