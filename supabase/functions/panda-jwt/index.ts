@@ -6,7 +6,7 @@
 //   - string1: "Aluno · Medo de Dirigir Nunca Mais"
 //   - string2: email do aluno (renderizado sobre o vídeo)
 //   - string3: ID curto da sessão (rastreio)
-// Expira em 24h.
+// Expira em 1h (token rotativo — limita janela de compartilhamento).
 //
 // SECURITY:
 // - Requer Authorization Bearer com JWT do Supabase Auth
@@ -68,7 +68,7 @@ serve(async (req) => {
     string1: "Medo de Dirigir Nunca Mais",
     string2: email,
     string3: `ID: ${userIdShort}`,
-    exp: getNumericDate(60 * 60 * 24), // 24h
+    exp: getNumericDate(60 * 60), // 1h — token rotativo
   };
 
   // 4. Assina HS256 com a chave secreta do Panda

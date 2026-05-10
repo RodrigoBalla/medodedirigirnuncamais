@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { WatermarkOverlay } from "./WatermarkOverlay";
 
 // ─── Feature flag: Panda DRM Watermark ───────────────────────────────────────
 // Quando TRUE  → pede JWT à Edge Function panda-jwt e injeta &watermark=… no
@@ -24,7 +25,8 @@ async function getPandaWatermarkJWT(): Promise<string | null> {
   if (_pandaWatermarkPromise && Date.now() < _pandaWatermarkExpiresAt) {
     return _pandaWatermarkPromise;
   }
-  _pandaWatermarkExpiresAt = Date.now() + 23 * 60 * 60 * 1000; // 23h cache
+  // Cache curto pra alinhar com o TTL de 1h do JWT (token rotativo)
+  _pandaWatermarkExpiresAt = Date.now() + 50 * 60 * 1000; // 50min cache
   _pandaWatermarkPromise = (async () => {
     try {
       const { data, error } = await supabase.functions.invoke("panda-jwt", {
@@ -73,6 +75,21 @@ interface VideoPlayerProps {
    *  no Panda Video (parâmetros watermark/customParam.). */
   viewerId?: string;
   className?: string;
+}
+
+// Métodos expostos via ref pra permitir controle externo (atalhos de teclado,
+// botão PiP, modo foco). Cada método é best-effort: se a fonte não suporta
+// (ex: PiP num iframe cross-origin), faz fallback silencioso.
+export interface VideoPlayerHandle {
+  play: () => void;
+  pause: () => void;
+  togglePlay: () => void;
+  seek: (deltaSeconds: number) => void;
+  toggleMute: () => void;
+  setVolumeDelta: (delta: number) => void;
+  toggleFullscreen: () => void;
+  togglePictureInPicture: () => void;
+  getCurrentTime: () => number;
 }
 
 // ─── helpers pra detectar URL e extrair videoId ──────────────────────────────
@@ -145,7 +162,7 @@ function loadVimeoApi(): Promise<void> {
 }
 
 // ─── componente principal ────────────────────────────────────────────────────
-export function VideoPlayer({
+export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer({
   embed,
   startAt = 0,
   onProgress,
@@ -153,11 +170,134 @@ export function VideoPlayer({
   onDurationChange,
   viewerId,
   className,
-}: VideoPlayerProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const progressInterval = useRef<number | null>(null);
+  const isPlayingRef = useRef<boolean>(false);
+  const isMutedRef   = useRef<boolean>(true);
+  const volumeRef    = useRef<number>(1);
+  const currentTimeRef = useRef<number>(0);
   const [iframeReady, setIframeReady] = useState(false);
+
+  // Wrapper que intercepta onProgress pra atualizar currentTimeRef antes
+  // de delegar pro callback do pai. Assim getCurrentTime() exposto via ref
+  // sempre retorna a posição mais recente que conhecemos.
+  const onProgressRef = useRef(onProgress);
+  onProgressRef.current = onProgress;
+  const handleProgress = (t: number, d: number) => {
+    currentTimeRef.current = t;
+    onProgressRef.current?.(t, d);
+  };
+
+  // ─── Controles expostos via ref ───────────────────────────────────────────
+  // Cada método tenta aplicar a ação via SDK do Panda/YouTube/Vimeo OU via
+  // <video> nativo. PiP em iframe cross-origin não funciona — só no <video>.
+  useImperativeHandle(ref, (): VideoPlayerHandle => {
+    const doPlay = () => {
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      try {
+        if (embed.kind === "youtube") p.playVideo?.();
+        else if (embed.kind === "vimeo") p.play?.();
+        else if (embed.kind === "panda") p.play?.();
+        else (p as HTMLVideoElement).play?.();
+        isPlayingRef.current = true;
+      } catch {}
+    };
+    const doPause = () => {
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      try {
+        if (embed.kind === "youtube") p.pauseVideo?.();
+        else if (embed.kind === "vimeo") p.pause?.();
+        else if (embed.kind === "panda") p.pause?.();
+        else (p as HTMLVideoElement).pause?.();
+        isPlayingRef.current = false;
+      } catch {}
+    };
+    return {
+    play: doPlay,
+    pause: doPause,
+    togglePlay: () => { isPlayingRef.current ? doPause() : doPlay(); },
+    seek: (delta: number) => {
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      try {
+        if (embed.kind === "youtube") {
+          const t = p.getCurrentTime?.() ?? 0;
+          p.seekTo?.(Math.max(0, t + delta), true);
+        } else if (embed.kind === "vimeo") {
+          p.getCurrentTime?.().then((t: number) => p.setCurrentTime?.(Math.max(0, t + delta)));
+        } else if (embed.kind === "panda") {
+          const t = p.getCurrentTime?.() ?? 0;
+          p.setCurrentTime?.(Math.max(0, t + delta));
+        } else {
+          const v = p as HTMLVideoElement;
+          v.currentTime = Math.max(0, (v.currentTime || 0) + delta);
+        }
+      } catch {}
+    },
+    toggleMute: () => {
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      try {
+        if (embed.kind === "youtube") {
+          p.isMuted?.() ? p.unMute?.() : p.mute?.();
+        } else if (embed.kind === "vimeo") {
+          p.getMuted?.().then((m: boolean) => p.setMuted?.(!m));
+        } else if (embed.kind === "panda") {
+          isMutedRef.current ? p.unmute?.() : p.mute?.();
+          isMutedRef.current = !isMutedRef.current;
+        } else {
+          const v = p as HTMLVideoElement;
+          v.muted = !v.muted;
+        }
+      } catch {}
+    },
+    setVolumeDelta: (delta: number) => {
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      const newVol = Math.min(1, Math.max(0, volumeRef.current + delta));
+      volumeRef.current = newVol;
+      try {
+        if (embed.kind === "youtube") p.setVolume?.(Math.round(newVol * 100));
+        else if (embed.kind === "vimeo") p.setVolume?.(newVol);
+        else if (embed.kind === "panda") p.setVolume?.(newVol);
+        else (p as HTMLVideoElement).volume = newVol;
+      } catch {}
+    },
+    toggleFullscreen: () => {
+      const container = containerRef.current?.parentElement;
+      if (!container) return;
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else container.requestFullscreen();
+      } catch {}
+    },
+    togglePictureInPicture: async () => {
+      // PiP só funciona em <video> direto (não em iframe cross-origin).
+      // Pra Panda/YouTube/Vimeo, abre uma janela popup com o iframe.
+      const p = playerRef.current;
+      if (!p || !embed) return;
+      try {
+        if (embed.kind === "native") {
+          const v = p as HTMLVideoElement & { requestPictureInPicture?: () => Promise<unknown> };
+          // @ts-expect-error PiP API
+          if (document.pictureInPictureElement) await document.exitPictureInPicture?.();
+          else if (v.requestPictureInPicture) await v.requestPictureInPicture();
+        } else {
+          // Iframe cross-origin: PiP nativo não funciona, então não fazemos nada.
+          // O Panda já tem botão "Mini Player" interno via menu de configurações.
+          console.info("[VideoPlayer] PiP só disponível pra vídeos nativos");
+        }
+      } catch (e) {
+        console.warn("[VideoPlayer] PiP falhou:", e);
+      }
+    },
+    getCurrentTime: () => currentTimeRef.current,
+  };
+  }, [embed]);
 
   // Reset player quando o embed muda (nova aula)
   useEffect(() => {
@@ -226,7 +366,7 @@ export function VideoPlayer({
           try {
             const t = playerRef.current?.getCurrentTime?.() ?? 0;
             const d = playerRef.current?.getDuration?.() ?? 0;
-            if (t > 0 && d > 0) onProgress?.(t, d);
+            if (t > 0 && d > 0) handleProgress(t, d);
           } catch {}
         }, 5000);
         cleanup.push(() => {
@@ -263,7 +403,7 @@ export function VideoPlayer({
         playerRef.current.on("timeupdate", (data: { seconds: number; duration: number }) => {
           if (Date.now() - lastSent > 5000) {
             lastSent = Date.now();
-            onProgress?.(data.seconds, data.duration);
+            handleProgress(data.seconds, data.duration);
           }
         });
         return;
@@ -374,7 +514,7 @@ export function VideoPlayer({
                       }
                       if (Date.now() - lastSent > 5000) {
                         lastSent = Date.now();
-                        onProgress?.(t, dur);
+                        handleProgress(t, dur);
                       }
                     }
                     if (type === "panda_ended" || type === "ended") {
@@ -410,7 +550,7 @@ export function VideoPlayer({
       video.addEventListener("timeupdate", () => {
         if (Date.now() - lastSent > 5000) {
           lastSent = Date.now();
-          onProgress?.(video.currentTime, video.duration);
+          handleProgress(video.currentTime, video.duration);
         }
       });
       video.addEventListener("ended", () => onEnded?.());
@@ -457,7 +597,7 @@ export function VideoPlayer({
           t = (p as HTMLVideoElement).currentTime ?? 0;
           d = (p as HTMLVideoElement).duration ?? 0;
         }
-        if (t > 0) onProgress?.(t, d);
+        if (t > 0) handleProgress(t, d);
       } catch {}
     }
     window.addEventListener("beforeunload", saveFinalPosition);
@@ -480,6 +620,12 @@ export function VideoPlayer({
   return (
     <div className={`relative w-full h-full ${className ?? ""}`}>
       <div ref={containerRef} className="absolute inset-0" />
+      {/* Marca d'água HTML por cima do iframe (anti-print/screencast).
+          Só aparece pra fontes via iframe — em <video> nativo o <video>
+          mesmo já mostra controles e a watermark ficaria estranha. */}
+      {iframeReady && embed?.kind !== "native" && viewerId && (
+        <WatermarkOverlay viewerId={viewerId} />
+      )}
       {!iframeReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none">
           <div className="size-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -487,4 +633,4 @@ export function VideoPlayer({
       )}
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Module, Lesson } from "@/types/lms";
 import { toast } from "sonner";
@@ -9,8 +9,13 @@ import { InteractiveChallenge } from "./InteractiveChallenge";
 import { LuckRoulette } from "./LuckRoulette";
 import { GameOverModal } from "./GameOverModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { VideoPlayer, parseVideoUrl } from "./VideoPlayer";
+import { VideoPlayer, parseVideoUrl, type VideoPlayerHandle } from "./VideoPlayer";
 import { LessonComments } from "./LessonComments";
+import { AutoplayCountdown } from "./AutoplayCountdown";
+import { ReportProblemButton } from "./ReportProblemButton";
+import { useAntiPiracy } from "@/hooks/useAntiPiracy";
+import { useVideoKeyboardShortcuts } from "@/hooks/useVideoKeyboardShortcuts";
+import { useTeacherOnline } from "@/hooks/useTeacherPresence";
 
 interface Props {
   productId: string;
@@ -38,6 +43,31 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const [progressByLesson, setProgressByLesson] = useState<Map<string, number>>(new Map());
   // Posição atual no vídeo (atualizada via onProgress) — usada pra timestamp de comentários
   const currentTimeRef = useRef<number>(0);
+
+  // ─── Modo foco / Auto-play / Anti-pirataria / Atalhos ──────────────────────
+  // Modo foco: esconde sidebar, comentários e info pra deixar só vídeo+toolbar
+  const [focusMode, setFocusMode] = useState(false);
+  // Auto-play da próxima aula: countdown 5s ao final do vídeo
+  const [showAutoplay, setShowAutoplay] = useState(false);
+  // Ref pro player — usada pelos atalhos de teclado e botão PiP
+  const playerHandleRef = useRef<VideoPlayerHandle | null>(null);
+
+  // Detecta DevTools, bloqueia right-click, captura de tela
+  const { blocked: piracyBlocked, reason: piracyReason, reset: resetPiracy } = useAntiPiracy();
+
+  // Indicador "Carla online" — badge no header
+  const carlaOnline = useTeacherOnline();
+
+  // Atalhos de teclado (espaço/setas/F/M/C)
+  const playerActions = useMemo(() => ({
+    togglePlay:       () => playerHandleRef.current?.togglePlay(),
+    seek:             (d: number) => playerHandleRef.current?.seek(d),
+    setVolumeDelta:   (d: number) => playerHandleRef.current?.setVolumeDelta(d),
+    toggleMute:       () => playerHandleRef.current?.toggleMute(),
+    toggleFullscreen: () => playerHandleRef.current?.toggleFullscreen(),
+    toggleFocusMode:  () => setFocusMode((f) => !f),
+  }), []);
+  useVideoKeyboardShortcuts(playerActions, true);
 
   useEffect(() => {
     loadCourse();
@@ -129,8 +159,9 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const handleLessonAutoComplete = useCallback(async () => {
     if (!activeLessonId || !user) return;
     if (isLessonCompleted(activeLessonId)) {
-      // Já concluída — só avança
-      goToNextLesson();
+      // Já concluída — abre countdown direto
+      const idx = lessons.findIndex((l) => l.id === activeLessonId);
+      if (idx >= 0 && idx < lessons.length - 1) setShowAutoplay(true);
       return;
     }
     try {
@@ -144,12 +175,23 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       console.warn('[lesson-progress] complete error:', err);
     }
     await completeLesson(activeLessonId); // atualiza UserProgressContext (XP, badges)
-    toast.success('🎯 Aula concluída! Indo pra próxima…');
-    setTimeout(() => goToNextLesson(), 1500);
+    // Toast premium com recompensa visual — substitui o "indo pra próxima"
+    toast.success("Aula concluída!", {
+      description: "+1 ⭐ XP · +5 🪙 moedas",
+      duration: 3500,
+    });
+    // Dispara overlay de auto-play da próxima aula (estilo Netflix)
+    const idx = lessons.findIndex((l) => l.id === activeLessonId);
+    if (idx >= 0 && idx < lessons.length - 1) {
+      setShowAutoplay(true);
+    } else {
+      toast("🎉 Parabéns! Você concluiu todas as aulas deste curso!");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLessonId, user]);
+  }, [activeLessonId, user, lessons]);
 
   function goToNextLesson() {
+    setShowAutoplay(false);
     const idx = lessons.findIndex((l) => l.id === activeLessonId);
     if (idx >= 0 && idx < lessons.length - 1) {
       setActiveLessonId(lessons[idx + 1].id);
@@ -157,6 +199,12 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       toast('🎉 Parabéns! Você concluiu todas as aulas deste curso!');
     }
   }
+
+  // Próxima aula (pra título do AutoplayCountdown)
+  const nextLesson = useMemo(() => {
+    const idx = lessons.findIndex((l) => l.id === activeLessonId);
+    return idx >= 0 && idx < lessons.length - 1 ? lessons[idx + 1] : null;
+  }, [lessons, activeLessonId]);
 
   const isLessonCompleted = (lessonId: string) => completedLessons.includes(lessonId);
 
@@ -225,6 +273,25 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          {showGameOver && <GameOverModal onBack={onBack} onReset={() => setShowGameOver(false)} />}
       </AnimatePresence>
 
+      {/* Aviso anti-pirataria: detecção de DevTools / captura de tela.
+          Não bloqueia a aula, mas exibe aviso "esta sessão está sendo monitorada"
+          + log no banco (futuro). User pode fechar e continuar. */}
+      {piracyBlocked && (
+         <div className="fixed inset-x-0 top-0 z-[200] bg-amber-500 text-amber-950 px-4 py-2 text-xs font-bold flex items-center justify-center gap-3 shadow-lg">
+            <span className="material-symbols-outlined text-base">warning</span>
+            <span>
+               {piracyReason} — sua sessão é registrada com seu email/IP. Distribuir o conteúdo
+               viola os termos de uso.
+            </span>
+            <button
+               onClick={resetPiracy}
+               className="underline hover:no-underline ml-2"
+            >
+               Entendi
+            </button>
+         </div>
+      )}
+
       {/* Header Premium & Economy */}
       <header className="h-16 border-b border-border bg-card shadow-sm flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
          <div className="flex items-center gap-4">
@@ -241,6 +308,16 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          </div>
 
          <div className="flex items-center gap-3">
+            {/* Carla online — badge real-time via Supabase Presence */}
+            {carlaOnline && (
+               <div
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  title="A Carla está online agora"
+               >
+                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest">Carla online</span>
+               </div>
+            )}
             {/* Vidas ❤️ */}
             <motion.div 
                animate={lives <= 1 ? { scale: [1, 1.1, 1] } : {}}
@@ -291,6 +368,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                        {/* Video Container — VideoPlayer abstrai YouTube/Vimeo/MP4 com auto-complete + resume */}
                        <div className="w-full bg-black aspect-video relative flex flex-col items-center justify-center shadow-2xl xl:rounded-t-3xl overflow-hidden border border-border border-b-0">
                           <VideoPlayer
+                             ref={playerHandleRef}
                              embed={parseVideoUrl(activeLesson.video_url)}
                              startAt={progressByLesson.get(activeLesson.id) ?? 0}
                              viewerId={user?.email || user?.id}
@@ -300,10 +378,56 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                              onDurationChange={() => { /* duração já é capturada no onProgress */ }}
                              onEnded={handleLessonAutoComplete}
                           />
+                          {/* Auto-play overlay (countdown 5s pra próxima aula) */}
+                          <AnimatePresence>
+                             {showAutoplay && nextLesson && (
+                                <AutoplayCountdown
+                                   nextTitle={nextLesson.title}
+                                   onAdvance={goToNextLesson}
+                                   onCancel={() => setShowAutoplay(false)}
+                                />
+                             )}
+                          </AnimatePresence>
                        </div>
                        
-                       {/* Action Toolbar — botão de concluir aula (sem challenge no módulo de cursos) */}
-                       <div className="bg-card w-full p-5 border border-border flex justify-end xl:rounded-b-3xl shadow-lg gap-3">
+                       {/* Action Toolbar — controles do player + concluir aula */}
+                       <div className="bg-card w-full p-5 border border-border flex flex-wrap justify-between items-center xl:rounded-b-3xl shadow-lg gap-3">
+                          {/* Esquerda: ações do player */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                             <button
+                                onClick={() => setFocusMode((f) => !f)}
+                                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
+                                   focusMode
+                                     ? "bg-primary/10 text-primary border-primary/40"
+                                     : "text-muted-foreground hover:text-foreground border-border hover:bg-accent"
+                                }`}
+                                title="Modo foco — esconde a barra lateral (atalho: C)"
+                             >
+                                <span className="material-symbols-outlined text-base">
+                                   {focusMode ? "fullscreen_exit" : "center_focus_strong"}
+                                </span>
+                                {focusMode ? "Sair do foco" : "Modo foco"}
+                             </button>
+                             <button
+                                onClick={() => playerHandleRef.current?.togglePictureInPicture()}
+                                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-colors"
+                                title="Picture-in-picture (mini player)"
+                             >
+                                <span className="material-symbols-outlined text-base">picture_in_picture_alt</span>
+                                PiP
+                             </button>
+                             <ReportProblemButton
+                                lessonId={activeLesson.id}
+                                getCurrentTime={() => playerHandleRef.current?.getCurrentTime() ?? currentTimeRef.current}
+                             />
+                             <span
+                                className="hidden md:inline text-[10px] text-muted-foreground/70 font-mono ml-2"
+                                title="Atalhos: Espaço/K play · ←/→ ±10s · ↑/↓ volume · M mute · F fullscreen · C foco"
+                             >
+                                ⌨ Espaço · ← → · F · C
+                             </span>
+                          </div>
+                          {/* Direita: concluir aula */}
                           <button
                              onClick={() => {
                                 if (!isLessonCompleted(activeLesson.id)) handleMarkCompleted();
@@ -322,7 +446,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                           </button>
                        </div>
                        
-                       {/* Content Frame */}
+                       {/* Content Frame — escondido em modo foco */}
+                       {!focusMode && (
                        <div className="bg-card w-full p-6 md:p-8 border-b border-border xl:border xl:rounded-2xl xl:mt-6 shadow-sm">
                           <div className="flex items-center gap-2 mb-2">
                              <span className="px-2.5 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded flex items-center gap-1">
@@ -334,11 +459,14 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                              {activeLesson.content || "Nenhum material de apoio para esta missão."}
                           </div>
                        </div>
+                       )}
 
-                       {/* Comentários da aula — moderação por admin, +20 XP por aprovado */}
+                       {/* Comentários da aula — escondidos em modo foco */}
+                       {!focusMode && (
                        <div className="bg-card w-full px-4 md:px-8 pt-2 pb-8 xl:rounded-2xl xl:mt-4 xl:px-8 xl:py-6 mb-10 xl:mb-20">
                           <LessonComments lessonId={activeLesson.id} />
                        </div>
+                       )}
                     </>
                  )}
               </div>
@@ -353,8 +481,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
            )}
         </main>
 
-        {/* Sidebar (Modules & Lessons) */}
-        <aside className="w-full lg:w-[380px] border-l border-border bg-card flex flex-col shrink-0 lg:h-[calc(100vh-64px)] shadow-xl z-20">
+        {/* Sidebar (Modules & Lessons) — escondida em modo foco */}
+        <aside className={`${focusMode ? "hidden" : "w-full lg:w-[380px]"} border-l border-border bg-card flex flex-col shrink-0 lg:h-[calc(100vh-64px)] shadow-xl z-20`}>
            <div className="p-5 border-b border-border hidden lg:block bg-gradient-to-r from-primary/5 to-transparent">
               <h3 className="font-bold text-sm tracking-widest uppercase flex items-center gap-2">
                  <span className="material-symbols-outlined text-primary text-xl">map</span>

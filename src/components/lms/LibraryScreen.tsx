@@ -5,6 +5,7 @@ import { Product } from "@/types/lms";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
 
 // =============================================================================
 // CourseGallery — galeria 3D com cards empilhados em profundidade
@@ -319,6 +320,8 @@ export function LibraryScreen() {
     // o conteúdo verticalmente — sem cabeçalho redundante e sem necessidade
     // de scroll na maioria das viewports desktop.
     <div className="max-w-5xl mx-auto px-4 py-4 min-h-[calc(100vh-53px)] flex flex-col justify-center">
+      {/* Continue de onde parou — banner discreto que some se não houver progresso */}
+      {!loading && <ContinueWatchingBanner />}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-primary">
           <div className="animate-spin size-10 border-4 border-primary border-t-transparent rounded-full mb-4" />
