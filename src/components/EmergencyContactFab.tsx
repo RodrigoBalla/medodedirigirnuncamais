@@ -16,10 +16,10 @@ import { motion, AnimatePresence } from "framer-motion";
 const SUPPORT = {
   name: "Carla",
   role: "sua instrutora",
-  // Número no formato internacional sem espaços/parênteses — ajuste quando o
-  // contato real for definido. Mensagem pré-preenchida vai no `text=`.
-  whatsapp: "5511999999999",
-  whatsappMessage: "Oi Carla, preciso de uma força aqui.",
+  // Número no formato internacional sem espaços/parênteses.
+  // Mensagem pré-preenchida vai no `text=`.
+  whatsapp: "5521974703113",
+  whatsappMessage: "Me salva Carla! Travei na aula!!!",
   // Avatar opcional (URL ou inicial). Por enquanto usa a letra inicial.
 };
 
