@@ -56,6 +56,41 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   hard: "Difícil",
 };
 
+// Nomes que ressoam com a aluna (motivacional, identificação) em vez de
+// só "fácil/médio/difícil". Cada nível é uma fase da jornada de quem
+// está aprendendo a dirigir.
+const DIFFICULTY_GROUP: Record<string, {
+  title: string;
+  subtitle: string;
+  icon: string;
+  iconColor: string;
+  emoji: string;
+}> = {
+  easy: {
+    title: "Aquecimento",
+    subtitle: "Sem pressão · ganhe confiança no seu ritmo",
+    icon: "spa",
+    iconColor: "text-emerald-500",
+    emoji: "🌱",
+  },
+  medium: {
+    title: "Em Marcha",
+    subtitle: "Mão no volante · você já está indo",
+    icon: "directions_car",
+    iconColor: "text-amber-500",
+    emoji: "🚗",
+  },
+  hard: {
+    title: "Modo Conquista",
+    subtitle: "Pra quem quer mais · vitória de verdade",
+    icon: "emoji_events",
+    iconColor: "text-primary",
+    emoji: "🏆",
+  },
+};
+// Ordem de exibição dos níveis (do mais leve pro mais avançado)
+const DIFFICULTY_ORDER = ["easy", "medium", "hard"];
+
 function daysUntil(dateStr: string | null): number {
   if (!dateStr) return 0;
   const target = new Date(dateStr);
@@ -185,12 +220,13 @@ export function MissionsPanel() {
     });
   }, [missions, filter]);
 
-  // Agrupa por categoria preservando ordem definida
+  // Agrupa por DIFICULDADE (Aquecimento / Em Marcha / Modo Conquista)
   const grouped = useMemo(() => {
     const map = new Map<string, UserMission[]>();
     for (const m of filtered) {
-      if (!map.has(m.category)) map.set(m.category, []);
-      map.get(m.category)!.push(m);
+      const key = m.difficulty || "easy";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(m);
     }
     // Ordena dentro do grupo: prontas pra resgatar primeiro, depois fazendo, depois feitas
     map.forEach((arr) => arr.sort((a, b) => {
@@ -198,22 +234,21 @@ export function MissionsPanel() {
       const sb = b.claimed_at ? 2 : b.completed_at ? 0 : 1;
       return sa - sb;
     }));
-    // Retorna na ordem definida (categorias sem missões filtradas ficam de fora)
-    return CATEGORY_ORDER
-      .filter((cat) => map.has(cat))
-      .map((cat) => ({ category: cat, items: map.get(cat)! }));
+    return DIFFICULTY_ORDER
+      .filter((d) => map.has(d))
+      .map((d) => ({ difficulty: d, items: map.get(d)! }));
   }, [filtered]);
 
   const daysLeft = daysUntil(cycleEnd);
 
-  // Inicialmente abre apenas a categoria que tem missões prontas pra resgatar.
-  // Se não tem nenhuma pronta, abre a primeira categoria.
+  // Inicialmente abre o nível que tem missões prontas pra resgatar OU,
+  // se não tem nenhuma pronta, abre o "Aquecimento" (porta de entrada).
   useEffect(() => {
     if (loading || Object.keys(openCats).length > 0) return;
     const initial: Record<string, boolean> = {};
     const firstReady = grouped.find((g) => g.items.some((m) => m.completed_at && !m.claimed_at));
-    if (firstReady) initial[firstReady.category] = true;
-    else if (grouped[0]) initial[grouped[0].category] = true;
+    if (firstReady) initial[firstReady.difficulty] = true;
+    else if (grouped[0]) initial[grouped[0].difficulty] = true;
     if (Object.keys(initial).length > 0) setOpenCats(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, grouped]);
@@ -308,35 +343,47 @@ export function MissionsPanel() {
         ))}
       </div>
 
-      {/* Grupos por categoria — accordion */}
-      <div className="space-y-2">
-        {grouped.map(({ category, items }) => {
-          const isOpen = !!openCats[category];
-          const colorClass = CATEGORY_COLOR[category] ?? "text-primary";
+      {/* Grupos por DIFICULDADE — accordion */}
+      <div className="space-y-3">
+        {grouped.map(({ difficulty, items }) => {
+          const group = DIFFICULTY_GROUP[difficulty] ?? DIFFICULTY_GROUP.easy;
+          const isOpen = !!openCats[difficulty];
           const readyInGroup = items.filter((m) => m.completed_at && !m.claimed_at).length;
+          const claimedInGroup = items.filter((m) => m.claimed_at).length;
           return (
-            <div key={category} className="rounded-2xl border border-border overflow-hidden">
+            <div
+              key={difficulty}
+              className={`rounded-2xl border overflow-hidden transition-colors ${
+                isOpen ? "border-primary/30 bg-accent/20" : "border-border"
+              }`}
+            >
               <button
-                onClick={() => toggleCat(category)}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/30 transition-colors text-left ${
-                  isOpen ? "bg-accent/30" : ""
-                }`}
+                onClick={() => toggleCat(difficulty)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-accent/30 transition-colors text-left"
               >
-                <span className={`material-symbols-outlined ${colorClass} filled-icon text-xl`}>
-                  {CATEGORY_ICON[category] ?? "star"}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-foreground">
-                    {CATEGORY_LABEL[category] ?? category}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {items.length} missõ{items.length > 1 ? "es" : "ão"}
-                    {readyInGroup > 0 && (
-                      <span className="ml-1 text-primary font-bold">· {readyInGroup} pronta{readyInGroup > 1 ? "s" : ""} 🎁</span>
-                    )}
-                  </p>
+                <div className={`size-11 rounded-xl bg-accent/40 border border-border flex items-center justify-center shrink-0 ${group.iconColor}`}>
+                  <span className="material-symbols-outlined filled-icon text-2xl">{group.icon}</span>
                 </div>
-                <span className={`material-symbols-outlined text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-base text-foreground flex items-center gap-2">
+                    <span>{group.emoji}</span>
+                    {group.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-tight">
+                    {group.subtitle}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      {claimedInGroup}/{items.length}
+                    </span>
+                    {readyInGroup > 0 && (
+                      <span className="text-[10px] font-black bg-primary/15 text-primary px-1.5 py-0.5 rounded">
+                        {readyInGroup} pronta{readyInGroup > 1 ? "s" : ""} 🎁
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className={`material-symbols-outlined text-muted-foreground transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}>
                   expand_more
                 </span>
               </button>
