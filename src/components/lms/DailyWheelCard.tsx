@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,12 +28,6 @@ interface SpinResult {
   total_balance: number;
 }
 
-const RARITY_BG: Record<string, string> = {
-  common: "from-slate-500/20 to-slate-700/20 border-slate-500/40",
-  rare:   "from-blue-500/25 to-purple-600/25 border-blue-500/50",
-  epic:   "from-amber-500/30 to-yellow-600/30 border-amber-500/60",
-};
-
 function formatCountdown(targetMs: number): string {
   const diff = Math.max(0, targetMs - Date.now());
   const h = Math.floor(diff / 3_600_000);
@@ -47,7 +41,7 @@ export function DailyWheelCard() {
   const [canSpin, setCanSpin] = useState(false);
   const [nextAt, setNextAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastResult, setLastResult] = useState<SpinResult | null>(null);
+  // (lastResult removido — modal full-screen mostra prêmio internamente)
   const [now, setNow] = useState(Date.now());
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -89,12 +83,10 @@ export function DailyWheelCard() {
   // atualizar o cooldown e mostrar o último prêmio no card.
   const handleOpenModal = useCallback(() => {
     if (!canSpin) return;
-    setLastResult(null);
     setModalOpen(true);
   }, [canSpin]);
 
   const handleSpinComplete = useCallback(async (result: SpinResult) => {
-    setLastResult(result);
     const valueLabel =
       result.prize_type === "coins" ? `+${result.prize_value} 🪙`
       : result.prize_type === "xp_boost" ? `+${result.prize_value}h ⚡`
@@ -177,30 +169,10 @@ export function DailyWheelCard() {
         </div>
       </div>
 
-      {/* Banner do prêmio recém-ganho */}
-      <AnimatePresence>
-        {lastResult && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`relative z-10 mt-4 rounded-2xl border-2 p-4 bg-gradient-to-br ${RARITY_BG[lastResult.rarity] ?? RARITY_BG.common} flex items-center gap-3`}
-          >
-            <div className="size-12 rounded-xl bg-background/40 border border-white/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined filled-icon text-2xl text-primary">{lastResult.prize_icon}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {lastResult.rarity === "epic" ? "🏆 Épico" : lastResult.rarity === "rare" ? "💎 Raro" : "✨ Comum"}
-              </p>
-              <p className="font-black text-base text-foreground leading-tight">{lastResult.prize_label}</p>
-              <p className="text-[11px] text-muted-foreground">
-                Válido até {new Date(lastResult.expires_at).toLocaleDateString("pt-BR")}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Banner do prêmio removido — o modal full-screen já mostra o
+          prêmio com banner próprio, raridade e validade. Duplicar aqui
+          causava remount do DailyWheelSpinModal via AnimatePresence
+          adjacente, abortando o reveal cinematográfico. */}
 
       {/* Modal full-screen com animação cinematográfica + cadeados + reveal */}
       <DailyWheelSpinModal
