@@ -626,60 +626,82 @@ export default function Admin() {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {/* Toggle ativo/inativo */}
-                            <button
-                              onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked)}
-                              className={`size-8 rounded-lg flex items-center justify-center transition-colors ${
-                                s.is_blocked
-                                  ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                              }`}
-                              title={s.is_blocked ? "Reativar aluno" : "Inativar aluno"}
-                            >
-                              <span className="material-symbols-outlined text-base filled-icon">
-                                {s.is_blocked ? "person_off" : "person"}
-                              </span>
-                            </button>
-                            {/* Adicionar a grupo (dropdown nativo) */}
-                            {accessGroups.length > 0 && (
-                              <div className="relative">
-                                <select
-                                  onChange={(e) => {
-                                    const groupId = e.target.value;
-                                    if (groupId) {
-                                      grantGroup(s.user_id, groupId);
-                                      e.target.value = "";
-                                    }
-                                  }}
-                                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                                  title="Adicionar a grupo"
-                                  defaultValue=""
-                                >
-                                  <option value="" disabled>Adicionar a grupo…</option>
-                                  {accessGroups
-                                    .filter((g) => !s.groups.some((sg) => sg.id === g.id))
-                                    .map((g) => (
-                                      <option key={g.id} value={g.id}>{g.name}</option>
-                                    ))}
-                                </select>
-                                <button
-                                  className="size-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center transition-colors pointer-events-none"
-                                  title="Adicionar a grupo"
-                                >
-                                  <span className="material-symbols-outlined text-base">group_add</span>
-                                </button>
-                              </div>
-                            )}
-                            {/* Expandir/colapsar */}
-                            <button
-                              onClick={() => setExpandedStudent(expandedStudent === s.user_id ? null : s.user_id)}
-                              className="size-8 rounded-lg bg-accent flex items-center justify-center hover:bg-muted transition-colors"
-                              title={expandedStudent === s.user_id ? "Colapsar" : "Ver detalhes"}
-                            >
-                              <span className={`material-symbols-outlined text-base transition-transform ${expandedStudent === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
-                            </button>
-                          </div>
+                          {/* Botão único: só expandir/colapsar.
+                              As outras ações (ativar/inativar, adicionar a grupo)
+                              ficam dentro de uma barra de ações abaixo. */}
+                          <button
+                            onClick={() => setExpandedStudent(expandedStudent === s.user_id ? null : s.user_id)}
+                            className="shrink-0 size-9 rounded-lg bg-accent flex items-center justify-center hover:bg-muted transition-colors"
+                            title={expandedStudent === s.user_id ? "Colapsar" : "Ver detalhes"}
+                          >
+                            <span className={`material-symbols-outlined text-base transition-transform ${expandedStudent === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
+                          </button>
+                        </div>
+
+                        {/* Barra de ações rápidas com LABEL visível */}
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {/* Toggle ativo/inativo */}
+                          <button
+                            onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                              s.is_blocked
+                                ? "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30"
+                                : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30"
+                            }`}
+                            title={s.is_blocked ? "Reativar este aluno (libera o acesso)" : "Inativar este aluno (bloqueia o acesso e derruba a sessão)"}
+                          >
+                            <span className="material-symbols-outlined text-base filled-icon">
+                              {s.is_blocked ? "person_off" : "person_check"}
+                            </span>
+                            {s.is_blocked ? "Reativar" : "Inativar"}
+                          </button>
+
+                          {/* Adicionar a grupo (dropdown nativo) */}
+                          {accessGroups.length > 0 && accessGroups.filter((g) => !s.groups.some((sg) => sg.id === g.id)).length > 0 && (
+                            <div className="relative">
+                              <select
+                                onChange={(e) => {
+                                  const groupId = e.target.value;
+                                  if (groupId) {
+                                    grantGroup(s.user_id, groupId);
+                                    e.target.value = "";
+                                  }
+                                }}
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                title="Escolher grupo pra adicionar"
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Adicionar a grupo…</option>
+                                {accessGroups
+                                  .filter((g) => !s.groups.some((sg) => sg.id === g.id))
+                                  .map((g) => (
+                                    <option key={g.id} value={g.id}>{g.name}</option>
+                                  ))}
+                              </select>
+                              <button
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 transition-colors pointer-events-none"
+                                title="Adicionar a um grupo de acesso"
+                              >
+                                <span className="material-symbols-outlined text-base">group_add</span>
+                                Adicionar a grupo
+                                <span className="material-symbols-outlined text-sm">expand_more</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Resetar progresso (já existia, expor com label visível) */}
+                          <button
+                            onClick={() => {
+                              if (confirm(`⚠️ Zerar TUDO do aluno ${s.display_name}?\n\nIsso apaga: aulas, missões, moedas, roleta, comentários, posts, cupons, sessão (faz logout).\n\nO email continua liberado (não revoga matrícula).`)) {
+                                resetStudentProgress(s.user_id);
+                              }
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border border-border transition-colors"
+                            title="Zera todo o progresso (aulas, missões, etc.)"
+                          >
+                            <span className="material-symbols-outlined text-base">restart_alt</span>
+                            Zerar progresso
+                          </button>
                         </div>
 
                         {/* Stats + Phases + Quick Actions só aparecem quando o card
