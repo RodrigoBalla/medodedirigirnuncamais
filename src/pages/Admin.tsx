@@ -59,13 +59,26 @@ export default function Admin() {
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   // user_id do aluno cujo dropdown "Adicionar a grupo" está aberto
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
+  // Modal de confirmação customizado (substitui confirm() nativo)
+  const [confirmModal, setConfirmModal] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    variant: "danger" | "warning" | "primary";
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
   // Fecha o dropdown com ESC + click fora
   useEffect(() => {
-    if (!groupMenuFor) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setGroupMenuFor(null); };
+    if (!groupMenuFor && !confirmModal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setGroupMenuFor(null);
+        setConfirmModal(null);
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [groupMenuFor]);
+  }, [groupMenuFor, confirmModal]);
   
   // States for adding student
   const [showAddModal, setShowAddModal] = useState(false);
@@ -209,13 +222,27 @@ export default function Admin() {
     fetchStudents();
   }
 
-  async function toggleStudentBlocked(userId: string, currentBlocked: boolean) {
-    const newBlocked = !currentBlocked;
-    if (newBlocked && !confirm("Tem certeza que quer INATIVAR este aluno? Ele será deslogado e não poderá acessar.")) return;
+  async function doToggleStudentBlocked(userId: string, newBlocked: boolean) {
     const { error } = await supabase.rpc("admin_toggle_student_blocked", { p_user_id: userId, p_blocked: newBlocked });
     if (error) { toast.error("Erro ao alterar status"); return; }
     toast.success(newBlocked ? "Aluno inativado" : "Aluno reativado");
     fetchStudents();
+  }
+
+  function toggleStudentBlocked(userId: string, currentBlocked: boolean, studentName: string) {
+    const newBlocked = !currentBlocked;
+    if (!newBlocked) {
+      // Reativar não precisa de confirmação
+      doToggleStudentBlocked(userId, false);
+      return;
+    }
+    setConfirmModal({
+      title: "Inativar aluno?",
+      message: `${studentName} vai ser deslogado(a) e não vai conseguir acessar a área de membros até você reativar.`,
+      confirmLabel: "Inativar",
+      variant: "danger",
+      onConfirm: () => doToggleStudentBlocked(userId, true),
+    });
   }
 
   async function resetStudentProgress(userId: string) {
@@ -265,18 +292,26 @@ export default function Admin() {
     else { toast.success(!currentState ? "Acesso bloqueado com sucesso!" : "Acesso liberado com sucesso!"); fetchStudents(); }
   }
 
-  async function deleteStudent(userId: string, name: string) {
-    if (!window.confirm(`⚠️ EXCLUSÃO FATAL! ⚠️\n\nIsto apagará DE VEZ a conta e todo o progresso de "${name}" do banco de dados (Auth).\nNão tem como desfazer.\n\nDeseja prosseguir?`)) return;
-    
+  async function doDeleteStudent(userId: string) {
     // @ts-ignore
     const { error } = await supabase.rpc('delete_user_by_admin', { target_user_id: userId });
-    
-    if (error) { 
-      toast.error("Erro interno ao tentar excluir: " + error.message); 
-    } else { 
-      toast.success("A conta do aluno foi extinta do banco de dados!"); 
-      fetchStudents(); 
+
+    if (error) {
+      toast.error("Erro interno ao tentar excluir: " + error.message);
+    } else {
+      toast.success("A conta do aluno foi extinta do banco de dados!");
+      fetchStudents();
     }
+  }
+
+  function deleteStudent(userId: string, name: string) {
+    setConfirmModal({
+      title: "Exclusão DEFINITIVA",
+      message: `Isso apaga DE VEZ a conta de "${name}" do banco. Sem volta. O aluno precisará comprar de novo pra entrar.`,
+      confirmLabel: "Apagar definitivamente",
+      variant: "danger",
+      onConfirm: () => doDeleteStudent(userId),
+    });
   }
 
   function openEditModal(s: StudentData, field: EditModal["field"]) {
@@ -651,7 +686,7 @@ export default function Admin() {
                         <div className="flex flex-wrap gap-2 mb-3">
                           {/* Toggle ativo/inativo */}
                           <button
-                            onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked)}
+                            onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked, s.display_name)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                               s.is_blocked
                                 ? "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30"
@@ -721,13 +756,15 @@ export default function Admin() {
                             </div>
                           )}
 
-                          {/* Resetar progresso (já existia, expor com label visível) */}
+                          {/* Resetar progresso — usa modal customizado */}
                           <button
-                            onClick={() => {
-                              if (confirm(`⚠️ Zerar TUDO do aluno ${s.display_name}?\n\nIsso apaga: aulas, missões, moedas, roleta, comentários, posts, cupons, sessão (faz logout).\n\nO email continua liberado (não revoga matrícula).`)) {
-                                resetStudentProgress(s.user_id);
-                              }
-                            }}
+                            onClick={() => setConfirmModal({
+                              title: "Zerar progresso?",
+                              message: `Vamos apagar TUDO de ${s.display_name}: aulas, missões, moedas, roleta, comentários, posts, cupons e a sessão ativa (faz logout). O email continua liberado pra entrar de novo. Essa ação não tem volta.`,
+                              confirmLabel: "Zerar tudo",
+                              variant: "danger",
+                              onConfirm: () => resetStudentProgress(s.user_id),
+                            })}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border border-border transition-colors"
                             title="Zera todo o progresso (aulas, missões, etc.)"
                           >
@@ -897,11 +934,13 @@ export default function Admin() {
                               </button>
 
                               <button
-                                onClick={() => {
-                                  if (confirm(`⚠️ ATENÇÃO! Isso vai zerar ${s.display_name} pra estado de NOVO ALUNO:\n\n• XP, Moedas, Vidas, Ofensiva, Medalhas\n• Aulas concluídas e progresso de vídeo\n• Missões e cashback\n• Roleta diária (cooldown some)\n• Comentários, posts e curtidas\n• Cupons gerados\n• Avatar e nome customizado\n• Sessão ativa (faz logout automático)\n\nDeseja continuar?`)) {
-                                    resetStudentProgress(s.user_id);
-                                  }
-                                }}
+                                onClick={() => setConfirmModal({
+                                  title: "Zerar tudo do aluno?",
+                                  message: `${s.display_name} volta pro estado de NOVO ALUNO. Apaga: XP, moedas, vidas, ofensiva, medalhas, aulas, missões, roleta, comentários, posts, cupons, avatar e sessão ativa. O email continua liberado.`,
+                                  confirmLabel: "Zerar tudo",
+                                  variant: "danger",
+                                  onConfirm: () => resetStudentProgress(s.user_id),
+                                })}
                                 className="w-full flex items-center justify-center gap-2 px-3 py-3 bg-muted text-muted-foreground rounded-xl text-sm font-bold hover:bg-muted/80 transition-colors border border-border"
                               >
                                 <span className="material-symbols-outlined text-base">restart_alt</span>
@@ -930,6 +969,71 @@ export default function Admin() {
               )}
 
               {/* Edit Modal */}
+              {/* ConfirmModal — substitui window.confirm() nativo com identidade do app */}
+              {confirmModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                  <div
+                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                    onClick={() => setConfirmModal(null)}
+                    aria-hidden
+                  />
+                  <div className="relative z-10 w-full max-w-md bg-card border-2 border-primary rounded-3xl shadow-[0_0_120px_rgba(255,214,10,.3)] overflow-hidden">
+                    {/* Fita de advertência no topo (identidade trânsito) */}
+                    <div className="caution-tape h-2" aria-hidden />
+                    <div className="p-6 md:p-7">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className={`size-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                          confirmModal.variant === "danger"
+                            ? "bg-destructive/15 border border-destructive/30"
+                            : confirmModal.variant === "warning"
+                            ? "bg-amber-500/15 border border-amber-500/30"
+                            : "bg-primary/15 border border-primary/30"
+                        }`}>
+                          <span className={`material-symbols-outlined filled-icon text-xl ${
+                            confirmModal.variant === "danger" ? "text-destructive" :
+                            confirmModal.variant === "warning" ? "text-amber-500" : "text-primary"
+                          }`}>
+                            {confirmModal.variant === "danger" ? "warning" : confirmModal.variant === "warning" ? "info" : "help"}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h2 className="font-black text-lg text-foreground leading-tight tracking-tight">
+                            {confirmModal.title}
+                          </h2>
+                          <p className="text-sm text-muted-foreground leading-snug mt-2">
+                            {confirmModal.message}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-6">
+                        <button
+                          onClick={() => setConfirmModal(null)}
+                          className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-colors border border-border"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const action = confirmModal.onConfirm;
+                            setConfirmModal(null);
+                            await action();
+                          }}
+                          className={`flex-1 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 ${
+                            confirmModal.variant === "danger"
+                              ? "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30"
+                              : confirmModal.variant === "warning"
+                              ? "bg-amber-500 text-black shadow-lg shadow-amber-500/30"
+                              : "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                          }`}
+                        >
+                          {confirmModal.confirmLabel}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {editModal && (
                 <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
                   <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
