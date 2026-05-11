@@ -269,7 +269,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--blue-900))] px-4 relative overflow-hidden">
+    <div className="min-h-screen flex relative overflow-hidden bg-[hsl(var(--blue-900))]">
+      {/* Theme toggle — canto superior direito, sempre acessível */}
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 z-50 size-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors backdrop-blur-md"
@@ -277,25 +278,91 @@ const Auth = () => {
       >
         <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
       </button>
-      <VideoBackground />
-      <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 max-w-md w-full border border-white/10 shadow-2xl">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center size-14 bg-primary/20 rounded-xl mb-4">
-            <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
+
+      {/* ── COLUNA ESQUERDA: HERO (desktop only, lg+) ───────────────────── */}
+      <aside className="hidden lg:flex relative flex-1 overflow-hidden border-r border-white/5">
+        <VideoBackground />
+        {/* Overlay gradiente pra escurecer o vídeo e dar contraste pro texto */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))] via-[hsl(var(--blue-900))]/90 to-[hsl(var(--blue-900))]/60 z-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
+        {/* Fitas de advertência no topo e base — identidade trânsito */}
+        <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
+        <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30" aria-hidden />
+
+        <div className="relative z-20 flex flex-col justify-between p-10 xl:p-16 w-full">
+          {/* Logo + nome curto */}
+          <div className="flex items-center gap-3">
+            <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+              <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
+            </div>
+            <div>
+              <p className="text-white font-black text-sm leading-tight">Medo de Dirigir</p>
+              <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
+            </div>
           </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">
-            Medo de Dirigir Nunca Mais
-          </h1>
-          <p className="text-white/50 text-sm mt-2">
-            {isLogin
-              ? "Entre na sua conta para continuar"
-              : signupStep === "email"
-              ? "Liberar acesso"
-              : signupStep === "enrolled"
-              ? "Conclua seu cadastro"
-              : "Acesso restrito a alunos"}
+
+          {/* Texto principal + benefícios */}
+          <div className="max-w-lg">
+            <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+              🛞 Sua área de membros
+            </p>
+            <h1 className="text-white font-black text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-5">
+              O volante<br /><span className="text-primary">agora é seu.</span>
+            </h1>
+            <p className="text-white/70 text-base leading-relaxed mb-8">
+              Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
+              mulheres e a Carla a um clique de distância.
+            </p>
+            <ul className="space-y-3">
+              {[
+                { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
+                { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
+                { icon: "support_agent", text: "Carla no WhatsApp quando travar" },
+                { icon: "emoji_events", text: "Conquistas e recompensas pra te manter no caminho" },
+              ].map((b) => (
+                <li key={b.icon} className="flex items-center gap-3 text-white/85 text-sm">
+                  <span className="material-symbols-outlined text-primary filled-icon text-lg shrink-0">
+                    {b.icon}
+                  </span>
+                  {b.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Footer da coluna hero */}
+          <p className="text-white/40 text-xs">
+            © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
           </p>
         </div>
+      </aside>
+
+      {/* ── COLUNA DIREITA: FORMULÁRIO ───────────────────────────────────── */}
+      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-4 sm:p-6 lg:p-10 relative">
+        {/* Mobile: vídeo de fundo no formulário. Desktop: limpo */}
+        <div className="lg:hidden absolute inset-0">
+          <VideoBackground />
+        </div>
+
+        <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 w-full max-w-md border border-white/10 shadow-2xl lg:bg-transparent lg:border-0 lg:shadow-none lg:backdrop-blur-none lg:p-0">
+          <div className="text-center lg:text-left mb-8">
+            {/* Logo só aparece em mobile (no desktop tá na coluna esquerda) */}
+            <div className="lg:hidden inline-flex items-center justify-center size-14 bg-primary/20 rounded-xl mb-4">
+              <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
+            </div>
+            <h1 className="text-xl lg:text-3xl font-black text-white tracking-tight">
+              {isLogin ? "Bem-vinda de volta" : "Liberar acesso"}
+            </h1>
+            <p className="text-white/50 text-sm mt-2">
+              {isLogin
+                ? "Entre na sua conta pra continuar"
+                : signupStep === "email"
+                ? "Confirme seu email pra começar"
+                : signupStep === "enrolled"
+                ? "Conclua seu cadastro"
+                : "Acesso restrito a alunos"}
+            </p>
+          </div>
 
         <div className="flex bg-white/[0.08] rounded-xl p-1 mb-6">
           <button
@@ -518,7 +585,8 @@ const Auth = () => {
             </button>
           </div>
         )}
-      </div>
+        </div>
+      </main>
 
       {/* Botão flutuante de suporte WhatsApp + chat guiado */}
       <SupportChat />
