@@ -13,9 +13,17 @@ import { CommentsModeration } from "@/components/admin/CommentsModeration";
 
 type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics" | "products" | "comments";
 
+interface AccessGroup {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
 interface StudentData {
   user_id: string;
   display_name: string;
+  email: string | null;
+  phone: string | null;
   avatar_url: string | null;
   created_at: string;
   completed_phases: number[];
@@ -28,6 +36,7 @@ interface StudentData {
   streak: number;
   badges: string[];
   is_blocked: boolean;
+  groups: AccessGroup[];
 }
 
 interface EditModal {
@@ -125,32 +134,79 @@ export default function Admin() {
 
   async function fetchStudents() {
     setLoading(true);
-    const { data: profiles } = await supabase.from("profiles").select("*");
-    const { data: progress } = await supabase.from("user_progress").select("*");
-
-    if (profiles && progress) {
-      const merged: StudentData[] = profiles.map((p) => {
-        const prog = progress.find((pr) => pr.user_id === p.user_id);
-        return {
-          user_id: p.user_id,
-          display_name: p.display_name || "Sem nome",
-          is_blocked: p.is_blocked || false,
-          avatar_url: p.avatar_url,
-          created_at: p.created_at,
-          completed_phases: prog?.completed_phases || [],
-          total_xp: prog?.total_xp || 0,
-          confidence: prog?.confidence || 0,
-          welcome_video_views: prog?.welcome_video_views || 0,
-          progress_updated_at: prog?.updated_at || p.created_at,
-          coins: prog?.coins || 0,
-          lives: prog?.lives || 5,
-          streak: prog?.streak || 0,
-          badges: prog?.badges || [],
-        };
-      });
-      setStudents(merged);
+    // Usa RPC consolidada (traz email, phone, grupos de acesso de uma vez,
+    // já filtrando admins). Substitui a query antiga em profiles + user_progress.
+    const { data, error } = await supabase.rpc("admin_list_students_full");
+    if (error) {
+      console.warn("[admin] fetchStudents:", error);
+      setLoading(false);
+      return;
     }
+    const rows = (data || []) as Array<{
+      user_id: string;
+      display_name: string | null;
+      email: string | null;
+      phone: string | null;
+      avatar_url: string | null;
+      created_at: string;
+      is_blocked: boolean;
+      groups: Array<{ id: string; name: string }>;
+      total_xp: number; coins: number; lives: number; streak: number;
+      completed_phases: number[]; badges: unknown; daily_xp: number; confidence: number;
+    }>;
+    const merged: StudentData[] = rows.map((r) => ({
+      user_id: r.user_id,
+      display_name: r.display_name || "Sem nome",
+      email: r.email,
+      phone: r.phone,
+      avatar_url: r.avatar_url,
+      created_at: r.created_at,
+      is_blocked: r.is_blocked || false,
+      groups: r.groups || [],
+      completed_phases: r.completed_phases || [],
+      total_xp: r.total_xp || 0,
+      confidence: r.confidence || 0,
+      welcome_video_views: 0,
+      progress_updated_at: r.created_at,
+      coins: r.coins || 0,
+      lives: r.lives ?? 5,
+      streak: r.streak || 0,
+      badges: Array.isArray(r.badges) ? r.badges as string[] : [],
+    }));
+    setStudents(merged);
     setLoading(false);
+  }
+
+  // Lista de grupos de acesso disponíveis (carregada uma vez)
+  const [accessGroups, setAccessGroups] = useState<AccessGroup[]>([]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.rpc("admin_list_access_groups").then(({ data }) => {
+      if (Array.isArray(data)) setAccessGroups(data as AccessGroup[]);
+    });
+  }, [isAdmin]);
+
+  async function grantGroup(userId: string, groupId: string) {
+    const { error } = await supabase.rpc("admin_grant_access_group", { p_user_id: userId, p_group_id: groupId });
+    if (error) { toast.error("Erro ao adicionar ao grupo"); return; }
+    toast.success("Grupo adicionado");
+    fetchStudents();
+  }
+
+  async function revokeGroup(userId: string, groupId: string) {
+    const { error } = await supabase.rpc("admin_revoke_access_group", { p_user_id: userId, p_group_id: groupId });
+    if (error) { toast.error("Erro ao remover do grupo"); return; }
+    toast.success("Grupo removido");
+    fetchStudents();
+  }
+
+  async function toggleStudentBlocked(userId: string, currentBlocked: boolean) {
+    const newBlocked = !currentBlocked;
+    if (newBlocked && !confirm("Tem certeza que quer INATIVAR este aluno? Ele será deslogado e não poderá acessar.")) return;
+    const { error } = await supabase.rpc("admin_toggle_student_blocked", { p_user_id: userId, p_blocked: newBlocked });
+    if (error) { toast.error("Erro ao alterar status"); return; }
+    toast.success(newBlocked ? "Aluno inativado" : "Aluno reativado");
+    fetchStudents();
   }
 
   async function resetStudentProgress(userId: string) {
@@ -537,22 +593,103 @@ export default function Admin() {
                             <div>
                                <div className="flex items-center gap-2">
                                 <p className={`font-bold ${s.is_blocked ? "text-destructive line-through opacity-70" : ""}`}>{s.display_name}</p>
-                                {s.is_blocked && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-destructive/10 text-destructive rounded uppercase">Bloqueado</span>}
+                                {s.is_blocked && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-destructive/10 text-destructive rounded uppercase">Inativo</span>}
                               </div>
-                              <p className="text-xs text-muted-foreground">
+                              {/* Linha 1: data de cadastro */}
+                              <p className="text-[11px] text-muted-foreground">
                                 Cadastro: {new Date(s.created_at).toLocaleDateString("pt-BR")}
                               </p>
+                              {/* Linha 2: email + telefone */}
+                              {(s.email || s.phone) && (
+                                <p className="text-[11px] text-muted-foreground/80 truncate">
+                                  {s.email && <span title={s.email}>✉ {s.email}</span>}
+                                  {s.email && s.phone && <span className="mx-1.5">·</span>}
+                                  {s.phone && <span>📱 {s.phone}</span>}
+                                </p>
+                              )}
+                              {/* Linha 3: badges de grupos de acesso */}
+                              {s.groups.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {s.groups.map((g) => (
+                                    <span
+                                      key={g.id}
+                                      className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20"
+                                    >
+                                      {g.name}
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); revokeGroup(s.user_id, g.id); }}
+                                        className="hover:text-destructive transition-colors -mr-0.5"
+                                        title={`Remover do grupo "${g.name}"`}
+                                      >
+                                        ✕
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <button
-                            onClick={() => setExpandedStudent(expandedStudent === s.user_id ? null : s.user_id)}
-                            className="size-8 rounded-lg bg-accent flex items-center justify-center hover:bg-muted transition-colors"
-                          >
-                            <span className={`material-symbols-outlined text-base transition-transform ${expandedStudent === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Toggle ativo/inativo */}
+                            <button
+                              onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked)}
+                              className={`size-8 rounded-lg flex items-center justify-center transition-colors ${
+                                s.is_blocked
+                                  ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                              }`}
+                              title={s.is_blocked ? "Reativar aluno" : "Inativar aluno"}
+                            >
+                              <span className="material-symbols-outlined text-base filled-icon">
+                                {s.is_blocked ? "person_off" : "person"}
+                              </span>
+                            </button>
+                            {/* Adicionar a grupo (dropdown nativo) */}
+                            {accessGroups.length > 0 && (
+                              <div className="relative">
+                                <select
+                                  onChange={(e) => {
+                                    const groupId = e.target.value;
+                                    if (groupId) {
+                                      grantGroup(s.user_id, groupId);
+                                      e.target.value = "";
+                                    }
+                                  }}
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                  title="Adicionar a grupo"
+                                  defaultValue=""
+                                >
+                                  <option value="" disabled>Adicionar a grupo…</option>
+                                  {accessGroups
+                                    .filter((g) => !s.groups.some((sg) => sg.id === g.id))
+                                    .map((g) => (
+                                      <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </select>
+                                <button
+                                  className="size-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center transition-colors pointer-events-none"
+                                  title="Adicionar a grupo"
+                                >
+                                  <span className="material-symbols-outlined text-base">group_add</span>
+                                </button>
+                              </div>
+                            )}
+                            {/* Expandir/colapsar */}
+                            <button
+                              onClick={() => setExpandedStudent(expandedStudent === s.user_id ? null : s.user_id)}
+                              className="size-8 rounded-lg bg-accent flex items-center justify-center hover:bg-muted transition-colors"
+                              title={expandedStudent === s.user_id ? "Colapsar" : "Ver detalhes"}
+                            >
+                              <span className={`material-symbols-outlined text-base transition-transform ${expandedStudent === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
+                            </button>
+                          </div>
                         </div>
 
-                        {/* Stats - clickable to edit */}
+                        {/* Stats + Phases + Quick Actions só aparecem quando o card
+                            está expandido. No card minimizado, o admin vê só
+                            nome/email/telefone/grupos. */}
+                        {expandedStudent === s.user_id && (
+                        <>
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
                           {[
                             { field: "total_xp" as const, icon: "database", label: "XP", value: s.total_xp, color: "text-primary" },
@@ -640,6 +777,9 @@ export default function Admin() {
                             Próxima Fase
                           </button>
                         </div>
+
+                        </>
+                        )}
 
                         {/* Expanded Management Panel */}
                         {expandedStudent === s.user_id && (
