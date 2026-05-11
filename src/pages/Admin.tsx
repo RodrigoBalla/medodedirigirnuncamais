@@ -9,9 +9,10 @@ import { PHASES } from "@/data/driving-data";
 import { toast } from "sonner";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import ProductsManager from "@/components/admin/lms/ProductsManager";
+import { GroupsManager } from "@/components/admin/GroupsManager";
 import { CommentsModeration } from "@/components/admin/CommentsModeration";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups";
 
 interface AccessGroup {
   id: string;
@@ -421,6 +422,7 @@ export default function Admin() {
     { key: "analytics", icon: "monitoring", label: "Analytics" },
     { key: "students", icon: "group", label: "Alunos" },
     { key: "products", icon: "video_library", label: "Cursos" },
+    { key: "groups", icon: "lock_open", label: "Grupos" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
@@ -1145,6 +1147,8 @@ export default function Admin() {
           {tab === "analytics" && <AnalyticsTab />}
 
           {tab === "products" && <ProductsManager />}
+
+          {tab === "groups" && <GroupsManager />}
 
           {tab === "comments" && <CommentsModeration />}
 
