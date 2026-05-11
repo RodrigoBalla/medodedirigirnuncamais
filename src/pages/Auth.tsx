@@ -211,7 +211,7 @@ const Auth = () => {
             amarelo embutido nas bordas, dispensa nossa faixa extra. */}
         <div className="lg:hidden relative w-full h-[28vh] min-h-[200px] max-h-[260px] overflow-hidden">
           <img
-            src="/hero/area-de-membros.jpg"
+            src="/hero/area-de-membros-mobile.jpg"
             alt=""
             aria-hidden
             className="absolute inset-0 w-full h-full object-cover object-center"
@@ -244,7 +244,7 @@ const Auth = () => {
         {/* ── DESKTOP: layout completo com imagem cobrindo a coluna ────── */}
         <div className="hidden lg:block absolute inset-0">
           <img
-            src="/hero/area-de-membros.jpg"
+            src="/hero/area-de-membros-desktop.jpg"
             alt=""
             aria-hidden
             className="absolute inset-0 w-full h-full object-cover"
