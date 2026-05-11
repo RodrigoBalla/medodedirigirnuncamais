@@ -212,13 +212,16 @@ const Auth = () => {
           Mobile: bloco no topo. Imagem ocupa metade superior do hero
           (full-bleed sem texto), texto fica abaixo no fundo navy. */}
       <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
-        {/* ── MOBILE: imagem hero "card" full-bleed (~45vh) ────────────── */}
-        <div className="lg:hidden relative w-full h-[45vh] min-h-[280px] overflow-hidden">
+        {/* ── MOBILE: imagem hero "card" full-bleed (~50vh) ──────────────
+            A imagem original tem o lado esquerdo VAZIO (foi feita pra
+            desktop com texto sobreposto na esquerda). No mobile usamos
+            object-[right_center] pra mostrar só o grupo de pessoas. */}
+        <div className="lg:hidden relative w-full h-[50vh] min-h-[340px] overflow-hidden">
           <img
             src="/hero/area-de-membros.jpg"
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+            className="absolute inset-0 w-full h-full object-cover object-[right_center]"
             fetchPriority="high"
           />
           {/* Gradient sutil só na base pra emendar com o fundo navy */}
