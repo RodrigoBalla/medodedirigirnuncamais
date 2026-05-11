@@ -307,13 +307,31 @@ export default function AnalyticsTab() {
           <h3 className="font-black text-base">Funil da Jornada Completa</h3>
         </div>
 
-        <div className="space-y-0">
+        {/* Estado vazio amigável quando ainda não há alunos no funil */}
+        {journeyFunnel.length > 0 && journeyFunnel[0].count === 0 && (
+          <div className="text-center py-8 px-4 rounded-xl bg-muted/30 border border-dashed border-border">
+            <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">hourglass_empty</span>
+            <p className="text-sm font-bold text-muted-foreground">Sem alunas no funil ainda</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Quando a primeira venda na Eduzz cair, ela vai aparecer aqui descendo as etapas.
+            </p>
+          </div>
+        )}
+
+        {/* Lista de etapas — só renderiza se já houver pelo menos 1 aluna */}
+        <div className={`space-y-0 ${journeyFunnel.length > 0 && journeyFunnel[0].count === 0 ? "hidden" : ""}`}>
           {journeyFunnel.map((step, i) => {
-            const pct = totalStudents > 0 ? Math.round((step.count / totalStudents) * 100) : (step.count > 0 ? 100 : 0);
+            // Base do percentual = total da PRIMEIRA etapa (em vez de
+            // totalStudents que pode ser inconsistente com filtro de admin)
+            const baseCount = journeyFunnel[0]?.count ?? 0;
+            const pct = baseCount > 0 ? Math.round((step.count / baseCount) * 100) : 0;
             const barWidth = Math.max(pct, step.count > 0 ? 8 : 0);
             const isLast = i === journeyFunnel.length - 1;
             const prevCount = i > 0 ? journeyFunnel[i - 1].count : step.count;
             const dropOff = i > 0 && prevCount > 0 ? Math.round(((prevCount - step.count) / prevCount) * 100) : 0;
+            // Só mostra drop-off quando há volume real (≥ 3 alunas na etapa
+            // anterior) — evita alarmismo com sample muito pequeno
+            const showDropOff = prevCount >= 3 && dropOff > 0;
 
             return (
               <div key={step.id}>
@@ -348,8 +366,8 @@ export default function AnalyticsTab() {
                   </div>
                 </div>
 
-                {/* Drop-off indicator between steps */}
-                {!isLast && dropOff > 0 && (
+                {/* Drop-off indicator between steps — só mostra com volume real */}
+                {!isLast && showDropOff && (
                   <div className="flex items-center gap-3 py-1 ml-5">
                     <div className="w-5 flex justify-center">
                       <div className="w-px h-5 bg-border" />
