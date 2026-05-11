@@ -1,85 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { SupportChat } from "@/components/SupportChat";
-// regional-flavor mantido no projeto pra reativação pós-login no futuro.
 
-// Vídeos de fundo: pessoas dirigindo, vista do interior do carro.
-// Hospedados no CDN do Pexels (licença livre, sem atribuição obrigatória).
-const BG_VIDEOS = [
-  // Homem dirigindo em estrada de campo (1920x1080)
-  "https://videos.pexels.com/video-files/4252063/4252063-hd_1920_1080_24fps.mp4",
-  // Mulher dirigindo na estrada (1920x1080)
-  "https://videos.pexels.com/video-files/3525673/3525673-hd_1920_1080_24fps.mp4",
-  // POV pessoa dirigindo (2732x1152, ultra-wide)
-  "https://videos.pexels.com/video-files/13967042/13967042-uhd_2732_1152_24fps.mp4",
-  // Dash cam vista da estrada do interior do carro (2560x1440)
-  "https://videos.pexels.com/video-files/5921059/5921059-uhd_2560_1440_30fps.mp4",
-];
-
-/**
- * Galeria infinita horizontal de vídeos.
- * - A lista é duplicada uma vez para criar um loop sem costura quando o
- *   track desliza -50% via animação CSS (`video-marquee` em index.css).
- * - `preload="metadata"` comporta-se como um proxy: só baixa os primeiros bytes
- *   (metadata + 1º frame) de cada vídeo, mantendo o tempo de carregamento da
- *   página leve. O vídeo inteiro só começa a streamar quando entra em viewport.
- * - Opacidade idêntica ao layout anterior (0.15) para preservar as cores.
- */
-const VideoBackground = () => {
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
-  const [readyCount, setReadyCount] = useState(0);
-  const allReady = readyCount >= BG_VIDEOS.length;
-
-  // Duplica a lista para o loop infinito ficar contínuo (sem corte).
-  const loopVideos = [...BG_VIDEOS, ...BG_VIDEOS];
-
-  // Tenta dar play em cada vídeo assim que carrega. Browsers móveis exigem
-  // muted + playsInline, ambos já configurados.
-  useEffect(() => {
-    videoRefs.current.forEach((v) => {
-      if (!v) return;
-      v.play().catch(() => {});
-    });
-  }, []);
-
-  const handleCanPlay = useCallback((isOriginal: boolean) => {
-    // Só conta os 4 originais para o estado "tudo pronto"
-    if (isOriginal) setReadyCount((n) => Math.min(n + 1, BG_VIDEOS.length));
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div
-        className={`video-marquee-track flex h-full transition-opacity duration-1000 ease-out ${
-          allReady ? "opacity-[0.15]" : "opacity-0"
-        }`}
-      >
-        {loopVideos.map((src, i) => {
-          const isOriginal = i < BG_VIDEOS.length;
-          return (
-            <video
-              key={i}
-              ref={(el) => {
-                videoRefs.current[i] = el;
-              }}
-              src={src}
-              muted
-              autoPlay
-              loop
-              playsInline
-              preload="metadata"
-              onCanPlay={() => handleCanPlay(isOriginal)}
-              className="h-full w-[80vw] md:w-[55vw] lg:w-[40vw] object-cover flex-shrink-0"
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-};
+// O hero antes era 4 vídeos do Pexels em loop infinito (custoso em rede +
+// CPU). Trocado por imagem estática (/hero/area-de-membros.jpg) — ~570KB
+// 1 request, decodifica numa fração do tempo, sem CPU pra reproduzir.
 
 // URL da página de vendas — servida estaticamente em /sales.html (public/sales.html).
 // Quando você plugar checkout final (Eduzz), atualize o link de "IR PARA O CHECKOUT"
@@ -281,9 +209,16 @@ const Auth = () => {
 
       {/* ── COLUNA ESQUERDA: HERO (desktop only, lg+) ───────────────────── */}
       <aside className="hidden lg:flex relative flex-1 overflow-hidden border-r border-white/5">
-        <VideoBackground />
-        {/* Overlay gradiente pra escurecer o vídeo e dar contraste pro texto */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))] via-[hsl(var(--blue-900))]/90 to-[hsl(var(--blue-900))]/60 z-10" />
+        {/* Imagem hero estática (mais leve que vídeo). Cobre toda a coluna. */}
+        <img
+          src="/hero/area-de-membros.jpg"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover"
+          fetchPriority="high"
+        />
+        {/* Overlay gradiente pra escurecer a imagem e dar contraste pro texto */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))]/95 via-[hsl(var(--blue-900))]/70 to-[hsl(var(--blue-900))]/30 z-10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
         {/* Fitas de advertência no topo e base — identidade trânsito */}
         <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
@@ -339,9 +274,18 @@ const Auth = () => {
 
       {/* ── COLUNA DIREITA: FORMULÁRIO ───────────────────────────────────── */}
       <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-4 sm:p-6 lg:p-10 relative">
-        {/* Mobile: vídeo de fundo no formulário. Desktop: limpo */}
-        <div className="lg:hidden absolute inset-0">
-          <VideoBackground />
+        {/* Mobile: hero como fundo embaçado. Desktop: limpo (hero fica na col esquerda) */}
+        <div
+          className="lg:hidden absolute inset-0 bg-[hsl(var(--blue-900))]"
+          aria-hidden
+        >
+          <img
+            src="/hero/area-de-membros.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--blue-900))]/40 via-[hsl(var(--blue-900))]/80 to-[hsl(var(--blue-900))]" />
         </div>
 
         <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 w-full max-w-md border border-white/10 shadow-2xl lg:bg-transparent lg:border-0 lg:shadow-none lg:backdrop-blur-none lg:p-0">
