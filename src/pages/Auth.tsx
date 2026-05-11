@@ -184,14 +184,23 @@ const Auth = () => {
             // e popula a coluna profiles.phone.
             phone: cleanPhone,
           },
-          // SEMPRE usa a URL de produção, mesmo em dev local. Senão emails
-          // disparados durante testes locais chegam apontando pra
-          // localhost:8080/login (que ninguém consegue abrir fora do dev).
+          // "Confirm email" está DESATIVADO no Supabase Auth, então este
+          // redirect é só fallback caso seja reativado no futuro.
           emailRedirectTo: "https://medodedirigirnuncamais.netlify.app/login?confirmed=true",
         },
       });
       if (error) throw error;
-      setSuccess("Cadastro realizado! Verifique seu email para confirmar a conta.");
+      // Como confirmação de email está desativada, o signUp já cria sessão.
+      // Se houver sessão ativa, AuthContext detecta e redireciona automaticamente.
+      // Senão, mostra mensagem amigável pra logar.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setSuccess("Conta criada! Redirecionando…");
+        // O useEffect que escuta `user` no topo do componente vai redirecionar
+      } else {
+        setSuccess("Conta criada! Agora é só fazer login.");
+        setIsLogin(true);
+      }
     } catch (err: any) {
       setError(err.message || "Erro inesperado");
     } finally {
