@@ -217,17 +217,64 @@ const Auth = () => {
           className="absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
         />
-        {/* Sem overlay nem texto sobreposto — a copy já vem dentro da
-            imagem do hero (gerada pelo Balla). Mantemos só fitas de
-            advertência como detalhe de identidade visual. */}
+        {/* Overlay gradiente pra escurecer a imagem e dar contraste pro texto */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))]/95 via-[hsl(var(--blue-900))]/70 to-[hsl(var(--blue-900))]/30 z-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
+        {/* Fitas de advertência no topo e base — identidade trânsito */}
         <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
         <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30" aria-hidden />
+
+        <div className="relative z-20 flex flex-col justify-between p-10 xl:p-16 w-full">
+          {/* Logo + nome curto */}
+          <div className="flex items-center gap-3">
+            <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+              <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
+            </div>
+            <div>
+              <p className="text-white font-black text-sm leading-tight">Medo de Dirigir</p>
+              <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
+            </div>
+          </div>
+
+          {/* Texto principal + benefícios */}
+          <div className="max-w-lg">
+            <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+              🛞 Sua área de membros
+            </p>
+            <h1 className="text-white font-black text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-5">
+              O volante<br /><span className="text-primary">agora é seu.</span>
+            </h1>
+            <p className="text-white/70 text-base leading-relaxed mb-8">
+              Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
+              mulheres e a Carla a um clique de distância.
+            </p>
+            <ul className="space-y-3">
+              {[
+                { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
+                { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
+                { icon: "support_agent", text: "Carla no WhatsApp quando travar" },
+                { icon: "emoji_events", text: "Conquistas e recompensas pra te manter no caminho" },
+              ].map((b) => (
+                <li key={b.icon} className="flex items-center gap-3 text-white/85 text-sm">
+                  <span className="material-symbols-outlined text-primary filled-icon text-lg shrink-0">
+                    {b.icon}
+                  </span>
+                  {b.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Footer da coluna hero */}
+          <p className="text-white/40 text-xs">
+            © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
+          </p>
+        </div>
       </aside>
 
       {/* ── COLUNA DIREITA: FORMULÁRIO ───────────────────────────────────── */}
       <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-4 sm:p-6 lg:p-10 relative">
-        {/* Mobile: hero atrás do card com gradiente suave pra base
-            (deixa o card de login ler bem mas a imagem ainda aparece). */}
+        {/* Mobile: hero como fundo embaçado pra o card ler bem */}
         <div
           className="lg:hidden absolute inset-0 bg-[hsl(var(--blue-900))]"
           aria-hidden
@@ -235,10 +282,10 @@ const Auth = () => {
           <img
             src="/hero/area-de-membros.jpg"
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(var(--blue-900))]/60 to-[hsl(var(--blue-900))]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--blue-900))]/40 via-[hsl(var(--blue-900))]/80 to-[hsl(var(--blue-900))]" />
         </div>
 
         <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 w-full max-w-md border border-white/10 shadow-2xl lg:bg-transparent lg:border-0 lg:shadow-none lg:backdrop-blur-none lg:p-0">
