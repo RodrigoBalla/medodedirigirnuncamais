@@ -57,6 +57,9 @@ export default function AnalyticsTab() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(30);
+  // Jornada do Aluno (funil completo) começa OCULTA — é análise profunda
+  // que não precisa carregar sempre. Toggle no botão "Ver análise completa".
+  const [showJourney, setShowJourney] = useState(false);
   const onlineUsers = useOnlineUsers();
 
   useEffect(() => { fetchAll(); }, [days]);
@@ -259,23 +262,42 @@ export default function AnalyticsTab() {
       {/* ── Dashboard ao Vivo (KPIs + candles + feed realtime) ──────────── */}
       <LiveActivityDashboard />
 
-      {/* ── Funil do aluno (analytics existente) ─────────────────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-black">Jornada do Aluno</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Funil completo: do cadastro até a última aula</p>
+      {/* ── Funil do aluno (oculta por padrão pra não inflar a página) ──── */}
+      <button
+        onClick={() => setShowJourney((s) => !s)}
+        className="w-full bg-card border border-border rounded-2xl px-5 py-4 flex items-center justify-between hover:border-primary/40 transition-colors group"
+      >
+        <div className="text-left">
+          <h2 className="text-base md:text-lg font-black flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary filled-icon">conversion_path</span>
+            Jornada do Aluno (funil completo)
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {showJourney ? "Clique pra esconder" : "Análise profunda: do cadastro até a última aula"}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          {[7, 14, 30, 90].map((d) => (
-            <button key={d} onClick={() => setDays(d)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${days === d ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
-            >{d}d</button>
-          ))}
-          <button onClick={fetchAll} className="ml-1 size-8 rounded-lg bg-accent flex items-center justify-center hover:bg-accent/80 transition-colors">
-            <span className="material-symbols-outlined text-base">refresh</span>
-          </button>
+        <span className={`material-symbols-outlined text-muted-foreground group-hover:text-primary transition-transform ${showJourney ? "rotate-180" : ""}`}>
+          expand_more
+        </span>
+      </button>
+
+      <div className={showJourney ? "space-y-6" : "hidden"}>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-xl font-black">Jornada do Aluno</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Funil completo: do cadastro até a última aula</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {[7, 14, 30, 90].map((d) => (
+              <button key={d} onClick={() => setDays(d)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${days === d ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"}`}
+              >{d}d</button>
+            ))}
+            <button onClick={fetchAll} className="ml-1 size-8 rounded-lg bg-accent flex items-center justify-center hover:bg-accent/80 transition-colors">
+              <span className="material-symbols-outlined text-base">refresh</span>
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* ═══════════════════════════════════════ */}
       {/* ═══  MAIN JOURNEY FUNNEL  ════════════ */}
@@ -641,6 +663,7 @@ export default function AnalyticsTab() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
