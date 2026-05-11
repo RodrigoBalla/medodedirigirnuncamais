@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -21,6 +22,7 @@ interface Product {
 }
 
 export default function ProductsManager() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -82,7 +84,12 @@ export default function ProductsManager() {
           {products.map((p) => {
             const isPublished = p.status === "published";
             return (
-              <div key={p.id} className="bg-card border border-border rounded-2xl p-4">
+              <div
+                key={p.id}
+                onClick={() => navigate(`/curso/${p.id}`)}
+                className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:border-primary/40 hover:bg-accent/20 transition-colors"
+                title="Abrir o curso na área de membros (você é admin, vê mesmo se estiver oculto)"
+              >
                 <div className="flex items-center gap-4">
                   <div className="size-14 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden border border-border">
                     {p.image_url ? (
@@ -110,7 +117,7 @@ export default function ProductsManager() {
                     </p>
                   </div>
                   <button
-                    onClick={() => toggleStatus(p)}
+                    onClick={(e) => { e.stopPropagation(); toggleStatus(p); }}
                     disabled={toggling === p.id}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${
                       isPublished

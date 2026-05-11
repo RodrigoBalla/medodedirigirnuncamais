@@ -271,16 +271,45 @@ export function LibraryScreen() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  // Admin vê TODOS os cursos (inclusive ocultos/draft) e ignora grupos de acesso.
+  // Alunas só veem cursos `published` aos quais têm acesso via grupo.
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
-      loadAllowedProducts();
+      checkAdminAndLoad();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  async function loadAllowedProducts() {
+  async function checkAdminAndLoad() {
+    // Detecta se é admin via user_roles
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user!.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    const admin = !!role;
+    setIsAdmin(admin);
+    await loadAllowedProducts(admin);
+  }
+
+  async function loadAllowedProducts(admin: boolean) {
     setLoading(true);
     try {
+      // ── ADMIN: vê todos os cursos (published + draft), sem filtro de grupo ──
+      if (admin) {
+        const { data: prodData } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
+        setProducts(prodData || []);
+        setLoading(false);
+        return;
+      }
+
+      // ── ALUNA: filtra por grupo + status published ──
       const { data: userGroups } = await supabase
         .from("access_group_users")
         .select("group_id")
@@ -359,6 +388,13 @@ export function LibraryScreen() {
                   <span className="material-symbols-outlined text-white text-xs filled-icon">play_circle</span>
                   <span className="text-white text-xs font-bold font-mono">Curso</span>
                 </div>
+                {/* Badge "Oculto" — só aparece quando admin vê um curso em draft */}
+                {isAdmin && (product as { status?: string }).status !== "published" && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 bg-amber-500/90 backdrop-blur-md px-2.5 py-1 rounded-lg">
+                    <span className="material-symbols-outlined text-black text-xs">visibility_off</span>
+                    <span className="text-black text-[10px] font-black uppercase tracking-widest">Oculto (só admin)</span>
+                  </div>
+                )}
               </div>
               <div className="p-6 md:p-8 flex flex-col flex-1 justify-center">
                 <h3 className="font-bold text-xl md:text-2xl mb-2 leading-tight group-hover:text-primary transition-colors">{product.title}</h3>
