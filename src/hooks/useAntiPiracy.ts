@@ -36,7 +36,11 @@ interface Result {
 export function useAntiPiracy({
   blockContextMenu = true,
   blockDevToolsKeys = true,
-  detectDevTools = true,
+  // Heurística outer/inner é falso-positiva demais (toolbar do browser,
+  // dock zoom, monitor secundário, devtools docked do lado). Deixei
+  // DESLIGADA por padrão — quem realmente precisa pode ligar passando
+  // `detectDevTools: true` explícito. Proteção real é DRM Watermark + Domain Restriction.
+  detectDevTools = false,
   detectScreenCapture = true,
 }: Options = {}): Result {
   const [blocked, setBlocked] = useState(false);
@@ -72,15 +76,15 @@ export function useAntiPiracy({
     };
   }, [blockContextMenu, blockDevToolsKeys]);
 
-  // 2. Heurística DevTools — diferença entre outer/inner > 200px sugere docked
+  // 2. Heurística DevTools — diferença outer/inner > THRESHOLD sugere docked.
+  // Subi pra 360px porque devtools docked à direita ocupa ~300px em telas grandes
+  // e ainda há a barra de menus/abas do browser (~80–120px) somando.
   useEffect(() => {
     if (!detectDevTools) return;
-    const THRESHOLD = 200;
+    const THRESHOLD = 360;
     const check = () => {
       const widthDiff  = Math.abs(window.outerWidth  - window.innerWidth);
       const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
-      // Em alguns browsers/macOS, a diferença normal pode ser ~150px (toolbar).
-      // Subo o threshold pra 300 e comparo só a maior das duas.
       if (Math.max(widthDiff, heightDiff) > THRESHOLD) {
         setBlocked(true);
         setReason("DevTools detectado");
@@ -95,7 +99,6 @@ export function useAntiPiracy({
   useEffect(() => {
     if (!detectScreenCapture) return;
     if (typeof navigator === "undefined") return;
-    // @ts-expect-error mediaDevices opcional em browsers antigos
     const md = navigator.mediaDevices;
     if (!md?.getDisplayMedia) return;
     const original = md.getDisplayMedia.bind(md);

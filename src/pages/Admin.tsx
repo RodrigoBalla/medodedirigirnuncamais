@@ -428,7 +428,7 @@ export default function Admin() {
   ];
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-clip">
       {/* Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-6 py-3">
         <div className="flex items-center gap-3">
@@ -495,7 +495,7 @@ export default function Admin() {
         </div>
 
         {/* Content */}
-        <main className="flex-1 min-w-0 p-4 md:p-6 pb-20 md:pb-6 max-w-full overflow-x-hidden">
+        <main className="flex-1 min-w-0 p-4 md:p-6 pb-20 md:pb-6 max-w-full overflow-x-clip">
           {tab === "dashboard" && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold">Visão Geral</h2>

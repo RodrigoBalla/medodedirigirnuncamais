@@ -5,6 +5,9 @@ export interface Product {
   image_url: string;
   status: string;
   created_at: string;
+  // URL do checkout (Eduzz). Quando preenchido, vira o destino do botão
+  // "Comprar" na página /curso-info/:id. Quando null, mostra fallback.
+  checkout_url?: string | null;
 }
 
 export interface Module {

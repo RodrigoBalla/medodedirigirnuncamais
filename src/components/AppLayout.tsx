@@ -376,8 +376,12 @@ export function AppLayout({
           </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 pb-20 lg:pb-0 overflow-x-hidden">
+        {/* Main content
+            NOTA: usa `overflow-x-clip` (não `overflow-x-hidden`). O `hidden`
+            força `overflow-y` a computar como `auto`, criando uma segunda
+            barra de scroll quando o conteúdo passa da altura. `clip` corta
+            no eixo X sem afetar o eixo Y. */}
+        <main className="flex-1 pb-20 lg:pb-0 overflow-x-clip min-w-0">
           {children}
         </main>
       </div>

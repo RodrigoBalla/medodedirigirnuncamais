@@ -301,7 +301,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-clip">
       <AnimatePresence>
          {!hasCompletedTutorial && <PlayerTutorial onComplete={() => setHasCompletedTutorial(true)} />}
          {showRoulette && <LuckRoulette onComplete={onRouletteComplete} />}

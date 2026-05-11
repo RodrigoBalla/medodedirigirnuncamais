@@ -92,6 +92,13 @@
     @apply border-border;
   }
 
+  html, body {
+    /* Apenas UM scroll na página inteira — o do <html>. Containers internos
+       NÃO podem disparar scroll próprio (`overflow-x: hidden` em filhos
+       computa overflow-y como auto, criando uma segunda barra). */
+    overflow-x: clip;
+  }
+
   body {
     @apply text-foreground;
     font-family: var(--font-body);
