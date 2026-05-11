@@ -209,73 +209,101 @@ const Auth = () => {
 
       {/* ── HERO ─────────────────────────────────────────────────────────
           Desktop: coluna esquerda (lg:flex-1, h tela inteira).
-          Mobile: bloco no topo (flex column), altura mínima 55vh pra
-          mostrar capa + texto, depois o form fica abaixo. */}
-      <aside className="relative flex overflow-hidden lg:flex-1 lg:border-r border-white/5 min-h-[55vh] lg:min-h-screen">
-        {/* Imagem hero estática (mais leve que vídeo). Cobre toda a coluna. */}
-        <img
-          src="/hero/area-de-membros.jpg"
-          alt=""
-          aria-hidden
-          className="absolute inset-0 w-full h-full object-cover"
-          fetchPriority="high"
-        />
-        {/* Overlay gradiente pra escurecer a imagem e dar contraste pro texto.
-            Mobile: gradient mais escuro pra base (pro form abaixo emendar).
-            Desktop: gradient da esquerda pra direita. */}
-        <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-tr from-[hsl(var(--blue-900))]/60 via-[hsl(var(--blue-900))]/85 to-[hsl(var(--blue-900))] lg:from-[hsl(var(--blue-900))]/95 lg:via-[hsl(var(--blue-900))]/70 lg:to-[hsl(var(--blue-900))]/30 z-10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
-        {/* Fitas de advertência no topo e base — identidade trânsito */}
-        <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
-        <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30 lg:block" aria-hidden />
-
-        <div className="relative z-20 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-16 w-full gap-6 lg:gap-0 pt-10">
-          {/* Logo + nome curto */}
-          <div className="flex items-center gap-3">
-            <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-              <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
+          Mobile: bloco no topo. Imagem ocupa metade superior do hero
+          (full-bleed sem texto), texto fica abaixo no fundo navy. */}
+      <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
+        {/* ── MOBILE: imagem hero "card" full-bleed (~45vh) ────────────── */}
+        <div className="lg:hidden relative w-full h-[45vh] min-h-[280px] overflow-hidden">
+          <img
+            src="/hero/area-de-membros.jpg"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+            fetchPriority="high"
+          />
+          {/* Gradient sutil só na base pra emendar com o fundo navy */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
+          <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
+          {/* Logo flutuante sobre a imagem */}
+          <div className="absolute top-5 left-5 z-20 flex items-center gap-3">
+            <div className="size-11 bg-primary/30 rounded-xl flex items-center justify-center border border-primary/40 backdrop-blur-md">
+              <span className="material-symbols-outlined text-primary text-xl filled-icon">directions_car</span>
             </div>
             <div>
-              <p className="text-white font-black text-sm leading-tight">Medo de Dirigir</p>
-              <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
+              <p className="text-white font-black text-sm leading-tight drop-shadow-lg">Medo de Dirigir</p>
+              <p className="text-primary font-black text-sm leading-tight drop-shadow-lg">Nunca Mais</p>
             </div>
           </div>
+        </div>
 
-          {/* Texto principal + benefícios */}
-          <div className="max-w-lg">
-            <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-3 lg:mb-4">
-              🛞 Sua área de membros
-            </p>
-            <h1 className="text-white font-black text-3xl sm:text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-3 lg:mb-5">
-              O volante<br /><span className="text-primary">agora é seu.</span>
-            </h1>
-            <p className="text-white/70 text-sm lg:text-base leading-relaxed mb-5 lg:mb-8">
-              Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
-              mulheres e a Carla a um clique de distância.
-            </p>
-            {/* Lista de benefícios — escondida em mobile pra não competir
-                com o card de login. Aparece a partir de sm:. */}
-            <ul className="hidden sm:block space-y-2 lg:space-y-3">
-              {[
-                { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
-                { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
-                { icon: "support_agent", text: "Carla no WhatsApp quando travar" },
-                { icon: "emoji_events", text: "Conquistas e recompensas pra te manter no caminho" },
-              ].map((b) => (
-                <li key={b.icon} className="flex items-center gap-3 text-white/85 text-sm">
-                  <span className="material-symbols-outlined text-primary filled-icon text-lg shrink-0">
-                    {b.icon}
-                  </span>
-                  {b.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Footer da coluna hero — escondido em mobile */}
-          <p className="hidden lg:block text-white/40 text-xs">
-            © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
+        {/* ── MOBILE: texto abaixo da imagem, fundo navy puro ──────────── */}
+        <div className="lg:hidden px-6 pt-6 pb-8 bg-[hsl(var(--blue-900))]">
+          <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-3">
+            🛞 Sua área de membros
           </p>
+          <h1 className="text-white font-black text-3xl sm:text-4xl leading-[1.02] tracking-tight mb-3">
+            O volante<br /><span className="text-primary">agora é seu.</span>
+          </h1>
+          <p className="text-white/70 text-sm leading-relaxed">
+            Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
+            mulheres e a Carla a um clique de distância.
+          </p>
+        </div>
+
+        {/* ── DESKTOP: layout completo com imagem cobrindo a coluna ────── */}
+        <div className="hidden lg:block absolute inset-0">
+          <img
+            src="/hero/area-de-membros.jpg"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover"
+            fetchPriority="high"
+          />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))]/95 via-[hsl(var(--blue-900))]/70 to-[hsl(var(--blue-900))]/30 z-10" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
+          <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
+          <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30" aria-hidden />
+          <div className="relative z-20 flex flex-col justify-between p-10 xl:p-16 w-full h-full">
+            <div className="flex items-center gap-3">
+              <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
+              </div>
+              <div>
+                <p className="text-white font-black text-sm leading-tight">Medo de Dirigir</p>
+                <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
+              </div>
+            </div>
+            <div className="max-w-lg">
+              <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+                🛞 Sua área de membros
+              </p>
+              <h1 className="text-white font-black text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-5">
+                O volante<br /><span className="text-primary">agora é seu.</span>
+              </h1>
+              <p className="text-white/70 text-base leading-relaxed mb-8">
+                Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
+                mulheres e a Carla a um clique de distância.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
+                  { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
+                  { icon: "support_agent", text: "Carla no WhatsApp quando travar" },
+                  { icon: "emoji_events", text: "Conquistas e recompensas pra te manter no caminho" },
+                ].map((b) => (
+                  <li key={b.icon} className="flex items-center gap-3 text-white/85 text-sm">
+                    <span className="material-symbols-outlined text-primary filled-icon text-lg shrink-0">
+                      {b.icon}
+                    </span>
+                    {b.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-white/40 text-xs">
+              © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
+            </p>
+          </div>
         </div>
       </aside>
 
