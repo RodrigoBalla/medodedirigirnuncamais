@@ -11,7 +11,7 @@ import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import ProductsManager from "@/components/admin/lms/ProductsManager";
 import { CommentsModeration } from "@/components/admin/CommentsModeration";
 
-type AdminTab = "dashboard" | "students" | "modules" | "reports" | "analytics" | "products" | "comments";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments";
 
 interface AccessGroup {
   id: string;
@@ -102,14 +102,23 @@ export default function Admin() {
     total_completions: number;
     unique_students_completed: number;
   }>>([]);
+  // Lista de produtos com imagem + descrição (usado na aba "Módulos")
+  const [productsSummary, setProductsSummary] = useState<Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    image_url: string | null;
+  }>>([]);
 
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
-      const [kpiRes, courseRes] = await Promise.all([
+      const [kpiRes, courseRes, productsRes] = await Promise.all([
         supabase.rpc("admin_overview_kpis"),
         supabase.rpc("admin_completion_by_course"),
+        supabase.from("products").select("id, title, description, image_url").order("title", { ascending: true }),
       ]);
+      if (productsRes.data) setProductsSummary(productsRes.data as never);
       if (kpiRes.data && Array.isArray(kpiRes.data) && kpiRes.data[0]) {
         const r = kpiRes.data[0] as Record<string, number | string>;
         setOverviewKpis({
@@ -411,7 +420,6 @@ export default function Admin() {
     { key: "dashboard", icon: "dashboard", label: "Dashboard" },
     { key: "analytics", icon: "monitoring", label: "Analytics" },
     { key: "students", icon: "group", label: "Alunos" },
-    { key: "modules", icon: "school", label: "Módulos" },
     { key: "products", icon: "video_library", label: "Cursos" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
@@ -1131,69 +1139,6 @@ export default function Admin() {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {tab === "modules" && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold">Módulos Cadastrados</h2>
-              <div className="space-y-4">
-                {PHASES.map((p, i) => {
-                  const enrolled = students.filter((s) => s.completed_phases.includes(i)).length;
-                  return (
-                    <div key={p.id} className="bg-card border border-border rounded-2xl p-5">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-12 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: `hsl(var(--${p.iconBg === "blue" ? "primary" : p.iconBg === "green" ? "success" : "yellow"}) / 0.15)` }}>
-                            {p.icon}
-                          </div>
-                          <div>
-                            <p className="font-bold">{p.title}</p>
-                            <p className="text-xs text-muted-foreground">{p.subtitle}</p>
-                          </div>
-                        </div>
-                        <span className="text-xs font-bold px-2.5 py-1 bg-primary/10 text-primary rounded-full">{p.xp} XP</span>
-                      </div>
-
-                      {/* Module details */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                        <div className="bg-accent/50 rounded-lg p-3">
-                          <p className="text-xs text-muted-foreground">Etapas</p>
-                          <p className="font-bold">{p.steps.length}</p>
-                        </div>
-                        <div className="bg-accent/50 rounded-lg p-3">
-                          <p className="text-xs text-muted-foreground">Perguntas Quiz</p>
-                          <p className="font-bold">{p.quizzes.length}</p>
-                        </div>
-                        <div className="bg-accent/50 rounded-lg p-3">
-                          <p className="text-xs text-muted-foreground">Alunos Concluíram</p>
-                          <p className="font-bold">{enrolled}</p>
-                        </div>
-                        <div className="bg-accent/50 rounded-lg p-3">
-                          <p className="text-xs text-muted-foreground">Taxa Conclusão</p>
-                          <p className="font-bold">{totalStudents > 0 ? Math.round((enrolled / totalStudents) * 100) : 0}%</p>
-                        </div>
-                      </div>
-
-                      {/* Quiz preview */}
-                      <details className="group">
-                        <summary className="cursor-pointer text-sm font-medium text-primary flex items-center gap-1">
-                          <span className="material-symbols-outlined text-base group-open:rotate-90 transition-transform">chevron_right</span>
-                          Ver perguntas do quiz
-                        </summary>
-                        <div className="mt-3 space-y-2">
-                          {p.quizzes.map((q, qi) => (
-                            <div key={qi} className="bg-accent/30 rounded-lg p-3">
-                              <p className="text-sm font-medium">{q.emoji} {q.q}</p>
-                              <p className="text-xs text-[hsl(var(--success))] mt-1">✓ {q.opts[q.correct]}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
 
