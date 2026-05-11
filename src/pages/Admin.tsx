@@ -54,6 +54,47 @@ export default function Admin() {
   const [newStudent, setNewStudent] = useState({ name: "", email: "", password: "" });
   const [isCreating, setIsCreating] = useState(false);
 
+  // KPIs reais da Visão Geral (substituem fases/confiança hardcoded)
+  const [overviewKpis, setOverviewKpis] = useState<{
+    total_students: number;
+    total_lessons_completed: number;
+    total_courses: number;
+    total_lessons: number;
+    total_wheel_spins: number;
+    total_coupons: number;
+    total_xp_sum: number;
+  } | null>(null);
+  const [courseCompletion, setCourseCompletion] = useState<Array<{
+    product_id: string;
+    product_title: string;
+    total_lessons: number;
+    total_completions: number;
+    unique_students_completed: number;
+  }>>([]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    (async () => {
+      const [kpiRes, courseRes] = await Promise.all([
+        supabase.rpc("admin_overview_kpis"),
+        supabase.rpc("admin_completion_by_course"),
+      ]);
+      if (kpiRes.data && Array.isArray(kpiRes.data) && kpiRes.data[0]) {
+        const r = kpiRes.data[0] as Record<string, number | string>;
+        setOverviewKpis({
+          total_students: Number(r.total_students ?? 0),
+          total_lessons_completed: Number(r.total_lessons_completed ?? 0),
+          total_courses: Number(r.total_courses ?? 0),
+          total_lessons: Number(r.total_lessons ?? 0),
+          total_wheel_spins: Number(r.total_wheel_spins ?? 0),
+          total_coupons: Number(r.total_coupons ?? 0),
+          total_xp_sum: Number(r.total_xp_sum ?? 0),
+        });
+      }
+      if (courseRes.data) setCourseCompletion(courseRes.data as never);
+    })();
+  }, [isAdmin]);
+
   // Badge de comentários pendentes — atualiza via RPC + realtime
   const [pendingComments, setPendingComments] = useState<number>(0);
   useEffect(() => {
@@ -351,13 +392,17 @@ export default function Admin() {
           {tab === "dashboard" && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold">Visão Geral</h2>
-              {/* KPI Cards */}
+              {/* KPI Cards — dados reais via admin_overview_kpis() */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { icon: "group", label: "Total de Alunos", value: totalStudents, color: "text-primary" },
-                  { icon: "database", label: "XP Médio", value: avgXP, color: "text-[hsl(var(--success))]" },
-                  { icon: "speed", label: "Confiança Média", value: `${avgConfidence}/5`, color: "text-[hsl(var(--yellow))]" },
-                  { icon: "school", label: "Módulos Ativos", value: PHASES.length, color: "text-destructive" },
+                  { icon: "group", label: "Alunos cadastrados", value: overviewKpis?.total_students ?? "—", color: "text-primary" },
+                  { icon: "video_library", label: "Cursos no catálogo", value: overviewKpis?.total_courses ?? "—", color: "text-blue-500" },
+                  { icon: "school", label: "Aulas cadastradas", value: overviewKpis?.total_lessons ?? "—", color: "text-emerald-500" },
+                  { icon: "check_circle", label: "Aulas concluídas", value: overviewKpis?.total_lessons_completed ?? "—", color: "text-amber-500" },
+                  { icon: "casino", label: "Roletas giradas", value: overviewKpis?.total_wheel_spins ?? "—", color: "text-yellow-500" },
+                  { icon: "savings", label: "Cupons gerados", value: overviewKpis?.total_coupons ?? "—", color: "text-purple-500" },
+                  { icon: "database", label: "XP total distribuído", value: overviewKpis?.total_xp_sum ?? "—", color: "text-rose-500" },
+                  { icon: "forum", label: "Comentários pendentes", value: pendingComments, color: "text-orange-500" },
                 ].map((kpi) => (
                   <div key={kpi.label} className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
                     <div className="flex items-center gap-2">
@@ -369,64 +414,86 @@ export default function Admin() {
                 ))}
               </div>
 
-              {/* Completion rates */}
+              {/* Conclusão real por curso (substitui a "Taxa por Fase" antiga
+                  que apontava pras 3 fases hardcoded do mock que ninguém usa) */}
               <div className="bg-card border border-border rounded-2xl p-5">
-                <h3 className="font-bold text-sm mb-4">Taxa de Conclusão por Fase</h3>
-                <div className="space-y-3">
-                  {PHASES.map((p, i) => (
-                    <div key={p.id} className="flex items-center gap-3">
-                      <span className="text-lg">{p.icon}</span>
-                      <div className="flex-1">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium">{p.title.replace(/Fase \d+ — /, "")}</span>
-                          <span className="text-muted-foreground">{completionRates[i]}%</span>
+                <h3 className="font-bold text-sm mb-1">Conclusão por curso</h3>
+                <p className="text-[11px] text-muted-foreground mb-4">
+                  Quantas aulas de cada curso foram concluídas no total (somando todas as alunas).
+                </p>
+                {courseCompletion.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">Sem cursos cadastrados ainda.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {courseCompletion.map((c) => {
+                      const denominator = c.total_lessons * Math.max(c.unique_students_completed, 1);
+                      const pct = denominator > 0
+                        ? Math.min(100, Math.round((c.total_completions / denominator) * 100))
+                        : 0;
+                      return (
+                        <div key={c.product_id} className="flex items-center gap-3">
+                          <span className="material-symbols-outlined text-blue-500">video_library</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center text-xs mb-1 gap-2">
+                              <span className="font-medium truncate">{c.product_title}</span>
+                              <span className="text-muted-foreground shrink-0">
+                                {c.total_completions} conclusões · {c.unique_students_completed} aluna{c.unique_students_completed === 1 ? "" : "s"}
+                              </span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: `${pct}%`, backgroundColor: "hsl(var(--primary))" }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground/70 mt-0.5">{c.total_lessons} aula{c.total_lessons === 1 ? "" : "s"} no catálogo</p>
+                          </div>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${completionRates[i]}%`,
-                              backgroundColor: "hsl(var(--primary))",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Recent students */}
+              {/* Alunos recentes — métrica de progresso baseada em XP real */}
               <div className="bg-card border border-border rounded-2xl p-5">
-                <h3 className="font-bold text-sm mb-4">Alunos Recentes</h3>
+                <h3 className="font-bold text-sm mb-4">Alunos recentes</h3>
                 <div className="space-y-3">
-                  {students
-                    .filter((s) => s.user_id !== user?.id)
-                    .slice(0, 5)
-                    .map((s) => (
-                      <div key={s.user_id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                            {s.display_name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{s.display_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {s.completed_phases.length}/{PHASES.length} fases • {s.total_xp} XP
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          s.completed_phases.length === PHASES.length
+                  {students.filter((s) => s.user_id !== user?.id).length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">Nenhum aluno cadastrado ainda. Vai aparecer aqui quando o webhook da Eduzz começar a liberar acessos.</p>
+                  ) : (
+                    students
+                      .filter((s) => s.user_id !== user?.id)
+                      .slice(0, 5)
+                      .map((s) => {
+                        const level = Math.floor(s.total_xp / 100) + 1;
+                        const status = s.total_xp >= 100 ? "Em progresso" : s.total_xp > 0 ? "Começando" : "Novo";
+                        const statusClass =
+                          s.total_xp >= 500
                             ? "bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]"
-                            : s.completed_phases.length > 0
+                            : s.total_xp > 0
                             ? "bg-primary/10 text-primary"
-                            : "bg-muted text-muted-foreground"
-                        }`}>
-                          {s.completed_phases.length === PHASES.length ? "Completo" : s.completed_phases.length > 0 ? "Em progresso" : "Novo"}
-                        </span>
-                      </div>
-                    ))}
+                            : "bg-muted text-muted-foreground";
+                        return (
+                          <div key={s.user_id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                            <div className="flex items-center gap-3">
+                              <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                {s.display_name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{s.display_name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Nv. {level} · {s.total_xp} XP · 🔥 {s.streak ?? 0} dia{(s.streak ?? 0) === 1 ? "" : "s"}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusClass}`}>
+                              {status}
+                            </span>
+                          </div>
+                        );
+                      })
+                  )}
                 </div>
               </div>
             </div>
