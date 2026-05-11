@@ -198,53 +198,45 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row relative overflow-hidden bg-[hsl(var(--blue-900))]">
-      {/* Theme toggle — canto superior direito, sempre acessível */}
-      <button
-        onClick={toggleTheme}
-        className="absolute top-4 right-4 z-50 size-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors backdrop-blur-md"
-        title={isDark ? "Modo Claro" : "Modo Escuro"}
-      >
-        <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
-      </button>
+      {/* Botão claro/escuro removido — app tem apenas dark mode fixo. */}
 
       {/* ── HERO ─────────────────────────────────────────────────────────
           Desktop: coluna esquerda (lg:flex-1, h tela inteira).
           Mobile: bloco no topo. Imagem ocupa metade superior do hero
           (full-bleed sem texto), texto fica abaixo no fundo navy. */}
       <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
-        {/* ── MOBILE: imagem hero compacta (~32vh) pra deixar o login
-            visível sem rolar a página. A imagem foi originalmente
-            desenhada pra desktop com lado esquerdo vazio — usamos
-            object-[right_center] pra mostrar só o grupo. */}
-        <div className="lg:hidden relative w-full h-[32vh] min-h-[220px] max-h-[300px] overflow-hidden">
+        {/* ── MOBILE: imagem hero compacta (~28vh) com Carla centralizada.
+            A Carla está em ~65% horizontal da imagem original (1376x768).
+            Com object-[65%_center] o crop pega ela bem no centro. */}
+        <div className="lg:hidden relative w-full h-[28vh] min-h-[200px] max-h-[260px] overflow-hidden">
           <img
             src="/hero/area-de-membros.jpg"
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-[right_center]"
+            className="absolute inset-0 w-full h-full object-cover object-[65%_center]"
             fetchPriority="high"
           />
           {/* Gradient sutil só na base pra emendar com o fundo navy */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
           <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
           {/* Logo flutuante sobre a imagem */}
-          <div className="absolute top-4 left-5 z-20 flex items-center gap-3">
-            <div className="size-10 bg-primary/30 rounded-xl flex items-center justify-center border border-primary/40 backdrop-blur-md">
-              <span className="material-symbols-outlined text-primary text-lg filled-icon">directions_car</span>
+          <div className="absolute top-4 left-5 z-20 flex items-center gap-2.5">
+            <div className="size-9 bg-primary/30 rounded-lg flex items-center justify-center border border-primary/40 backdrop-blur-md">
+              <span className="material-symbols-outlined text-primary text-base filled-icon">directions_car</span>
             </div>
             <div>
-              <p className="text-white font-black text-sm leading-tight drop-shadow-lg">Medo de Dirigir</p>
-              <p className="text-primary font-black text-sm leading-tight drop-shadow-lg">Nunca Mais</p>
+              <p className="text-white font-black text-xs leading-tight drop-shadow-lg">Medo de Dirigir</p>
+              <p className="text-primary font-black text-xs leading-tight drop-shadow-lg">Nunca Mais</p>
             </div>
           </div>
         </div>
 
-        {/* ── MOBILE: texto compacto abaixo da imagem ─────────────────── */}
-        <div className="lg:hidden px-6 pt-4 pb-4 bg-[hsl(var(--blue-900))]">
+        {/* ── MOBILE: texto centralizado abaixo da imagem ───────────────── */}
+        <div className="lg:hidden px-6 pt-3 pb-3 bg-[hsl(var(--blue-900))] text-center">
           <p className="inline-block px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/30 text-[9px] font-black uppercase tracking-widest text-primary mb-2">
             🛞 Sua área de membros
           </p>
-          <h1 className="text-white font-black text-2xl sm:text-3xl leading-[1.05] tracking-tight">
+          <h1 className="text-white font-black text-xl sm:text-2xl leading-[1.05] tracking-tight">
             O volante <span className="text-primary">agora é seu.</span>
           </h1>
         </div>
@@ -310,14 +302,14 @@ const Auth = () => {
           Mobile: bloco abaixo do hero, fundo navy sólido (sem imagem
           embaçada — a capa já apareceu no hero acima).
           Desktop: coluna direita lg:w-[480px], card sem glass. */}
-      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-start lg:items-center justify-center px-6 pt-4 pb-6 sm:p-8 lg:p-10 relative bg-[hsl(var(--blue-900))]">
+      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-start lg:items-center justify-center px-6 pt-3 pb-4 sm:p-8 lg:p-10 relative bg-[hsl(var(--blue-900))]">
         <div className="relative z-10 w-full max-w-md lg:max-w-none lg:bg-transparent lg:p-0">
           {/* Logo agora vive no hero acima, o form começa direto pelo título */}
-          <div className="text-center lg:text-left mb-4 lg:mb-8">
-            <h1 className="text-xl lg:text-3xl font-black text-white tracking-tight">
+          <div className="text-center lg:text-left mb-3 lg:mb-8">
+            <h2 className="text-lg lg:text-3xl font-black text-white tracking-tight">
               {isLogin ? "Bem-vinda de volta" : "Liberar acesso"}
-            </h1>
-            <p className="text-white/50 text-xs lg:text-sm mt-1 lg:mt-2">
+            </h2>
+            <p className="text-white/50 text-xs lg:text-sm mt-0.5 lg:mt-2">
               {isLogin
                 ? "Entre na sua conta pra continuar"
                 : signupStep === "email"
@@ -328,7 +320,7 @@ const Auth = () => {
             </p>
           </div>
 
-        <div className="flex bg-white/[0.08] rounded-xl p-1 mb-6">
+        <div className="flex bg-white/[0.08] rounded-xl p-1 mb-4 lg:mb-6">
           <button
             onClick={() => switchTab(true)}
             className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
