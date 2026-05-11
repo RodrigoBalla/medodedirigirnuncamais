@@ -197,7 +197,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-[hsl(var(--blue-900))]">
+    <div className="min-h-screen flex flex-col lg:flex-row relative overflow-hidden bg-[hsl(var(--blue-900))]">
       {/* Theme toggle — canto superior direito, sempre acessível */}
       <button
         onClick={toggleTheme}
@@ -207,8 +207,11 @@ const Auth = () => {
         <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
       </button>
 
-      {/* ── COLUNA ESQUERDA: HERO (desktop only, lg+) ───────────────────── */}
-      <aside className="hidden lg:flex relative flex-1 overflow-hidden border-r border-white/5">
+      {/* ── HERO ─────────────────────────────────────────────────────────
+          Desktop: coluna esquerda (lg:flex-1, h tela inteira).
+          Mobile: bloco no topo (flex column), altura mínima 55vh pra
+          mostrar capa + texto, depois o form fica abaixo. */}
+      <aside className="relative flex overflow-hidden lg:flex-1 lg:border-r border-white/5 min-h-[55vh] lg:min-h-screen">
         {/* Imagem hero estática (mais leve que vídeo). Cobre toda a coluna. */}
         <img
           src="/hero/area-de-membros.jpg"
@@ -217,14 +220,16 @@ const Auth = () => {
           className="absolute inset-0 w-full h-full object-cover"
           fetchPriority="high"
         />
-        {/* Overlay gradiente pra escurecer a imagem e dar contraste pro texto */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))]/95 via-[hsl(var(--blue-900))]/70 to-[hsl(var(--blue-900))]/30 z-10" />
+        {/* Overlay gradiente pra escurecer a imagem e dar contraste pro texto.
+            Mobile: gradient mais escuro pra base (pro form abaixo emendar).
+            Desktop: gradient da esquerda pra direita. */}
+        <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-tr from-[hsl(var(--blue-900))]/60 via-[hsl(var(--blue-900))]/85 to-[hsl(var(--blue-900))] lg:from-[hsl(var(--blue-900))]/95 lg:via-[hsl(var(--blue-900))]/70 lg:to-[hsl(var(--blue-900))]/30 z-10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
         {/* Fitas de advertência no topo e base — identidade trânsito */}
         <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
-        <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30" aria-hidden />
+        <div className="caution-tape absolute bottom-0 left-0 right-0 h-2 z-30 lg:block" aria-hidden />
 
-        <div className="relative z-20 flex flex-col justify-between p-10 xl:p-16 w-full">
+        <div className="relative z-20 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-16 w-full gap-6 lg:gap-0 pt-10">
           {/* Logo + nome curto */}
           <div className="flex items-center gap-3">
             <div className="size-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
@@ -238,17 +243,19 @@ const Auth = () => {
 
           {/* Texto principal + benefícios */}
           <div className="max-w-lg">
-            <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-4">
+            <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-3 lg:mb-4">
               🛞 Sua área de membros
             </p>
-            <h1 className="text-white font-black text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-5">
+            <h1 className="text-white font-black text-3xl sm:text-4xl xl:text-6xl leading-[1.02] tracking-tight mb-3 lg:mb-5">
               O volante<br /><span className="text-primary">agora é seu.</span>
             </h1>
-            <p className="text-white/70 text-base leading-relaxed mb-8">
+            <p className="text-white/70 text-sm lg:text-base leading-relaxed mb-5 lg:mb-8">
               Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
               mulheres e a Carla a um clique de distância.
             </p>
-            <ul className="space-y-3">
+            {/* Lista de benefícios — escondida em mobile pra não competir
+                com o card de login. Aparece a partir de sm:. */}
+            <ul className="hidden sm:block space-y-2 lg:space-y-3">
               {[
                 { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
                 { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
@@ -265,39 +272,25 @@ const Auth = () => {
             </ul>
           </div>
 
-          {/* Footer da coluna hero */}
-          <p className="text-white/40 text-xs">
+          {/* Footer da coluna hero — escondido em mobile */}
+          <p className="hidden lg:block text-white/40 text-xs">
             © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
           </p>
         </div>
       </aside>
 
-      {/* ── COLUNA DIREITA: FORMULÁRIO ───────────────────────────────────── */}
-      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-4 sm:p-6 lg:p-10 relative">
-        {/* Mobile: hero como fundo embaçado pra o card ler bem */}
-        <div
-          className="lg:hidden absolute inset-0 bg-[hsl(var(--blue-900))]"
-          aria-hidden
-        >
-          <img
-            src="/hero/area-de-membros.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(var(--blue-900))]/40 via-[hsl(var(--blue-900))]/80 to-[hsl(var(--blue-900))]" />
-        </div>
-
-        <div className="relative z-10 bg-white/5 backdrop-blur-xl rounded-2xl p-8 md:p-10 w-full max-w-md border border-white/10 shadow-2xl lg:bg-transparent lg:border-0 lg:shadow-none lg:backdrop-blur-none lg:p-0">
-          <div className="text-center lg:text-left mb-8">
-            {/* Logo só aparece em mobile (no desktop tá na coluna esquerda) */}
-            <div className="lg:hidden inline-flex items-center justify-center size-14 bg-primary/20 rounded-xl mb-4">
-              <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
-            </div>
-            <h1 className="text-xl lg:text-3xl font-black text-white tracking-tight">
+      {/* ── FORMULÁRIO ────────────────────────────────────────────────────
+          Mobile: bloco abaixo do hero, fundo navy sólido (sem imagem
+          embaçada — a capa já apareceu no hero acima).
+          Desktop: coluna direita lg:w-[480px], card sem glass. */}
+      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-6 sm:p-8 lg:p-10 relative bg-[hsl(var(--blue-900))]">
+        <div className="relative z-10 w-full max-w-md lg:max-w-none lg:bg-transparent lg:p-0">
+          {/* Logo agora vive no hero acima, o form começa direto pelo título */}
+          <div className="text-center lg:text-left mb-6 lg:mb-8">
+            <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
               {isLogin ? "Bem-vinda de volta" : "Liberar acesso"}
             </h1>
-            <p className="text-white/50 text-sm mt-2">
+            <p className="text-white/50 text-sm mt-1.5 lg:mt-2">
               {isLogin
                 ? "Entre na sua conta pra continuar"
                 : signupStep === "email"
