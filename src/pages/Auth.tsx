@@ -197,7 +197,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row relative overflow-hidden bg-[hsl(var(--blue-900))]">
+    <div className="min-h-screen min-h-[100dvh] flex flex-col lg:flex-row relative overflow-hidden bg-[hsl(var(--blue-900))]">
       {/* Botão claro/escuro removido — app tem apenas dark mode fixo. */}
 
       {/* ── HERO ─────────────────────────────────────────────────────────
