@@ -57,6 +57,15 @@ export default function Admin() {
   const [editModal, setEditModal] = useState<EditModal | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  // user_id do aluno cujo dropdown "Adicionar a grupo" está aberto
+  const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
+  // Fecha o dropdown com ESC + click fora
+  useEffect(() => {
+    if (!groupMenuFor) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setGroupMenuFor(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [groupMenuFor]);
   
   // States for adding student
   const [showAddModal, setShowAddModal] = useState(false);
@@ -656,36 +665,59 @@ export default function Admin() {
                             {s.is_blocked ? "Reativar" : "Inativar"}
                           </button>
 
-                          {/* Adicionar a grupo (dropdown nativo) */}
+                          {/* Adicionar a grupo — dropdown customizado (não usa <select> nativo) */}
                           {accessGroups.length > 0 && accessGroups.filter((g) => !s.groups.some((sg) => sg.id === g.id)).length > 0 && (
                             <div className="relative">
-                              <select
-                                onChange={(e) => {
-                                  const groupId = e.target.value;
-                                  if (groupId) {
-                                    grantGroup(s.user_id, groupId);
-                                    e.target.value = "";
-                                  }
-                                }}
-                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                                title="Escolher grupo pra adicionar"
-                                defaultValue=""
-                              >
-                                <option value="" disabled>Adicionar a grupo…</option>
-                                {accessGroups
-                                  .filter((g) => !s.groups.some((sg) => sg.id === g.id))
-                                  .map((g) => (
-                                    <option key={g.id} value={g.id}>{g.name}</option>
-                                  ))}
-                              </select>
                               <button
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 transition-colors pointer-events-none"
+                                onClick={() => setGroupMenuFor(groupMenuFor === s.user_id ? null : s.user_id)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                                  groupMenuFor === s.user_id
+                                    ? "bg-primary/20 text-primary border-primary/50"
+                                    : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/30"
+                                }`}
                                 title="Adicionar a um grupo de acesso"
                               >
                                 <span className="material-symbols-outlined text-base">group_add</span>
                                 Adicionar a grupo
-                                <span className="material-symbols-outlined text-sm">expand_more</span>
+                                <span className={`material-symbols-outlined text-sm transition-transform ${groupMenuFor === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
                               </button>
+
+                              {/* Dropdown customizado com identidade do app */}
+                              {groupMenuFor === s.user_id && (
+                                <>
+                                  {/* Backdrop invisível pra fechar com click fora */}
+                                  <div
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => setGroupMenuFor(null)}
+                                  />
+                                  {/* Menu */}
+                                  <div className="absolute top-full left-0 mt-2 min-w-[220px] bg-card border-2 border-primary/40 rounded-xl shadow-2xl shadow-primary/20 overflow-hidden z-50">
+                                    <div className="px-3 py-2 border-b border-border bg-primary/5">
+                                      <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                                        🛞 Escolha o grupo
+                                      </p>
+                                    </div>
+                                    <ul className="py-1">
+                                      {accessGroups
+                                        .filter((g) => !s.groups.some((sg) => sg.id === g.id))
+                                        .map((g) => (
+                                          <li key={g.id}>
+                                            <button
+                                              onClick={() => {
+                                                grantGroup(s.user_id, g.id);
+                                                setGroupMenuFor(null);
+                                              }}
+                                              className="w-full text-left px-3 py-2.5 hover:bg-primary/10 transition-colors flex items-center gap-2 group"
+                                            >
+                                              <span className="material-symbols-outlined text-primary text-base opacity-0 group-hover:opacity-100 transition-opacity">add</span>
+                                              <span className="text-sm font-bold text-foreground flex-1 truncate">{g.name}</span>
+                                            </button>
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  </div>
+                                </>
+                              )}
                             </div>
                           )}
 
