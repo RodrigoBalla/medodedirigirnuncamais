@@ -205,20 +205,20 @@ const Auth = () => {
           Mobile: bloco no topo. Imagem ocupa metade superior do hero
           (full-bleed sem texto), texto fica abaixo no fundo navy. */}
       <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
-        {/* ── MOBILE: imagem hero compacta (~28vh) com Carla centralizada.
-            A Carla está em ~65% horizontal da imagem original (1376x768).
-            Com object-[65%_center] o crop pega ela bem no centro. */}
+        {/* ── MOBILE: imagem hero quadrada (1:1) com Carla centralizada.
+            A imagem nova é 1024x1024 com tudo bem centralizado, então
+            usamos object-center default. Ela já tem caution-tape
+            amarelo embutido nas bordas, dispensa nossa faixa extra. */}
         <div className="lg:hidden relative w-full h-[28vh] min-h-[200px] max-h-[260px] overflow-hidden">
           <img
             src="/hero/area-de-membros.jpg"
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-[65%_center]"
+            className="absolute inset-0 w-full h-full object-cover object-center"
             fetchPriority="high"
           />
           {/* Gradient sutil só na base pra emendar com o fundo navy */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
-          <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
           {/* Logo flutuante sobre a imagem */}
           <div className="absolute top-4 left-5 z-20 flex items-center gap-2.5">
             <div className="size-9 bg-primary/30 rounded-lg flex items-center justify-center border border-primary/40 backdrop-blur-md">
