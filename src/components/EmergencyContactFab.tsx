@@ -49,6 +49,17 @@ export function EmergencyContactFab() {
     }
   }, [open, showTip]);
 
+  // Timer: se o tip estiver visível (1ª visita), some sozinho depois de 5s
+  // pra não ficar inflando a UI o tempo todo
+  useEffect(() => {
+    if (!showTip) return;
+    const id = window.setTimeout(() => {
+      setShowTip(false);
+      try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
+    }, 5000);
+    return () => window.clearTimeout(id);
+  }, [showTip]);
+
   const wppUrl = `https://wa.me/${SUPPORT.whatsapp}?text=${encodeURIComponent(SUPPORT.whatsappMessage)}`;
 
   return (
