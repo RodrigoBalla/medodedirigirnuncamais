@@ -83,52 +83,51 @@ export default function AnalyticsTab() {
     setLoading(false);
   }
 
-  /* ─── Student Journey Funnel ─── */
+  /* ─── Student Journey Funnel (vem da RPC admin_journey_funnel) ─── */
   const totalStudents = profiles.length;
   const premiumCourseCount = products.length;
 
+  // Cores e gradientes pra cada etapa do funil (fixadas no frontend pra
+  // não duplicar visual na RPC).
+  const FUNNEL_STEP_COLORS: Record<string, string> = {
+    enrolled:     "from-blue-500 to-blue-600",
+    signed_up:    "from-cyan-500 to-cyan-600",
+    first_lesson: "from-green-500 to-green-600",
+    engaged:      "from-emerald-500 to-teal-600",
+    frequent:     "from-yellow-500 to-amber-600",
+    cashback:     "from-purple-500 to-purple-600",
+  };
+
+  const [funnelData, setFunnelData] = useState<Array<{
+    step_id: string; step_label: string; step_desc: string; step_icon: string; count: number;
+  }>>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.rpc("admin_journey_funnel");
+      if (Array.isArray(data)) {
+        setFunnelData(data.map((d: Record<string, unknown>) => ({
+          step_id: String(d.step_id),
+          step_label: String(d.step_label),
+          step_desc: String(d.step_desc),
+          step_icon: String(d.step_icon),
+          count: Number(d.count),
+        })));
+      }
+    })();
+  }, [days]);
+
   const journeyFunnel = useMemo(() => {
-    const steps = [
-      {
-        id: "signup",
-        label: "Cadastro Gratuito",
-        desc: "Se cadastraram na plataforma",
-        icon: "person_add",
-        color: "from-blue-500 to-blue-600",
-        count: totalStudents,
-      },
-      {
-        id: "first_access",
-        label: "Primeiro Acesso",
-        desc: "Fizeram login e acessaram a plataforma",
-        icon: "login",
-        color: "from-cyan-500 to-cyan-600",
-        count: progress.length,
-      },
-      ...PHASES.map((phase, i) => ({
-        id: `phase_${i}`,
-        label: `${phase.icon} ${phase.title.replace("Fase " + (i + 1) + " — ", "")}`,
-        desc: phase.subtitle,
-        icon: i === 0 ? "directions_car" : i === 1 ? "settings" : "flag",
-        color: i === 0 ? "from-green-500 to-green-600" : i === 1 ? "from-emerald-500 to-teal-600" : "from-yellow-500 to-amber-600",
-        count: progress.filter(p => p.completed_phases.includes(i)).length,
-      })),
-    ];
-
-    // Premium courses as final steps
-    if (premiumCourseCount > 0) {
-      steps.push({
-        id: "premium_interest",
-        label: "💎 Interesse Premium",
-        desc: "Acumularam 100+ moedas para comprar",
-        icon: "paid",
-        color: "from-purple-500 to-purple-600",
-        count: progress.filter(p => p.coins >= 100 || p.total_xp >= 300).length,
-      });
-    }
-
-    return steps;
-  }, [progress, totalStudents, premiumCourseCount]);
+    return funnelData.map((s) => ({
+      id: s.step_id,
+      label: s.step_label,
+      desc: s.step_desc,
+      icon: s.step_icon,
+      color: FUNNEL_STEP_COLORS[s.step_id] || "from-slate-500 to-slate-600",
+      count: s.count,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [funnelData]);
 
   /* ─── Drop-off Analysis ─── */
   const dropOffAnalysis = useMemo(() => {
