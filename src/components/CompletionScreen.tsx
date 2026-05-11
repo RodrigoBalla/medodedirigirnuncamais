@@ -25,13 +25,6 @@ export function CompletionScreen() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <button
-        onClick={toggleTheme}
-        className="fixed top-4 right-4 z-[10000] size-10 rounded-full border border-border bg-card/80 backdrop-blur-md flex items-center justify-center text-foreground hover:bg-accent transition-colors shadow-lg"
-        title={isDark ? "Modo Claro" : "Modo Escuro"}
-      >
-        <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
-      </button>
       {/* Celebration overlay */}
       <AnimatePresence>
         {showCelebration && (

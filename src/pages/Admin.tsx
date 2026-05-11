@@ -387,9 +387,6 @@ export default function Admin() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={toggleTheme} className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
-          </button>
           <button onClick={() => { signOut(); navigate("/login"); }} className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors">
             <span className="material-symbols-outlined text-lg">logout</span>
           </button>

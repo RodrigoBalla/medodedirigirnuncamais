@@ -413,9 +413,6 @@ export function LessonScreen({
           <span className="font-bold text-sm text-foreground">Medo de dirigir nunca mais</span>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={toggleTheme} className="material-symbols-outlined text-muted-foreground hover:text-foreground transition-colors text-xl">
-            {isDark ? "light_mode" : "dark_mode"}
-          </button>
           <button onClick={onBack} className="material-symbols-outlined text-muted-foreground hover:text-foreground transition-colors text-xl">
             menu
           </button>

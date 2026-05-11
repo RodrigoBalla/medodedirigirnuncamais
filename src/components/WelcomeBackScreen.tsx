@@ -36,9 +36,6 @@ export const WelcomeBackScreen = ({
           </h2>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={toggleTheme} className="relative size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-            <span className="material-symbols-outlined text-lg">{isDark ? "light_mode" : "dark_mode"}</span>
-          </button>
           <button className="relative size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
             <span className="material-symbols-outlined text-lg">notifications</span>
           </button>

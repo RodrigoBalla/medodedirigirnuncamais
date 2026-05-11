@@ -12,13 +12,6 @@ const NotFound = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-foreground relative">
-      <button
-        onClick={toggleTheme}
-        className="absolute top-4 right-4 z-[10000] size-10 rounded-full border border-border bg-card/80 backdrop-blur-md flex items-center justify-center text-foreground hover:bg-accent transition-colors shadow-lg"
-        title={isDark ? "Modo Claro" : "Modo Escuro"}
-      >
-        <span className="material-symbols-outlined text-xl">{isDark ? "light_mode" : "dark_mode"}</span>
-      </button>
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">404</h1>
         <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
