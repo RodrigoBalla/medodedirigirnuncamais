@@ -184,7 +184,10 @@ const Auth = () => {
             // e popula a coluna profiles.phone.
             phone: cleanPhone,
           },
-          emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+          // SEMPRE usa a URL de produção, mesmo em dev local. Senão emails
+          // disparados durante testes locais chegam apontando pra
+          // localhost:8080/login (que ninguém consegue abrir fora do dev).
+          emailRedirectTo: "https://medodedirigirnuncamais.netlify.app/login?confirmed=true",
         },
       });
       if (error) throw error;
