@@ -212,11 +212,11 @@ const Auth = () => {
           Mobile: bloco no topo. Imagem ocupa metade superior do hero
           (full-bleed sem texto), texto fica abaixo no fundo navy. */}
       <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
-        {/* ── MOBILE: imagem hero "card" full-bleed (~50vh) ──────────────
-            A imagem original tem o lado esquerdo VAZIO (foi feita pra
-            desktop com texto sobreposto na esquerda). No mobile usamos
-            object-[right_center] pra mostrar só o grupo de pessoas. */}
-        <div className="lg:hidden relative w-full h-[50vh] min-h-[340px] overflow-hidden">
+        {/* ── MOBILE: imagem hero compacta (~32vh) pra deixar o login
+            visível sem rolar a página. A imagem foi originalmente
+            desenhada pra desktop com lado esquerdo vazio — usamos
+            object-[right_center] pra mostrar só o grupo. */}
+        <div className="lg:hidden relative w-full h-[32vh] min-h-[220px] max-h-[300px] overflow-hidden">
           <img
             src="/hero/area-de-membros.jpg"
             alt=""
@@ -225,12 +225,12 @@ const Auth = () => {
             fetchPriority="high"
           />
           {/* Gradient sutil só na base pra emendar com o fundo navy */}
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
           <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
           {/* Logo flutuante sobre a imagem */}
-          <div className="absolute top-5 left-5 z-20 flex items-center gap-3">
-            <div className="size-11 bg-primary/30 rounded-xl flex items-center justify-center border border-primary/40 backdrop-blur-md">
-              <span className="material-symbols-outlined text-primary text-xl filled-icon">directions_car</span>
+          <div className="absolute top-4 left-5 z-20 flex items-center gap-3">
+            <div className="size-10 bg-primary/30 rounded-xl flex items-center justify-center border border-primary/40 backdrop-blur-md">
+              <span className="material-symbols-outlined text-primary text-lg filled-icon">directions_car</span>
             </div>
             <div>
               <p className="text-white font-black text-sm leading-tight drop-shadow-lg">Medo de Dirigir</p>
@@ -239,18 +239,14 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* ── MOBILE: texto abaixo da imagem, fundo navy puro ──────────── */}
-        <div className="lg:hidden px-6 pt-6 pb-8 bg-[hsl(var(--blue-900))]">
-          <p className="inline-block px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary mb-3">
+        {/* ── MOBILE: texto compacto abaixo da imagem ─────────────────── */}
+        <div className="lg:hidden px-6 pt-4 pb-4 bg-[hsl(var(--blue-900))]">
+          <p className="inline-block px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/30 text-[9px] font-black uppercase tracking-widest text-primary mb-2">
             🛞 Sua área de membros
           </p>
-          <h1 className="text-white font-black text-3xl sm:text-4xl leading-[1.02] tracking-tight mb-3">
-            O volante<br /><span className="text-primary">agora é seu.</span>
+          <h1 className="text-white font-black text-2xl sm:text-3xl leading-[1.05] tracking-tight">
+            O volante <span className="text-primary">agora é seu.</span>
           </h1>
-          <p className="text-white/70 text-sm leading-relaxed">
-            Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
-            mulheres e a Carla a um clique de distância.
-          </p>
         </div>
 
         {/* ── DESKTOP: layout completo com imagem cobrindo a coluna ────── */}
@@ -314,14 +310,14 @@ const Auth = () => {
           Mobile: bloco abaixo do hero, fundo navy sólido (sem imagem
           embaçada — a capa já apareceu no hero acima).
           Desktop: coluna direita lg:w-[480px], card sem glass. */}
-      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-center justify-center p-6 sm:p-8 lg:p-10 relative bg-[hsl(var(--blue-900))]">
+      <main className="flex-1 lg:flex-none lg:w-[480px] xl:w-[540px] flex items-start lg:items-center justify-center px-6 pt-4 pb-6 sm:p-8 lg:p-10 relative bg-[hsl(var(--blue-900))]">
         <div className="relative z-10 w-full max-w-md lg:max-w-none lg:bg-transparent lg:p-0">
           {/* Logo agora vive no hero acima, o form começa direto pelo título */}
-          <div className="text-center lg:text-left mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
+          <div className="text-center lg:text-left mb-4 lg:mb-8">
+            <h1 className="text-xl lg:text-3xl font-black text-white tracking-tight">
               {isLogin ? "Bem-vinda de volta" : "Liberar acesso"}
             </h1>
-            <p className="text-white/50 text-sm mt-1.5 lg:mt-2">
+            <p className="text-white/50 text-xs lg:text-sm mt-1 lg:mt-2">
               {isLogin
                 ? "Entre na sua conta pra continuar"
                 : signupStep === "email"
