@@ -682,33 +682,33 @@ export default function Admin() {
                           </button>
                         </div>
 
-                        {/* Barra de ações rápidas com LABEL visível */}
+                        {/* Barra de ações rápidas — cores do design system */}
                         <div className="flex flex-wrap gap-2 mb-3">
                           {/* Toggle ativo/inativo */}
                           <button
                             onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked, s.display_name)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
                               s.is_blocked
-                                ? "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/30"
-                                : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30"
+                                ? "bg-primary/10 text-primary hover:bg-primary/20"
+                                : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                             }`}
                             title={s.is_blocked ? "Reativar este aluno (libera o acesso)" : "Inativar este aluno (bloqueia o acesso e derruba a sessão)"}
                           >
-                            <span className="material-symbols-outlined text-base filled-icon">
-                              {s.is_blocked ? "person_off" : "person_check"}
+                            <span className="material-symbols-outlined text-base">
+                              {s.is_blocked ? "lock_open" : "lock"}
                             </span>
                             {s.is_blocked ? "Reativar" : "Inativar"}
                           </button>
 
-                          {/* Adicionar a grupo — dropdown customizado (não usa <select> nativo) */}
+                          {/* Adicionar a grupo — dropdown alinhado ao design system */}
                           {accessGroups.length > 0 && accessGroups.filter((g) => !s.groups.some((sg) => sg.id === g.id)).length > 0 && (
                             <div className="relative">
                               <button
                                 onClick={() => setGroupMenuFor(groupMenuFor === s.user_id ? null : s.user_id)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
                                   groupMenuFor === s.user_id
-                                    ? "bg-primary/20 text-primary border-primary/50"
-                                    : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/30"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
                                 }`}
                                 title="Adicionar a um grupo de acesso"
                               >
@@ -717,19 +717,14 @@ export default function Admin() {
                                 <span className={`material-symbols-outlined text-sm transition-transform ${groupMenuFor === s.user_id ? "rotate-180" : ""}`}>expand_more</span>
                               </button>
 
-                              {/* Dropdown customizado com identidade do app */}
+                              {/* Dropdown — segue padrão do design system (sem border-2 amarelo) */}
                               {groupMenuFor === s.user_id && (
                                 <>
-                                  {/* Backdrop invisível pra fechar com click fora */}
-                                  <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setGroupMenuFor(null)}
-                                  />
-                                  {/* Menu */}
-                                  <div className="absolute top-full left-0 mt-2 min-w-[220px] bg-card border-2 border-primary/40 rounded-xl shadow-2xl shadow-primary/20 overflow-hidden z-50">
-                                    <div className="px-3 py-2 border-b border-border bg-primary/5">
-                                      <p className="text-[10px] font-black uppercase tracking-widest text-primary">
-                                        🛞 Escolha o grupo
+                                  <div className="fixed inset-0 z-40" onClick={() => setGroupMenuFor(null)} />
+                                  <div className="absolute top-full left-0 mt-2 min-w-[220px] bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50">
+                                    <div className="px-3 py-2 border-b border-border">
+                                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                        Escolha o grupo
                                       </p>
                                     </div>
                                     <ul className="py-1">
@@ -742,10 +737,10 @@ export default function Admin() {
                                                 grantGroup(s.user_id, g.id);
                                                 setGroupMenuFor(null);
                                               }}
-                                              className="w-full text-left px-3 py-2.5 hover:bg-primary/10 transition-colors flex items-center gap-2 group"
+                                              className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors flex items-center gap-2"
                                             >
-                                              <span className="material-symbols-outlined text-primary text-base opacity-0 group-hover:opacity-100 transition-opacity">add</span>
-                                              <span className="text-sm font-bold text-foreground flex-1 truncate">{g.name}</span>
+                                              <span className="material-symbols-outlined text-muted-foreground text-base">add</span>
+                                              <span className="text-sm font-medium text-foreground flex-1 truncate">{g.name}</span>
                                             </button>
                                           </li>
                                         ))}
@@ -765,7 +760,7 @@ export default function Admin() {
                               variant: "danger",
                               onConfirm: () => resetStudentProgress(s.user_id),
                             })}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-muted text-muted-foreground hover:bg-accent hover:text-foreground border border-border transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                             title="Zera todo o progresso (aulas, missões, etc.)"
                           >
                             <span className="material-symbols-outlined text-base">restart_alt</span>
@@ -969,66 +964,47 @@ export default function Admin() {
               )}
 
               {/* Edit Modal */}
-              {/* ConfirmModal — substitui window.confirm() nativo com identidade do app */}
+              {/* ConfirmModal — segue o mesmo padrão visual do editModal acima
+                  (bg-card + border-border + rounded-2xl + sem caution-tape) */}
               {confirmModal && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                  <div
-                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                    onClick={() => setConfirmModal(null)}
-                    aria-hidden
-                  />
-                  <div className="relative z-10 w-full max-w-md bg-card border-2 border-primary rounded-3xl shadow-[0_0_120px_rgba(255,214,10,.3)] overflow-hidden">
-                    {/* Fita de advertência no topo (identidade trânsito) */}
-                    <div className="caution-tape h-2" aria-hidden />
-                    <div className="p-6 md:p-7">
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className={`size-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                          confirmModal.variant === "danger"
-                            ? "bg-destructive/15 border border-destructive/30"
-                            : confirmModal.variant === "warning"
-                            ? "bg-amber-500/15 border border-amber-500/30"
-                            : "bg-primary/15 border border-primary/30"
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4" onClick={() => setConfirmModal(null)}>
+                  <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-center mb-6">
+                      <div className={`size-14 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                        confirmModal.variant === "danger" ? "bg-destructive/10" : "bg-primary/10"
+                      }`}>
+                        <span className={`material-symbols-outlined text-2xl ${
+                          confirmModal.variant === "danger" ? "text-destructive" : "text-primary"
                         }`}>
-                          <span className={`material-symbols-outlined filled-icon text-xl ${
-                            confirmModal.variant === "danger" ? "text-destructive" :
-                            confirmModal.variant === "warning" ? "text-amber-500" : "text-primary"
-                          }`}>
-                            {confirmModal.variant === "danger" ? "warning" : confirmModal.variant === "warning" ? "info" : "help"}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h2 className="font-black text-lg text-foreground leading-tight tracking-tight">
-                            {confirmModal.title}
-                          </h2>
-                          <p className="text-sm text-muted-foreground leading-snug mt-2">
-                            {confirmModal.message}
-                          </p>
-                        </div>
+                          {confirmModal.variant === "danger" ? "warning" : "help"}
+                        </span>
                       </div>
-                      <div className="flex gap-2 mt-6">
-                        <button
-                          onClick={() => setConfirmModal(null)}
-                          className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-colors border border-border"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const action = confirmModal.onConfirm;
-                            setConfirmModal(null);
-                            await action();
-                          }}
-                          className={`flex-1 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-transform hover:scale-[1.02] active:scale-95 ${
-                            confirmModal.variant === "danger"
-                              ? "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30"
-                              : confirmModal.variant === "warning"
-                              ? "bg-amber-500 text-black shadow-lg shadow-amber-500/30"
-                              : "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                          }`}
-                        >
-                          {confirmModal.confirmLabel}
-                        </button>
-                      </div>
+                      <h3 className="text-lg font-bold">{confirmModal.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-2 leading-snug">
+                        {confirmModal.message}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setConfirmModal(null)}
+                        className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const action = confirmModal.onConfirm;
+                          setConfirmModal(null);
+                          await action();
+                        }}
+                        className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors ${
+                          confirmModal.variant === "danger"
+                            ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            : "bg-primary text-primary-foreground hover:bg-primary/90"
+                        }`}
+                      >
+                        {confirmModal.confirmLabel}
+                      </button>
                     </div>
                   </div>
                 </div>
