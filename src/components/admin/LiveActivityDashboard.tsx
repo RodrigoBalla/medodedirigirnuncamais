@@ -315,7 +315,7 @@ export function LiveActivityDashboard() {
             <span className="flex items-center gap-1"><span className="size-2 bg-amber-500 rounded-sm" /> roleta</span>
           </div>
         </div>
-        <div ref={chartContainerRef} className="w-full h-[360px]" />
+        <div ref={chartContainerRef} className="w-full max-w-full h-[280px] md:h-[360px] overflow-hidden" />
       </div>
 
       {/* Feed Realtime */}
