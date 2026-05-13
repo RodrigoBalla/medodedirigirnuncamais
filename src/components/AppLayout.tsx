@@ -12,6 +12,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { useAccessStatus } from "@/hooks/useAccessStatus";
 import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
+import { CarCursor } from "@/components/CarCursor";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -131,6 +132,10 @@ export function AppLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-background asphalt-texture relative">
+      {/* Cursor de carro com rastro de pneus — só na área de membros (skip em
+          touch automaticamente). Identidade visual de trânsito. */}
+      <CarCursor />
+
       {/* Fita de advertência fininha no topo absoluto da página — identidade trânsito */}
       <div className="caution-tape h-1.5 w-full" aria-hidden="true" />
 
