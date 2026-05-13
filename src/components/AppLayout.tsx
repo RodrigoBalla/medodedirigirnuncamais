@@ -16,9 +16,10 @@ import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
 // MVP: tabs/áreas bloqueadas com badge "Em Breve" — ainda visíveis na nav,
-// mas não navegáveis. Quando o conteúdo dessas áreas estiver pronto, remover
-// daqui para liberar.
-const LOCKED_TABS: AppTab[] = ["home", "treinos", "ranking"];
+// mas não navegáveis pras alunas. Admin SEMPRE consegue acessar (pra
+// validar/testar conteúdo antes de liberar pra base inteira).
+// Quando o conteúdo dessas áreas estiver pronto, esvaziar este array.
+const LOCKED_TABS_FOR_STUDENTS: AppTab[] = ["home", "treinos", "ranking"];
 
 interface AppLayoutProps {
   activeTab: AppTab;
@@ -103,7 +104,14 @@ export function AppLayout({
 
   const isXpBoostActive = xpBoostExpiresAt && new Date(xpBoostExpiresAt) > new Date();
 
+  // Tabs bloqueadas DINÂMICAS — admin pode ver tudo, aluna vê só o liberado.
+  // Se você é admin e quer simular a experiência da aluna, abra anônimo/incógnito
+  // com outra conta. NÃO duplicar essa lógica em outros lugares — toda decisão
+  // de "tá em breve?" passa por aqui.
+  const LOCKED_TABS: AppTab[] = isAdmin ? [] : LOCKED_TABS_FOR_STUDENTS;
+
   // MVP: clique em tab bloqueada exibe um aviso de "Em Breve" e não navega.
+  // Pra admin, LOCKED_TABS é vazio, então essa checagem nunca dispara.
   const handleNavClick = (tab: AppTab) => {
     if (LOCKED_TABS.includes(tab)) {
       toast("🔒 Em breve!", {
@@ -291,11 +299,15 @@ export function AppLayout({
               <nav className={`flex flex-col ${sidebarCollapsed ? "gap-1 items-center" : "gap-1"}`}>
                 {SIDEBAR_ITEMS.map((item) => {
                   const isLocked = LOCKED_TABS.includes(item.tab);
+                  // Admin vê tudo, mas mostra um badge "Preview" nas áreas que
+                  // ainda estão ocultas pras alunas (pra lembrar que aquela
+                  // área não está liberada na produção).
+                  const isAdminPreview = isAdmin && LOCKED_TABS_FOR_STUDENTS.includes(item.tab);
                   return (
                     <button
                       key={item.tab}
                       onClick={() => handleNavClick(item.tab)}
-                      title={sidebarCollapsed ? item.label + (isLocked ? " (Em breve)" : "") : undefined}
+                      title={sidebarCollapsed ? item.label + (isLocked ? " (Em breve)" : isAdminPreview ? " (Preview admin)" : "") : undefined}
                       className={`flex items-center font-medium transition-all text-left ${
                         sidebarCollapsed
                           ? `size-11 rounded-xl justify-center ${
@@ -323,6 +335,15 @@ export function AppLayout({
                           {isLocked && (
                             <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-500/30">
                               Em breve
+                            </span>
+                          )}
+                          {isAdminPreview && !isLocked && (
+                            <span
+                              className="text-[9px] font-black uppercase tracking-widest bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 px-1.5 py-0.5 rounded-md border border-cyan-500/30 inline-flex items-center gap-0.5"
+                              title="Você vê esta área porque é admin. Pras alunas, segue oculto."
+                            >
+                              <span className="material-symbols-outlined text-[10px] filled-icon">visibility</span>
+                              Preview
                             </span>
                           )}
                         </>
@@ -415,6 +436,7 @@ export function AppLayout({
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 px-2 py-1.5 flex justify-between items-center z-50 safe-area-bottom">
         {NAV_ITEMS.map((item) => {
           const isLocked = LOCKED_TABS.includes(item.tab);
+          const isAdminPreview = isAdmin && LOCKED_TABS_FOR_STUDENTS.includes(item.tab);
           return (
             <button
               key={item.tab}
@@ -434,6 +456,14 @@ export function AppLayout({
               {isLocked && (
                 <span className="absolute -top-1 right-1/2 translate-x-[26px] text-[7px] font-black uppercase tracking-widest bg-amber-500/90 text-white px-1 py-px rounded-sm leading-none">
                   Em breve
+                </span>
+              )}
+              {isAdminPreview && !isLocked && (
+                <span
+                  className="absolute -top-1 right-1/2 translate-x-[26px] text-[7px] font-black uppercase tracking-widest bg-cyan-500/90 text-white px-1 py-px rounded-sm leading-none"
+                  title="Preview admin"
+                >
+                  Preview
                 </span>
               )}
             </button>
