@@ -11,8 +11,10 @@ import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import ProductsManager from "@/components/admin/lms/ProductsManager";
 import { GroupsManager } from "@/components/admin/GroupsManager";
 import { CommentsModeration } from "@/components/admin/CommentsModeration";
+import NotificationsManager from "@/components/admin/NotificationsManager";
+import StudentEmailMetrics from "@/components/admin/StudentEmailMetrics";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications";
 
 interface AccessGroup {
   id: string;
@@ -37,6 +39,7 @@ interface StudentData {
   streak: number;
   badges: string[];
   is_blocked: boolean;
+  access_status?: "active" | "expired";
   groups: AccessGroup[];
 }
 
@@ -255,6 +258,51 @@ export default function Admin() {
     });
   }
 
+  // ─── Marcar como expirado / reativar ─────────────────────────────────
+  // Diferente do "Inativar" (is_blocked) e do "Excluir definitivamente"
+  // (delete_user_by_admin). Aqui o aluno CONTINUA conseguindo logar, mas
+  // só vê a tela AccessExpiredScreen com botões "Renovar" e "Suporte".
+  // Mantém todos os dados — reativar volta tudo como estava.
+  async function doSetAccessStatus(userId: string, newStatus: "active" | "expired") {
+    // @ts-ignore — RPC nova, types ainda não regenerados
+    const { error } = await supabase.rpc("admin_set_user_access_status", {
+      p_user_id: userId,
+      p_status: newStatus,
+    });
+    if (error) {
+      toast.error("Erro ao alterar status", { description: error.message });
+      return;
+    }
+    toast.success(
+      newStatus === "expired"
+        ? "Matrícula marcada como expirada"
+        : "Acesso reativado",
+      {
+        description:
+          newStatus === "expired"
+            ? "Aluno vai ver tela de renovação ao logar (dados preservados)"
+            : "Aluno volta a ter acesso normal aos cursos",
+      },
+    );
+    fetchStudents();
+  }
+
+  function toggleAccessStatus(userId: string, currentStatus: string | undefined, studentName: string) {
+    const isExpired = currentStatus === "expired";
+    if (isExpired) {
+      // Reativar não precisa de confirmação
+      doSetAccessStatus(userId, "active");
+      return;
+    }
+    setConfirmModal({
+      title: "Marcar matrícula como expirada?",
+      message: `${studentName} vai conseguir logar mas só verá a tela de renovação. Progresso e dados são MANTIDOS — se renovar, volta tudo.`,
+      confirmLabel: "Marcar como expirada",
+      variant: "warning",
+      onConfirm: () => doSetAccessStatus(userId, "expired"),
+    });
+  }
+
   async function resetStudentProgress(userId: string) {
     // Chama a RPC admin_reset_student que zera TUDO transacionalmente:
     // user_progress, lesson_progress, lesson_comments, lesson_reports,
@@ -423,6 +471,7 @@ export default function Admin() {
     { key: "students", icon: "group", label: "Alunos" },
     { key: "products", icon: "video_library", label: "Cursos" },
     { key: "groups", icon: "lock_open", label: "Grupos" },
+    { key: "notifications", icon: "campaign", label: "Notificações" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
@@ -645,6 +694,12 @@ export default function Admin() {
                                <div className="flex items-center gap-2">
                                 <p className={`font-bold ${s.is_blocked ? "text-destructive line-through opacity-70" : ""}`}>{s.display_name}</p>
                                 {s.is_blocked && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-destructive/10 text-destructive rounded uppercase">Inativo</span>}
+                                {s.access_status === "expired" && !s.is_blocked && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded uppercase inline-flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[10px]">schedule</span>
+                                    Expirado
+                                  </span>
+                                )}
                               </div>
                               {/* Linha 1: data de cadastro */}
                               <p className="text-[11px] text-muted-foreground">
@@ -708,6 +763,28 @@ export default function Admin() {
                               {s.is_blocked ? "lock_open" : "lock"}
                             </span>
                             {s.is_blocked ? "Reativar" : "Inativar"}
+                          </button>
+
+                          {/* Marcar matrícula como expirada / reativar acesso.
+                              Diferente de "Inativar" — aluno LOGA mas vê tela
+                              AccessExpiredScreen com botões de renovação. */}
+                          <button
+                            onClick={() => toggleAccessStatus(s.user_id, s.access_status, s.display_name)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                              s.access_status === "expired"
+                                ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.25)]"
+                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                            }`}
+                            title={
+                              s.access_status === "expired"
+                                ? "Reativar acesso (volta como estava)"
+                                : "Marcar matrícula como expirada — aluno verá tela de renovação"
+                            }
+                          >
+                            <span className="material-symbols-outlined text-base">
+                              {s.access_status === "expired" ? "verified" : "schedule"}
+                            </span>
+                            {s.access_status === "expired" ? "Reativar acesso" : "Marcar expirada"}
                           </button>
 
                           {/* Adicionar a grupo — dropdown alinhado ao design system */}
@@ -960,6 +1037,9 @@ export default function Admin() {
                                 Excluir Conta Definitivamente
                               </button>
                             </div>
+
+                            {/* Métricas de engajamento por email — só carrega quando o card expande */}
+                            <StudentEmailMetrics userId={s.user_id} />
                           </div>
                         )}
                       </div>
@@ -1149,6 +1229,8 @@ export default function Admin() {
           {tab === "products" && <ProductsManager />}
 
           {tab === "groups" && <GroupsManager />}
+
+          {tab === "notifications" && <NotificationsManager />}
 
           {tab === "comments" && <CommentsModeration />}
 

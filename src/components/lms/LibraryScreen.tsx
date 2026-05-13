@@ -57,12 +57,19 @@ export function LibraryScreen() {
     setLoading(true);
     try {
       // ── ADMIN: vê todos os cursos (published + draft), sem filtro de grupo ──
+      // REGRA IMUTÁVEL (Balla 2026-05-11): cursos disponíveis SEMPRE aparecem
+      // antes dos ocultos. Pra admin "disponível" = published; "oculto" = draft.
       if (admin) {
         const { data: prodData } = await supabase
           .from("products")
           .select("*")
           .order("created_at", { ascending: false });
-        setProducts(prodData || []);
+        const all = prodData || [];
+        const sorted = [
+          ...all.filter((p) => p.status === "published"),
+          ...all.filter((p) => p.status !== "published"),
+        ];
+        setProducts(sorted);
         setLockedProducts([]);
         setLoading(false);
         return;
@@ -106,9 +113,12 @@ export function LibraryScreen() {
     setLoading(false);
   }
 
-  // Grid único: liberados + trancados juntos, separados visualmente pelo
-  // estado (cor x preto-e-branco). Liberados aparecem PRIMEIRO pra que a
-  // aluna veja imediatamente o que tem disponível.
+  // ─── REGRA IMUTÁVEL (Balla 2026-05-11) ──────────────────────────────────
+  // Cursos LIBERADOS aparecem SEMPRE em primeiro lugar no grid, antes dos
+  // trancados. Vale pra TODA tela onde a lista de cursos aparece (não só
+  // aqui). Aluna abre a biblioteca e a primeira coisa que vê é o que ela
+  // pode acessar agora — depois o que pode comprar. Esse spread garante isso.
+  // ─────────────────────────────────────────────────────────────────────────
   const allItems: Array<{ product: Product; locked: boolean }> = [
     ...products.map((p) => ({ product: p, locked: false })),
     ...lockedProducts.map((p) => ({ product: p, locked: true })),

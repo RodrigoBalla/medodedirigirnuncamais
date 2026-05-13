@@ -26,6 +26,7 @@ import { CoursePlayerScreen } from "@/components/lms/CoursePlayerScreen";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { LevelUpOverlay } from "@/components/lms/LevelUpOverlay";
 import { useBadgeRules } from "@/hooks/useBadgeRules";
+import { useEngagementToasts } from "@/hooks/useEngagementToasts";
 import { BadgeUnlockedModal } from "@/components/BadgeUnlockedModal";
 import { DrivingMap } from "@/components/lms/DrivingMap";
 import { DailyBonusGrid } from "@/components/lms/DailyBonusGrid";
@@ -78,6 +79,9 @@ const DrivingApp = () => {
   // Verifica condições no banco e dispara addBadge automaticamente.
   // justUnlocked = medalha que acabou de ser ganha (1 render).
   const { justUnlocked, clearJustUnlocked } = useBadgeRules();
+  // Detecta XP ganho por engajamento em emails (abertura/clique) e mostra
+  // toast de boas-vindas. XP em si é creditado pelo brevo-webhook server-side.
+  useEngagementToasts();
   
   const navigate = useNavigate();
   const location = useLocation();

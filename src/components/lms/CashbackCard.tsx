@@ -2,15 +2,27 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDisplayName } from "@/hooks/useDisplayName";
 import { toast } from "sonner";
 
 // ─── CashbackCard ────────────────────────────────────────────────────────────
 // Card mostrando "Suas moedas valem R$ X". Permite converter um múltiplo
 // do mínimo (ex: 100 moedas = R$ 1) em cupom de desconto.
 //
-// Cupom sai como código MDDNM-XXXXXX que o aluno usa no checkout do próximo
-// curso. Configurações vêm de cashback_config (admin edita).
+// Cupom sai como código MDDNM-XXXXXX, mas como a API pública da Eduzz NÃO
+// permite criar cupom programaticamente, o fluxo é semi-automatizado:
+//   1. Aluna gera o código no app (debita moedas + cria registro local)
+//   2. Aparece um botão "Ativar via WhatsApp" que abre conversa direto
+//      no número do Balla com mensagem pré-pronta contendo o código
+//   3. Balla recebe a mensagem, cria o cupom REAL na Eduzz com o mesmo
+//      código, e confirma pela conversa
+//   4. Aluna usa no checkout
+//
+// Configurações vêm de cashback_config (admin edita).
 // =============================================================================
+
+// Número da equipe pra ativação do cupom (sem +, sem espaços, sem traços)
+const WHATSAPP_ATIVACAO = "5521993685289";
 
 interface Config {
   coins_per_brl: number;
@@ -29,12 +41,15 @@ interface Coupon {
 
 export function CashbackCard() {
   const { user } = useAuth();
+  const displayName = useDisplayName("");
   const [config, setConfig] = useState<Config | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [converting, setConverting] = useState(false);
   const [amount, setAmount] = useState(0);
   // Saldo VÁLIDO (ignora moedas expiradas) — vem do RPC get_valid_coins_balance
   const [coins, setCoins] = useState(0);
+  // Cupom recém gerado nessa sessão — mostra CTA destacado pra ativar via WhatsApp
+  const [lastCoupon, setLastCoupon] = useState<{ code: string; value_brl: number } | null>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -67,11 +82,12 @@ export function CashbackCard() {
       if (error) throw error;
       const row = (data as Array<{ code: string; value_brl: number }>)?.[0];
       if (row) {
-        toast.success(`💸 Cupom criado: ${row.code}`, {
-          description: `R$ ${Number(row.value_brl).toFixed(2)} de desconto · válido por ${config?.validity_days ?? 90} dias`,
-          duration: 8000,
+        setLastCoupon({ code: row.code, value_brl: Number(row.value_brl) });
+        toast.success(`Cupom gerado: ${row.code}`, {
+          description: `Agora ative com a equipe pelo WhatsApp pra usar no checkout.`,
+          duration: 6000,
         });
-        // Copia pra clipboard
+        // Copia pra clipboard pra facilitar
         try { await navigator.clipboard.writeText(row.code); } catch {}
         await loadData();
       }
@@ -80,6 +96,27 @@ export function CashbackCard() {
       toast.error("Não foi possível converter", { description: err?.message ?? "Tente novamente." });
     } finally {
       setConverting(false);
+    }
+  }
+
+  /** Monta a URL wa.me com a mensagem pré-pronta da ativação. */
+  function buildWhatsAppUrl(code: string, valueBrl: number): string {
+    const nome = (displayName || "Aluna").trim();
+    const valor = valueBrl.toFixed(2).replace(".", ",");
+    const texto =
+      `Oi! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
+      `Acabei de gerar um cupom de cashback de *R$ ${valor}* na área de membros.\n` +
+      `Código: *${code}*\n\n` +
+      `Pode ativar pra eu usar no checkout? 🪙`;
+    return `https://wa.me/${WHATSAPP_ATIVACAO}?text=${encodeURIComponent(texto)}`;
+  }
+
+  function copyCode(code: string) {
+    try {
+      navigator.clipboard.writeText(code);
+      toast.success("Código copiado", { description: "Cola no campo Cupom do checkout." });
+    } catch {
+      toast.info("Selecione e copie manualmente o código.");
     }
   }
 
@@ -172,33 +209,110 @@ export function CashbackCard() {
         {converting ? "Gerando…" : "Converter em cupom"}
       </button>
 
+      {/* Bloco do cupom recém-gerado — destaque alto com CTA pra ativar via WhatsApp.
+          Aparece SÓ depois que a aluna acabou de converter, pra reduzir fricção
+          do fluxo "geri → ativei → usei". */}
+      {lastCoupon && (
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 280, damping: 22 }}
+          className="mt-4 rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-yellow-500/10 p-4"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-amber-500">confirmation_number</span>
+            <p className="text-[11px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300">
+              Cupom gerado · Falta 1 passo
+            </p>
+          </div>
+
+          {/* Código grande e copiável */}
+          <button
+            type="button"
+            onClick={() => copyCode(lastCoupon.code)}
+            title="Copiar código"
+            className="w-full bg-background border-2 border-dashed border-amber-500/50 rounded-xl px-3 py-3 mb-3 flex items-center justify-between gap-3 hover:bg-accent/30 transition-colors group"
+          >
+            <span className="font-mono font-black text-lg md:text-xl text-foreground tracking-wider">
+              {lastCoupon.code}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+              <span className="material-symbols-outlined text-sm">content_copy</span>
+              Copiar
+            </span>
+          </button>
+
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            Esse código <strong>ainda não funciona no checkout</strong>. Clique no botão abaixo, envie a mensagem que já vem pronta no WhatsApp, e a equipe vai ativar pra você em minutos.
+          </p>
+
+          {/* CTA WhatsApp — botão principal, verde (cor universal do WhatsApp) */}
+          <a
+            href={buildWhatsAppUrl(lastCoupon.code, lastCoupon.value_brl)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-black px-4 py-3 rounded-xl shadow-lg shadow-[#25D366]/30 uppercase tracking-widest text-xs transition-all"
+          >
+            <span className="material-symbols-outlined text-base">chat</span>
+            Ativar via WhatsApp
+          </a>
+
+          <p className="text-[10px] text-muted-foreground/70 text-center mt-2">
+            Valor: R$ {lastCoupon.value_brl.toFixed(2)} · Válido por {config?.validity_days ?? 90} dias
+          </p>
+        </motion.div>
+      )}
+
       {coupons.length > 0 && (
         <div className="mt-5 pt-4 border-t border-border">
           <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
             Seus cupons
           </p>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {coupons.map((c) => (
-              <div
-                key={c.code}
-                className={`flex items-center justify-between p-2 rounded-lg border text-xs ${
-                  c.used
-                    ? "border-border bg-muted/30 opacity-60"
-                    : "border-amber-500/30 bg-amber-500/5"
-                }`}
-              >
-                <div>
-                  <p className="font-mono font-bold text-foreground">{c.code}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {c.used ? "Usado" : `Válido até ${new Date(c.expires_at).toLocaleDateString("pt-BR")}`}
-                  </p>
+          <div className="space-y-2 max-h-44 overflow-y-auto">
+            {coupons.map((c) => {
+              const isExpired = !c.used && new Date(c.expires_at).getTime() < Date.now();
+              const isLastCoupon = lastCoupon?.code === c.code;
+              const isPendingActivation = !c.used && !isExpired && !isLastCoupon;
+              return (
+                <div
+                  key={c.code}
+                  className={`flex items-center justify-between gap-2 p-2 rounded-lg border text-xs ${
+                    c.used || isExpired
+                      ? "border-border bg-muted/30 opacity-60"
+                      : "border-amber-500/30 bg-amber-500/5"
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono font-bold text-foreground truncate">{c.code}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {c.used
+                        ? "Usado"
+                        : isExpired
+                        ? "Expirado"
+                        : `Válido até ${new Date(c.expires_at).toLocaleDateString("pt-BR")}`}
+                    </p>
+                  </div>
+                  <span className="font-black text-amber-600 dark:text-amber-400 shrink-0">
+                    R$ {Number(c.value_brl).toFixed(2)}
+                  </span>
+                  {isPendingActivation && (
+                    <a
+                      href={buildWhatsAppUrl(c.code, Number(c.value_brl))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ativar via WhatsApp"
+                      className="shrink-0 size-7 rounded-full bg-[#25D366] hover:bg-[#1ebe5d] text-white flex items-center justify-center transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">chat</span>
+                    </a>
+                  )}
                 </div>
-                <span className="font-black text-amber-600 dark:text-amber-400">
-                  R$ {Number(c.value_brl).toFixed(2)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          <p className="text-[10px] text-muted-foreground/70 mt-2 leading-relaxed">
+            💬 Os cupons precisam ser ativados pela equipe pelo WhatsApp antes de funcionar no checkout.
+          </p>
         </div>
       )}
     </div>

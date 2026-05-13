@@ -3636,6 +3636,108 @@
       margin-top: 6px;
     }
 
+    /* ─── CHECKOUT EMBEDADO ─────────────────────────────────
+       Onde o bridge.js da Eduzz renderiza o checkout inline.
+       Visual: fundo escuro, container amplo, header centrado,
+       glow amarelo sutil pra atrair o olho. */
+    .checkout-section {
+      background: var(--bg);
+      padding: 72px 0 80px;
+      scroll-margin-top: 80px; /* scroll-into-view não cola na sticky */
+    }
+    .checkout-head {
+      margin-bottom: 32px;
+    }
+    /* Card-banner sutil que aparece quando vem da roleta de exit-intent */
+    .checkout-coupon-hint {
+      max-width: 720px;
+      margin: 0 auto 16px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, rgba(255, 214, 10, .14), rgba(255, 214, 10, .04));
+      border: 1px solid rgba(255, 214, 10, .35);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: ch-hint-pop .35s cubic-bezier(.22,1,.36,1);
+    }
+    .checkout-coupon-hint[hidden] { display: none; }
+    @keyframes ch-hint-pop {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .checkout-coupon-hint .material-symbols-outlined {
+      color: var(--primary);
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .checkout-coupon-hint__text {
+      font-family: var(--font-h);
+      font-size: .9rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+    .checkout-coupon-hint__text code {
+      display: inline-block;
+      padding: 2px 8px;
+      margin: 0 4px;
+      background: var(--bg-2);
+      border: 1px dashed rgba(255, 214, 10, .5);
+      border-radius: 6px;
+      color: var(--primary);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-weight: 700;
+    }
+    .checkout-coupon-hint__sub {
+      display: block;
+      font-size: .78rem;
+      font-weight: 400;
+      color: var(--text-mute);
+      margin-top: 2px;
+    }
+    /* Frame onde o iframe/elementos da Eduzz vivem. min-height pra evitar
+       collapse enquanto o bridge.js inicializa o checkout. */
+    .checkout-frame {
+      max-width: 880px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid rgba(255, 214, 10, .18);
+      border-radius: 24px;
+      padding: 6px;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, .2),
+        0 24px 64px -24px rgba(255, 214, 10, .25),
+        0 8px 24px -8px rgba(0, 0, 0, .5);
+      overflow: hidden;
+    }
+    #eduzz-checkout-embed {
+      min-height: 720px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--bg-2);
+    }
+    .checkout-trust {
+      text-align: center;
+      font-family: var(--font-h);
+      font-size: .8rem;
+      color: var(--text-mute);
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .checkout-trust .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--primary);
+    }
+    @media (max-width: 640px) {
+      .checkout-section { padding: 56px 0 64px; }
+      .checkout-frame { padding: 4px; border-radius: 18px; }
+      #eduzz-checkout-embed { min-height: 660px; border-radius: 14px; }
+    }
+
     /* ─── FAQ (fundo amarelo, cards navy escuro pra contraste forte) ── */
     .faq-section {
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
@@ -5457,6 +5559,48 @@
   </div>
 </section>
 
+<!-- ─── CHECKOUT EMBEDADO ───────────────────────────────────────────────────
+     Eduzz Sun Checkout via bridge.js oficial — renderiza inline dentro da
+     própria sales page. Os botões "Comprar" da página fazem scroll pra cá
+     em vez de abrir nova aba. Identidade visual segue tokens do site:
+     fundo escuro com glow amarelo, borda/header em primary, container
+     contido. O cupom da roleta de exit-intent é copiado pro clipboard
+     e a aluna cola direto no campo "Cupom" que vem no checkout.
+     ───────────────────────────────────────────────────────────────────── -->
+<section class="checkout-section" id="checkout-section">
+  <div class="container">
+    <div class="checkout-head">
+      <p class="eyebrow text-center">Pronto pra começar</p>
+      <h2 class="section-title text-center">Finalize sua <span>matrícula</span></h2>
+      <p class="section-sub text-center" style="margin:8px auto 0">
+        Pagamento seguro pela Eduzz · Acesso liberado <strong style="color:var(--primary)">na hora</strong>
+      </p>
+    </div>
+
+    <!-- Banner do cupom da roleta — só aparece quando exitToCheckout dispara.
+         Mostra qual cupom foi aplicado e instrução pra colar no campo. -->
+    <div class="checkout-coupon-hint" id="checkoutCouponHint" role="status" aria-live="polite" hidden>
+      <span class="material-symbols-outlined filled">redeem</span>
+      <div class="checkout-coupon-hint__text">
+        <strong>Seu cupom foi copiado:</strong>
+        <code id="checkoutCouponHintCode">VOLANTE10</code>
+        <span class="checkout-coupon-hint__sub">Cola no campo <em>"Cupom"</em> abaixo 👇</span>
+      </div>
+    </div>
+
+    <!-- Container que o bridge.js da Eduzz popula com o checkout completo
+         (campos de cartão/pix/boleto, parcelamento, order bumps, cupom, etc.) -->
+    <div class="checkout-frame">
+      <div id="eduzz-checkout-embed"></div>
+    </div>
+
+    <p class="checkout-trust">
+      <span class="material-symbols-outlined">lock</span>
+      Compra 100% segura · seus dados são criptografados
+    </p>
+  </div>
+</section>
+
 <!-- ─── FAQ ─── -->
 <section class="faq-section">
   <div class="container">
@@ -5694,6 +5838,16 @@
       // CTA do hero ainda visível: não mostra sticky
       const heroCtaRect = heroCtaBtn.getBoundingClientRect();
       if (heroCtaRect.bottom > 0) {
+        stickyCta.classList.remove('is-visible');
+        document.body.classList.remove('has-sticky-cta');
+        return;
+      }
+      // Checkout embedado já visível: NÃO duplica o CTA. Quando a aluna
+      // chega na seção de pagamento, o próprio formulário Eduzz é o CTA —
+      // o sticky em cima do checkout só atrapalha (cobre a tela de pagamento
+      // em mobile e pode confundir "clico aqui ou no Pagar dentro do form?").
+      const checkoutSection = document.getElementById('checkout-section');
+      if (checkoutSection && isInViewport(checkoutSection)) {
         stickyCta.classList.remove('is-visible');
         document.body.classList.remove('has-sticky-cta');
         return;
@@ -6448,23 +6602,95 @@
   carregarVagas();
   setInterval(carregarVagas, 60000);
 
-  // ── CHECKOUT DIRETO ─────────────────────────────────
-  // Link único do produto na Eduzz. Todos os CTAs (hero, solução, sticky)
-  // mandam DIRETO pra cá — sem coletar dados antes. O cupom da roleta
-  // adiciona ?cupom=VOLANTE10 via exitToCheckout.
+  // ── CHECKOUT EMBEDADO (Eduzz bridge.js) ─────────────────
+  // Link único do produto na Eduzz. ID do produto extraído pra usar como
+  // contentId do bridge.js.
   const CHECKOUT_URL = 'https://chk.eduzz.com/R9JXDZDE0X';
+  const EDUZZ_CONTENT_ID = (CHECKOUT_URL.match(/chk\.eduzz\.com\/([A-Za-z0-9]+)/) || [])[1] || 'R9JXDZDE0X';
 
+  // Carrega o bridge.js da Eduzz UMA VEZ e inicializa o checkout dentro do
+  // <div id="eduzz-checkout-embed"> que está na seção #checkout-section.
+  // Faz polling porque o script é async type=module — só fica disponível
+  // depois de carregar.
+  (function initEduzzCheckout() {
+    var BRIDGE_SRC = 'https://cdn.eduzzcdn.com/sun/bridge/bridge.js';
+    var INIT_TIMEOUT_MS = 12000;
+    var initialized = false;
+
+    function ensureBridge() {
+      if (document.querySelector('script[src="' + BRIDGE_SRC + '"]')) return;
+      var s = document.createElement('script');
+      s.src = BRIDGE_SRC;
+      s.async = true;
+      s.type = 'module';
+      document.head.appendChild(s);
+    }
+
+    function tryInit() {
+      if (initialized) return true;
+      try {
+        if (window.Eduzz && window.Eduzz.Checkout && typeof window.Eduzz.Checkout.init === 'function') {
+          window.Eduzz.Checkout.init({
+            contentId: EDUZZ_CONTENT_ID,
+            target: 'eduzz-checkout-embed',
+            errorCover: false
+          });
+          initialized = true;
+          return true;
+        }
+      } catch (e) {
+        console.error('[sales] eduzz checkout init falhou:', e);
+      }
+      return false;
+    }
+
+    function start() {
+      ensureBridge();
+      if (tryInit()) return;
+      var start = Date.now();
+      var t = setInterval(function () {
+        if (tryInit() || Date.now() - start > INIT_TIMEOUT_MS) clearInterval(t);
+      }, 100);
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') start();
+    else window.addEventListener('DOMContentLoaded', start);
+  })();
+
+  // goToCheckout agora faz SCROLL SUAVE pra seção do checkout em vez de
+  // abrir nova aba. Se `extra.cupom` vier (vindo do exit-intent), mostra
+  // um banner com o cupom já no clipboard pra aluna colar manualmente
+  // (a Eduzz bridge.js não aceita cupom pré-aplicado via URL/init).
   function goToCheckout(source, extra) {
-    const label = source || 'cta';
+    var label = source || 'cta';
     if (window.Track) {
-      window.Track.event('clicou_cta_' + label, { label });
+      window.Track.event('clicou_cta_' + label, { label: label });
       window.Track.event('iniciou_checkout', { source: label });
     }
-    let url = CHECKOUT_URL;
-    if (extra && extra.cupom) {
-      url += (url.includes('?') ? '&' : '?') + 'cupom=' + encodeURIComponent(extra.cupom);
+
+    var section = document.getElementById('checkout-section');
+    if (!section) {
+      // Fallback defensivo — se a seção sumir por algum motivo, volta pro redirect direto
+      var url = CHECKOUT_URL;
+      if (extra && extra.cupom) {
+        url += (url.includes('?') ? '&' : '?') + 'cupom=' + encodeURIComponent(extra.cupom);
+      }
+      window.location.href = url;
+      return;
     }
-    window.location.href = url;
+
+    // Mostra/esconde o banner do cupom conforme o caso
+    var hint = document.getElementById('checkoutCouponHint');
+    var hintCode = document.getElementById('checkoutCouponHintCode');
+    if (extra && extra.cupom && hint && hintCode) {
+      hintCode.textContent = extra.cupom;
+      hint.hidden = false;
+      try { navigator.clipboard && navigator.clipboard.writeText(extra.cupom); } catch (_) {}
+    } else if (hint) {
+      hint.hidden = true;
+    }
+
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   // Expõe global pra usar no onclick=
   window.goToCheckout = goToCheckout;

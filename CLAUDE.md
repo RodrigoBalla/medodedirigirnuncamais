@@ -18,6 +18,20 @@ Por que isso é assim por design:
 - Se uma feature precisa ser opt-in/A-B/feature-flag → tem que ser **explicitamente** modelado no banco (ex: `feature_flags` ou `user_progress.experiments`). Sem isso, é roll-out total.
 - Bugs visuais ou de lógica afetam **todas as alunas** simultaneamente — então: 1) sempre fazer type-check antes de subir, 2) preferir mudanças incrementais a refatores enormes, 3) capazes de rollback rápido (Netlify deploys têm 1-click rollback).
 
+## ⚠️ REGRA IMUTÁVEL — Ordem dos cursos no catálogo (Balla 2026-05-11)
+
+**Cursos LIBERADOS aparecem SEMPRE em primeiro lugar, antes dos trancados.**
+
+Vale pra TODA tela onde a lista de cursos aparecer (não só `LibraryScreen`). Ao criar qualquer novo lugar que liste cursos:
+
+1. Aluna logada → ordem: **liberados (acesso via grupo) → trancados (published sem acesso)**. Drafts nunca aparecem.
+2. Admin logado → ordem: **published → draft**. Admin vê tudo, mas published vem primeiro.
+3. Dentro de cada grupo, ordenação secundária é livre (created_at DESC é o default razoável).
+
+Implementação atual em `src/components/lms/LibraryScreen.tsx`:
+- Aluna: `[...products, ...lockedProducts]` na montagem do array do grid (linha ~115).
+- Admin: filtro explícito por `status` antes de setar `setProducts` (linha ~62).
+
 ## Stack
 - **Front:** Vite + React 18 + TypeScript + Tailwind + framer-motion + react-router-dom
 - **Back:** Supabase (Postgres 17, Auth, Edge Functions Deno, Realtime, RLS)

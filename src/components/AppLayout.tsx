@@ -10,6 +10,8 @@ import { CashbackModal } from "@/components/lms/CashbackModal";
 import { EmergencyContactFab } from "@/components/EmergencyContactFab";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useDisplayName } from "@/hooks/useDisplayName";
+import { useAccessStatus } from "@/hooks/useAccessStatus";
+import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -78,6 +80,10 @@ export function AppLayout({
 
   const { isAdmin } = useAdmin();
   const nav = useNavigate();
+  // Status de acesso da aluna (active/expired). Se 'expired' E não for admin,
+  // bloqueia TODA navegação interna e mostra só AccessExpiredScreen.
+  // Admin sempre passa, mesmo se a flag estiver expired na própria conta.
+  const accessStatus = useAccessStatus();
   const { lives, coins, totalXP, streak, xpBoostExpiresAt } = useUserProgress();
   const { level, title, current, next } = getLevel(totalXP);
   const car = getCarInfo(level);
@@ -107,6 +113,13 @@ export function AppLayout({
     }
     onTabChange(tab);
   };
+
+  // ─── GUARD: acesso expirado bloqueia TODA navegação interna ─────────────
+  // Aluna com profiles.access_status = 'expired' só vê a tela de renovação.
+  // Admin SEMPRE passa (mesmo se a própria flag estiver expired na conta).
+  if (accessStatus === "expired" && !isAdmin) {
+    return <AccessExpiredScreen />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background asphalt-texture relative">

@@ -5,22 +5,27 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
-// cursos. Mostra:
-//   • Hero grande com a thumb do curso (colorida — aqui já é o ponto de
-//     desejo, então sem grayscale).
-//   • Título + descrição.
-//   • CTA "Quero comprar" que abre `products.checkout_url` numa nova aba.
-//     Se a URL não estiver setada no admin, mostra um fallback de contato.
+// cursos. Layout otimizado pra conversão:
 //
-// IMPORTANTE: a página NÃO valida acesso. Mesmo quem já tem o curso pode
-// abrir essa rota — útil pra admin testar e pra futuras feature de "indicar
-// um amigo". Quem já tem, vê uma faixa avisando que já pode acessar.
+// DESKTOP (lg+):
+//   • 2 colunas: descrição à ESQUERDA (col 7), checkout à DIREITA (col 5)
+//   • Checkout é STICKY — acompanha o scroll enquanto a aluna lê a descrição
+//   • Thumb 9:16 compacta dentro da coluna de descrição (não domina mais a tela)
 //
-// Após a compra, o webhook da Eduzz já cadastrado libera o grupo de acesso
-// automaticamente (mesma conta de e-mail).
+// MOBILE (<lg):
+//   • Tudo empilhado verticalmente
+//   • Thumb grande no topo, descrição depois, checkout no fim
+//
+// Sem duplicação de info: o nome do curso aparece no topo da nossa página E
+// dentro do checkout (vem da Eduzz). Os selos do nosso lado foram removidos
+// porque a Eduzz já mostra "Compra segura / Privacidade protegida / Eduzz
+// verificada / 7 dias garantia" no rodapé do próprio checkout.
+//
+// Após a compra, o webhook da Eduzz libera o grupo de acesso automaticamente.
 // =============================================================================
 
 export default function CourseInfo() {
@@ -82,15 +87,6 @@ export default function CourseInfo() {
     };
   }, [id, user, navigate]);
 
-  function handleBuy() {
-    if (!product) return;
-    if (product.checkout_url) {
-      window.open(product.checkout_url, "_blank", "noopener,noreferrer");
-    } else {
-      toast.info("Em breve a compra estará disponível por aqui. Fale com a Carla pra liberar agora.");
-    }
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -101,12 +97,16 @@ export default function CourseInfo() {
 
   if (!product) return null;
 
+  const contentId = extractEduzzContentId(product.checkout_url);
+  const showCheckout = !hasAccess;
+  const canCheckout = showCheckout && !!contentId;
+
   return (
     <div className="min-h-screen bg-background overflow-x-clip">
       {/* Topbar mínima: voltar + título curto */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
         <div className="caution-tape h-1.5 w-full" aria-hidden="true" />
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
             className="size-9 rounded-full bg-card border border-border flex items-center justify-center hover:bg-accent transition-colors"
@@ -115,13 +115,13 @@ export default function CourseInfo() {
           >
             <span className="material-symbols-outlined text-base">arrow_back</span>
           </button>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground line-clamp-1">
             Saiba mais sobre o curso
           </p>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-10">
+      <div className="max-w-6xl mx-auto px-4 py-6 md:py-10">
         {/* Faixa de aviso se a aluna já tem acesso */}
         {hasAccess && (
           <motion.div
@@ -143,96 +143,109 @@ export default function CourseInfo() {
           </motion.div>
         )}
 
-        {/* Hero — thumb + título + descrição lado a lado em desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-start">
-          {/* Thumb (coluna esquerda, 2/5 em desktop) */}
+        {/* Layout principal — 2 colunas no desktop, empilhado no mobile.
+            Esquerda: info do curso. Direita: checkout (sticky no desktop). */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+          {/* COLUNA ESQUERDA — info do curso ────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="lg:col-span-2"
+            className="lg:col-span-7"
           >
-            <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-muted border border-white/10 shadow-2xl shadow-primary/10">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+            {/* Thumb + título — layout interno que adapta:
+                • mobile: thumb cheia em cima, texto embaixo
+                • sm+: thumb compacta à esquerda, texto à direita */}
+            <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 mb-6">
+              {/* Thumb — width fixa em sm+, full em mobile */}
+              <div className="w-full sm:w-[180px] md:w-[200px] shrink-0">
+                <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-muted border border-white/10 shadow-xl shadow-primary/10">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-border text-6xl">movie</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Título + eyebrow + selos resumidos */}
+              <div className="flex-1 min-w-0 flex flex-col gap-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+                  Curso · Medo de Dirigir Nunca Mais
+                </p>
+                <h1
+                  className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.05] tracking-tight"
+                  style={{ textWrap: "balance" }}
+                >
+                  {product.title}
+                </h1>
+
+                {/* Selos compactos — usados como reforço RÁPIDO de confiança
+                    antes da aluna ler a descrição. Os selos completos vêm
+                    do próprio checkout Eduzz no rodapé dele. */}
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs text-primary">bolt</span>
+                    Acesso liberado automaticamente
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs text-primary">all_inclusive</span>
+                    Acesso vitalício
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Descrição — agora largura toda da coluna esquerda */}
+            <div className="prose prose-invert max-w-none">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
+                {product.description || "Em breve mais informações sobre esse curso."}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* COLUNA DIREITA — checkout (sticky no desktop) ──────────────── */}
+          {showCheckout && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.08 }}
+              className="lg:col-span-5 lg:sticky lg:top-24"
+            >
+              {canCheckout ? (
+                <>
+                  {/* Header curto do checkout */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-primary text-lg">shopping_bag</span>
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-foreground">
+                      Finalize sua inscrição
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                    Use o e-mail dessa conta no checkout pra liberação imediata.
+                  </p>
+                  <EduzzCheckoutEmbed contentId={contentId!} />
+                </>
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-border text-8xl">movie</span>
+                <div className="bg-card border border-border rounded-2xl p-6 text-center">
+                  <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">
+                    link_off
+                  </span>
+                  <p className="text-sm font-bold text-muted-foreground">Checkout ainda não configurado</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    Fale com a Carla pra liberar a compra deste curso.
+                  </p>
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-            </div>
-          </motion.div>
-
-          {/* Texto + CTA (coluna direita, 3/5 em desktop) */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05 }}
-            className="lg:col-span-3 flex flex-col gap-5"
-          >
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-primary mb-2">
-                Curso · Medo de Dirigir Nunca Mais
-              </p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-[1.05] tracking-tight" style={{ textWrap: "balance" }}>
-                {product.title}
-              </h1>
-            </div>
-
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
-              {product.description || "Em breve mais informações sobre esse curso."}
-            </p>
-
-            {/* CTA principal — só aparece se a aluna ainda NÃO tem acesso */}
-            {!hasAccess && (
-              <div className="bg-card border border-border rounded-2xl p-5 md:p-6">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                  Quero esse curso
-                </p>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  Clique abaixo pra ir ao checkout seguro da Eduzz. Após a compra, o acesso é liberado automaticamente nessa mesma conta.
-                </p>
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBuy}
-                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black px-6 py-4 rounded-xl shadow-lg shadow-primary/30 uppercase tracking-widest text-sm hover:brightness-110 transition-all"
-                >
-                  <span className="material-symbols-outlined">shopping_bag</span>
-                  Quero comprar
-                  <span className="material-symbols-outlined text-base">open_in_new</span>
-                </motion.button>
-
-                {!product.checkout_url && (
-                  <p className="text-[11px] text-muted-foreground/70 mt-3">
-                    O link de compra ainda não foi configurado pra esse curso. Fale com a Carla pra liberar.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Selo de segurança / explicação curta */}
-            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-sm text-primary">verified_user</span>
-                Pagamento seguro Eduzz
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-sm text-primary">bolt</span>
-                Liberação automática
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-sm text-primary">all_inclusive</span>
-                Acesso vitalício
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>

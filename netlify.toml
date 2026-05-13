@@ -57,8 +57,9 @@
     Permissions-Policy        = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
     # CSP — permitindo origens reais usadas pelo app:
     # Supabase (auth, REST, realtime), Vimeo (vídeo welcome), Pexels (galeria
-    # de fundo no login), Google Fonts, Pixabay (assets antigos), R2 (OG image).
-    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://player.vimeo.com https://player.pandavideo.com.br https://*.pandavideo.com.br; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pexels.com https://player.vimeo.com https://*.pandavideo.com.br; frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://*.pandavideo.com.br; media-src 'self' https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co https://*.pandavideo.com.br; worker-src 'self' blob:;"
+    # de fundo no login), Google Fonts, Pixabay (assets antigos), R2 (OG image),
+    # Panda Video (player DRM), Eduzz (checkout embedado via bridge.js).
+    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.eduzzcdn.com https://*.eduzz.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.eduzzcdn.com https://*.eduzz.com; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://player.vimeo.com https://player.pandavideo.com.br https://*.pandavideo.com.br https://cdn.eduzzcdn.com https://*.eduzz.com https://*.eduzzcdn.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pexels.com https://player.vimeo.com https://*.pandavideo.com.br https://*.eduzz.com https://*.eduzzcdn.com; frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://*.pandavideo.com.br https://*.eduzz.com https://*.eduzzcdn.com; media-src 'self' https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co https://*.pandavideo.com.br; worker-src 'self' blob:;"
 
 # Cache agressivo para assets versionados (com hash no nome).
 [[headers]]
