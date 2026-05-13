@@ -56,10 +56,22 @@ jobs:
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
 
       - name: Deploy to Netlify
+        # IMPORTANTE: o netlify.toml tem [build] command = "npm run build", e
+        # o CLI re-executa esse comando como parte do `deploy --prod`. Por isso
+        # as VITE_SUPABASE_* PRECISAM estar no env DESTE step também — senão
+        # o rebuild interno do CLI gera um bundle sem essas vars e a app morre
+        # com "supabaseUrl is required" no client.
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
         run: |
+          # Pega só a primeira linha da commit message pra evitar problemas com
+          # múltiplas linhas quebrarem o shell parsing do --message="...".
+          MSG=$(echo "${{ github.event.head_commit.message || 'Manual workflow_dispatch' }}" | head -1)
           npx netlify deploy \
             --prod \
             --dir=dist \
             --site=${{ secrets.NETLIFY_SITE_ID }} \
             --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} \
-            --message="${{ github.event.head_commit.message || 'Manual workflow_dispatch' }}"
+            --message="$MSG"
