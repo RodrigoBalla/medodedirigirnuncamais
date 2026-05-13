@@ -21,6 +21,10 @@ export function OnboardingGuide({ onComplete, lessonScreen, lessonStep, quizAnsw
   const [dashboardStep, setDashboardStep] = useState(0);
   const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  // Conta quantas vezes seguidas o target não foi encontrado. Se passar do limite,
+  // o tutorial é encerrado automaticamente — evita travar a tela quando o step
+  // aponta pra um elemento que não está no DOM (mudança de aba, refator, etc.).
+  const [missCount, setMissCount] = useState(0);
   
   // Dashboard static steps
   const DASHBOARD_STEPS: OnboardingStep[] = [
@@ -85,9 +89,13 @@ export function OnboardingGuide({ onComplete, lessonScreen, lessonStep, quizAnsw
     const el = document.getElementById(currentStep.targetId);
     if (!el) {
       setSpotlightRect(null);
+      // Conta tentativas em vão. O timer roda a 200ms, então 15 misses ≈ 3s.
+      // Passou disso, encerra o tutorial pra liberar a tela.
+      setMissCount((m) => m + 1);
       return;
     }
 
+    setMissCount(0); // achou — zera o contador
     const rect = el.getBoundingClientRect();
     setSpotlightRect(rect);
 
@@ -120,6 +128,15 @@ export function OnboardingGuide({ onComplete, lessonScreen, lessonStep, quizAnsw
       window.removeEventListener("scroll", calculatePosition, true);
     };
   }, [calculatePosition]);
+
+  // Safety net: se o target não aparece por ~3s, encerra o tutorial.
+  // Evita travar a tela quando o step aponta pra um elemento inexistente
+  // (ex.: step "Sua Missão 1" foi pensado pra Trilha mas dispara em Missões).
+  useEffect(() => {
+    if (missCount >= 15) {
+      onComplete();
+    }
+  }, [missCount, onComplete]);
 
   if (!currentStep) return null;
 
@@ -174,10 +191,11 @@ export function OnboardingGuide({ onComplete, lessonScreen, lessonStep, quizAnsw
         </>
       )}
 
-      {/* Default Overlay Blocker if element hasn't loaded yet */}
-      {!cutout && (
-        <div className="absolute inset-0 opacity-0" style={{ pointerEvents: "auto" }} onClick={e=>e.stopPropagation()} />
-      )}
+      {/* Default Overlay Blocker se o target ainda não carregou.
+          IMPORTANTE: NÃO usar pointer-events: auto aqui — se o target nunca
+          aparecer, a tela inteira ficaria travada. Em vez disso, deixamos
+          o user clicar livremente; o auto-complete (missCount >= 15) cuida
+          de encerrar o tutorial em ~3s se o target permanecer ausente. */}
 
       {/* Tooltip Float */}
       <AnimatePresence mode="wait">
@@ -193,12 +211,22 @@ export function OnboardingGuide({ onComplete, lessonScreen, lessonStep, quizAnsw
           <div className="bg-card border-2 border-primary/20 rounded-3xl p-5 relative overflow-hidden">
              {/* Neon glow inside card */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-primary blur-md" />
-            
+
+            {/* Botão "Pular tutorial" — sempre visível no canto pra escape rápido */}
+            <button
+              onClick={onComplete}
+              className="absolute top-3 right-3 size-7 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center z-10"
+              title="Pular tutorial"
+              aria-label="Pular tutorial"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+
             <div className="flex items-start gap-4">
               <div className="size-14 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary text-3xl filled-icon animate-pulse">{currentStep.icon}</span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 pr-6">
                 <h3 className="font-black text-lg tracking-tight mb-1">{currentStep.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{currentStep.description}</p>
               </div>
