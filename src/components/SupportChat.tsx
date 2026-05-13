@@ -2,22 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // =============================================================================
-// CONFIG — atualizar quando os links/webhooks finais estiverem prontos.
+// CONFIG
 // =============================================================================
 
-// Webhook que recebe os dados do lead (nome + telefone) quando o aluno pede
-// suporte. Conecte aqui sua automação (Zapier / Make / n8n / Supabase Edge
-// Function) que vai entregar os dados no seu WhatsApp pessoal.
-//
-// Espera-se um POST JSON com o seguinte payload:
-//   {
-//     type: "support_request",
-//     reason: "access-issue",
-//     name: string,
-//     phone: string,
-//     submittedAt: string (ISO 8601)
-//   }
-const LEAD_WEBHOOK_URL = ""; // ex.: "https://hooks.zapier.com/hooks/catch/123/abc"
+// Edge function que recebe o lead, grava em public.support_requests e dispara
+// email pro admin (Balla) via Brevo. Implementada em supabase/functions/
+// submit-support-request/index.ts.
+const SUPPORT_ENDPOINT =
+  "https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/submit-support-request";
 
 // URL da página de vendas (servida estaticamente em /sales.html).
 const SALES_URL = "/sales.html";
@@ -41,26 +33,34 @@ interface Message {
 const newId = () => Math.random().toString(36).slice(2, 9);
 
 /**
- * Envia o lead para a automação configurada em LEAD_WEBHOOK_URL.
- * Usa `mode: "no-cors"` por padrão pra evitar problemas de CORS — a maioria
- * dos webhooks (Zapier/Make/n8n) aceita esse modo, e nesse caso a resposta é
- * opaque (sem status), então sempre tratamos como sucesso. Se você quiser
- * receber a resposta do webhook, troque para `mode: "cors"` e configure CORS
- * no provedor.
+ * Envia o lead pra edge function submit-support-request, que grava em
+ * support_requests e dispara email pro admin via Brevo.
+ *
+ * Retorna `{ ok, id?, reason? }`. Mesmo se o email falhar (Brevo down etc.),
+ * o lead já está salvo no banco e o admin pode ver na aba "Suporte" do painel.
  */
-async function sendLead(payload: Record<string, unknown>) {
-  if (!LEAD_WEBHOOK_URL) {
-    // Fallback de desenvolvimento: apenas registra no console.
-    // Em produção, configure LEAD_WEBHOOK_URL com o endpoint real.
-    console.warn("[SupportChat] LEAD_WEBHOOK_URL não configurado — lead capturado localmente:", payload);
-    return;
+async function sendLead(payload: {
+  name: string;
+  phone: string;
+  reason: string;
+}): Promise<{ ok: boolean; id?: string; reason?: string }> {
+  try {
+    const r = await fetch(SUPPORT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...payload,
+        page_url: typeof window !== "undefined" ? window.location.href : "",
+      }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      return { ok: false, reason: data?.error || `http_${r.status}` };
+    }
+    return { ok: true, id: data?.id };
+  } catch (e) {
+    return { ok: false, reason: e instanceof Error ? e.message : "network_error" };
   }
-  await fetch(LEAD_WEBHOOK_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
 }
 
 // =============================================================================
@@ -153,26 +153,29 @@ export function SupportChat() {
       { id: newId(), from: "user", text: `Nome: ${cleanName}\nTelefone: ${cleanPhone}` },
     ]);
 
-    try {
-      await sendLead({
-        type: "support_request",
-        reason: "access-issue",
-        name: cleanName,
-        phone: cleanPhone,
-        submittedAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      // Falha silenciosa do webhook — não trava o usuário, só registra.
-      console.error("[SupportChat] Falha ao enviar lead:", err);
+    const result = await sendLead({
+      name: cleanName,
+      phone: cleanPhone,
+      reason: "access-issue",
+    });
+
+    if (!result.ok) {
+      console.error("[SupportChat] Falha ao enviar lead:", result.reason);
     }
 
     await new Promise((r) => setTimeout(r, 600));
+
+    // Sempre confirma pra aluna (mesmo se o email falhou, o lead já está em DB
+    // e a Carla recupera pela aba Suporte do admin). Se quiser distinguir,
+    // posso adicionar fallback explícito — mas isso adiciona ruído pra ela.
     setMessages((prev) => [
       ...prev,
       {
         id: newId(),
         from: "bot",
-        text: "Pronto! Recebemos seus dados. ✅\nA gente te chama no seu WhatsApp em instantes.",
+        text: result.ok
+          ? "Pronto! Recebemos seus dados. ✅\nA gente te chama no seu WhatsApp em instantes."
+          : "Recebemos seu pedido aqui no nosso painel. ✅\nA gente já te chama no WhatsApp. Se preferir falar agora, fala com a gente em wa.me/5521993685289.",
       },
     ]);
     setIsTyping(false);
