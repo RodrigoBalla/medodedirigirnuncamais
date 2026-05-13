@@ -1,0 +1,62 @@
+# ─── Auto-deploy Netlify ─────────────────────────────────────────────────────
+# Cada push pro main faz:
+#   1. Checkout do código
+#   2. Instala deps com cache
+#   3. Build de produção (npm run build)
+#   4. Deploy direto pro Netlify via CLI, em modo --prod
+#
+# Configuração necessária (secrets do repo — já cadastrados):
+#   - NETLIFY_AUTH_TOKEN: personal access token do Netlify
+#   - NETLIFY_SITE_ID:    site_id do projeto medodedirigirnuncamais
+#
+# Pra disparar manualmente: aba "Actions" do GitHub → "Deploy to Netlify"
+# → "Run workflow".
+# =============================================================================
+
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite acionar manualmente pelo painel do GitHub
+
+# Cancela builds antigos se um novo push chegar pro mesmo branch — sem fila.
+concurrency:
+  group: netlify-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build production
+        run: npm run build
+        env:
+          # Vite expõe só env vars com prefixo VITE_*. Se em algum momento o
+          # build precisar de chaves Supabase no client, adicione aqui como
+          # secrets do GitHub e referencie no formato VITE_XXX=${{ secrets.XXX }}.
+          NODE_ENV: production
+
+      - name: Deploy to Netlify
+        run: |
+          npx netlify deploy \
+            --prod \
+            --dir=dist \
+            --site=${{ secrets.NETLIFY_SITE_ID }} \
+            --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} \
+            --message="${{ github.event.head_commit.message || 'Manual workflow_dispatch' }}"
