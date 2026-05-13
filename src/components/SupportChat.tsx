@@ -42,6 +42,7 @@ const newId = () => Math.random().toString(36).slice(2, 9);
 async function sendLead(payload: {
   name: string;
   phone: string;
+  email: string;
   reason: string;
 }): Promise<{ ok: boolean; id?: string; reason?: string }> {
   try {
@@ -74,6 +75,7 @@ export function SupportChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mensagem inicial quando o chat abre pela primeira vez.
@@ -123,7 +125,7 @@ export function SupportChat() {
       "Já sou aluno e não consigo acessar.",
       [
         "Poxa! 😟 Vamos resolver isso pra você agora.",
-        "Me passa seu nome e telefone que a gente abre seu chamado e te chama no WhatsApp em seguida.",
+        "Me passa seu nome, email da compra e telefone — a gente abre seu chamado, te manda uma confirmação por email e te chama no WhatsApp em seguida.",
       ],
       "access-issue"
     );
@@ -145,17 +147,23 @@ export function SupportChat() {
     e.preventDefault();
     const cleanName = name.trim();
     const cleanPhone = phone.trim();
-    if (!cleanName || !cleanPhone) return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanName || !cleanPhone || !cleanEmail) return;
 
     setIsTyping(true);
     setMessages((prev) => [
       ...prev,
-      { id: newId(), from: "user", text: `Nome: ${cleanName}\nTelefone: ${cleanPhone}` },
+      {
+        id: newId(),
+        from: "user",
+        text: `Nome: ${cleanName}\nEmail: ${cleanEmail}\nTelefone: ${cleanPhone}`,
+      },
     ]);
 
     const result = await sendLead({
       name: cleanName,
       phone: cleanPhone,
+      email: cleanEmail,
       reason: "access-issue",
     });
 
@@ -174,7 +182,7 @@ export function SupportChat() {
         id: newId(),
         from: "bot",
         text: result.ok
-          ? "Pronto! Recebemos seus dados. ✅\nA gente te chama no seu WhatsApp em instantes."
+          ? `Pronto! ✅\nMandei um email de confirmação pra ${cleanEmail} (olha na caixa de entrada e no spam).\nA gente já vai te chamar no WhatsApp.`
           : "Recebemos seu pedido aqui no nosso painel. ✅\nA gente já te chama no WhatsApp. Se preferir falar agora, fala com a gente em wa.me/5521993685289.",
       },
     ]);
@@ -193,6 +201,7 @@ export function SupportChat() {
     ]);
     setName("");
     setPhone("");
+    setEmail("");
   };
 
   // ===========================================================================
@@ -333,12 +342,23 @@ export function SupportChat() {
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary"
                   />
                   <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email da compra"
+                    inputMode="email"
+                    autoComplete="email"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="Telefone com DDD"
                     inputMode="tel"
+                    autoComplete="tel"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary"
                   />
                   <button
