@@ -28,6 +28,7 @@ import { LevelUpOverlay } from "@/components/lms/LevelUpOverlay";
 import { useBadgeRules } from "@/hooks/useBadgeRules";
 import { useEngagementToasts } from "@/hooks/useEngagementToasts";
 import { BadgeUnlockedModal } from "@/components/BadgeUnlockedModal";
+import { FirstTimeWelcome } from "@/components/FirstTimeWelcome";
 import { DrivingMap } from "@/components/lms/DrivingMap";
 import { DailyBonusGrid } from "@/components/lms/DailyBonusGrid";
 import { DailyMissions } from "@/components/lms/DailyMissions";
@@ -700,6 +701,10 @@ const DrivingApp = () => {
       {/* Modal celebratório de medalha — aparece em QUALQUER tela quando o
           aluno desbloqueia. O hook useBadgeRules detecta e seta justUnlocked. */}
       <BadgeUnlockedModal badge={justUnlocked} onClose={clearJustUnlocked} />
+      {/* Tour guiado SÓ no primeiríssimo login (5 cards bem grandes explicando
+          Cursos, Comunidade, Perfil e a primeira missão). Marca localStorage
+          pra não aparecer nunca mais. */}
+      <FirstTimeWelcome displayName={displayName} />
       {showOnboarding && (
         <OnboardingGuide
           onComplete={() => {
