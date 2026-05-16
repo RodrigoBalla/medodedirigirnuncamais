@@ -279,11 +279,14 @@ function CourseCard({
         {locked ? (
           <>
             <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
-              Desbloqueie pra começar
+              Curso adicional
             </span>
+            {/* Copy direta: aluna sabe que vai ver o que tem e como comprar.
+                "Saiba mais" era ambíguo — ela não sabia que ia parar num
+                checkout. "Quero esse curso" comunica intenção sem agressividade. */}
             <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              <span className="material-symbols-outlined text-sm">info</span>
-              Saiba mais
+              <span className="material-symbols-outlined text-sm">shopping_bag</span>
+              Quero esse curso
             </span>
           </>
         ) : (

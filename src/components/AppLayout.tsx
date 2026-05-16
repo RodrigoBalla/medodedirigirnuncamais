@@ -32,19 +32,24 @@ interface AppLayoutProps {
   streakDays?: number;
 }
 
-const NAV_ITEMS: { tab: AppTab; icon: string; label: string }[] = [
-  { tab: "perfil", icon: "person", label: "Perfil" },
+// NAV completo (mobile bottom + desktop sidebar). Pra alunas, as 3 tabs travadas
+// (Trilha, Missões, Ranking) são FILTRADAS abaixo no render — ela só vê o que
+// está liberado, sem badge "Em breve" poluindo. Admin continua vendo tudo com
+// badge "Preview" cyan.
+const NAV_ITEMS_FULL: { tab: AppTab; icon: string; label: string }[] = [
   { tab: "biblioteca", icon: "video_library", label: "Cursos" },
+  { tab: "comunidade", icon: "forum", label: "Comunidade" },
+  { tab: "perfil", icon: "person", label: "Perfil" },
+  // Travadas pra alunas (Em breve), liberadas pra admin:
   { tab: "home", icon: "map", label: "Trilha" },
   { tab: "treinos", icon: "target", label: "Missões" },
   { tab: "ranking", icon: "trophy", label: "Ranking" },
 ];
 
-const SIDEBAR_ITEMS: { tab: AppTab; icon: string; label: string }[] = [
-  // Itens ATIVOS no topo (usáveis hoje):
+const SIDEBAR_ITEMS_FULL: { tab: AppTab; icon: string; label: string }[] = [
   { tab: "biblioteca", icon: "video_library", label: "Meus Cursos" },
   { tab: "comunidade", icon: "forum", label: "Comunidade" },
-  // Itens BLOQUEADOS abaixo (Em breve):
+  // Travadas pra alunas, liberadas pra admin:
   { tab: "home", icon: "map", label: "Trilha" },
   { tab: "treinos", icon: "target", label: "Missões Diárias" },
   { tab: "ranking", icon: "trophy", label: "Rankings" },
@@ -110,6 +115,16 @@ export function AppLayout({
   // com outra conta. NÃO duplicar essa lógica em outros lugares — toda decisão
   // de "tá em breve?" passa por aqui.
   const LOCKED_TABS: AppTab[] = isAdmin ? [] : LOCKED_TABS_FOR_STUDENTS;
+
+  // Items da nav filtrados: aluna NÃO vê os blocks ("Em breve") na nav, só admin
+  // vê os blocks com badge "Preview" cyan. Limpa a UI mobile drasticamente —
+  // antes a aluna via 3 cadeados de 5 ícones na bottom nav.
+  const NAV_ITEMS = isAdmin
+    ? NAV_ITEMS_FULL
+    : NAV_ITEMS_FULL.filter((item) => !LOCKED_TABS_FOR_STUDENTS.includes(item.tab));
+  const SIDEBAR_ITEMS = isAdmin
+    ? SIDEBAR_ITEMS_FULL
+    : SIDEBAR_ITEMS_FULL.filter((item) => !LOCKED_TABS_FOR_STUDENTS.includes(item.tab));
 
   // MVP: clique em tab bloqueada exibe um aviso de "Em Breve" e não navega.
   // Pra admin, LOCKED_TABS é vazio, então essa checagem nunca dispara.
@@ -437,9 +452,11 @@ export function AppLayout({
           vale mais que gamificação. */}
       <EmergencyContactFab />
 
-      {/* Mobile Bottom Navigation — fita de advertência fininha logo acima */}
+      {/* Mobile Bottom Navigation — fita de advertência fininha logo acima.
+          Pra alunas só aparecem 3 ícones (Cursos/Comunidade/Perfil) — admin
+          vê os 6 com badge "Preview". Mais espaço, área de toque maior. */}
       <div className="caution-tape lg:hidden fixed bottom-[70px] left-0 right-0 h-1 z-50" aria-hidden="true" />
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 px-2 py-1.5 flex justify-between items-center z-50 safe-area-bottom">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 px-2 py-2 flex justify-around items-center z-50 safe-area-bottom">
         {NAV_ITEMS.map((item) => {
           const isLocked = LOCKED_TABS.includes(item.tab);
           const isAdminPreview = isAdmin && LOCKED_TABS_FOR_STUDENTS.includes(item.tab);
@@ -447,7 +464,7 @@ export function AppLayout({
             <button
               key={item.tab}
               onClick={() => handleNavClick(item.tab)}
-              className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-lg transition-colors ${
+              className={`relative flex flex-col items-center gap-1 flex-1 py-2 px-1 rounded-xl transition-colors active:bg-white/5 ${
                 activeTab === item.tab
                   ? "text-primary"
                   : isLocked
@@ -455,10 +472,10 @@ export function AppLayout({
                   : "text-muted-foreground"
               }`}
             >
-              <span className={`material-symbols-outlined text-xl ${activeTab === item.tab ? "filled-icon" : ""}`}>
+              <span className={`material-symbols-outlined text-2xl ${activeTab === item.tab ? "filled-icon" : ""}`}>
                 {isLocked ? "lock" : item.icon}
               </span>
-              <span className="text-[10px] font-bold">{item.label}</span>
+              <span className="text-[11px] font-bold leading-none">{item.label}</span>
               {isLocked && (
                 <span className="absolute -top-1 right-1/2 translate-x-[26px] text-[7px] font-black uppercase tracking-widest bg-amber-500/90 text-white px-1 py-px rounded-sm leading-none">
                   Em breve
