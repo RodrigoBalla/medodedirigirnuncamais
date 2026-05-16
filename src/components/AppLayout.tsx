@@ -174,8 +174,9 @@ export function AppLayout({
                 <span className="text-xs font-black text-foreground">{lives}</span>
               </motion.div>
 
-              {/* Streak ⚡ */}
-              {streak > 0 && (
+              {/* Streak ⚡ — só mostra a partir de 2 dias (1 dia não é "ofensiva"
+                  ainda, é só o primeiro login; mostrar 🔥1 confunde a aluna nova) */}
+              {streak >= 2 && (
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-1.5 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/30 group cursor-help"

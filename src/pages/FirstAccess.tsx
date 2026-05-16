@@ -288,11 +288,14 @@ export default function FirstAccess() {
                   initial={{ opacity: 0, y: 30, scale: 0.85 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.25, type: "spring", stiffness: 220, damping: 18 }}
-                  className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight mb-4"
+                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tight mb-4"
                   style={{ textWrap: "balance" }}
                 >
-                  PARABÉNS,<br />
-                  <span className="text-primary">{info.display_name.toUpperCase()}!</span>
+                  Parabéns,<br />
+                  {/* Usa só o PRIMEIRO nome pra não estourar em mobile com nomes
+                      longos tipo "Maria do Carmo Silva". Sem .toUpperCase() pra
+                      ficar mais natural e legível. */}
+                  <span className="text-primary">{(info.display_name || "aluna").trim().split(/\s+/)[0]}!</span>
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
