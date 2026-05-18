@@ -6608,6 +6608,46 @@
   const CHECKOUT_URL = 'https://chk.eduzz.com/R9JXDZDE0X';
   const EDUZZ_CONTENT_ID = (CHECKOUT_URL.match(/chk\.eduzz\.com\/([A-Za-z0-9]+)/) || [])[1] || 'R9JXDZDE0X';
 
+  // ── FIX: bloquear modal "Currency / Browsing from outside Brazil?" do Eduzz ──
+  // O bridge.js da Eduzz às vezes injeta um modal fullscreen perguntando se a
+  // pessoa está fora do Brasil (com z-index:2147483647, cobre TODA a página).
+  // Esse modal aparece pra IPs detectados como internacionais — mas o bug é
+  // que TAMBÉM aparece pra brasileiros (falso positivo de geolocalização).
+  // Resultado: tela fica preta, aluna não vê o checkout, não consegue comprar.
+  //
+  // Solução: observer no <body> que detecta a injeção do #currency-modal-root
+  // e clica automaticamente em "Pay in Brazilian currency" (default correto
+  // pro nosso público). Faz isso silenciosamente, sem a aluna nem ver o modal.
+  (function suppressEduzzCurrencyModal() {
+    function killModal() {
+      const root = document.getElementById('currency-modal-root');
+      if (!root) return false;
+      // Procura o botão BR (texto "Pay in Brazilian currency" ou variantes PT-BR)
+      const btns = root.querySelectorAll('button');
+      for (const b of btns) {
+        const txt = (b.textContent || '').toLowerCase();
+        if (txt.includes('brazilian') || txt.includes('real') || txt.includes('reais')) {
+          b.click();
+          return true;
+        }
+      }
+      // Fallback: se não achou o botão BR específico, esconde tudo
+      root.style.display = 'none';
+      const overlay = root.querySelector('[class*="sc-"]');
+      if (overlay) overlay.style.display = 'none';
+      return true;
+    }
+
+    // Observer que dispara quando qualquer filho é adicionado ao body —
+    // pega o momento em que o bridge.js cria o currency-modal-root.
+    const obs = new MutationObserver(() => killModal());
+    obs.observe(document.body, { childList: true, subtree: true });
+    // Tenta também imediatamente (caso já tenha sido criado antes do observer)
+    killModal();
+    // Cleanup após 30s pra não ficar rodando forever
+    setTimeout(() => obs.disconnect(), 30000);
+  })();
+
   // Carrega o bridge.js da Eduzz UMA VEZ e inicializa o checkout dentro do
   // <div id="eduzz-checkout-embed"> que está na seção #checkout-section.
   // Faz polling porque o script é async type=module — só fica disponível
