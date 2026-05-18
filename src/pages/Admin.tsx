@@ -13,6 +13,7 @@ import { GroupsManager } from "@/components/admin/GroupsManager";
 import { CommentsModeration } from "@/components/admin/CommentsModeration";
 import NotificationsManager from "@/components/admin/NotificationsManager";
 import StudentEmailMetrics from "@/components/admin/StudentEmailMetrics";
+import { PhoneEditor } from "@/components/admin/PhoneEditor";
 
 type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications";
 
@@ -705,12 +706,24 @@ export default function Admin() {
                               <p className="text-[11px] text-muted-foreground">
                                 Cadastro: {new Date(s.created_at).toLocaleDateString("pt-BR")}
                               </p>
-                              {/* Linha 2: email + telefone */}
+                              {/* Linha 2: email + telefone (telefone clicável → abre WhatsApp) */}
                               {(s.email || s.phone) && (
                                 <p className="text-[11px] text-muted-foreground/80 truncate">
                                   {s.email && <span title={s.email}>✉ {s.email}</span>}
                                   {s.email && s.phone && <span className="mx-1.5">·</span>}
-                                  {s.phone && <span>📱 {s.phone}</span>}
+                                  {s.phone && (
+                                    <a
+                                      href={`https://wa.me/${s.phone.replace(/\D/g, "")}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 text-[hsl(var(--success))] hover:underline"
+                                      title={`Abrir WhatsApp: ${s.phone}`}
+                                    >
+                                      <span className="material-symbols-outlined text-[12px]">chat</span>
+                                      {s.phone}
+                                    </a>
+                                  )}
                                 </p>
                               )}
                               {/* Linha 3: badges de grupos de acesso */}
@@ -1000,7 +1013,16 @@ export default function Admin() {
                                 </div>
                               </button>
                             </div>
-                            
+
+                            {/* Editor de telefone — pra preencher manualmente
+                                quando o webhook nao trouxe (ou quando o admin
+                                quer atualizar). Salva via admin_set_student_phone. */}
+                            <PhoneEditor
+                              userId={s.user_id}
+                              currentPhone={s.phone}
+                              onSaved={fetchStudents}
+                            />
+
                             <div className="flex flex-col gap-2 pt-2">
                               {/* Action Buttons Zone */}
                               <button
