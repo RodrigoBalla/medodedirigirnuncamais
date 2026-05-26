@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>📱 Mobile Preview · MDNM</title>
+  <style>
+    body { margin: 0; padding: 24px; background: #1a1a1a; font-family: system-ui, sans-serif; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 16px; min-height: 100vh; }
+    h1 { margin: 0; font-size: 16px; opacity: .6; font-weight: 600; }
+    .phone { width: 390px; height: 844px; border: 10px solid #333; border-radius: 40px; box-shadow: 0 30px 80px rgba(0,0,0,.5); overflow: hidden; background: #000; position: relative; }
+    .phone::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #000; border-radius: 16px; z-index: 10; }
+    iframe { width: 100%; height: 100%; border: none; }
+    .picker { display: flex; gap: 8px; flex-wrap: wrap; max-width: 600px; justify-content: center; }
+    .picker button { padding: 8px 14px; border-radius: 8px; border: 1px solid #FFD60A40; background: #FFD60A10; color: #FFD60A; cursor: pointer; font-weight: 700; font-size: 12px; }
+    .picker button:hover { background: #FFD60A20; }
+  </style>
+</head>
+<body>
+  <h1>📱 Preview Mobile · 390×844 (iPhone 14)</h1>
+  <div class="picker" id="picker"></div>
+  <div class="phone">
+    <iframe id="preview" src=""></iframe>
+  </div>
+  <script>
+    const courses = [
+      { name: 'Medo de Dirigir Nunca Mais — Método Completo', cover: '/modulos/medo-de-dirigir-nunca-mais-9x16.jpg' },
+      { name: 'Dominando as Balizas', cover: '/modulos/dominando-as-balizas-9x16.jpg' },
+      { name: 'Dominando as Ladeiras', cover: '/modulos/dominando-as-ladeiras-9x16.jpg' },
+      { name: 'Dominando as Marchas', cover: '/modulos/dominando-as-marchas-9x16.jpg' },
+      { name: 'Bônus: O Mapa do Condutor', cover: '/modulos/o-mapa-do-condutor-9x16.jpg' }
+    ];
+    const iframe = document.getElementById('preview');
+    const picker = document.getElementById('picker');
+    function loadCourse(c) {
+      iframe.src = `/preview-unlock?course=${encodeURIComponent(c.name)}&cover=${encodeURIComponent(c.cover)}`;
+    }
+    courses.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.textContent = c.name.replace(/^Bônus:\s*/, '').replace(/Medo de Dirigir Nunca Mais — /, '');
+      b.onclick = () => loadCourse(c);
+      picker.appendChild(b);
+    });
+    // Default: Balizas
+    loadCourse(courses[1]);
+  </script>
+</body>
+</html>
