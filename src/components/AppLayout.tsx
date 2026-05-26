@@ -13,6 +13,8 @@ import { useDisplayName } from "@/hooks/useDisplayName";
 import { useAccessStatus } from "@/hooks/useAccessStatus";
 import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
 import { CarCursor } from "@/components/CarCursor";
+import { useDetectNewModules } from "@/hooks/useDetectNewModules";
+import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -91,6 +93,9 @@ export function AppLayout({
   // bloqueia TODA navegação interna e mostra só AccessExpiredScreen.
   // Admin sempre passa, mesmo se a flag estiver expired na própria conta.
   const accessStatus = useAccessStatus();
+  // Detecta módulo novo desbloqueado (compara grupos da aluna vs localStorage)
+  // — dispara animação cinematográfica 1x quando ela ganha acesso a um curso novo
+  const { newModule, markSeen } = useDetectNewModules();
   const { lives, coins, totalXP, streak, xpBoostExpiresAt } = useUserProgress();
   const { level, title, current, next } = getLevel(totalXP);
   const car = getCarInfo(level);
@@ -150,6 +155,18 @@ export function AppLayout({
       {/* Cursor de carro com rastro de pneus — só na área de membros (skip em
           touch automaticamente). Identidade visual de trânsito. */}
       <CarCursor />
+
+      {/* Animação cinematográfica de "novo módulo desbloqueado" — dispara 1x
+          quando a aluna compra outro curso e entra na área de membros.
+          Marcado no localStorage por user_id, não aparece de novo pra ela. */}
+      {newModule && (
+        <ModuleUnlockedOverlay
+          courseName={newModule.title}
+          coverUrl={newModule.image_url}
+          courseId={newModule.product_id}
+          onClose={() => markSeen(newModule.product_id)}
+        />
+      )}
 
       {/* Fita de advertência fininha no topo absoluto da página — identidade trânsito */}
       <div className="caution-tape h-1.5 w-full" aria-hidden="true" />
