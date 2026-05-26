@@ -14,6 +14,7 @@ import { CompletionScreen } from "./components/CompletionScreen";
 import SalesPage from "./pages/SalesPage";
 import CourseInfo from "./pages/CourseInfo";
 import FirstAccess from "./pages/FirstAccess";
+import PreviewUnlock from "./pages/PreviewUnlock";
 import { CarCursor } from "./components/CarCursor";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -62,6 +63,7 @@ const App = () => (
                   <Route path="/curso/:id" element={<Index />} />
                   <Route path="/curso-info/:id" element={<CourseInfo />} />
                   <Route path="/primeiro-acesso" element={<FirstAccess />} />
+                  <Route path="/preview-unlock" element={<PreviewUnlock />} />
                   <Route path="/conclusao" element={<CompletionScreen />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/login" element={<Auth />} />
