@@ -25,8 +25,9 @@
       font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--navy);
       color: var(--texto);
-      height: 100dvh;
-      overflow: hidden;
+      min-height: 100dvh;       /* min, não fixo — deixa crescer se precisar */
+      overflow-x: hidden;
+      overflow-y: auto;          /* nunca CORTA: se a tela for baixa, rola */
       -webkit-font-smoothing: antialiased;
       display: flex;
       flex-direction: column;
@@ -41,11 +42,12 @@
     /* Container central que ocupa todo o espaço e centraliza verticalmente */
     .wrap {
       flex: 1;
-      min-height: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      /* "safe center": centraliza quando cabe, mas NÃO corta o topo/baixo
+         quando o conteúdo é maior que a tela (deixa rolar). */
+      justify-content: safe center;
       gap: clamp(4px, 0.8vh, 10px);
       max-width: 540px;
       width: 100%;
