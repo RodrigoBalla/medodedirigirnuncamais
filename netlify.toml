@@ -18,6 +18,18 @@
   to     = "/sales.html"
   status = 200
 
+# Página de OBRIGADO pós-compra (estática, fora do SPA). É pra onde a Eduzz
+# redireciona após o pagamento aprovado. Instrui a aluna a olhar o email
+# (e o spam) pra criar a senha de primeiro acesso.
+[[redirects]]
+  from   = "/obrigado"
+  to     = "/obrigado.html"
+  status = 200
+[[redirects]]
+  from   = "/obrigada"
+  to     = "/obrigado.html"
+  status = 200
+
 # Ferramenta interna pra Carla organizar conteúdos (estática, fora do SPA).
 [[redirects]]
   from   = "/carla"
