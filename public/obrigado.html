@@ -46,11 +46,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: clamp(8px, 1.6vh, 16px);
+      gap: clamp(5px, 1.1vh, 12px);
       max-width: 540px;
       width: 100%;
       margin: 0 auto;
-      padding: clamp(12px, 2.5vh, 28px) 20px;
+      padding: clamp(10px, 2vh, 22px) 20px;
       text-align: center;
     }
 
@@ -152,6 +152,53 @@
     .step .txt p { font-size: clamp(12px, 1.7vh, 13.5px); font-weight: 500; line-height: 1.4; color: var(--suave); margin-top: 2px; }
     .step .txt strong { color: var(--amarelo); font-weight: 700; }
 
+    /* Bloco "já é nosso aluno?" — pra quem comprou upsell (já tem conta) */
+    .returning {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(37, 211, 102, 0.10);
+      border: 1.5px solid rgba(37, 211, 102, 0.45);
+      border-radius: 16px;
+      padding: clamp(11px, 1.8vh, 15px) clamp(14px, 2vh, 18px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .returning .ico {
+      flex-shrink: 0;
+      font-size: clamp(22px, 3.4vh, 28px);
+      line-height: 1;
+    }
+    .returning .body { flex: 1; min-width: 0; }
+    .returning .body p {
+      font-size: clamp(12px, 1.8vh, 13.5px);
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--suave);
+    }
+    .returning .body b { color: #fff; font-weight: 700; }
+    .returning .body strong { color: var(--verde); font-weight: 700; }
+    .enter-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--verde);
+      color: #fff;
+      font-weight: 700;
+      font-size: clamp(12px, 1.7vh, 13.5px);
+      padding: 9px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: filter 0.2s;
+    }
+    .enter-btn:hover { filter: brightness(1.08); }
+    @media (max-width: 480px) {
+      .returning { flex-direction: column; text-align: center; gap: 9px; }
+    }
+
     /* Linha "de quem vem" — compacta, inline */
     .from-line {
       font-size: clamp(12px, 1.7vh, 13.5px);
@@ -183,6 +230,7 @@
        Forçamos os elementos de CONTEÚDO a ficarem sempre visíveis. Os
        decorativos (.check-circle, .pulse-dot) mantêm suas animações próprias. */
     .wrap, .tag, h1, .sub, .alert, .alert *, .steps, .step, .step *,
+    .returning, .returning *, .enter-btn,
     .from-line, .support, .wa-btn, .clock {
       opacity: 1 !important;
       animation: none !important;
@@ -235,6 +283,15 @@
     <p class="from-line">
       📧 O e-mail vem de <b>Carla · Medo de Dirigir Nunca Mais</b> · assunto <span class="subj">"🎉 Sua matrícula foi confirmada"</span>
     </p>
+
+    <!-- Caminho pra quem JÁ É ALUNO e comprou um módulo novo (upsell) -->
+    <div class="returning">
+      <span class="ico">🎓</span>
+      <div class="body">
+        <p><b>Já é nossa aluna?</b> Se você comprou um <b>módulo novo</b>, ele <strong>já está liberado</strong> na sua área de membros — não precisa criar senha de novo, é só entrar com a senha que você já usa.</p>
+      </div>
+      <a class="enter-btn" href="/login">Entrar na área &rarr;</a>
+    </div>
 
     <div class="support">
       Passou de 5 min e não chegou (nem no spam)?
