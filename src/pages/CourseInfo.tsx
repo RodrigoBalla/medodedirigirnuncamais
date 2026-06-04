@@ -5,7 +5,37 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
+import { extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
+
+// ─── Abrir checkout da Eduzz em POPUP ────────────────────────────────────────
+// Em vez de embutir o checkout num iframe (que trava no spinner quando o
+// navegador bloqueia cookies de terceiros — porque é outro domínio dentro do
+// nosso site), abrimos o checkout numa JANELA PRÓPRIA. Aí ele é first-party,
+// sem problema de cookie, carrega rápido e funciona em qualquer navegador.
+//   • Desktop: janelinha centralizada (popup).
+//   • Mobile: o navegador abre como aba (e funciona igual).
+// Tem que ser disparado por clique do usuário, senão o navegador bloqueia.
+function openCheckoutPopup(url: string): void {
+  const w = 480;
+  const h = 760;
+  const baseLeft = window.screenLeft ?? window.screenX ?? 0;
+  const baseTop = window.screenTop ?? window.screenY ?? 0;
+  const vw = window.innerWidth || document.documentElement.clientWidth || w;
+  const vh = window.innerHeight || document.documentElement.clientHeight || h;
+  const left = Math.round(baseLeft + Math.max(0, (vw - w) / 2));
+  const top = Math.round(baseTop + Math.max(0, (vh - h) / 2));
+  const popup = window.open(
+    url,
+    "eduzz_checkout",
+    `popup=yes,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+  );
+  // Se o popup foi bloqueado, cai pra abrir na mesma aba (garante a compra).
+  if (!popup || popup.closed || typeof popup.closed === "undefined") {
+    window.location.href = url;
+  } else {
+    popup.focus();
+  }
+}
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
@@ -222,25 +252,47 @@ export default function CourseInfo() {
               transition={{ duration: 0.35, delay: 0.08 }}
             >
               {canCheckout ? (
-                <>
+                <div className="bg-card border border-border rounded-2xl p-6 max-w-md">
                   {/* Header curto do checkout */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-4">
                     <span className="material-symbols-outlined text-primary text-lg">shopping_bag</span>
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-foreground">
                       Finalize sua inscrição
                     </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                    Cartão, Pix ou boleto · acesso liberado na hora. Use o{" "}
+
+                  {/* Reforços rápidos de confiança */}
+                  <ul className="space-y-2 mb-5 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-base">bolt</span>
+                      Acesso liberado na hora após o pagamento
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-base">credit_card</span>
+                      Cartão, Pix ou boleto
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary text-base">verified_user</span>
+                      Checkout seguro Eduzz · 7 dias de garantia
+                    </li>
+                  </ul>
+
+                  {/* COMPRAR AGORA — abre o checkout da Eduzz em POPUP (janela
+                      própria, first-party). Não usa mais o iframe embedado, que
+                      travava por bloqueio de cookies de terceiros. */}
+                  <button
+                    type="button"
+                    onClick={() => openCheckoutPopup(`https://chk.eduzz.com/${contentId}`)}
+                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-base px-4 py-4 rounded-xl hover:brightness-110 active:scale-[0.99] transition shadow-lg shadow-primary/20"
+                  >
+                    <span className="material-symbols-outlined">lock</span>
+                    Comprar agora
+                  </button>
+                  <p className="text-[11px] text-muted-foreground mt-3 text-center leading-relaxed">
+                    Abre o checkout seguro da Eduzz numa janela. Use o{" "}
                     <strong className="text-foreground">e-mail dessa conta</strong> pra liberação imediata.
                   </p>
-
-                  {/* Checkout embutido aqui na área de membros (sem abrir nova aba).
-                      O EduzzCheckoutEmbed já tem fallback "abrir em tela cheia" (na
-                      mesma aba) caso o iframe trave por bloqueio de cookies de
-                      terceiros do navegador. */}
-                  <EduzzCheckoutEmbed contentId={contentId!} />
-                </>
+                </div>
               ) : (
                 <div className="bg-card border border-border rounded-2xl p-6 text-center">
                   <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">
