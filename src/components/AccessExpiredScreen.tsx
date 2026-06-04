@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
+import { CheckoutModal } from "@/components/lms/CheckoutModal";
 
 // ─── AccessExpiredScreen ─────────────────────────────────────────────────────
 // Tela mostrada pra alunas com profiles.access_status = 'expired'. Bloqueia
@@ -16,12 +18,15 @@ import { useDisplayName } from "@/hooks/useDisplayName";
 // (Futuro: webhook pode auto-reativar quando reconhecer a compra dela.)
 // =============================================================================
 
-const CHECKOUT_RENOVACAO_URL = "https://chk.eduzz.com/E05NOV749X";
+// Slug do checkout de renovação (Método Completo). O popup padrão (CheckoutModal)
+// abre o checkout da Eduzz por cima da tela — mesma experiência do resto do app.
+const CHECKOUT_RENOVACAO_CONTENT_ID = "E05NOV749X";
 const WHATSAPP_SUPORTE = "5521993685289";
 
 export function AccessExpiredScreen() {
   const { signOut } = useAuth();
   const displayName = useDisplayName("");
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const whatsappUrl = (() => {
     const nome = (displayName || "Aluna").trim().split(/\s+/)[0];
@@ -32,7 +37,7 @@ export function AccessExpiredScreen() {
   })();
 
   function handleRenovar() {
-    window.open(CHECKOUT_RENOVACAO_URL, "_blank", "noopener,noreferrer");
+    setCheckoutOpen(true);
   }
 
   return (
@@ -168,6 +173,14 @@ export function AccessExpiredScreen() {
           </motion.p>
         </div>
       </div>
+
+      {/* Popup PADRÃO do checkout — mesmo do resto da plataforma. */}
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        contentId={CHECKOUT_RENOVACAO_CONTENT_ID}
+        title="Renovar acesso ao curso"
+      />
     </div>
   );
 }

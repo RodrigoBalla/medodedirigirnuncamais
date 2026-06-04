@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
+import { extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
+import { CheckoutModal } from "@/components/lms/CheckoutModal";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
@@ -91,21 +92,6 @@ export default function CourseInfo() {
       cancelled = true;
     };
   }, [id, user, navigate]);
-
-  // Com o modal do checkout aberto: trava o scroll do fundo e fecha no Esc.
-  useEffect(() => {
-    if (!checkoutOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCheckoutOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [checkoutOpen]);
 
   if (loading) {
     return (
@@ -313,44 +299,14 @@ export default function CourseInfo() {
         </div>
       )}
 
-      {/* ─── MODAL "POPUP" DO CHECKOUT ─────────────────────────────────────
-          Abre por cima da página (não é aba nova). Funciona igual no desktop e
-          no mobile. O EduzzCheckoutEmbed renderiza o checkout aqui dentro e já
-          tem o fallback "abrir em tela cheia" caso o iframe trave. */}
-      {checkoutOpen && contentId && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm overflow-y-auto overscroll-contain"
-          onClick={() => setCheckoutOpen(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="min-h-full flex items-start sm:items-center justify-center p-0 sm:p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full sm:max-w-md bg-card border border-border sm:rounded-2xl shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header sticky com título + fechar */}
-              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card sm:rounded-t-2xl">
-                <p className="font-black text-sm line-clamp-1">{product.title}</p>
-                <button
-                  type="button"
-                  onClick={() => setCheckoutOpen(false)}
-                  aria-label="Fechar"
-                  className="shrink-0 size-9 rounded-full hover:bg-accent flex items-center justify-center transition-colors"
-                >
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-              {/* Checkout */}
-              <div className="p-4">
-                <EduzzCheckoutEmbed contentId={contentId} />
-              </div>
-            </motion.div>
-          </div>
-        </div>
+      {/* Popup PADRÃO do checkout (mesmo componente usado em toda a plataforma). */}
+      {contentId && (
+        <CheckoutModal
+          open={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+          contentId={contentId}
+          title={product.title}
+        />
       )}
     </div>
   );
