@@ -5,37 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
-
-// ─── Abrir checkout da Eduzz em POPUP ────────────────────────────────────────
-// Em vez de embutir o checkout num iframe (que trava no spinner quando o
-// navegador bloqueia cookies de terceiros — porque é outro domínio dentro do
-// nosso site), abrimos o checkout numa JANELA PRÓPRIA. Aí ele é first-party,
-// sem problema de cookie, carrega rápido e funciona em qualquer navegador.
-//   • Desktop: janelinha centralizada (popup).
-//   • Mobile: o navegador abre como aba (e funciona igual).
-// Tem que ser disparado por clique do usuário, senão o navegador bloqueia.
-function openCheckoutPopup(url: string): void {
-  const w = 480;
-  const h = 760;
-  const baseLeft = window.screenLeft ?? window.screenX ?? 0;
-  const baseTop = window.screenTop ?? window.screenY ?? 0;
-  const vw = window.innerWidth || document.documentElement.clientWidth || w;
-  const vh = window.innerHeight || document.documentElement.clientHeight || h;
-  const left = Math.round(baseLeft + Math.max(0, (vw - w) / 2));
-  const top = Math.round(baseTop + Math.max(0, (vh - h) / 2));
-  const popup = window.open(
-    url,
-    "eduzz_checkout",
-    `popup=yes,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`,
-  );
-  // Se o popup foi bloqueado, cai pra abrir na mesma aba (garante a compra).
-  if (!popup || popup.closed || typeof popup.closed === "undefined") {
-    window.location.href = url;
-  } else {
-    popup.focus();
-  }
-}
+import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
@@ -66,6 +36,8 @@ export default function CourseInfo() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
+  // Modal "popup" do checkout — abre por cima da página (não é aba nova).
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -119,6 +91,21 @@ export default function CourseInfo() {
       cancelled = true;
     };
   }, [id, user, navigate]);
+
+  // Com o modal do checkout aberto: trava o scroll do fundo e fecha no Esc.
+  useEffect(() => {
+    if (!checkoutOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCheckoutOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [checkoutOpen]);
 
   if (loading) {
     return (
@@ -277,19 +264,18 @@ export default function CourseInfo() {
                     </li>
                   </ul>
 
-                  {/* COMPRAR AGORA — abre o checkout da Eduzz em POPUP (janela
-                      própria, first-party). Não usa mais o iframe embedado, que
-                      travava por bloqueio de cookies de terceiros. */}
+                  {/* COMPRAR AGORA — abre o checkout num MODAL popup por cima da
+                      página (não abre aba nova). */}
                   <button
                     type="button"
-                    onClick={() => openCheckoutPopup(`https://chk.eduzz.com/${contentId}`)}
+                    onClick={() => setCheckoutOpen(true)}
                     className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-base px-4 py-4 rounded-xl hover:brightness-110 active:scale-[0.99] transition shadow-lg shadow-primary/20"
                   >
                     <span className="material-symbols-outlined">lock</span>
                     Comprar agora
                   </button>
                   <p className="text-[11px] text-muted-foreground mt-3 text-center leading-relaxed">
-                    Abre o checkout seguro da Eduzz numa janela. Use o{" "}
+                    Abre o checkout seguro da Eduzz aqui mesmo. Use o{" "}
                     <strong className="text-foreground">e-mail dessa conta</strong> pra liberação imediata.
                   </p>
                 </div>
@@ -308,6 +294,46 @@ export default function CourseInfo() {
           )}
         </div>
       </div>
+
+      {/* ─── MODAL "POPUP" DO CHECKOUT ─────────────────────────────────────
+          Abre por cima da página (não é aba nova). Funciona igual no desktop e
+          no mobile. O EduzzCheckoutEmbed renderiza o checkout aqui dentro e já
+          tem o fallback "abrir em tela cheia" caso o iframe trave. */}
+      {checkoutOpen && contentId && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm overflow-y-auto overscroll-contain"
+          onClick={() => setCheckoutOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="min-h-full flex items-start sm:items-center justify-center p-0 sm:p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full sm:max-w-md bg-card border border-border sm:rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header sticky com título + fechar */}
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-card sm:rounded-t-2xl">
+                <p className="font-black text-sm line-clamp-1">{product.title}</p>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutOpen(false)}
+                  aria-label="Fechar"
+                  className="shrink-0 size-9 rounded-full hover:bg-accent flex items-center justify-center transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              {/* Checkout */}
+              <div className="p-4">
+                <EduzzCheckoutEmbed contentId={contentId} />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
