@@ -81,19 +81,22 @@ export function useUserStats(): UserStats {
         // Última aula que o aluno tocou (pra mostrar "Continue de onde parou")
         let lastLesson: LastLesson | null = null;
         try {
+          // `lessons` NÃO tem product_id (tem module_id). O product_id vem de
+          // lessons -> modules -> product_id. Antes a query pedia
+          // lessons(title, product_id) e tomava 400 (coluna inexistente).
           const { data: lastProg } = await supabase
             .from("lesson_progress")
-            .select("lesson_id, updated_at, lessons(title, product_id)")
+            .select("lesson_id, updated_at, lessons(title, modules(product_id))")
             .eq("user_id", user!.id)
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
           if (lastProg) {
-            const lessonRel = (lastProg as { lessons?: { title?: string; product_id?: string } }).lessons;
+            const lessonRel = (lastProg as { lessons?: { title?: string; modules?: { product_id?: string } } }).lessons;
             lastLesson = {
               lesson_id: (lastProg as { lesson_id: string }).lesson_id,
               title: lessonRel?.title ?? "Aula sem título",
-              product_id: lessonRel?.product_id ?? null,
+              product_id: lessonRel?.modules?.product_id ?? null,
               updated_at: (lastProg as { updated_at: string }).updated_at,
             };
           }
