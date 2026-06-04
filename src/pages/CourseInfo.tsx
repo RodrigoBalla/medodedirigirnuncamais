@@ -141,7 +141,7 @@ export default function CourseInfo() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 md:py-10">
+      <div className="max-w-6xl mx-auto px-4 pt-6 md:pt-10 pb-28 lg:pb-10">
         {/* Faixa de aviso se a aluna já tem acesso */}
         {hasAccess && (
           <motion.div
@@ -163,15 +163,16 @@ export default function CourseInfo() {
           </motion.div>
         )}
 
-        {/* Layout EMPILHADO: info do curso em cima, checkout EMBAIXO (não ao
-            lado). Pedido do Balla — o checkout fica logo abaixo da descrição,
-            ocupando a largura toda, no desktop e no mobile. */}
-        <div className="flex flex-col gap-6 lg:gap-8">
-          {/* INFO DO CURSO (em cima) ────────────────────────────────────── */}
+        {/* Layout 2 colunas no desktop (info à esquerda + checkout sticky à
+            direita). No mobile empilha e tem uma barra fixa "Comprar agora" no
+            rodapé pra compra sempre estar a um toque. */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+          {/* INFO DO CURSO (esquerda) ───────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
+            className="lg:col-span-7"
           >
             {/* Thumb + título — layout interno que adapta:
                 • mobile: thumb cheia em cima, texto embaixo
@@ -231,15 +232,16 @@ export default function CourseInfo() {
             </div>
           </motion.div>
 
-          {/* CHECKOUT (embaixo) ─────────────────────────────────────────── */}
+          {/* CHECKOUT (direita, sticky no desktop) ──────────────────────── */}
           {showCheckout && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.08 }}
+              className="lg:col-span-5 lg:sticky lg:top-24"
             >
               {canCheckout ? (
-                <div className="bg-card border border-border rounded-2xl p-6 max-w-md">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xl shadow-black/20">
                   {/* Header curto do checkout */}
                   <div className="flex items-center gap-2 mb-4">
                     <span className="material-symbols-outlined text-primary text-lg">shopping_bag</span>
@@ -294,6 +296,22 @@ export default function CourseInfo() {
           )}
         </div>
       </div>
+
+      {/* ─── MOBILE: barra fixa "Comprar agora" no rodapé ─────────────────
+          Sempre acessível enquanto a aluna lê a página, sem precisar rolar até
+          o card. Some no desktop (lá o card fica sticky ao lado). */}
+      {showCheckout && canCheckout && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={() => setCheckoutOpen(true)}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm px-4 py-3.5 rounded-xl active:scale-[0.99] transition shadow-lg shadow-primary/20"
+          >
+            <span className="material-symbols-outlined text-base">lock</span>
+            Comprar agora
+          </button>
+        </div>
+      )}
 
       {/* ─── MODAL "POPUP" DO CHECKOUT ─────────────────────────────────────
           Abre por cima da página (não é aba nova). Funciona igual no desktop e
