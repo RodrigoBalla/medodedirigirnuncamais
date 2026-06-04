@@ -9,6 +9,15 @@
     <link rel="dns-prefetch" href="https://player.vimeo.com" />
     <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
     <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
+    <!-- Eduzz checkout (bridge.js + iframe do checkout embedado na area de membros).
+         Preconnect aquece DNS/TLS pra esses dominios desde o load, deixando o
+         checkout dos cursos trancados bem mais rapido. -->
+    <link rel="preconnect" href="https://cdn.eduzzcdn.com" crossorigin />
+    <link rel="preconnect" href="https://elements2.eduzz.com" crossorigin />
+    <link rel="preconnect" href="https://elements-api.eduzz.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.eduzzcdn.com" />
+    <link rel="dns-prefetch" href="https://elements2.eduzz.com" />
+    <link rel="dns-prefetch" href="https://elements-api.eduzz.com" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>MEDO DE DIRIGIR NUNCA MAIS</title>
     <meta name="description" content="Aprenda a dirigir com facilidade.">

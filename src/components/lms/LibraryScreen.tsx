@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
 import { WeeklyPlanCard } from "./WeeklyPlanCard";
+import { preloadEduzzBridge } from "./EduzzCheckoutEmbed";
 
 // =============================================================================
 // LibraryScreen — grid de cursos da área de membros
@@ -39,6 +40,14 @@ export function LibraryScreen() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // PERF: assim que a aluna tem cursos TRANCADOS na biblioteca, já baixamos o
+  // bridge.js da Eduzz em segundo plano. Quando ela clicar em "quero esse curso"
+  // e abrir o /curso-info, o bridge já está pronto e o checkout aparece quase
+  // instantâneo (antes o bridge só começava a baixar lá no /curso-info, ~4s).
+  useEffect(() => {
+    if (lockedProducts.length > 0) preloadEduzzBridge();
+  }, [lockedProducts.length]);
 
   async function checkAdminAndLoad() {
     // Detecta se é admin via user_roles

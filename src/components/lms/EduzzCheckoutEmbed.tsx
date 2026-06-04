@@ -41,7 +41,15 @@ declare global {
   }
 }
 
-function injectBridgeOnce(): void {
+/**
+ * Injeta o bridge.js da Eduzz no <head> uma única vez (singleton).
+ *
+ * EXPORTADO de propósito: dá pra chamar ANTES do checkout aparecer (ex: na
+ * biblioteca, assim que a aluna vê cursos trancados) pra o bridge já estar
+ * carregado quando ela abrir o curso. Isso elimina o maior gargalo — o bridge
+ * só começava a baixar quando o checkout montava (~4s depois do load).
+ */
+export function preloadEduzzBridge(): void {
   if (typeof document === "undefined") return;
   if (document.querySelector(`script[src="${BRIDGE_SRC}"]`)) return;
   const s = document.createElement("script");
@@ -72,7 +80,7 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    injectBridgeOnce();
+    preloadEduzzBridge();
 
     // Polling pra esperar o bridge expor window.Eduzz.Checkout.
     // O script é async + type=module, então pode demorar uns ms até ficar disponível.

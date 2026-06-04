@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
+import { EduzzCheckoutEmbed, extractEduzzContentId, preloadEduzzBridge } from "@/components/lms/EduzzCheckoutEmbed";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
@@ -44,6 +44,11 @@ export default function CourseInfo() {
     async function load() {
       setLoading(true);
 
+      // PERF: começa a baixar o bridge.js da Eduzz JÁ, em paralelo com a busca
+      // do produto. Assim o checkout não espera o fetch terminar pra só então
+      // começar a carregar o bridge (era o maior gargalo).
+      preloadEduzzBridge();
+
       // Carrega o produto. RLS permite (cursos published são públicos).
       const { data: prod, error } = await supabase
         .from("products")
@@ -59,8 +64,13 @@ export default function CourseInfo() {
       }
 
       setProduct(prod as Product);
+      // Mostra a página (e monta o checkout) ASSIM QUE o produto carrega —
+      // não espera a checagem de acesso. Pra curso trancado (o caso de compra)
+      // a aluna não tem acesso, então o checkout aparece o quanto antes.
+      setLoading(false);
 
-      // Detecta se a aluna logada já tem acesso (pra mostrar atalho "Acessar").
+      // Checagem de acesso em SEGUNDO PLANO: só serve pra, se ela JÁ tiver o
+      // curso, trocar o checkout pelo aviso "você já tem acesso".
       if (user) {
         const { data: userGroups } = await supabase
           .from("access_group_users")
@@ -77,8 +87,6 @@ export default function CourseInfo() {
           if (!cancelled) setHasAccess(!!(links && links.length > 0));
         }
       }
-
-      setLoading(false);
     }
 
     load();
@@ -143,15 +151,15 @@ export default function CourseInfo() {
           </motion.div>
         )}
 
-        {/* Layout principal — 2 colunas no desktop, empilhado no mobile.
-            Esquerda: info do curso. Direita: checkout (sticky no desktop). */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
-          {/* COLUNA ESQUERDA — info do curso ────────────────────────────── */}
+        {/* Layout EMPILHADO: info do curso em cima, checkout EMBAIXO (não ao
+            lado). Pedido do Balla — o checkout fica logo abaixo da descrição,
+            ocupando a largura toda, no desktop e no mobile. */}
+        <div className="flex flex-col gap-6 lg:gap-8">
+          {/* INFO DO CURSO (em cima) ────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="lg:col-span-7"
           >
             {/* Thumb + título — layout interno que adapta:
                 • mobile: thumb cheia em cima, texto embaixo
@@ -211,13 +219,12 @@ export default function CourseInfo() {
             </div>
           </motion.div>
 
-          {/* COLUNA DIREITA — checkout (sticky no desktop) ──────────────── */}
+          {/* CHECKOUT (embaixo) ─────────────────────────────────────────── */}
           {showCheckout && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.08 }}
-              className="lg:col-span-5 lg:sticky lg:top-24"
             >
               {canCheckout ? (
                 <>
