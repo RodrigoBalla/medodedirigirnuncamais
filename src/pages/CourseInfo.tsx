@@ -262,9 +262,20 @@ export default function CourseInfo() {
                     <span className="material-symbols-outlined">lock</span>
                     Comprar agora
                   </button>
+
+                  {/* Segundo botão: abre o checkout numa NOVA GUIA (externo). */}
+                  <a
+                    href={`https://chk.eduzz.com/${contentId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 w-full flex items-center justify-center gap-2 border border-border text-foreground font-bold uppercase tracking-widest text-xs px-4 py-3 rounded-xl hover:bg-accent hover:border-primary/40 transition"
+                  >
+                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                    Abrir checkout externo
+                  </a>
+
                   <p className="text-[11px] text-muted-foreground mt-3 text-center leading-relaxed">
-                    Abre o checkout seguro da Eduzz aqui mesmo. Use o{" "}
-                    <strong className="text-foreground">e-mail dessa conta</strong> pra liberação imediata.
+                    Use o <strong className="text-foreground">e-mail dessa conta</strong> no checkout pra liberação imediata.
                   </p>
                 </div>
               ) : (
@@ -296,6 +307,15 @@ export default function CourseInfo() {
             <span className="material-symbols-outlined text-base">lock</span>
             Comprar agora
           </button>
+          <a
+            href={`https://chk.eduzz.com/${contentId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">open_in_new</span>
+            Abrir checkout externo
+          </a>
         </div>
       )}
 
