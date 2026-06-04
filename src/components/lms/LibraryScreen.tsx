@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
 import { WeeklyPlanCard } from "./WeeklyPlanCard";
-import { preloadEduzzBridge } from "./EduzzCheckoutEmbed";
+import { prefetchEduzzBridge } from "./EduzzCheckoutEmbed";
 
 // =============================================================================
 // LibraryScreen — grid de cursos da área de membros
@@ -41,12 +41,14 @@ export function LibraryScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // PERF: assim que a aluna tem cursos TRANCADOS na biblioteca, já baixamos o
-  // bridge.js da Eduzz em segundo plano. Quando ela clicar em "quero esse curso"
-  // e abrir o /curso-info, o bridge já está pronto e o checkout aparece quase
-  // instantâneo (antes o bridge só começava a baixar lá no /curso-info, ~4s).
+  // PERF: assim que a aluna tem cursos TRANCADOS na biblioteca, fazemos PREFETCH
+  // (só baixa pro cache, NÃO executa) do bridge.js da Eduzz. Quando ela abrir o
+  // /curso-info, o embed executa o bridge a partir do cache (rápido) e COM o
+  // checkout já na tela — que é o que o bridge precisa pra renderizar. Executar
+  // o bridge aqui (antes do checkout existir) quebrava: ficava "already
+  // initialized" e só carregava no refresh.
   useEffect(() => {
-    if (lockedProducts.length > 0) preloadEduzzBridge();
+    if (lockedProducts.length > 0) prefetchEduzzBridge();
   }, [lockedProducts.length]);
 
   async function checkAdminAndLoad() {

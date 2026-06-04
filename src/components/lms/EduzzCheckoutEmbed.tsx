@@ -42,14 +42,35 @@ declare global {
 }
 
 /**
- * Injeta o bridge.js da Eduzz no <head> uma única vez (singleton).
+ * PREFETCH (só BAIXA, não executa) o bridge.js — pode ser chamado ANTES do
+ * checkout aparecer (ex: na biblioteca, quando a aluna vê cursos trancados).
  *
- * EXPORTADO de propósito: dá pra chamar ANTES do checkout aparecer (ex: na
- * biblioteca, assim que a aluna vê cursos trancados) pra o bridge já estar
- * carregado quando ela abrir o curso. Isso elimina o maior gargalo — o bridge
- * só começava a baixar quando o checkout montava (~4s depois do load).
+ * IMPORTANTE: usa <link rel="prefetch"> de propósito, NÃO <script>. O bridge é
+ * um módulo ES que só "inicializa" UMA vez por documento — e ele precisa do
+ * container do checkout JÁ presente na tela nesse momento. Se a gente
+ * EXECUTASSE o bridge aqui (sem o checkout montado), ele inicializava sem alvo
+ * e depois, na navegação client-side pro /curso-info, ficava "already
+ * initialized" e o checkout não renderizava (só funcionava no refresh).
+ * Prefetch resolve: aquece o cache do arquivo sem executar nada.
  */
-export function preloadEduzzBridge(): void {
+export function prefetchEduzzBridge(): void {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(`link[data-eduzz-bridge-prefetch]`)) return;
+  const l = document.createElement("link");
+  l.rel = "prefetch";
+  l.as = "script";
+  l.href = BRIDGE_SRC;
+  l.crossOrigin = "anonymous";
+  l.setAttribute("data-eduzz-bridge-prefetch", "1");
+  document.head.appendChild(l);
+}
+
+/**
+ * Injeta+EXECUTA o bridge.js da Eduzz no <head> uma única vez (singleton).
+ * Só deve ser chamado quando o container do checkout JÁ está na tela — por
+ * isso é interno e o embed chama no próprio useEffect (depois do render).
+ */
+function injectBridgeNow(): void {
   if (typeof document === "undefined") return;
   if (document.querySelector(`script[src="${BRIDGE_SRC}"]`)) return;
   const s = document.createElement("script");
@@ -80,7 +101,7 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
-    preloadEduzzBridge();
+    injectBridgeNow();
 
     // Polling pra esperar o bridge expor window.Eduzz.Checkout.
     // O script é async + type=module, então pode demorar uns ms até ficar disponível.

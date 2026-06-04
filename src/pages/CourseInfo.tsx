@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { EduzzCheckoutEmbed, extractEduzzContentId, preloadEduzzBridge } from "@/components/lms/EduzzCheckoutEmbed";
+import { EduzzCheckoutEmbed, extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
@@ -43,11 +43,6 @@ export default function CourseInfo() {
 
     async function load() {
       setLoading(true);
-
-      // PERF: começa a baixar o bridge.js da Eduzz JÁ, em paralelo com a busca
-      // do produto. Assim o checkout não espera o fetch terminar pra só então
-      // começar a carregar o bridge (era o maior gargalo).
-      preloadEduzzBridge();
 
       // Carrega o produto. RLS permite (cursos published são públicos).
       const { data: prod, error } = await supabase
