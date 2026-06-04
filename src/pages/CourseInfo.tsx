@@ -36,12 +36,6 @@ export default function CourseInfo() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  // Embed inline é OPCIONAL e só monta sob demanda. O iframe da Eduzz trava
-  // num spinner eterno quando o navegador bloqueia cookies de terceiros
-  // (Chrome moderno faz isso por padrão pra muita gente). Por isso o caminho
-  // PADRÃO virou o botão que abre o checkout hospedado (first-party, sempre
-  // funciona). Quem quiser preencher na página clica e aí montamos o embed.
-  const [showInline, setShowInline] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -226,65 +220,25 @@ export default function CourseInfo() {
               className="lg:col-span-5 lg:sticky lg:top-24"
             >
               {canCheckout ? (
-                <div className="bg-card border border-border rounded-2xl p-6">
+                <>
                   {/* Header curto do checkout */}
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-lg">shopping_bag</span>
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-foreground">
                       Finalize sua inscrição
                     </p>
                   </div>
-
-                  {/* Reforços rápidos de confiança */}
-                  <ul className="space-y-2 mb-5 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">bolt</span>
-                      Acesso liberado na hora após o pagamento
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">credit_card</span>
-                      Cartão, Pix ou boleto
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-                      Checkout seguro Eduzz · 7 dias de garantia
-                    </li>
-                  </ul>
-
-                  {/* CTA PRINCIPAL — abre o checkout hospedado da Eduzz.
-                      É first-party (página própria), então NÃO sofre com bloqueio
-                      de cookies de terceiros que trava o iframe embedado. Sempre
-                      funciona, no desktop e no celular. */}
-                  <a
-                    href={`https://chk.eduzz.com/${contentId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm px-4 py-3.5 rounded-xl hover:brightness-110 transition shadow-lg shadow-primary/20"
-                  >
-                    <span className="material-symbols-outlined">lock</span>
-                    Quero esse curso
-                  </a>
-                  <p className="text-[11px] text-muted-foreground mt-3 text-center leading-relaxed">
-                    Use o <strong className="text-foreground">e-mail dessa conta</strong> no checkout pra liberação imediata.
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                    Cartão, Pix ou boleto · acesso liberado na hora. Use o{" "}
+                    <strong className="text-foreground">e-mail dessa conta</strong> pra liberação imediata.
                   </p>
 
-                  {/* OPÇÃO SECUNDÁRIA — preencher na própria página (embed inline).
-                      Só monta quando a aluna pede, pra não exibir o spinner que
-                      trava quando o navegador bloqueia cookies de terceiros. */}
-                  {!showInline ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowInline(true)}
-                      className="mt-4 w-full text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
-                    >
-                      Prefere preencher os dados aqui na página?
-                    </button>
-                  ) : (
-                    <div className="mt-5 pt-5 border-t border-border">
-                      <EduzzCheckoutEmbed contentId={contentId!} />
-                    </div>
-                  )}
-                </div>
+                  {/* Checkout embutido aqui na área de membros (sem abrir nova aba).
+                      O EduzzCheckoutEmbed já tem fallback "abrir em tela cheia" (na
+                      mesma aba) caso o iframe trave por bloqueio de cookies de
+                      terceiros do navegador. */}
+                  <EduzzCheckoutEmbed contentId={contentId!} />
+                </>
               ) : (
                 <div className="bg-card border border-border rounded-2xl p-6 text-center">
                   <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">

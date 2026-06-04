@@ -133,17 +133,16 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
         <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-2xl p-4 mb-4">
           <p className="font-bold text-sm">O checkout não carregou aqui.</p>
           <p className="text-xs opacity-80 mt-1 mb-3">
-            Pode ser conexão lenta ou bloqueador de anúncios. Toque no botão pra
-            finalizar a compra com segurança numa nova aba.
+            Pode ser conexão lenta ou o navegador bloqueando cookies. Toque no
+            botão pra abrir o checkout em tela cheia (aqui mesmo, sem sair).
           </p>
           <a
             href={directUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:brightness-110 transition"
           >
-            <span className="material-symbols-outlined text-base">open_in_new</span>
-            Abrir checkout seguro
+            <span className="material-symbols-outlined text-base">open_in_full</span>
+            Abrir checkout em tela cheia
           </a>
         </div>
       )}
@@ -156,17 +155,17 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
       />
 
       {/* Escotilha de segurança SEMPRE visível: mesmo quando o embed "carrega"
-          mas fica em branco (comum em webview mobile / ad-block), a aluna tem
-          um caminho garantido pra comprar. Discreto pra não competir com o
-          checkout inline quando ele funciona. */}
+          mas fica girando (comum quando o navegador bloqueia cookies de
+          terceiros — o checkout é um iframe de outro domínio), a aluna tem um
+          caminho garantido. Abre na MESMA aba (tela cheia), sem nova aba.
+          Discreto pra não competir com o checkout inline quando ele funciona. */}
       <a
         href={directUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+        rel="noopener"
         className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
       >
-        <span className="material-symbols-outlined text-sm">open_in_new</span>
-        Não está vendo o checkout? Abrir em nova aba
+        <span className="material-symbols-outlined text-sm">open_in_full</span>
+        Checkout travado? Abrir em tela cheia
       </a>
     </div>
   );
