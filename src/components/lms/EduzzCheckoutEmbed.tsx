@@ -64,6 +64,10 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
   // ID único pro container — permite múltiplos checkouts na mesma página
   // (futuro: combos/upsell), embora hoje só renderizemos um por vez.
   const targetId = `eduzz-checkout-${contentId}`;
+  // URL do checkout hospedado da Eduzz — usada como FALLBACK garantido caso o
+  // embed inline não apareça (mobile lento, ad-block, bridge.js fora do ar).
+  // chk.eduzz.com/<código> abre o mesmo checkout numa página própria.
+  const directUrl = `https://chk.eduzz.com/${contentId}`;
   const initialized = useRef(false);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -72,8 +76,11 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
 
     // Polling pra esperar o bridge expor window.Eduzz.Checkout.
     // O script é async + type=module, então pode demorar uns ms até ficar disponível.
+    // Timeout generoso (25s) porque em 4G fraco / Wi-Fi de casa o bridge.js
+    // demora bem mais que no desktop. Antes era 10s e estourava no mobile,
+    // mostrando "não carregou" mesmo com o checkout a caminho.
     const start = Date.now();
-    const TIMEOUT_MS = 10_000;
+    const TIMEOUT_MS = 25_000;
     const interval = window.setInterval(() => {
       if (initialized.current) {
         window.clearInterval(interval);
@@ -119,13 +126,25 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
         </div>
       )}
 
-      {/* Mensagem de erro se o bridge não carregar (rede, CSP, ad-block) */}
+      {/* Mensagem de erro se o bridge não carregar (rede, CSP, ad-block).
+          Em vez de um beco sem saída, oferece o caminho que SEMPRE funciona:
+          abrir o checkout hospedado da Eduzz numa nova aba. */}
       {status === "error" && (
         <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-2xl p-4 mb-4">
-          <p className="font-bold text-sm">Não foi possível carregar o checkout.</p>
-          <p className="text-xs opacity-80 mt-1">
-            Verifique se há bloqueador de anúncios ativo e atualize a página. Se persistir, fale com a Carla.
+          <p className="font-bold text-sm">O checkout não carregou aqui.</p>
+          <p className="text-xs opacity-80 mt-1 mb-3">
+            Pode ser conexão lenta ou bloqueador de anúncios. Toque no botão pra
+            finalizar a compra com segurança numa nova aba.
           </p>
+          <a
+            href={directUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:brightness-110 transition"
+          >
+            <span className="material-symbols-outlined text-base">open_in_new</span>
+            Abrir checkout seguro
+          </a>
         </div>
       )}
 
@@ -135,6 +154,20 @@ export function EduzzCheckoutEmbed({ contentId }: Props) {
         id={targetId}
         className="min-h-[600px] rounded-2xl overflow-hidden bg-card border border-border"
       />
+
+      {/* Escotilha de segurança SEMPRE visível: mesmo quando o embed "carrega"
+          mas fica em branco (comum em webview mobile / ad-block), a aluna tem
+          um caminho garantido pra comprar. Discreto pra não competir com o
+          checkout inline quando ele funciona. */}
+      <a
+        href={directUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+      >
+        <span className="material-symbols-outlined text-sm">open_in_new</span>
+        Não está vendo o checkout? Abrir em nova aba
+      </a>
     </div>
   );
 }
