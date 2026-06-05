@@ -1,0 +1,181 @@
+%%{init: {'theme':'base', 'themeVariables': {
+  'primaryColor':'#16264D',
+  'primaryTextColor':'#FFFFFF',
+  'primaryBorderColor':'#FFD60A',
+  'lineColor':'#FFD60A',
+  'secondaryColor':'#0B1A38',
+  'tertiaryColor':'#1A2F66',
+  'fontFamily':'Helvetica, Arial, sans-serif',
+  'fontSize':'14px'
+}}}%%
+flowchart TD
+
+subgraph CAPT["🌐 FASE 1 — CAPTAÇÃO"]
+    direction TB
+    A1["👤 Aluna descobre o produto<br/>Ads · Orgânico · Indicação"]
+    A2["Página /vendas<br/>(estática)"]
+    A3{"Convencida?"}
+    A4["🎰 Modal Exit-Intent<br/>Roleta cupom VOLANTE10"]
+    A5["❌ Lead perdido"]
+    A1 --> A2
+    A2 --> A3
+    A3 -->|Sai sem comprar| A4
+    A4 -->|Pega cupom| B1
+    A4 -->|Fecha| A5
+    A3 -->|Clica CTA| B1
+end
+
+subgraph CHK["💳 FASE 2 — CHECKOUT EDUZZ"]
+    direction TB
+    B1["Scroll suave até<br/>seção #checkout"]
+    B2["Checkout Eduzz embedado<br/>bridge.js inline"]
+    B3["Preenche nome, e-mail,<br/>CPF, telefone"]
+    B4{"Aplica cupom?"}
+    B5["VOLANTE10 ou<br/>cupom de cashback"]
+    B6{"Order bumps?<br/>Mapa · Balizas · Marchas"}
+    B7["Marca extras +R$ X"]
+    B8["💳 Paga<br/>Cartão · Pix · Boleto"]
+    B9{"Aprovou?"}
+    B10["❌ Eduzz cancela"]
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+    B4 -->|Sim| B5
+    B5 --> B6
+    B4 -->|Não| B6
+    B6 -->|Sim| B7
+    B7 --> B8
+    B6 -->|Não| B8
+    B8 --> B9
+    B9 -->|Não| B10
+    B9 -->|Sim| C1
+end
+
+subgraph BACK["⚙️ FASE 3 — BACKEND AUTOMÁTICO"]
+    direction TB
+    C1["Eduzz dispara<br/>POSTBACK 2.0"]
+    C2["Netlify Function<br/>eduzz-webhook (proxy)<br/>adiciona apikey Supabase"]
+    C3["Supabase Edge Function<br/>eduzz-webhook v14"]
+    C4["Extrai email, produto,<br/>nome, telefone"]
+    C5["RPC find_groups_for_eduzz_product<br/>localiza grupo"]
+    C6{"User existe<br/>no banco?"}
+    C7["auth.admin.createUser<br/>senha aleatória 64 chars"]
+    C8["Triggers automáticos:<br/>handle_new_user<br/>cria profile e user_progress"]
+    C9["Aplica grupo direto em<br/>access_group_users"]
+    C10["Gera token único<br/>first_access_tokens<br/>válido 7 dias, uso único"]
+    C11["📧 Brevo SMTP API<br/>template Primeiro Acesso"]
+    C12["📱 WhatsApp Cloud API<br/>se telefone presente"]
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+    C4 --> C5
+    C5 --> C6
+    C6 -->|Não| C7
+    C7 --> C8
+    C8 --> C9
+    C6 -->|Sim| C9
+    C9 --> C10
+    C10 --> C11
+    C11 --> C12
+end
+
+subgraph FIRST["🎉 FASE 4 — PRIMEIRO ACESSO"]
+    direction TB
+    D1["📥 Aluna recebe<br/>email do Brevo"]
+    D2["Clica botão amarelo<br/>Criar senha e entrar"]
+    D3["Página /primeiro-acesso?token=XYZ"]
+    D4["React valida token<br/>via edge function<br/>action=validate"]
+    D5{"Token válido?"}
+    D6["⚠️ Mensagem clara<br/>redireciona pra /login"]
+    D7["🎉 PARABÉNS, NOME!<br/>canvas-confetti<br/>+ vídeo Vimeo Carla<br/>+ onboarding 3 passos"]
+    D8["Aluna cria senha<br/>mín 8 chars + 1 número"]
+    D9["Edge function first-access<br/>action=set_password<br/>+ consume token"]
+    D10["auth.signInWithPassword<br/>cria sessão Supabase"]
+    D11["Redirect /biblioteca"]
+    C12 --> D1
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+    D4 --> D5
+    D5 -->|Não| D6
+    D5 -->|Sim| D7
+    D7 --> D8
+    D8 --> D9
+    D9 --> D10
+    D10 --> D11
+end
+
+subgraph AREA["🚗 FASE 5 — ÁREA DE MEMBROS"]
+    direction TB
+    E1["Vê grid de cursos"]
+    E2["✅ Liberados COLORIDOS"]
+    E3["🔒 Trancados P&B<br/>com Saiba mais"]
+    E4["Player Panda Video<br/>com DRM"]
+    E5["📖 Assiste aulas"]
+    E6["💰 Ganha XP e moedas<br/>missões + roleta diária<br/>+ comunidade"]
+    E7{"Tem moedas<br/>pra cashback?"}
+    E8["Clica nas moedas no header<br/>abre modal Cashback"]
+    E9["Gera cupom MDDNM-XXXX"]
+    E10["💬 Botão Ativar via WhatsApp<br/>wa.me/equipe"]
+    E11["Equipe cria cupom real<br/>na Eduzz com mesmo código"]
+    D11 --> E1
+    E1 --> E2
+    E1 --> E3
+    E2 -->|Clica| E4
+    E4 --> E5
+    E5 --> E6
+    E6 --> E7
+    E7 -->|Sim| E8
+    E8 --> E9
+    E9 --> E10
+    E10 --> E11
+end
+
+subgraph UPSELL["💵 FASE 6 — NOVA COMPRA (UPSELL)"]
+    direction TB
+    F1["Página /curso-info/:id<br/>página de venda interna<br/>com cashback hint"]
+    F2["Checkout Eduzz embedado<br/>STICKY no desktop"]
+    F3["Cola cupom se tiver<br/>ou paga direto"]
+    F4["Eduzz POSTBACK<br/>chama Webhook v14"]
+    F5["user_existed=TRUE<br/>aplica grupo direto"]
+    F6["❌ NÃO envia email<br/>primeiro acesso<br/>aluna já tem conta"]
+    F7["✅ Curso desbloqueado<br/>automaticamente"]
+    F8["Aluna refresh /biblioteca<br/>curso aparece colorido"]
+    E3 -->|Clica| F1
+    E11 --> F3
+    F1 --> F2
+    F2 --> F3
+    F3 --> F4
+    F4 --> F5
+    F5 --> F6
+    F6 --> F7
+    F7 --> F8
+    F8 --> E2
+end
+
+classDef phaseCapt fill:#1E3A5F,stroke:#FFD60A,color:#FFFFFF
+classDef phaseCheckout fill:#7A5C00,stroke:#FFD60A,color:#FFFFFF
+classDef phaseBackend fill:#2A2A2A,stroke:#FFD60A,color:#FFFFFF
+classDef phaseFirst fill:#0F4D2A,stroke:#FFD60A,color:#FFFFFF
+classDef phaseArea fill:#16264D,stroke:#FFD60A,color:#FFFFFF
+classDef phaseUpsell fill:#7A5C00,stroke:#FFD60A,color:#FFFFFF
+classDef ko fill:#7A1B1B,stroke:#fff,color:#FFFFFF
+classDef ok fill:#0F4D2A,stroke:#22c55e,color:#FFFFFF
+classDef money fill:#FFD60A,stroke:#0B1A38,color:#0B1A38
+
+class A1,A2,A3,A4 phaseCapt
+class A5,B10,D6 ko
+class B1,B2,B3,B4,B5,B6,B7,B9 phaseCheckout
+class C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12 phaseBackend
+class D1,D2,D3,D4,D5,D7,D8,D9,D10 phaseFirst
+class D11,E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,E11 phaseArea
+class F1,F2,F3,F4,F5,F6 phaseUpsell
+class F7,F8 ok
+class B8 money
+
+style CAPT fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px
+style CHK fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px
+style BACK fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px
+style FIRST fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px
+style AREA fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px
+style UPSELL fill:#0B1A38,stroke:#FFD60A,color:#FFD60A,stroke-width:2px

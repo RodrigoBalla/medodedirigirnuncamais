@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fluxograma Geral — Medo de Dirigir Nunca Mais</title>
+<style>
+  :root {
+    --navy: #0B1A38;
+    --navy-2: #16264D;
+    --amarelo: #FFD60A;
+    --texto: #FFFFFF;
+    --muted: #8B92A8;
+    --rio-1: #F472B6;  /* compra → acesso */
+    --rio-2: #38BDF8;  /* engajamento email */
+    --rio-3: #25D366;  /* suporte */
+    --rio-4: #EF4444;  /* acesso expirado */
+    --rio-5: #A78BFA;  /* admin notifica */
+    --rio-6: #FB923C;  /* automatizações */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--texto);
+    font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 32px 16px 64px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1600px; margin: 0 auto; }
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed rgba(255,214,10,.25);
+  }
+  .header .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--amarelo);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .caution {
+    height: 6px;
+    width: 100%;
+    background-image: repeating-linear-gradient(-45deg,#000 0,#000 12px,var(--amarelo) 12px,var(--amarelo) 24px);
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  /* Cada rio é uma faixa horizontal */
+  .rio {
+    background: var(--navy-2);
+    border-left: 6px solid;
+    border-radius: 12px;
+    padding: 18px 20px 18px 24px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .rio-1 { border-left-color: var(--rio-1); }
+  .rio-2 { border-left-color: var(--rio-2); }
+  .rio-3 { border-left-color: var(--rio-3); }
+  .rio-4 { border-left-color: var(--rio-4); }
+  .rio-5 { border-left-color: var(--rio-5); }
+  .rio-6 { border-left-color: var(--rio-6); }
+
+  .rio-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .rio-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .rio-1 .rio-num { background: var(--rio-1); }
+  .rio-2 .rio-num { background: var(--rio-2); }
+  .rio-3 .rio-num { background: var(--rio-3); }
+  .rio-4 .rio-num { background: var(--rio-4); }
+  .rio-5 .rio-num { background: var(--rio-5); }
+  .rio-6 .rio-num { background: var(--rio-6); }
+  .rio-title {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: -.01em;
+  }
+  .rio-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* Sequência de steps */
+  .steps {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .step {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    flex: 1;
+    min-width: 150px;
+    max-width: 220px;
+    font-size: 11px;
+  }
+  .step-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+    display: block;
+    line-height: 1;
+  }
+  .step-title {
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 2px;
+    line-height: 1.2;
+  }
+  .step-desc {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .step code {
+    background: rgba(0,0,0,.4);
+    color: var(--amarelo);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-family: 'Consolas', monospace;
+  }
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amarelo);
+    font-size: 20px;
+    flex-shrink: 0;
+    padding: 0 6px;
+    font-weight: 900;
+  }
+
+  /* Branch (quando o caminho se divide) */
+  .branch {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 150px;
+    max-width: 220px;
+  }
+  .branch .step { max-width: none; }
+  .branch-tag {
+    font-size: 9px;
+    color: var(--amarelo);
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding-left: 4px;
+    margin-bottom: -2px;
+  }
+
+  /* Highlight pra step terminal positivo */
+  .step.terminal {
+    background: linear-gradient(135deg, rgba(255,214,10,.12), rgba(255,214,10,.02));
+    border-color: var(--amarelo);
+  }
+  .step.terminal .step-title { color: var(--amarelo); }
+
+  /* Highlight pra ação automática */
+  .step.auto::after {
+    content: "⚙ auto";
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 8px;
+    color: var(--amarelo);
+    background: rgba(255,214,10,.1);
+    padding: 1px 5px;
+    border-radius: 4px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    font-weight: 900;
+  }
+  .step.auto { position: relative; }
+
+  /* Legenda */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin: 28px 0 24px;
+    padding: 14px;
+    background: rgba(255,255,255,.03);
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dashed rgba(255,214,10,.2);
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  .footer strong { color: #fff; }
+  .footer code {
+    background: rgba(255,255,255,.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--amarelo);
+    font-family: 'Consolas', monospace;
+    font-size: 10px;
+  }
+
+  /* Responsivo: telas menores */
+  @media (max-width: 1100px) {
+    .steps { gap: 6px; }
+    .arrow { display: none; }
+    .step { min-width: 140px; }
+  }
+  @media (max-width: 700px) {
+    .steps { flex-direction: column; gap: 6px; }
+    .step, .branch { max-width: 100%; }
+  }
+
+  /* Print */
+  @media print {
+    body { background: white; color: var(--navy); padding: 0; }
+    .rio { background: #f5f5f5; }
+    .step { background: white; }
+    .step-title, .rio-title, .header h1 { color: var(--navy) !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="caution"></div>
+
+  <div class="header">
+    <span class="tag">🚗 Sistema completo · MDNM</span>
+    <h1>Fluxograma Geral — Todos os Casos</h1>
+    <p>Cada faixa abaixo é uma jornada que a aluna (ou admin) pode percorrer. Tudo conectado, tudo automatizado.</p>
+  </div>
+
+  <!-- Legenda -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-1)"></span> Compra → Acesso</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-2)"></span> Engajamento por email</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-3)"></span> Suporte (sem acesso)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-4)"></span> Acesso expirado</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-5)"></span> Admin notifica</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--rio-6)"></span> Automações no tempo</div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 1: Compra → Liberação automática de acesso                     -->
+  <!-- ================================================================== -->
+  <div class="rio rio-1">
+    <div class="rio-header">
+      <div class="rio-num">1</div>
+      <div>
+        <div class="rio-title">Compra → Acesso liberado automaticamente</div>
+        <div class="rio-sub">Da aluna clicar em "Comprar" na Eduzz até estar dentro da área de membros</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-icon">🛒</span>
+        <div class="step-title">Aluna compra</div>
+        <div class="step-desc">Checkout Eduzz (1 dos 5 produtos)</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">🪝</span>
+        <div class="step-title">Webhook Eduzz</div>
+        <div class="step-desc">Postback 2.0 → <code>eduzz-webhook</code> v16</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">👤</span>
+        <div class="step-title">Cria conta + libera grupo</div>
+        <div class="step-desc">Supabase Auth + 12 meses de acesso</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">📧</span>
+        <div class="step-title">Email primeiro acesso</div>
+        <div class="step-desc">Brevo · token único · WhatsApp em paralelo</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">🎉</span>
+        <div class="step-title">Aluna clica no email</div>
+        <div class="step-desc">Confetti + vídeo Carla + cria senha</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step terminal">
+        <span class="step-icon">🏎️</span>
+        <div class="step-title">Auto-login</div>
+        <div class="step-desc">Dentro da área de membros</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 2: Engajamento por email                                        -->
+  <!-- ================================================================== -->
+  <div class="rio rio-2">
+    <div class="rio-header">
+      <div class="rio-num">2</div>
+      <div>
+        <div class="rio-title">Engajamento por email → XP automático</div>
+        <div class="rio-sub">Cada email aberto ou clicado vira recompensa visível no app</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-icon">📧</span>
+        <div class="step-title">Aluna recebe email</div>
+        <div class="step-desc">Qualquer email Brevo (1º acesso, cadência, etc.)</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="branch">
+        <span class="branch-tag">↗ abre</span>
+        <div class="step auto">
+          <span class="step-icon">👀</span>
+          <div class="step-title">+50 XP</div>
+          <div class="step-desc">brevo-webhook v3 credita</div>
+        </div>
+        <span class="branch-tag">↘ clica</span>
+        <div class="step auto">
+          <span class="step-icon">🖱️</span>
+          <div class="step-title">+150 XP</div>
+          <div class="step-desc">No mesmo evento</div>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">💎</span>
+        <div class="step-title">DB atualiza</div>
+        <div class="step-desc"><code>coin_transactions</code> + <code>user_progress</code></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">🚪</span>
+        <div class="step-title">Aluna entra no app</div>
+        <div class="step-desc">Qualquer tela após login</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step terminal">
+        <span class="step-icon">🎊</span>
+        <div class="step-title">Toast "+200 XP"</div>
+        <div class="step-desc">"Você ganhou XP por engajar com nossos emails!"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 3: Suporte — aluna sem acesso                                   -->
+  <!-- ================================================================== -->
+  <div class="rio rio-3">
+    <div class="rio-header">
+      <div class="rio-num">3</div>
+      <div>
+        <div class="rio-title">Aluna sem acesso → Chat de suporte → 2 emails</div>
+        <div class="rio-sub">Em /login: chat verde flutuante. Confirma pra aluna E notifica admin</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-icon">😕</span>
+        <div class="step-title">Aluna não loga</div>
+        <div class="step-desc">Esqueceu senha / não recebeu email</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">💬</span>
+        <div class="step-title">Clica no chat</div>
+        <div class="step-desc">Botão verde no canto da tela</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">📝</span>
+        <div class="step-title">Preenche formulário</div>
+        <div class="step-desc">Nome + email + telefone</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">⚡</span>
+        <div class="step-title">Salva chamado</div>
+        <div class="step-desc"><code>support_requests</code> no banco</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="branch">
+        <span class="branch-tag">↗ pra admin</span>
+        <div class="step auto">
+          <span class="step-icon">📨</span>
+          <div class="step-title">Email pra Carla/Balla</div>
+          <div class="step-desc">Botão "Responder no WhatsApp →" pronto</div>
+        </div>
+        <span class="branch-tag">↘ pra aluna</span>
+        <div class="step auto">
+          <span class="step-icon">✅</span>
+          <div class="step-title">Email pra aluna</div>
+          <div class="step-desc">Confirmação visual + ID do chamado</div>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step terminal">
+        <span class="step-icon">📱</span>
+        <div class="step-title">Carla resolve no WhatsApp</div>
+        <div class="step-desc">Reset de senha, link de acesso, etc.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 4: Acesso expirado (12 meses passaram)                          -->
+  <!-- ================================================================== -->
+  <div class="rio rio-4">
+    <div class="rio-header">
+      <div class="rio-num">4</div>
+      <div>
+        <div class="rio-title">12 meses passaram → Acesso expira</div>
+        <div class="rio-sub">Sistema bloqueia automaticamente e mostra tela de renovação</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step auto">
+        <span class="step-icon">⏰</span>
+        <div class="step-title">Cron diário</div>
+        <div class="step-desc">pg_cron varre <code>expires_at</code> &lt; hoje</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">🔒</span>
+        <div class="step-title">Status → expired</div>
+        <div class="step-desc"><code>profiles.access_status</code></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">🔑</span>
+        <div class="step-title">Aluna tenta entrar</div>
+        <div class="step-desc">Faz login normal — vê app</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">🚧</span>
+        <div class="step-title">AppLayout bloqueia</div>
+        <div class="step-desc">Mostra <code>AccessExpiredScreen</code></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="branch">
+        <span class="branch-tag">↗ renova</span>
+        <div class="step terminal">
+          <span class="step-icon">🛒</span>
+          <div class="step-title">Volta pra Eduzz</div>
+          <div class="step-desc">Compra novamente → Rio 1</div>
+        </div>
+        <span class="branch-tag">↘ suporte</span>
+        <div class="step terminal">
+          <span class="step-icon">💬</span>
+          <div class="step-title">WhatsApp Carla</div>
+          <div class="step-desc">Conversa direto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 5: Admin → Notificação em massa                                 -->
+  <!-- ================================================================== -->
+  <div class="rio rio-5">
+    <div class="rio-header">
+      <div class="rio-num">5</div>
+      <div>
+        <div class="rio-title">Admin tem novidade no curso → Avisa todas as alunas</div>
+        <div class="rio-sub">Aula nova, módulo novo, qualquer atualização</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-icon">📚</span>
+        <div class="step-title">Admin abre /admin → Notificações</div>
+        <div class="step-desc">Escolhe o curso + escreve título + mensagem</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="step-icon">📢</span>
+        <div class="step-title">"Enviar pra X alunas"</div>
+        <div class="step-desc">Mostra contagem ativas/expiradas</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">⚡</span>
+        <div class="step-title">Edge function dispara</div>
+        <div class="step-desc"><code>send-course-notification</code> · batches de 50</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">📧</span>
+        <div class="step-title">Email Brevo pra cada aluna</div>
+        <div class="step-desc">Template "novidade-curso" · com botão "Acessar agora →"</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step terminal">
+        <span class="step-icon">📊</span>
+        <div class="step-title">Histórico salvo</div>
+        <div class="step-desc">Aba "Histórico" mostra todas as notificações disparadas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- RIO 6: Automações no tempo                                          -->
+  <!-- ================================================================== -->
+  <div class="rio rio-6">
+    <div class="rio-header">
+      <div class="rio-num">6</div>
+      <div>
+        <div class="rio-title">Automações no tempo — pg_cron dispara sozinho</div>
+        <div class="rio-sub">4 cron jobs rodando 24/7 pra manter as alunas engajadas</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step auto">
+        <span class="step-icon">📚</span>
+        <div class="step-title">Aula nova</div>
+        <div class="step-desc">Admin sobe aula → debounce 1h → email auto pras alunas do curso</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">💰</span>
+        <div class="step-title">Cadência upsell</div>
+        <div class="step-desc">3 variações por produto · FSM em <code>email_cadences</code></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">💔</span>
+        <div class="step-title">"Sentimos sua falta"</div>
+        <div class="step-desc">7+ dias inativa</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step auto">
+        <span class="step-icon">⏰</span>
+        <div class="step-title">"CNH suspensa"</div>
+        <div class="step-desc">30 dias antes do acesso expirar</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step terminal">
+        <span class="step-icon">🔁</span>
+        <div class="step-title">Volta pro Rio 2</div>
+        <div class="step-desc">Email aberto/clicado → +XP → toast</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p><strong>10 edge functions ativas · 1 single banco · 1 single SPA · auto-deploy via GitHub Actions</strong></p>
+    <p style="margin-top:10px">
+      A regra de ouro: <code>toda mudança aqui se aplica pra TODAS as alunas</code>
+    </p>
+    <p style="margin-top:14px;font-size:10px">
+      Atualizado em 13/05/2026 · medodedirigirnuncamais.netlify.app
+    </p>
+  </div>
+
+  <div class="caution" style="margin-top:24px;margin-bottom:0"></div>
+</div>
+
+</body>
+</html>

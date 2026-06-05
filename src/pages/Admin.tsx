@@ -331,6 +331,59 @@ export default function Admin() {
     fetchStudents();
   }
 
+  // ─── Primeiro acesso: copiar link + reenviar email ───────────────────
+  // Chama edge function admin-first-access que:
+  //   1) Reutiliza token ativo (não usado e não expirado) ou cria um novo
+  //   2) Retorna a URL completa (action=get_link) OU envia email via Brevo
+  //      reutilizando o mesmo template do webhook Eduzz (action=resend_email)
+  // Estado de loading por aluno + por ação pra mostrar spinner no botão certo.
+  const [firstAccessBusy, setFirstAccessBusy] = useState<Record<string, "copy" | "email" | null>>({});
+  async function copyFirstAccessLink(userId: string) {
+    setFirstAccessBusy((p) => ({ ...p, [userId]: "copy" }));
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-first-access", {
+        body: { action: "get_link", user_id: userId },
+      });
+      if (error || !data?.link) {
+        toast.error("Não consegui gerar o link", { description: error?.message || data?.error || "Tente de novo" });
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(data.link);
+        toast.success("Link copiado!", { description: "Cole onde quiser. Expira em 7 dias.", duration: 4000 });
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = data.link;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        toast.success("Link copiado!", { description: "Cole onde quiser. Expira em 7 dias.", duration: 4000 });
+      }
+    } finally {
+      setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
+    }
+  }
+
+  async function resendFirstAccessEmail(userId: string, email: string | null) {
+    setFirstAccessBusy((p) => ({ ...p, [userId]: "email" }));
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-first-access", {
+        body: { action: "resend_email", user_id: userId },
+      });
+      if (error || !data?.ok) {
+        toast.error("Não consegui reenviar o email", { description: error?.message || data?.reason || "Tente de novo" });
+        return;
+      }
+      toast.success("Email de primeiro acesso reenviado!", {
+        description: email ? `Pra ${email}` : "Aluno deve receber em alguns segundos",
+        duration: 4500,
+      });
+    } finally {
+      setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
+    }
+  }
+
   async function updateStudentField(userId: string, field: string, value: any) {
     const { error } = await supabase
       .from("user_progress")
@@ -798,6 +851,36 @@ export default function Admin() {
                               {s.access_status === "expired" ? "verified" : "schedule"}
                             </span>
                             {s.access_status === "expired" ? "Reativar acesso" : "Marcar expirada"}
+                          </button>
+
+                          {/* Copiar link de primeiro acesso */}
+                          <button
+                            onClick={() => copyFirstAccessLink(s.user_id)}
+                            disabled={firstAccessBusy[s.user_id] === "copy"}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Gera/recupera o token de primeiro acesso e copia a URL pro clipboard (válida por 7 dias)"
+                          >
+                            {firstAccessBusy[s.user_id] === "copy" ? (
+                              <span className="size-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <span className="material-symbols-outlined text-base">link</span>
+                            )}
+                            Copiar link
+                          </button>
+
+                          {/* Reenviar email de primeiro acesso */}
+                          <button
+                            onClick={() => resendFirstAccessEmail(s.user_id, s.email)}
+                            disabled={firstAccessBusy[s.user_id] === "email"}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Reenvia o email transacional com o link de primeiro acesso"
+                          >
+                            {firstAccessBusy[s.user_id] === "email" ? (
+                              <span className="size-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <span className="material-symbols-outlined text-base">forward_to_inbox</span>
+                            )}
+                            Reenviar email
                           </button>
 
                           {/* Adicionar a grupo — dropdown alinhado ao design system */}
