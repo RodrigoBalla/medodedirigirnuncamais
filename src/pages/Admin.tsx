@@ -338,27 +338,73 @@ export default function Admin() {
   //      reutilizando o mesmo template do webhook Eduzz (action=resend_email)
   // Estado de loading por aluno + por ação pra mostrar spinner no botão certo.
   const [firstAccessBusy, setFirstAccessBusy] = useState<Record<string, "copy" | "email" | null>>({});
+  // Modal de fallback: aparece quando o copy automático falha (user gesture
+  // perdido após await na chamada da edge function). O admin clica "Copiar"
+  // dentro do modal — gesture fresco → clipboard.writeText funciona.
+  const [firstAccessLinkModal, setFirstAccessLinkModal] = useState<string | null>(null);
+
+  // Helper: tenta copiar pro clipboard usando a API moderna primeiro
+  // e o fallback via textarea + execCommand depois. Retorna boolean.
+  // Antes a função silenciava o `execCommand("copy")` que retornava false
+  // (deprecated em browsers modernos) — agora a gente confere e propaga.
+  async function tryCopyToClipboard(text: string): Promise<boolean> {
+    if (!text) return false;
+    // 1) API moderna — pode falhar se user gesture activation expirou
+    //    durante o await da edge function
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) {
+      console.warn("[copyLink] clipboard.writeText falhou:", err);
+    }
+    // 2) Fallback textarea + execCommand — CHECA o retorno (era o bug)
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.left = "0";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok === true;
+    } catch (err) {
+      console.warn("[copyLink] execCommand falhou:", err);
+      return false;
+    }
+  }
+
   async function copyFirstAccessLink(userId: string) {
     setFirstAccessBusy((p) => ({ ...p, [userId]: "copy" }));
     try {
       const { data, error } = await supabase.functions.invoke("admin-first-access", {
         body: { action: "get_link", user_id: userId },
       });
-      if (error || !data?.link) {
-        toast.error("Não consegui gerar o link", { description: error?.message || data?.error || "Tente de novo" });
+      // Valida resposta: precisa de string não vazia
+      const link = typeof data?.link === "string" ? data.link.trim() : "";
+      if (error || !link) {
+        toast.error("Não consegui gerar o link", {
+          description: error?.message || data?.error || "Resposta vazia do servidor",
+        });
         return;
       }
-      try {
-        await navigator.clipboard.writeText(data.link);
-        toast.success("Link copiado!", { description: "Cole onde quiser. Expira em 7 dias.", duration: 4000 });
-      } catch {
-        const ta = document.createElement("textarea");
-        ta.value = data.link;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        toast.success("Link copiado!", { description: "Cole onde quiser. Expira em 7 dias.", duration: 4000 });
+      const copied = await tryCopyToClipboard(link);
+      if (copied) {
+        toast.success("Link copiado!", {
+          description: "Cole onde quiser. Expira em 7 dias.",
+          duration: 4000,
+        });
+      } else {
+        // Clipboard bloqueado (user gesture perdido). Mostra modal com
+        // o link visível + botão "Copiar" que dispara com gesture novo.
+        setFirstAccessLinkModal(link);
       }
     } finally {
       setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
@@ -1200,6 +1246,69 @@ export default function Admin() {
                       >
                         {confirmModal.confirmLabel}
                       </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Modal de fallback do copiar link de primeiro acesso.
+                  Aparece quando o copy automático falha (user gesture perdido).
+                  O botão "Copiar" aqui dispara com gesture fresco, então funciona. */}
+              {firstAccessLinkModal && (
+                <div
+                  className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
+                  onClick={() => setFirstAccessLinkModal(null)}
+                >
+                  <div
+                    className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="text-center mb-5">
+                      <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                        <span className="material-symbols-outlined text-primary text-2xl">link</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Link de primeiro acesso</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Clica em "Copiar" abaixo. Expira em 7 dias.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <textarea
+                        readOnly
+                        value={firstAccessLinkModal}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-xs font-mono break-all resize-none focus:outline-none focus:border-primary"
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setFirstAccessLinkModal(null)}
+                          className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-colors"
+                        >
+                          Fechar
+                        </button>
+                        <button
+                          onClick={async () => {
+                            // Gesture fresco aqui — clipboard funciona
+                            const ok = await tryCopyToClipboard(firstAccessLinkModal);
+                            if (ok) {
+                              toast.success("Link copiado!", {
+                                description: "Cole onde quiser. Expira em 7 dias.",
+                                duration: 4000,
+                              });
+                              setFirstAccessLinkModal(null);
+                            } else {
+                              toast.error("Não consegui copiar automaticamente", {
+                                description: "Seleciona o link no campo acima e copia com Ctrl+C.",
+                              });
+                            }
+                          }}
+                          className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <span className="material-symbols-outlined text-base">content_copy</span>
+                          Copiar
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
