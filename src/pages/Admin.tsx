@@ -14,6 +14,7 @@ import { CommentsModeration } from "@/components/admin/CommentsModeration";
 import NotificationsManager from "@/components/admin/NotificationsManager";
 import StudentEmailMetrics from "@/components/admin/StudentEmailMetrics";
 import { PhoneEditor } from "@/components/admin/PhoneEditor";
+import { StudentAccessPreview } from "@/components/admin/StudentAccessPreview";
 
 type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications";
 
@@ -62,6 +63,8 @@ export default function Admin() {
   const [editModal, setEditModal] = useState<EditModal | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  // Espelho read-only "Visualizar como aluno"
+  const [viewAsUser, setViewAsUser] = useState<{ id: string; name: string } | null>(null);
   // user_id do aluno cujo dropdown "Adicionar a grupo" está aberto
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
   // Modal de confirmação customizado (substitui confirm() nativo)
@@ -861,6 +864,16 @@ export default function Admin() {
 
                         {/* Barra de ações rápidas — cores do design system */}
                         <div className="flex flex-wrap gap-2 mb-3">
+                          {/* Visualizar como aluno — espelho read-only do acesso */}
+                          <button
+                            onClick={() => setViewAsUser({ id: s.user_id, name: s.display_name })}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+                            title="Ver exatamente o que esse aluno vê (cursos liberados/trancados, status, progresso) — sem alterar nada"
+                          >
+                            <span className="material-symbols-outlined text-base">visibility</span>
+                            Visualizar como aluno
+                          </button>
+
                           {/* Toggle ativo/inativo */}
                           <button
                             onClick={() => toggleStudentBlocked(s.user_id, s.is_blocked, s.display_name)}
@@ -1434,6 +1447,14 @@ export default function Admin() {
                     </form>
                   </div>
                 </div>
+              )}
+              {/* Visualizar como aluno — espelho read-only do acesso */}
+              {viewAsUser && (
+                <StudentAccessPreview
+                  userId={viewAsUser.id}
+                  fallbackName={viewAsUser.name}
+                  onClose={() => setViewAsUser(null)}
+                />
               )}
             </div>
           )}
