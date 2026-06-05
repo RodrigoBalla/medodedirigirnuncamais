@@ -24,6 +24,13 @@ interface NotificationLog {
 type AccessStatus = "all" | "active" | "expired";
 type Mode = "text" | "html";
 
+interface Template {
+  id: string; name: string; subject: string; mode: Mode;
+  product_id: string | null; title: string | null; body: string | null; html: string | null;
+  include_group_ids: string[] | null; exclude_group_ids: string[] | null;
+  access_status: AccessStatus; updated_at: string;
+}
+
 const SUPABASE_URL = "https://qkvinhzwiptfobdvsdtr.supabase.co";
 
 const HTML_PLACEHOLDER = `<div style="font-family:Arial,sans-serif;background:#0B1A38;color:#fff;padding:32px;border-radius:16px;max-width:560px;margin:0 auto">
@@ -40,8 +47,10 @@ export default function NotificationsManager() {
   const [products, setProducts] = useState<Product[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [history, setHistory] = useState<NotificationLog[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [savingTpl, setSavingTpl] = useState(false);
 
   // ── Segmentação ──
   const [includeGroups, setIncludeGroups] = useState<string[]>([]);
@@ -61,15 +70,18 @@ export default function NotificationsManager() {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [prodRes, grpRes, histRes] = await Promise.all([
+    const [prodRes, grpRes, histRes, tplRes] = await Promise.all([
       supabase.from("products").select("id, title, status, image_url").order("title"),
       supabase.from("access_groups").select("id, name").order("name"),
       // @ts-ignore — RPC
       supabase.rpc("admin_list_course_notifications", { p_limit: 30 }),
+      // @ts-ignore — RPC
+      supabase.rpc("admin_list_notification_templates"),
     ]);
     setProducts((prodRes.data as Product[]) || []);
     setGroups((grpRes.data as Group[]) || []);
     setHistory((histRes.data as unknown as NotificationLog[]) || []);
+    setTemplates((tplRes.data as unknown as Template[]) || []);
     setLoading(false);
   }, []);
 
@@ -94,6 +106,63 @@ export default function NotificationsManager() {
 
   function toggle(list: string[], setList: (v: string[]) => void, id: string) {
     setList(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  }
+
+  // ── Templates ──
+  function loadTemplate(t: Template) {
+    setSubject(t.subject || "");
+    setMode(t.mode === "html" ? "html" : "text");
+    setProductId(t.product_id || "");
+    setTitle(t.title || "");
+    setBody(t.body || "");
+    if (t.mode === "html" && t.html) setHtml(t.html);
+    setIncludeGroups(t.include_group_ids || []);
+    setExcludeGroups(t.exclude_group_ids || []);
+    setAccessStatus((t.access_status as AccessStatus) || "all");
+    toast.success(`Template "${t.name}" carregado`, { description: "Ajuste o que quiser e dispare." });
+  }
+
+  async function refreshTemplates() {
+    const { data } = await supabase.rpc("admin_list_notification_templates" as never);
+    setTemplates((data as unknown as Template[]) || []);
+  }
+
+  async function saveTemplate(opts?: { silent?: boolean }) {
+    const name = subject.trim();
+    if (name.length < 3) {
+      if (!opts?.silent) toast.error("Preencha o assunto", { description: "O assunto vira o nome do template." });
+      return;
+    }
+    setSavingTpl(true);
+    try {
+      const { error } = await supabase.rpc("admin_save_notification_template", {
+        p_name: name,
+        p_subject: name,
+        p_mode: mode,
+        p_product_id: productId || null,
+        p_title: mode === "text" ? title.trim() : null,
+        p_body: mode === "text" ? body.trim() : null,
+        p_html: mode === "html" ? html : null,
+        p_include_group_ids: includeGroups.length ? includeGroups : null,
+        p_exclude_group_ids: excludeGroups.length ? excludeGroups : null,
+        p_access_status: accessStatus,
+      } as never);
+      if (error) {
+        if (!opts?.silent) toast.error("Erro ao salvar template", { description: error.message });
+        return;
+      }
+      if (!opts?.silent) toast.success("Template salvo!", { description: `"${name}" disponível pra reusar.` });
+      await refreshTemplates();
+    } finally {
+      setSavingTpl(false);
+    }
+  }
+
+  async function deleteTemplate(id: string, name: string) {
+    const { error } = await supabase.rpc("admin_delete_notification_template", { p_id: id } as never);
+    if (error) { toast.error("Erro ao excluir template"); return; }
+    setTemplates((ts) => ts.filter((t) => t.id !== id));
+    toast.success(`Template "${name}" excluído`);
   }
 
   const canSubmit = useMemo(() => {
@@ -141,9 +210,10 @@ export default function NotificationsManager() {
         return;
       }
       toast.success(`Email enviado pra ${data.succeeded}/${data.attempted} alunas`, {
-        description: data.failed > 0 ? `${data.failed} falharam — verifica os logs` : "Tudo certo!",
+        description: data.failed > 0 ? `${data.failed} falharam — verifica os logs` : "Salvo como template ✓",
         duration: 6000,
       });
+      await saveTemplate({ silent: true }); // todo envio vira template reutilizável
       setTitle(""); setBody(""); setSubject("");
       await loadAll();
     } catch (e: any) {
@@ -167,6 +237,32 @@ export default function NotificationsManager() {
           Dispare email em massa com <strong>regras de segmentação</strong> (ex: alunas do grupo X que ainda não têm o Y) e corpo em <strong>texto</strong> ou <strong>HTML personalizado</strong>.
         </p>
       </div>
+
+      {/* ── TEMPLATES SALVOS ── */}
+      {templates.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-3">
+          <div>
+            <p className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg">bookmark</span> Templates salvos
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Clique pra carregar no formulário. Todo e-mail enviado é salvo aqui automaticamente.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {templates.map((t) => (
+              <div key={t.id} className="inline-flex items-center gap-1 bg-background border border-border rounded-lg pl-3 pr-1 py-1 hover:border-primary/40 transition">
+                <button type="button" onClick={() => loadTemplate(t)} className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <span className="material-symbols-outlined text-sm text-muted-foreground">{t.mode === "html" ? "code" : "description"}</span>
+                  <span className="max-w-[220px] truncate">{t.name}</span>
+                </button>
+                <button type="button" onClick={() => deleteTemplate(t.id, t.name)} aria-label="Excluir template"
+                  className="shrink-0 size-6 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── PÚBLICO / REGRAS ── */}
       <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-5">
@@ -314,14 +410,21 @@ export default function NotificationsManager() {
           </>
         )}
 
-        <button onClick={send} disabled={!canSubmit}
-          className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black px-6 py-3.5 rounded-xl shadow-lg shadow-primary/20 uppercase tracking-widest text-xs hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-          {sending ? (
-            <><span className="material-symbols-outlined animate-spin text-base">progress_activity</span> Enviando pra {recipientCount} alunas…</>
-          ) : (
-            <><span className="material-symbols-outlined text-base">send</span> Enviar pra {recipientCount ?? 0} aluna{recipientCount === 1 ? "" : "s"}</>
-          )}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={() => saveTemplate()} disabled={savingTpl || subject.trim().length < 3}
+            className="sm:w-auto inline-flex items-center justify-center gap-2 bg-background border border-border text-foreground font-bold px-5 py-3.5 rounded-xl text-xs hover:border-primary/40 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <span className="material-symbols-outlined text-base">{savingTpl ? "progress_activity" : "bookmark_add"}</span>
+            {savingTpl ? "Salvando…" : "Salvar como template"}
+          </button>
+          <button onClick={send} disabled={!canSubmit}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black px-6 py-3.5 rounded-xl shadow-lg shadow-primary/20 uppercase tracking-widest text-xs hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            {sending ? (
+              <><span className="material-symbols-outlined animate-spin text-base">progress_activity</span> Enviando pra {recipientCount} alunas…</>
+            ) : (
+              <><span className="material-symbols-outlined text-base">send</span> Enviar pra {recipientCount ?? 0} aluna{recipientCount === 1 ? "" : "s"}</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── HISTÓRICO ── */}
