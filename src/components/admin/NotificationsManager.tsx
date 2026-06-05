@@ -239,28 +239,35 @@ export default function NotificationsManager() {
       </div>
 
       {/* ── TEMPLATES SALVOS ── */}
-      {templates.length > 0 && (
+      {!loading && (
         <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-3">
           <div>
             <p className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-lg">bookmark</span> Templates salvos
+              {templates.length > 0 && <span className="text-[10px] font-bold bg-primary/15 text-primary rounded-full px-2 py-0.5">{templates.length}</span>}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Clique pra carregar no formulário. Todo e-mail enviado é salvo aqui automaticamente.</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Clique num template pra carregar no formulário. Todo e-mail enviado é salvo aqui automaticamente.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {templates.map((t) => (
-              <div key={t.id} className="inline-flex items-center gap-1 bg-background border border-border rounded-lg pl-3 pr-1 py-1 hover:border-primary/40 transition">
-                <button type="button" onClick={() => loadTemplate(t)} className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                  <span className="material-symbols-outlined text-sm text-muted-foreground">{t.mode === "html" ? "code" : "description"}</span>
-                  <span className="max-w-[220px] truncate">{t.name}</span>
-                </button>
-                <button type="button" onClick={() => deleteTemplate(t.id, t.name)} aria-label="Excluir template"
-                  className="shrink-0 size-6 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition">
-                  <span className="material-symbols-outlined text-sm">close</span>
-                </button>
-              </div>
-            ))}
-          </div>
+          {templates.length === 0 ? (
+            <p className="text-xs text-muted-foreground bg-background border border-dashed border-border rounded-lg px-3 py-3">
+              Nenhum template ainda. Envie um e-mail ou clique em <strong className="text-foreground">“Salvar como template”</strong> (no fim do formulário) que ele aparece aqui pra reusar depois.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {templates.map((t) => (
+                <div key={t.id} className="inline-flex items-center gap-1 bg-background border border-border rounded-lg pl-3 pr-1 py-1 hover:border-primary/40 transition">
+                  <button type="button" onClick={() => loadTemplate(t)} className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                    <span className="material-symbols-outlined text-sm text-muted-foreground">{t.mode === "html" ? "code" : "description"}</span>
+                    <span className="max-w-[220px] truncate">{t.name}</span>
+                  </button>
+                  <button type="button" onClick={() => deleteTemplate(t.id, t.name)} aria-label="Excluir template"
+                    className="shrink-0 size-6 rounded-md flex items-center justify-center text-muted-foreground hover:bg-destructive/15 hover:text-destructive transition">
+                    <span className="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
