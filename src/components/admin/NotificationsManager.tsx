@@ -1,112 +1,150 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── NotificationsManager ────────────────────────────────────────────────────
-// UI no admin pra DISPARAR email em massa pras alunas avisando sobre uma
-// novidade num curso (módulo novo, aula nova, etc.). Cada disparo chama a
-// Edge Function send-course-notification que itera em batches de 50 e usa
-// a Brevo API. Histórico fica em course_notifications.
+// Admin dispara email em massa com:
+//   • SEGMENTAÇÃO POR REGRAS — "alunas do grupo X que ainda não têm o grupo Y"
+//     (incluir grupos + excluir grupos + status de acesso) com contagem ao vivo.
+//   • CORPO em TEXTO (template bonito) ou HTML PERSONALIZADO (com variáveis
+//     {{NOME}} {{LINK}} {{CURSO}} {{EMAIL}}) + pré-visualização.
+// Chama a Edge Function send-course-notification (v2). Histórico em course_notifications.
 // =============================================================================
 
-interface Product {
-  id: string;
-  title: string;
-  status: string;
-  image_url: string | null;
-}
-
-interface Recipient {
-  user_id: string;
-  email: string;
-  display_name: string;
-  access_status: "active" | "expired";
-}
-
+interface Product { id: string; title: string; status: string; image_url: string | null; }
+interface Group { id: string; name: string; }
 interface NotificationLog {
-  id: string;
-  product_id: string;
-  product_title: string;
-  title: string;
-  body: string;
-  sent_at: string;
-  recipients_attempted: number;
-  recipients_succeeded: number;
+  id: string; product_id: string | null; product_title: string | null;
+  title: string; body: string; sent_at: string;
+  recipients_attempted: number; recipients_succeeded: number;
   status: "sent" | "partial" | "failed";
 }
 
+type AccessStatus = "all" | "active" | "expired";
+type Mode = "text" | "html";
+
 const SUPABASE_URL = "https://qkvinhzwiptfobdvsdtr.supabase.co";
+
+const HTML_PLACEHOLDER = `<div style="font-family:Arial,sans-serif;background:#0B1A38;color:#fff;padding:32px;border-radius:16px;max-width:560px;margin:0 auto">
+  <h1 style="color:#FFD60A;margin:0 0 12px">Oi {{NOME}}! 👋</h1>
+  <p style="font-size:15px;line-height:1.6;color:#C5C8D1">
+    Escreva aqui sua mensagem. Use as variáveis pra personalizar.
+  </p>
+  <p style="text-align:center;margin:28px 0">
+    <a href="{{LINK}}" style="background:#FFD60A;color:#0B1A38;padding:16px 28px;border-radius:12px;text-decoration:none;font-weight:900">Quero esse curso →</a>
+  </p>
+</div>`;
 
 export default function NotificationsManager() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [history, setHistory] = useState<NotificationLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-  // Form
-  const [productId, setProductId] = useState<string>("");
+  // ── Segmentação ──
+  const [includeGroups, setIncludeGroups] = useState<string[]>([]);
+  const [excludeGroups, setExcludeGroups] = useState<string[]>([]);
+  const [accessStatus, setAccessStatus] = useState<AccessStatus>("all");
+  const [recipientCount, setRecipientCount] = useState<number | null>(null);
+  const [countLoading, setCountLoading] = useState(false);
+
+  // ── Conteúdo ──
+  const [mode, setMode] = useState<Mode>("text");
+  const [subject, setSubject] = useState("");
+  const [productId, setProductId] = useState<string>(""); // opcional (link/imagem)
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [html, setHtml] = useState(HTML_PLACEHOLDER);
+  const [showPreview, setShowPreview] = useState(true);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [prodRes, recRes, histRes] = await Promise.all([
+    const [prodRes, grpRes, histRes] = await Promise.all([
       supabase.from("products").select("id, title, status, image_url").order("title"),
-      // @ts-ignore — RPC nova
-      supabase.rpc("admin_list_notification_recipients"),
-      // @ts-ignore — RPC nova
+      supabase.from("access_groups").select("id, name").order("name"),
+      // @ts-ignore — RPC
       supabase.rpc("admin_list_course_notifications", { p_limit: 30 }),
     ]);
     setProducts((prodRes.data as Product[]) || []);
-    setRecipients((recRes.data as unknown as Recipient[]) || []);
+    setGroups((grpRes.data as Group[]) || []);
     setHistory((histRes.data as unknown as NotificationLog[]) || []);
     setLoading(false);
   }, []);
 
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // ── Contagem de destinatários ao vivo (debounced) ──
+  const countTimer = useRef<number | null>(null);
   useEffect(() => {
-    loadAll();
-  }, [loadAll]);
+    if (countTimer.current) window.clearTimeout(countTimer.current);
+    setCountLoading(true);
+    countTimer.current = window.setTimeout(async () => {
+      const { data, error } = await supabase.rpc("admin_list_recipients_by_rules", {
+        p_include_group_ids: includeGroups.length ? includeGroups : null,
+        p_exclude_group_ids: excludeGroups.length ? excludeGroups : null,
+        p_access_status: accessStatus,
+      } as never);
+      setRecipientCount(error ? null : ((data as unknown[] | null)?.length ?? 0));
+      setCountLoading(false);
+    }, 400);
+    return () => { if (countTimer.current) window.clearTimeout(countTimer.current); };
+  }, [includeGroups, excludeGroups, accessStatus]);
 
-  const activeCount = recipients.filter((r) => r.access_status === "active").length;
-  const expiredCount = recipients.filter((r) => r.access_status === "expired").length;
-  const canSubmit = !!productId && title.trim().length >= 3 && body.trim().length >= 10 && !sending;
+  function toggle(list: string[], setList: (v: string[]) => void, id: string) {
+    setList(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  }
 
-  async function sendNotification() {
+  const canSubmit = useMemo(() => {
+    if (sending || !recipientCount) return false;
+    if (mode === "text") return subject.trim().length >= 3 && title.trim().length >= 3 && body.trim().length >= 10;
+    return subject.trim().length >= 3 && html.trim().length >= 20;
+  }, [sending, recipientCount, mode, subject, title, body, html]);
+
+  // Preview do HTML com variáveis de exemplo
+  const previewHtml = useMemo(() => {
+    const link = productId ? `${SUPABASE_URL.replace("qkvinhzwiptfobdvsdtr.supabase.co", "")}` : "#";
+    return html
+      .replace(/\{\{\s*NOME\s*\}\}/g, "Maria")
+      .replace(/\{\{\s*EMAIL\s*\}\}/g, "maria@email.com")
+      .replace(/\{\{\s*CURSO\s*\}\}/g, products.find((p) => p.id === productId)?.title || "Seu curso")
+      .replace(/\{\{\s*LINK\s*\}\}/g, "#");
+  }, [html, productId, products]);
+
+  async function send() {
     if (!canSubmit) return;
     setSending(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error("sem sessão");
 
+      const payload: Record<string, unknown> = {
+        include_group_ids: includeGroups.length ? includeGroups : undefined,
+        exclude_group_ids: excludeGroups.length ? excludeGroups : undefined,
+        access_status: accessStatus,
+        subject: subject.trim(),
+        mode,
+        product_id: productId || undefined,
+      };
+      if (mode === "text") { payload.title = title.trim(); payload.body = body.trim(); }
+      else { payload.html = html; }
+
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-course-notification`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          title: title.trim(),
-          body: body.trim(),
-        }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify(payload),
       });
       const data = await resp.json();
-
       if (!resp.ok || !data?.ok) {
         toast.error("Erro ao enviar", { description: data?.error || data?.detail || "falha desconhecida" });
         return;
       }
-
       toast.success(`Email enviado pra ${data.succeeded}/${data.attempted} alunas`, {
         description: data.failed > 0 ? `${data.failed} falharam — verifica os logs` : "Tudo certo!",
         duration: 6000,
       });
-
-      // Limpa form + recarrega histórico
-      setTitle("");
-      setBody("");
+      setTitle(""); setBody(""); setSubject("");
       await loadAll();
     } catch (e: any) {
       toast.error("Erro de rede", { description: e?.message || "tenta de novo" });
@@ -115,161 +153,204 @@ export default function NotificationsManager() {
     }
   }
 
-  const selectedProduct = products.find((p) => p.id === productId);
+  const STATUS_OPTS: { v: AccessStatus; label: string }[] = [
+    { v: "all", label: "Todas" },
+    { v: "active", label: "Acesso ativo" },
+    { v: "expired", label: "Expiradas" },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">📢 Notificar alunas sobre novidades</h2>
+        <h2 className="text-xl font-bold">📢 Notificar alunas</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Dispara um email em massa pra todas as alunas (com acesso ou expiradas) avisando sobre módulo novo, aula nova ou qualquer atualização num curso. Quem tem acesso vai direto pra aula; quem não tem cai na página de venda.
+          Dispare email em massa com <strong>regras de segmentação</strong> (ex: alunas do grupo X que ainda não têm o Y) e corpo em <strong>texto</strong> ou <strong>HTML personalizado</strong>.
         </p>
       </div>
 
-      {/* Form de envio */}
-      <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-4">
+      {/* ── PÚBLICO / REGRAS ── */}
+      <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-5">
+        <p className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-lg">filter_alt</span> Quem vai receber
+        </p>
+
+        {/* Incluir */}
         <div>
-          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-            Curso destino
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+            Incluir alunas dos grupos <span className="text-muted-foreground/60 normal-case font-normal">(nenhum = todas)</span>
           </label>
-          <select
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-            disabled={sending}
-          >
-            <option value="">Selecione…</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title} {p.status !== "published" ? "(oculto)" : ""}
-              </option>
+          <div className="flex flex-wrap gap-2">
+            {groups.map((g) => {
+              const on = includeGroups.includes(g.id);
+              return (
+                <button key={g.id} type="button" onClick={() => toggle(includeGroups, setIncludeGroups, g.id)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${on ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-muted-foreground hover:border-primary/40"}`}>
+                  {on ? "✓ " : ""}{g.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Excluir */}
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+            Excluir quem já tem <span className="text-muted-foreground/60 normal-case font-normal">(ex: "que ainda não compraram X")</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {groups.map((g) => {
+              const on = excludeGroups.includes(g.id);
+              return (
+                <button key={g.id} type="button" onClick={() => toggle(excludeGroups, setExcludeGroups, g.id)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${on ? "bg-destructive text-destructive-foreground border-destructive" : "bg-background border-border text-muted-foreground hover:border-destructive/40"}`}>
+                  {on ? "✕ " : ""}{g.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">Status de acesso</label>
+          <div className="inline-flex rounded-lg border border-border overflow-hidden">
+            {STATUS_OPTS.map((o) => (
+              <button key={o.v} type="button" onClick={() => setAccessStatus(o.v)}
+                className={`text-xs font-bold px-4 py-2 transition ${accessStatus === o.v ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"}`}>
+                {o.label}
+              </button>
             ))}
-          </select>
-          {selectedProduct && selectedProduct.status !== "published" && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1.5">
-              ⚠️ Esse curso está OCULTO pras alunas. Elas verão como "Trancado" no grid e o link levará pra página de venda.
-            </p>
-          )}
+          </div>
         </div>
 
-        <div>
-          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-            Título do email
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder='Ex: "Adicionei a aula 17 de Ladeiras!"'
-            maxLength={120}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
-            disabled={sending}
-          />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Aparece como assunto do email e título grande dentro dele. Máx 120 chars.
-          </p>
-        </div>
-
-        <div>
-          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-            Mensagem
-          </label>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={6}
-            placeholder='Conte rapidamente o que tem de novo. Ex: "Saiu nova aula sobre como fazer baliza em vaga de mercado lotada. Te ensino passo a passo o ângulo certo, quando virar o volante e como sair sem bater no carro do lado. Bora?"'
-            maxLength={1500}
-            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:border-primary resize-y"
-            disabled={sending}
-          />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Quebras de linha funcionam. Máx 1500 chars. Quem ler vai ter 1 botão "Acessar agora →" pra ir direto pro curso.
-          </p>
-        </div>
-
-        {/* Resumo destinatários */}
+        {/* Contagem ao vivo */}
         <div className="bg-accent/30 border border-border rounded-xl p-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold text-foreground">
-              {loading ? "Carregando alunas…" : `${recipients.length} aluna${recipients.length === 1 ? "" : "s"} vão receber`}
+            <p className="text-lg font-black text-foreground flex items-center gap-2">
+              {countLoading ? <span className="material-symbols-outlined animate-spin text-base">progress_activity</span> : <span className="text-primary">{recipientCount ?? 0}</span>}
+              <span className="text-sm font-bold">aluna{recipientCount === 1 ? "" : "s"} nessa regra</span>
             </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              {activeCount} com acesso ativo · {expiredCount} com matrícula expirada
-            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Atualiza automático conforme você muda as regras.</p>
           </div>
-          <span className="material-symbols-outlined text-3xl text-muted-foreground">forward_to_inbox</span>
+          <span className="material-symbols-outlined text-3xl text-muted-foreground">group</span>
+        </div>
+      </div>
+
+      {/* ── CONTEÚDO ── */}
+      <div className="bg-card border border-border rounded-2xl p-5 md:p-6 space-y-4">
+        <p className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-lg">mail</span> Conteúdo
+        </p>
+
+        {/* Assunto */}
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Assunto do email</label>
+          <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={140}
+            placeholder='Ex: "Liberamos uma novidade pra você 🚗"'
+            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" disabled={sending} />
         </div>
 
-        <button
-          onClick={sendNotification}
-          disabled={!canSubmit}
-          className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black px-6 py-3.5 rounded-xl shadow-lg shadow-primary/20 uppercase tracking-widest text-xs hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+        {/* Curso (link opcional) */}
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
+            Curso do link <span className="text-muted-foreground/60 normal-case font-normal">(opcional — vira o {"{{LINK}}"} / botão "Acessar")</span>
+          </label>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)}
+            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" disabled={sending}>
+            <option value="">Sem curso específico (link pra plataforma)</option>
+            {products.map((p) => (<option key={p.id} value={p.id}>{p.title}{p.status !== "published" ? " (oculto)" : ""}</option>))}
+          </select>
+        </div>
+
+        {/* Modo */}
+        <div>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">Formato</label>
+          <div className="inline-flex rounded-lg border border-border overflow-hidden">
+            <button type="button" onClick={() => setMode("text")}
+              className={`text-xs font-bold px-4 py-2 transition ${mode === "text" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"}`}>📝 Texto (template)</button>
+            <button type="button" onClick={() => setMode("html")}
+              className={`text-xs font-bold px-4 py-2 transition ${mode === "html" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"}`}>{"</>"} HTML personalizado</button>
+          </div>
+        </div>
+
+        {mode === "text" ? (
+          <>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Título (grande dentro do email)</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120}
+                placeholder='Ex: "Adicionei a aula 17 de Ladeiras!"'
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary" disabled={sending} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Mensagem</label>
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6} maxLength={1500}
+                placeholder="Conte rapidamente o que tem de novo. Quebras de linha funcionam."
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:border-primary resize-y" disabled={sending} />
+              <p className="text-[10px] text-muted-foreground mt-1">Embrulhado no template bonito (cabeçalho amarelo + botão "Acessar agora").</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">HTML do email</label>
+                <button type="button" onClick={() => setShowPreview((s) => !s)} className="text-[11px] font-bold text-primary hover:underline">
+                  {showPreview ? "Ocultar prévia" : "Ver prévia"}
+                </button>
+              </div>
+              <textarea value={html} onChange={(e) => setHtml(e.target.value)} rows={12}
+                spellCheck={false}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-xs font-mono leading-relaxed focus:outline-none focus:border-primary resize-y" disabled={sending} />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Variáveis: <code className="text-primary">{"{{NOME}}"}</code> <code className="text-primary">{"{{LINK}}"}</code> <code className="text-primary">{"{{CURSO}}"}</code> <code className="text-primary">{"{{EMAIL}}"}</code> — são trocadas por aluna no envio.
+              </p>
+            </div>
+            {showPreview && (
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">Prévia</p>
+                <iframe title="Prévia do email" srcDoc={previewHtml} className="w-full h-[420px] rounded-lg border border-border bg-white" />
+              </div>
+            )}
+          </>
+        )}
+
+        <button onClick={send} disabled={!canSubmit}
+          className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black px-6 py-3.5 rounded-xl shadow-lg shadow-primary/20 uppercase tracking-widest text-xs hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
           {sending ? (
-            <>
-              <span className="material-symbols-outlined animate-spin text-base">progress_activity</span>
-              Enviando pra {recipients.length} alunas…
-            </>
+            <><span className="material-symbols-outlined animate-spin text-base">progress_activity</span> Enviando pra {recipientCount} alunas…</>
           ) : (
-            <>
-              <span className="material-symbols-outlined text-base">send</span>
-              Enviar agora pra {recipients.length} alunas
-            </>
+            <><span className="material-symbols-outlined text-base">send</span> Enviar pra {recipientCount ?? 0} aluna{recipientCount === 1 ? "" : "s"}</>
           )}
         </button>
       </div>
 
-      {/* Histórico */}
+      {/* ── HISTÓRICO ── */}
       <div>
-        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-3">
-          Histórico
-        </h3>
+        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-3">Histórico</h3>
         {history.length === 0 ? (
           <div className="bg-card border border-border rounded-2xl p-8 text-center">
             <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">history</span>
             <p className="text-sm font-bold text-muted-foreground">Nenhuma notificação enviada ainda</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Use o form acima pra disparar a primeira.</p>
           </div>
         ) : (
           <div className="space-y-2">
             <AnimatePresence initial={false}>
               {history.map((h) => {
                 const dt = new Date(h.sent_at);
-                const dataFormatada = `${dt.toLocaleDateString("pt-BR")} · ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+                const data = `${dt.toLocaleDateString("pt-BR")} · ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
                 return (
-                  <motion.div
-                    key={h.id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-card border border-border rounded-xl p-4 flex items-start gap-3"
-                  >
-                    <span
-                      className={`shrink-0 size-8 rounded-full flex items-center justify-center ${
-                        h.status === "sent"
-                          ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]"
-                          : h.status === "partial"
-                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                          : "bg-destructive/15 text-destructive"
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-base">
-                        {h.status === "sent" ? "check_circle" : h.status === "partial" ? "warning" : "error"}
-                      </span>
+                  <motion.div key={h.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                    className="bg-card border border-border rounded-xl p-4 flex items-start gap-3">
+                    <span className={`shrink-0 size-8 rounded-full flex items-center justify-center ${h.status === "sent" ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]" : h.status === "partial" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-destructive/15 text-destructive"}`}>
+                      <span className="material-symbols-outlined text-base">{h.status === "sent" ? "check_circle" : h.status === "partial" ? "warning" : "error"}</span>
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <p className="font-bold text-sm line-clamp-1">{h.title}</p>
-                        <span className="text-[10px] font-mono text-muted-foreground">{dataFormatada}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground">{data}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                        Curso: <strong className="text-foreground">{h.product_title || "—"}</strong>
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {h.recipients_succeeded}/{h.recipients_attempted} entregues
-                        {h.status === "partial" && ` · ${h.recipients_attempted - h.recipients_succeeded} falharam`}
-                      </p>
+                      {h.product_title && (<p className="text-xs text-muted-foreground line-clamp-1 mb-1">Curso: <strong className="text-foreground">{h.product_title}</strong></p>)}
+                      <p className="text-[11px] text-muted-foreground">{h.recipients_succeeded}/{h.recipients_attempted} entregues{h.status === "partial" && ` · ${h.recipients_attempted - h.recipients_succeeded} falharam`}</p>
                     </div>
                   </motion.div>
                 );
