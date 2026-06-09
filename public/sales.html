@@ -5118,8 +5118,29 @@
       <span class="material-symbols-outlined">directions_car</span>
       ME COLOQUE NESSA TRILHA
     </button>
+    <!-- Gatilho: quando o visitante chega nesta seção, abre o POPUP da roleta
+         de desconto (o mesmo do exit-intent). Compartilha a flag de sessão
+         'mddnm-exit-shown' → aparece só 1x e não duplica com o exit-intent. -->
+    <div id="rouletteTriggerSolucao" aria-hidden="true" style="height:1px;width:100%"></div>
   </div>
 </section>
+<script>
+  (function () {
+    var KEY = 'mddnm-exit-shown';
+    var el = document.getElementById('rouletteTriggerSolucao');
+    if (!el || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        if (sessionStorage.getItem(KEY)) return;       // já mostrou nesta sessão
+        sessionStorage.setItem(KEY, '1');
+        setTimeout(function () { if (typeof window.openExitModal === 'function') window.openExitModal(); }, 500);
+      });
+    }, { threshold: 1, rootMargin: '0px 0px -10% 0px' });
+    io.observe(el);
+  })();
+</script>
 
 <!-- ─── COMPARATIVO ─── -->
 <section class="vs-section">
@@ -7083,6 +7104,8 @@
               const codeEl = document.getElementById('couponCode');
               if (codeEl) codeEl.textContent = code;
               exitGoStage('coupon');
+              startCouponTimer(end);   // FIX: inicia o contador (faltava neste fluxo da roleta)
+              fireExitConfetti();
               if (window.Track) window.Track.event('exit_cupom_gerado', { code });
             }, 800);
           }, phase2 * 1000 + 50);
@@ -7172,6 +7195,9 @@
       const code = (document.getElementById('couponCode')?.textContent || 'VOLANTE10').trim();
       try { navigator.clipboard?.writeText(code); } catch (e) {}
       if (window.Track) window.Track.event('exit_to_checkout', { code });
+      // FECHA o popup primeiro — senão o overlay fixo + body overflow:hidden
+      // bloqueiam o scroll e cobrem a tela (o botão "não fazia nada").
+      if (typeof window.closeExitModal === 'function') window.closeExitModal();
       // Reaproveita goToCheckout pra centralizar o link do checkout
       if (window.goToCheckout) {
         window.goToCheckout('exit_cupom', { cupom: code });
