@@ -63,6 +63,7 @@ const App = () => (
                   <Route path="/curso/:id" element={<Index />} />
                   <Route path="/curso-info/:id" element={<CourseInfo />} />
                   <Route path="/primeiro-acesso" element={<FirstAccess />} />
+                  <Route path="/primeiro-acesso/:token" element={<FirstAccess />} />
                   <Route path="/preview-unlock" element={<PreviewUnlock />} />
                   <Route path="/conclusao" element={<CompletionScreen />} />
                   <Route path="/admin" element={<Admin />} />

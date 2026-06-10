@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,8 +35,11 @@ type Stage = "loading" | "celebrating" | "password" | "logging_in" | "error";
 
 export default function FirstAccess() {
   const [params] = useSearchParams();
+  const routeParams = useParams();
   const navigate = useNavigate();
-  const token = params.get("token") || "";
+  // Aceita token no CAMINHO (/primeiro-acesso/TOKEN — novo, sem "=" pra não
+  // corromper no encoding do email) OU na query (?token=... — links antigos).
+  const token = routeParams.token || params.get("token") || "";
 
   const [stage, setStage] = useState<Stage>("loading");
   const [info, setInfo] = useState<TokenInfo | null>(null);
