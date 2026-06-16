@@ -5128,17 +5128,26 @@
   (function () {
     var KEY = 'mddnm-exit-shown';
     var el = document.getElementById('rouletteTriggerSolucao');
-    if (!el || !('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        io.unobserve(en.target);
-        if (sessionStorage.getItem(KEY)) return;       // já mostrou nesta sessão
-        sessionStorage.setItem(KEY, '1');
-        setTimeout(function () { if (typeof window.openExitModal === 'function') window.openExitModal(); }, 500);
-      });
-    }, { threshold: 1, rootMargin: '0px 0px -10% 0px' });
-    io.observe(el);
+    if (!el) return;
+    var fired = false;
+    function fire() {
+      if (fired) return;
+      fired = true;
+      window.removeEventListener('scroll', onScroll, true);
+      if (sessionStorage.getItem(KEY)) return;       // já mostrou nesta sessão
+      sessionStorage.setItem(KEY, '1');
+      setTimeout(function () { if (typeof window.openExitModal === 'function') window.openExitModal(); }, 400);
+    }
+    // Dispara assim que o gatilho da seção entra na viewport (90% de cima).
+    // Listener de scroll + getBoundingClientRect é à prova de scroll rápido
+    // (o IntersectionObserver de 1px com threshold:1 era pulado). capture:true
+    // pega o scroll de qualquer container — a página rola pelo body (overflow-y:auto).
+    function onScroll() {
+      if (fired) return;
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.9) fire();
+    }
+    window.addEventListener('scroll', onScroll, true);
+    onScroll(); // caso o gatilho já esteja visível no carregamento
   })();
 </script>
 
