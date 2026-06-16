@@ -26,6 +26,17 @@ const Index = () => {
   }
 
   if (!user) {
+    // Visitante (não logada) na RAIZ vê a página de vendas (o "site principal"),
+    // não a tela de login. Em rotas internas (/biblioteca, /perfil, etc.) ela
+    // continua indo pro /login pra poder entrar na conta.
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      window.location.replace("/vendas");
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <span className="text-foreground text-lg font-bold">🚘 Carregando...</span>
+        </div>
+      );
+    }
     return <Navigate to="/login" replace />;
   }
 
