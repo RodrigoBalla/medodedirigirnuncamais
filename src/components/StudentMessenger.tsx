@@ -186,7 +186,7 @@ export function StudentMessenger() {
         onClick={openPanel}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
-        className="fixed bottom-24 left-4 lg:bottom-6 lg:left-6 z-40 size-14 md:size-16 rounded-full bg-gradient-to-br from-primary to-yellow-500 text-primary-foreground shadow-[0_8px_30px_rgba(255,214,10,.35)] flex items-center justify-center"
+        className="fixed bottom-[10.5rem] right-4 lg:bottom-28 lg:right-6 z-40 size-14 md:size-16 rounded-full bg-gradient-to-br from-primary to-yellow-500 text-primary-foreground shadow-[0_8px_30px_rgba(255,214,10,.35)] flex items-center justify-center"
         aria-label="Mensagens da Carla"
         title="Mensagens da Carla"
       >
