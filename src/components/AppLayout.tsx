@@ -15,6 +15,7 @@ import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
 import { CarCursor } from "@/components/CarCursor";
 import { useDetectNewModules } from "@/hooks/useDetectNewModules";
 import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
+import { StudentMessenger } from "@/components/StudentMessenger";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -468,6 +469,11 @@ export function AppLayout({
           Pra quem tem ataque de pânico no volante, ter contato a 1 clique
           vale mais que gamificação. */}
       <EmergencyContactFab />
+
+      {/* Chat direto com a Carla (admin) — popup de mensagem nova + painel de
+          conversa. Só pra alunas; admin tem o painel completo em /admin.
+          Canal isolado por aluna (RLS) — ninguém vê a conversa de ninguém. */}
+      {!isAdmin && <StudentMessenger />}
 
       {/* Mobile Bottom Navigation — fita de advertência fininha logo acima.
           Pra alunas só aparecem 3 ícones (Cursos/Comunidade/Perfil) — admin

@@ -15,8 +15,10 @@ import NotificationsManager from "@/components/admin/NotificationsManager";
 import StudentEmailMetrics from "@/components/admin/StudentEmailMetrics";
 import { PhoneEditor } from "@/components/admin/PhoneEditor";
 import { StudentAccessPreview } from "@/components/admin/StudentAccessPreview";
+import MessagesManager from "@/components/admin/MessagesManager";
+import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages";
 
 interface AccessGroup {
   id: string;
@@ -159,6 +161,29 @@ export default function Admin() {
       .on("postgres_changes", { event: "*", schema: "public", table: "lesson_comments" }, loadPending)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+  }, [isAdmin]);
+
+  // Badge de mensagens não-lidas das alunas (chat direto) — realtime
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  useEffect(() => {
+    if (!isAdmin) return;
+    const sb = supabase as any;
+    async function loadUnreadMsgs() {
+      try {
+        const { count } = await sb
+          .from("direct_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("sender", "student")
+          .is("read_by_admin_at", null);
+        setUnreadMessages(typeof count === "number" ? count : 0);
+      } catch {}
+    }
+    loadUnreadMsgs();
+    const channel = sb
+      .channel("admin_unread_messages")
+      .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, loadUnreadMsgs)
+      .subscribe();
+    return () => { sb.removeChannel(channel); };
   }, [isAdmin]);
 
   useEffect(() => {
@@ -575,6 +600,7 @@ export default function Admin() {
     { key: "products", icon: "video_library", label: "Cursos" },
     { key: "groups", icon: "lock_open", label: "Grupos" },
     { key: "notifications", icon: "campaign", label: "Notificações" },
+    { key: "messages", icon: "chat", label: "Mensagens" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
@@ -620,6 +646,11 @@ export default function Admin() {
                     {pendingComments}
                   </span>
                 )}
+                {t.key === "messages" && unreadMessages > 0 && (
+                  <span className="text-[10px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                    {unreadMessages}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -640,6 +671,11 @@ export default function Admin() {
               {t.key === "comments" && pendingComments > 0 && (
                 <span className="absolute -top-0.5 right-1/2 translate-x-[16px] text-[8px] font-black bg-amber-500 text-black px-1 py-px rounded-full min-w-[14px] text-center leading-none">
                   {pendingComments}
+                </span>
+              )}
+              {t.key === "messages" && unreadMessages > 0 && (
+                <span className="absolute -top-0.5 right-1/2 translate-x-[16px] text-[8px] font-black bg-rose-500 text-white px-1 py-px rounded-full min-w-[14px] text-center leading-none">
+                  {unreadMessages}
                 </span>
               )}
             </button>
@@ -1204,6 +1240,19 @@ export default function Admin() {
 
                             {/* Métricas de engajamento por email — só carrega quando o card expande */}
                             <StudentEmailMetrics userId={s.user_id} />
+
+                            {/* Conversa direta (chat admin <-> aluna) — mostra o
+                                que a aluna enviou e permite responder na hora.
+                                Mesmo componente da aba Mensagens. */}
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-2">
+                                <span className="material-symbols-outlined text-sm">chat</span>
+                                Conversa direta
+                              </h4>
+                              <div className="bg-background/50 border border-border rounded-2xl overflow-hidden h-[400px] flex flex-col">
+                                <AdminStudentChat userId={s.user_id} studentName={s.display_name} />
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1466,6 +1515,8 @@ export default function Admin() {
           {tab === "groups" && <GroupsManager />}
 
           {tab === "notifications" && <NotificationsManager />}
+
+          {tab === "messages" && <MessagesManager />}
 
           {tab === "comments" && <CommentsModeration />}
 
