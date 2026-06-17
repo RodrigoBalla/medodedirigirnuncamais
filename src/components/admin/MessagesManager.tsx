@@ -82,19 +82,25 @@ export default function MessagesManager() {
     };
   }, [fetchInbox]);
 
-  // Carrega lista de alunas pro seletor de "nova conversa" (lazy, ao abrir)
-  const openPicker = async () => {
-    setShowPicker(true);
-    if (recipients.length === 0) {
+  // Carrega a lista de alunas no mount — serve pro seletor de "nova conversa" E
+  // pra contar quem está online agora MESMO sem conversa aberta ainda.
+  useEffect(() => {
+    (async () => {
       const { data } = await supabase.rpc("admin_list_notification_recipients");
       if (Array.isArray(data)) setRecipients(data as Recipient[]);
-    }
-  };
+    })();
+  }, []);
 
-  const onlineStudentsInInbox = useMemo(
-    () => inbox.filter((r) => onlineIds.has(r.student_id)).length,
-    [inbox, onlineIds],
-  );
+  const openPicker = () => setShowPicker(true);
+
+  // Conta TODAS as alunas online agora (presença ∩ alunas), não só as que já têm
+  // conversa — senão mostrava "0 online" mesmo com gente online na plataforma.
+  const onlineStudentsCount = useMemo(() => {
+    const ids = new Set<string>();
+    recipients.forEach((r) => { if (onlineIds.has(r.user_id)) ids.add(r.user_id); });
+    inbox.forEach((r) => { if (onlineIds.has(r.student_id)) ids.add(r.student_id); });
+    return ids.size;
+  }, [recipients, inbox, onlineIds]);
 
   const filteredRecipients = useMemo(() => {
     const q = pickerSearch.trim().toLowerCase();
@@ -124,7 +130,7 @@ export default function MessagesManager() {
             </span>
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Canal direto com cada aluna · {onlineStudentsInInbox} online agora
+            Canal direto com cada aluna · {onlineStudentsCount} online agora
             {totalUnread > 0 && ` · ${totalUnread} não-lida(s)`}
           </p>
         </div>
