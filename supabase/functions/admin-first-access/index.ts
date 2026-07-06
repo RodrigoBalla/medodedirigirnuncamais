@@ -30,6 +30,15 @@ function jsonResp(body: unknown, status = 200): Response {
 
 function firstName(f: string): string { return (f || "").trim().split(/\s+/)[0] || "aluna"; }
 
+// Gera uma senha forte porém legível (sem caracteres ambíguos 0/O/1/l/I).
+// 10 chars via crypto.getRandomValues — suficiente pra onboarding.
+function genPassword(): string {
+  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const arr = new Uint32Array(10);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (n) => alphabet[n % alphabet.length]).join("");
+}
+
 async function sendBrevoFirstAccessEmail(args: { toEmail: string; toName: string; courseTitle: string; firstAccessUrl: string }): Promise<{ ok: boolean; messageId?: string; reason?: string }> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
   if (!apiKey) return { ok: false, reason: "missing_brevo_key" };
@@ -115,6 +124,36 @@ Deno.serve(async (req) => {
 
     if (!r.ok) return jsonResp({ ok: false, reason: r.reason }, 500);
     return jsonResp({ ok: true, message_id: r.messageId, link });
+  }
+
+  // Define (redefine) a senha do aluno e devolve pro admin repassar.
+  // A senha real NUNCA pode ser lida (fica em hash) — então "ver a senha"
+  // = gerar uma nova. Atenção: isso SUBSTITUI qualquer senha anterior.
+  if (action === "set_password") {
+    const provided = typeof body?.password === "string" ? body.password.trim() : "";
+    const password = provided.length >= 6 ? provided : genPassword();
+    try {
+      const svc = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        { auth: { persistSession: false } },
+      );
+      const { error: upErr } = await svc.auth.admin.updateUserById(userId, { password });
+      if (upErr) {
+        console.error("[admin-first-access] set_password failed:", upErr);
+        return jsonResp({ error: "set_password_failed", detail: upErr.message }, 500);
+      }
+    } catch (e) {
+      console.error("[admin-first-access] set_password exception:", e);
+      return jsonResp({ error: "set_password_failed", detail: String(e) }, 500);
+    }
+    return jsonResp({
+      ok: true,
+      password,
+      email: row.email,
+      display_name: row.display_name || "",
+      login_url: `${APP_URL}/login`,
+    });
   }
 
   return jsonResp({ error: "unknown_action" }, 400);

@@ -366,11 +366,16 @@ export default function Admin() {
   //   2) Retorna a URL completa (action=get_link) OU envia email via Brevo
   //      reutilizando o mesmo template do webhook Eduzz (action=resend_email)
   // Estado de loading por aluno + por ação pra mostrar spinner no botão certo.
-  const [firstAccessBusy, setFirstAccessBusy] = useState<Record<string, "copy" | "email" | null>>({});
+  const [firstAccessBusy, setFirstAccessBusy] = useState<Record<string, "copy" | "email" | "pw" | null>>({});
   // Modal de fallback: aparece quando o copy automático falha (user gesture
   // perdido após await na chamada da edge function). O admin clica "Copiar"
   // dentro do modal — gesture fresco → clipboard.writeText funciona.
   const [firstAccessLinkModal, setFirstAccessLinkModal] = useState<string | null>(null);
+  // Modal de senha gerada: mostra a senha nova pro admin ver/copiar + a
+  // mensagem pronta pra mandar pro aluno (login + senha + link).
+  const [passwordModal, setPasswordModal] = useState<{
+    name: string; email: string; password: string; loginUrl: string; message: string;
+  } | null>(null);
 
   // Helper: tenta copiar pro clipboard usando a API moderna primeiro
   // e o fallback via textarea + execCommand depois. Retorna boolean.
@@ -454,6 +459,45 @@ export default function Admin() {
         description: email ? `Pra ${email}` : "Aluno deve receber em alguns segundos",
         duration: 4500,
       });
+    } finally {
+      setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
+    }
+  }
+
+  // ─── Gerar senha + copiar mensagem pronta ─────────────────────────────
+  // A senha real do aluno NÃO existe em texto (fica em hash) — então "ver a
+  // senha" = gerar uma nova. Isso SUBSTITUI a senha anterior. Copia a
+  // mensagem no formato pedido e abre modal pra o admin ver a senha.
+  async function generatePasswordAndCopy(userId: string, fallbackName: string) {
+    setFirstAccessBusy((p) => ({ ...p, [userId]: "pw" }));
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-first-access", {
+        body: { action: "set_password", user_id: userId },
+      });
+      const password = typeof data?.password === "string" ? data.password : "";
+      const email = typeof data?.email === "string" ? data.email : "";
+      const loginUrl = typeof data?.login_url === "string" ? data.login_url : "";
+      if (error || !password) {
+        toast.error("Não consegui gerar a senha", {
+          description: error?.message || data?.error || "Tente de novo",
+        });
+        return;
+      }
+      const nome = ((data?.display_name || fallbackName || "aluna").trim().split(/\s+/)[0]) || "aluna";
+      const message =
+        `Prontinho ${nome}, aqui está o seu login e senha:\n\n` +
+        `Login: ${email}\n` +
+        `Senha: ${password}\n\n` +
+        `Link para acesso: ${loginUrl}`;
+      const copied = await tryCopyToClipboard(message);
+      if (copied) {
+        toast.success("Senha gerada e mensagem copiada!", {
+          description: "Cola no WhatsApp da aluna. A senha antiga deixou de valer.",
+          duration: 5000,
+        });
+      }
+      // Abre o modal de qualquer forma pra o admin VER a senha e recopiar.
+      setPasswordModal({ name: nome, email, password, loginUrl, message });
     } finally {
       setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
     }
@@ -1022,6 +1066,21 @@ export default function Admin() {
                             Reenviar email
                           </button>
 
+                          {/* Gerar senha + copiar mensagem pronta (login+senha+link) */}
+                          <button
+                            onClick={() => generatePasswordAndCopy(s.user_id, s.display_name)}
+                            disabled={firstAccessBusy[s.user_id] === "pw"}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Gera uma senha nova pro aluno (substitui a anterior) e copia a mensagem pronta com login, senha e link de acesso"
+                          >
+                            {firstAccessBusy[s.user_id] === "pw" ? (
+                              <span className="size-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <span className="material-symbols-outlined text-base">key</span>
+                            )}
+                            Senha + copiar
+                          </button>
+
                           {/* Adicionar a grupo — dropdown alinhado ao design system */}
                           {accessGroups.length > 0 && accessGroups.filter((g) => !s.groups.some((sg) => sg.id === g.id)).length > 0 && (
                             <div className="relative">
@@ -1415,6 +1474,72 @@ export default function Admin() {
                           Copiar
                         </button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {passwordModal && (
+                <div
+                  className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
+                  onClick={() => setPasswordModal(null)}
+                >
+                  <div
+                    className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="text-center mb-4">
+                      <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                        <span className="material-symbols-outlined text-primary text-2xl">key</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Senha gerada</h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Mensagem pronta pra mandar pra {passwordModal.name}. Já copiei pro seu clipboard.
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2 text-[11px] text-primary bg-primary/10 border border-primary/20 rounded-lg px-3 py-2 mb-3">
+                      <span className="material-symbols-outlined text-sm mt-0.5">warning</span>
+                      <span>Essa senha <strong>substitui</strong> qualquer senha anterior da aluna — a antiga deixou de funcionar.</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 mb-3">
+                      <div className="flex items-center justify-between gap-2 bg-background border border-border rounded-lg px-3 py-2">
+                        <span className="text-[11px] text-muted-foreground shrink-0">Login</span>
+                        <span className="text-sm font-mono truncate">{passwordModal.email}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 bg-background border border-border rounded-lg px-3 py-2">
+                        <span className="text-[11px] text-muted-foreground shrink-0">Senha</span>
+                        <span className="text-sm font-mono font-bold text-primary tracking-wide">{passwordModal.password}</span>
+                      </div>
+                    </div>
+
+                    <textarea
+                      readOnly
+                      value={passwordModal.message}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-xs whitespace-pre-wrap resize-none focus:outline-none focus:border-primary mb-3"
+                      rows={7}
+                    />
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPasswordModal(null)}
+                        className="flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-colors"
+                      >
+                        Fechar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const ok = await tryCopyToClipboard(passwordModal.message);
+                          if (ok) toast.success("Mensagem copiada!", { description: "Cola no WhatsApp da aluna.", duration: 4000 });
+                          else toast.error("Não consegui copiar", { description: "Seleciona o texto acima e copia com Ctrl+C." });
+                        }}
+                        className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <span className="material-symbols-outlined text-base">content_copy</span>
+                        Copiar mensagem
+                      </button>
                     </div>
                   </div>
                 </div>
