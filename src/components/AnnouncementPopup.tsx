@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
-import { safeRoute, safeExternal } from "@/lib/announcements";
+import { safeRoute, safeExternal, type Announcement } from "@/lib/announcements";
 
 // ─── AnnouncementPopup ───────────────────────────────────────────────────────
 // Popup de aviso do admin, mostrado 1x pra aluna no próximo login (controle
@@ -15,9 +15,16 @@ import { safeRoute, safeExternal } from "@/lib/announcements";
 //     visto — não reaparece.
 // =============================================================================
 
-export function AnnouncementPopup() {
-  const { announcement, dismiss } = useAnnouncements();
+export function AnnouncementPopup({ previewData }: { previewData?: Announcement } = {}) {
+  const live = useAnnouncements();
+  const [previewOpen, setPreviewOpen] = useState(true);
   const nav = useNavigate();
+
+  // Modo preview (rota interna /preview-alert): renderiza o aviso passado por
+  // prop, sem depender de auth/RPC. Em produção, previewData é undefined e usa
+  // o hook normalmente.
+  const announcement = previewData ? (previewOpen ? previewData : null) : live.announcement;
+  const dismiss = previewData ? () => setPreviewOpen(false) : live.dismiss;
 
   // Confetti sutil quando o aviso aparece (é notícia boa).
   useEffect(() => {

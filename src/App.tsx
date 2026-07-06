@@ -15,6 +15,7 @@ import SalesPage from "./pages/SalesPage";
 import CourseInfo from "./pages/CourseInfo";
 import FirstAccess from "./pages/FirstAccess";
 import PreviewUnlock from "./pages/PreviewUnlock";
+import PreviewAlert from "./pages/PreviewAlert";
 import { CarCursor } from "./components/CarCursor";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
