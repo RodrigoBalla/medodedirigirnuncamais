@@ -122,7 +122,6 @@ export function NpsTab() {
     );
   }
 
-  const npsTone = summary.nps >= 50 ? "text-emerald-500" : summary.nps >= 0 ? "text-primary" : "text-destructive";
   const npsVerdict = summary.nps >= 70 ? "Excelente" : summary.nps >= 50 ? "Ótimo" : summary.nps >= 0 ? "Ok, dá pra melhorar" : "Precisa de atenção";
   const drivingNow = (summary.driving["sozinha"] || 0) + (summary.driving["acompanhada"] || 0);
   const improvement = Number(summary.fear_after) - Number(summary.fear_before);
@@ -154,17 +153,17 @@ export function NpsTab() {
 
       {/* 1 · Recomendam? */}
       <Block n={next()} question="As alunas recomendam o curso pra uma amiga?"
-        answer={<span>NPS <b className={`text-lg ${npsTone}`}>{summary.nps}</b> — <b className={npsTone}>{npsVerdict}</b>. Nota média <b>{num(summary.avg_score)}</b> de 10.</span>}
-        hint="NPS = % de promotoras (nota 9-10) menos % de detratoras (nota 0-6). Acima de 50 é ótimo, acima de 70 é excelente.">
+        answer={<span><b className="text-xl text-emerald-500">{pct(summary.promoters, total)}%</b> recomendam de olho fechado — deram nota 9 ou 10. A nota média foi <b>{num(summary.avg_score)}</b> de 10.</span>}
+        hint={`Em "linguajar de pesquisa" isso vira um NPS de ${summary.nps} (${npsVerdict}) — a conta é % de promotoras menos % de detratoras; acima de 50 já é ótimo.`}>
         <div className="flex h-9 rounded-lg overflow-hidden text-[11px] font-black mb-2">
           {summary.promoters > 0 && <div style={{ width: `${pct(summary.promoters, total)}%`, background: GREEN }} className="flex items-center justify-center text-white">{summary.promoters}</div>}
           {summary.passives > 0 && <div style={{ width: `${pct(summary.passives, total)}%`, background: GRAY }} className="flex items-center justify-center text-white">{summary.passives}</div>}
           {summary.detractors > 0 && <div style={{ width: `${pct(summary.detractors, total)}%`, background: RED }} className="flex items-center justify-center text-white">{summary.detractors}</div>}
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-foreground">
-          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: GREEN }} />Promotoras (9-10): <b>{summary.promoters}</b></span>
+          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: GREEN }} />Recomendam muito (9-10): <b>{summary.promoters}</b></span>
           <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: GRAY }} />Neutras (7-8): <b>{summary.passives}</b></span>
-          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: RED }} />Detratoras (0-6): <b>{summary.detractors}</b></span>
+          <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: RED }} />Insatisfeitas (0-6): <b>{summary.detractors}</b></span>
         </div>
       </Block>
 
