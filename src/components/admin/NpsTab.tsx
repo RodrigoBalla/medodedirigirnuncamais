@@ -83,7 +83,7 @@ export function NpsTab() {
       if (res.error || res.data?.error) {
         toast.error("Não consegui catalogar", {
           description: res.data?.error === "missing_api_key"
-            ? "Falta configurar a API key da IA no Supabase (secret ANTHROPIC_API_KEY)."
+            ? "Falta configurar a chave da IA no Supabase (secret OPENAI_API_KEY)."
             : res.error?.message || res.data?.error || "Tente de novo",
         });
         return;

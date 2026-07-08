@@ -2,11 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 // ─── nps-catalog ─────────────────────────────────────────────────────────────
-// Cataloga as respostas abertas da Pesquisa NPS com IA (Claude):
+// Cataloga as respostas abertas da Pesquisa NPS com IA (OpenAI):
 //   • sentimento (positive/neutral/negative)
 //   • temas curtos (ex.: "didática", "quer aulas ao vivo", "ansiedade")
 //   • resumo de 1 frase
-// Só admin. Usa service role pra ler/gravar. Precisa do secret ANTHROPIC_API_KEY.
+// Só admin. Usa service role pra ler/gravar. Precisa do secret OPENAI_API_KEY.
 // action="catalog_all" → processa todas as respostas ainda não catalogadas.
 // =============================================================================
 
@@ -15,7 +15,7 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-const MODEL = Deno.env.get("ANTHROPIC_MODEL") || "claude-haiku-4-5-20251001";
+const MODEL = Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
@@ -31,33 +31,35 @@ async function classify(apiKey: string, items: Item[]): Promise<Record<string, {
     `- themes: 1 a 3 temas CURTOS em português (2-3 palavras), ex: "didática ótima", "quer aulas ao vivo", "ansiedade no volante", "preço", "quer mais prática", "suporte".\n` +
     `- summary: 1 frase curta resumindo a resposta.\n` +
     `Considere a nota (nps_score 0-10) junto do texto.\n` +
-    `Responda SOMENTE com um array JSON válido, sem texto fora dele, no formato:\n` +
-    `[{"id":"<id>","sentiment":"...","themes":["...","..."],"summary":"..."}]\n\n` +
+    `Responda SOMENTE com um objeto JSON no formato:\n` +
+    `{"results":[{"id":"<id>","sentiment":"...","themes":["...","..."],"summary":"..."}]}\n\n` +
     `Respostas:\n${JSON.stringify(items)}`;
 
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
+      "Authorization": `Bearer ${apiKey}`,
       "content-type": "application/json",
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "Você é um analista de pesquisa. Responda apenas com JSON válido." },
+        { role: "user", content: prompt },
+      ],
     }),
   });
   if (!r.ok) {
     const t = await r.text();
-    throw new Error(`anthropic_${r.status}: ${t.slice(0, 300)}`);
+    throw new Error(`openai_${r.status}: ${t.slice(0, 300)}`);
   }
   const data = await r.json();
-  const text: string = data?.content?.[0]?.text || "";
-  const start = text.indexOf("[");
-  const end = text.lastIndexOf("]");
-  if (start < 0 || end < 0) throw new Error("no_json_in_response");
-  const arr = JSON.parse(text.slice(start, end + 1)) as Array<{ id: string; sentiment: string; themes: string[]; summary: string }>;
+  const text: string = data?.choices?.[0]?.message?.content || "";
+  const parsed = JSON.parse(text);
+  const arr: Array<{ id: string; sentiment: string; themes: string[]; summary: string }> =
+    Array.isArray(parsed) ? parsed : (parsed.results || parsed.data || parsed.items || []);
   const out: Record<string, { sentiment: string; themes: string[]; summary: string }> = {};
   for (const x of arr) {
     if (!x?.id) continue;
@@ -78,9 +80,8 @@ Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
 
-  // 1. Admin?
   const authHeader = req.headers.get("Authorization") || "";
   const userClient = createClient(url, anon, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
   const { data: { user } } = await userClient.auth.getUser();
@@ -92,7 +93,6 @@ Deno.serve(async (req) => {
 
   if (!apiKey) return json({ error: "missing_api_key" }, 400);
 
-  // 2. Pega respostas ainda não catalogadas
   const { data: rows, error } = await svc
     .from("nps_responses")
     .select("id, nps_score, reason, missing, testimonial, wants_more")
@@ -118,13 +118,11 @@ Deno.serve(async (req) => {
     return json({ error: "ai_failed", detail: String(e) }, 500);
   }
 
-  // 3. Grava
   let processed = 0;
   for (const it of items) {
     const res = results[it.id];
     const patch = res
       ? { ai_sentiment: res.sentiment, ai_themes: res.themes, ai_summary: res.summary, ai_processed_at: new Date().toISOString() }
-      // sem retorno da IA: fallback pelo score, marca processado pra não travar
       : { ai_sentiment: it.nps_score >= 9 ? "positive" : it.nps_score <= 6 ? "negative" : "neutral", ai_themes: [], ai_summary: null, ai_processed_at: new Date().toISOString() };
     const { error: upErr } = await svc.from("nps_responses").update(patch).eq("id", it.id);
     if (!upErr) processed++;
