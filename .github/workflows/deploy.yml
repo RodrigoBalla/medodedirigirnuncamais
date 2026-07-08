@@ -65,10 +65,14 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          # Passa a commit message por ENV (NÃO interpolada com ${{…}} dentro do
+          # script) — senão parênteses/aspas/múltiplas linhas quebram o bash
+          # ("syntax error near unexpected token"). Também fecha o risco de
+          # injeção de shell via mensagem de commit.
+          COMMIT_MSG: ${{ github.event.head_commit.message || 'Manual workflow_dispatch' }}
         run: |
-          # Pega só a primeira linha da commit message pra evitar problemas com
-          # múltiplas linhas quebrarem o shell parsing do --message="...".
-          MSG=$(echo "${{ github.event.head_commit.message || 'Manual workflow_dispatch' }}" | head -1)
+          # Só a 1ª linha da mensagem, lida do env de forma segura.
+          MSG=$(printf '%s' "$COMMIT_MSG" | head -1)
           npx netlify deploy \
             --prod \
             --dir=dist \
