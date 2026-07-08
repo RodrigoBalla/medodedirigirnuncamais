@@ -17,8 +17,9 @@ import { PhoneEditor } from "@/components/admin/PhoneEditor";
 import { StudentAccessPreview } from "@/components/admin/StudentAccessPreview";
 import MessagesManager from "@/components/admin/MessagesManager";
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
+import { NpsTab } from "@/components/admin/NpsTab";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps";
 
 interface AccessGroup {
   id: string;
@@ -662,6 +663,7 @@ export default function Admin() {
     { key: "groups", icon: "lock_open", label: "Grupos" },
     { key: "notifications", icon: "campaign", label: "Notificações" },
     { key: "messages", icon: "chat", label: "Mensagens" },
+    { key: "nps", icon: "insights", label: "Pesquisa NPS" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
@@ -1686,6 +1688,8 @@ export default function Admin() {
           {tab === "notifications" && <NotificationsManager />}
 
           {tab === "messages" && <MessagesManager />}
+
+          {tab === "nps" && <NpsTab />}
 
           {tab === "comments" && <CommentsModeration />}
 

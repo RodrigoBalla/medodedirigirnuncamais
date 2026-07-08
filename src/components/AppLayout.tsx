@@ -17,6 +17,7 @@ import { useDetectNewModules } from "@/hooks/useDetectNewModules";
 import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
 import { StudentMessenger } from "@/components/StudentMessenger";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
+import { NpsSurvey } from "@/components/NpsSurvey";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -480,6 +481,9 @@ export function AppLayout({
           (controle server-side por user + grupo). Ex.: aulas novas no módulo.
           Admin não vê (previa via conta de teste de aluna). */}
       {!isAdmin && <AnnouncementPopup />}
+
+      {/* Pesquisa NPS gamificada (1x por aluna, recompensa em moedas). */}
+      {!isAdmin && <NpsSurvey />}
 
       {/* Mobile Bottom Navigation — fita de advertência fininha logo acima.
           Pra alunas só aparecem 3 ícones (Cursos/Comunidade/Perfil) — admin
