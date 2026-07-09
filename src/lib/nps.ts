@@ -178,3 +178,45 @@ export function checkoutSlug(url: string | null | undefined): string | null {
 
 // WhatsApp da equipe pra ativação de desconto (mesmo do cashback)
 export const NPS_WHATSAPP = "5521993685289";
+
+// ─── Fluxo por EMAIL (pesquisa independente, sem login) ──────────────────────
+export interface LockedModuleLite {
+  id: string;
+  title: string;
+  image_url: string | null;
+  checkout_slug: string | null;
+}
+
+export async function checkEmail(email: string): Promise<{ found: boolean; alreadyResponded: boolean; firstName: string | null }> {
+  const { data, error } = await npsDb.rpc("nps_check_email", { p_email: email });
+  const r = Array.isArray(data) ? data[0] : data;
+  if (error || !r) return { found: false, alreadyResponded: false, firstName: null };
+  return { found: !!r.email_found, alreadyResponded: !!r.already_responded, firstName: r.first_name ?? null };
+}
+
+export async function submitByEmail(
+  email: string,
+  answers: Record<string, unknown>,
+): Promise<{ reward: number; balance: number; found: boolean; alreadyResponded: boolean } | null> {
+  const { data, error } = await npsDb.rpc("submit_nps_by_email", { p_email: email, p: answers });
+  if (error) return null;
+  const r = Array.isArray(data) ? data[0] : data;
+  return {
+    reward: Number(r?.reward_coins) || 0,
+    balance: Number(r?.balance) || 0,
+    found: !!r?.email_found,
+    alreadyResponded: !!r?.already_responded,
+  };
+}
+
+export async function lockedModulesByEmail(email: string): Promise<LockedModuleLite[]> {
+  const { data } = await npsDb.rpc("nps_locked_modules", { p_email: email });
+  return (Array.isArray(data) ? data : [])
+    .map((p: any) => ({ id: p.id, title: p.title, image_url: p.image_url, checkout_slug: checkoutSlug(p.checkout_url) }))
+    .filter((m: LockedModuleLite) => m.checkout_slug);
+}
+
+// Validação simples de email no front (só pra UX; o servidor é a fonte da verdade).
+export function looksLikeEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v || "").trim());
+}
