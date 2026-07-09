@@ -68,6 +68,22 @@ function HBars({ data, empty }: { data: { name: string; value: number }[]; empty
   );
 }
 
+// Barra de confiança (0 a 5) que atravessa a largura — pro Antes/Agora.
+function ConfBar({ label, value, primary, delta }: { label: string; value: number; primary?: boolean; delta?: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-14 shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground text-right">{label}</span>
+      <div className="flex-1 h-8 bg-muted/60 rounded-lg overflow-hidden">
+        <div className={`h-full rounded-lg ${primary ? "bg-primary" : "bg-muted-foreground/40"}`} style={{ width: `${(value / 5) * 100}%`, minWidth: 8 }} />
+      </div>
+      <span className={`w-24 shrink-0 text-right text-xl font-black ${primary ? "text-primary" : "text-muted-foreground"}`}>
+        {num(value)}
+        {primary && (delta ?? 0) > 0 && <span className="text-xs text-emerald-500 ml-1 align-middle">+{num(Number((delta as number).toFixed(1)))}</span>}
+      </span>
+    </div>
+  );
+}
+
 export function NpsTab() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [rows, setRows] = useState<ResponseRow[]>([]);
@@ -134,7 +150,7 @@ export function NpsTab() {
   const next = () => ++bn;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-3">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold">Pesquisa NPS · {total} resposta{total === 1 ? "" : "s"}</h2>
@@ -173,19 +189,9 @@ export function NpsTab() {
           ? <span>Sim — a confiança subiu de <b>{num(summary.fear_before)}</b> pra <b className="text-emerald-500">{num(summary.fear_after)}</b> (numa escala de 1 a 5).</span>
           : <span>Confiança: antes <b>{num(summary.fear_before)}</b>, agora <b>{num(summary.fear_after)}</b>.</span>}
         hint="Média do quanto elas se sentem seguras no volante. 1 = travava de medo · 5 = dirige tranquila. Esse salto é seu case de venda mais forte.">
-        <div className="flex items-center justify-center gap-6 py-2">
-          <div className="text-center">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Antes</p>
-            <p className="text-4xl font-black text-muted-foreground">{num(summary.fear_before)}</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="material-symbols-outlined text-primary text-4xl">trending_flat</span>
-            {improvement > 0 && <span className="text-sm font-black text-emerald-500">+{num(Number(improvement.toFixed(1)))}</span>}
-          </div>
-          <div className="text-center">
-            <p className="text-[10px] uppercase tracking-widest text-primary mb-1">Agora</p>
-            <p className="text-4xl font-black text-primary">{num(summary.fear_after)}</p>
-          </div>
+        <div className="space-y-2.5 py-1">
+          <ConfBar label="Antes" value={summary.fear_before} />
+          <ConfBar label="Agora" value={summary.fear_after} primary delta={improvement} />
         </div>
       </Block>
 
