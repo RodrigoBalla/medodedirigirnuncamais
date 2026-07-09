@@ -16,6 +16,7 @@ import CourseInfo from "./pages/CourseInfo";
 import FirstAccess from "./pages/FirstAccess";
 import PreviewUnlock from "./pages/PreviewUnlock";
 import PreviewAlert from "./pages/PreviewAlert";
+import Pesquisa from "./pages/Pesquisa";
 import { CarCursor } from "./components/CarCursor";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -69,6 +70,7 @@ const App = () => (
                   <Route path="/conclusao" element={<CompletionScreen />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/login" element={<Auth />} />
+                  <Route path="/pesquisa" element={<Pesquisa />} />
                   <Route path="/vendas" element={<SalesPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
