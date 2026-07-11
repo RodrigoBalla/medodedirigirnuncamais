@@ -4846,7 +4846,7 @@
           <div class="hero__cta-pack__urgency">
             <div id="vagasBarFill" class="hero__cta-pack__bar-fill"></div>
             <span class="vagas-counter__label">Vagas limitadas</span>
-            <span class="hero__cta-pack__count">Restam <strong id="vagasRemaining">100</strong>/100</span>
+            <span class="hero__cta-pack__count" id="vagasCountText">Restam <strong id="vagasRemaining">100</strong>/100</span>
             <span class="hero__cta-pack__sold-out">Esgotado!</span>
             <span class="hero__cta-pack__tail">depois vira lista de espera</span>
           </div>
@@ -5806,7 +5806,7 @@
     <div class="vagas-counter" id="modalVagasCounter" data-vagas-mode="open">
       <div class="vagas-counter__head">
         <span class="vagas-counter__label">Vagas limitadas</span>
-        <span class="vagas-counter__count">
+        <span class="vagas-counter__count" id="modalVagasCountText">
           Restam <strong id="modalVagasRemaining">100</strong> de 100
         </span>
       </div>
@@ -6504,16 +6504,22 @@
   // Lê o número de inscritos da tabela enrolled_emails (populada pelo
   // webhook da Eduzz quando a venda é aprovada). Quando atinge 100,
   // o site muda automaticamente pra modo "lista de espera".
-  const VAGAS_TOTAL = 100;
-  let vagasRestantes = VAGAS_TOTAL; // valor inicial otimista; atualiza ao carregar
+  const VAGAS_TOTAL = 100;            // turma 1
+  const CAP_T2 = 200;                  // turma 2 = limite máximo de vagas
+  let totalInscritos = 0;              // nº de ALUNAS com acesso (RPC inscritos_total)
   let modoListaEspera = false;
+  const _npUrl = new URL(location.href);
+  const _previewInscritos = _npUrl.searchParams.has('inscritos') ? parseInt(_npUrl.searchParams.get('inscritos'), 10) : null;
+  const _forceCelebra = _npUrl.searchParams.get('celebra') === '1';
+  function setTotalInscritos(n) { totalInscritos = Math.max(0, n | 0); renderVagas(); maybeCelebrate(); }
 
   async function carregarVagas() {
+    if (_previewInscritos != null && !isNaN(_previewInscritos)) { setTotalInscritos(_previewInscritos); return; }
     const SUPABASE_URL  = 'https://qkvinhzwiptfobdvsdtr.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdmluaHp3aXB0Zm9iZHZzZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzE5NzYsImV4cCI6MjA5MDA0Nzk3Nn0.HdleSrgGuymiA3a72aAITy0K5wHaYvcVmESYNzSGZ-M';
     try {
-      // RPC esperada: public.vagas_disponiveis() retornando int (100 - count(enrolled_emails))
-      const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/vagas_disponiveis', {
+      // RPC: public.inscritos_total() = nº de alunas com acesso (distinct). Turma 1 <100 · turma 2 100–199.
+      const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/inscritos_total', {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_ANON,
@@ -6526,18 +6532,15 @@
         const v = await r.json();
         const num = typeof v === 'number' ? v : parseInt(v, 10);
         if (!isNaN(num)) {
-          vagasRestantes = Math.max(0, Math.min(VAGAS_TOTAL, num));
-          renderVagas();
+          setTotalInscritos(num);
           return;
         }
       }
     } catch (e) {
       console.warn('[vagas] falha ao buscar contagem:', e);
     }
-    // Fallback caso a RPC ainda não exista, assume 73 vagas restantes
-    // (urgência sem ser irrealista). Substitua por valor real quando criar a RPC.
-    vagasRestantes = 73;
-    renderVagas();
+    // Fallback se a RPC falhar: usa um número realista de alunas.
+    setTotalInscritos(83);
   }
 
   // Interpolação de cor: 0% preenchido = verde, 50% = amarelo, 100% = vermelho
@@ -6560,61 +6563,61 @@
   }
 
   function renderVagas() {
-    const pct = (vagasRestantes / VAGAS_TOTAL) * 100;
-    const pctFilled = 100 - pct; // 1 inscrito = ~1% preenchido (verde) / 100 = vermelho
-    modoListaEspera = vagasRestantes <= 0;
+    const total = totalInscritos;
+    const turma2 = total >= VAGAS_TOTAL;            // >=100 → segunda turma
+    const cap = turma2 ? CAP_T2 : VAGAS_TOTAL;
+    const remaining = Math.max(0, cap - total);
+    modoListaEspera = total >= CAP_T2;               // turma 2 cheia (>=200)
+    const pctFilled = Math.min(100, (total / cap) * 100);
 
-    // Atualiza todos os contadores (hero + modal)
-    document.querySelectorAll('#vagasRemaining, #modalVagasRemaining').forEach(el => {
-      el.textContent = vagasRestantes;
-    });
+    // Texto do contador. Turma 1: "Restam X/100". Turma 2: "X/200 alunas" (conta de 100 até 200).
+    const heroTxt = document.getElementById('vagasCountText');
+    if (heroTxt) heroTxt.innerHTML = turma2
+      ? '<strong id="vagasRemaining">' + total + '</strong>/' + CAP_T2 + ' alunas'
+      : 'Restam <strong id="vagasRemaining">' + remaining + '</strong>/' + VAGAS_TOTAL;
+    const modalTxt = document.getElementById('modalVagasCountText');
+    if (modalTxt) modalTxt.innerHTML = turma2
+      ? '<strong id="modalVagasRemaining">' + total + '</strong> de ' + CAP_T2 + ' alunas'
+      : 'Restam <strong id="modalVagasRemaining">' + remaining + '</strong> de ' + VAGAS_TOTAL;
 
-    // Barra preenche por trás do strip de acordo com quantos inscritos ,
-    // 1 inscrito = ~1% verde, 100 = 100% vermelho + ESGOTADO
+    // Barra
     document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
-      const isHeroFill = el.id === 'vagasBarFill'; // hero usa background com opacity
+      const isHeroFill = el.id === 'vagasBarFill';
       if (modoListaEspera) {
         el.style.width = '100%';
         el.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
         el.style.opacity = isHeroFill ? '.45' : '1';
         if (!isHeroFill) el.style.boxShadow = '0 0 12px rgba(239, 68, 68, .6)';
       } else {
-        // Mínimo de 4% pra dar visual mesmo com 1 inscrito (toque verde sutil)
         const widthShown = Math.max(pctFilled, pctFilled > 0 ? 4 : 0);
         el.style.width = widthShown + '%';
         const c1 = getUrgencyColor(pctFilled);
         const c2 = getUrgencyColor(Math.min(100, pctFilled + 20));
         el.style.background = `linear-gradient(90deg, ${c1.css}, ${c2.css})`;
-        if (isHeroFill) {
-          el.style.opacity = '.28';
-        } else {
-          el.style.opacity = '1';
-          el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
-        }
+        el.style.opacity = isHeroFill ? '.28' : '1';
+        if (!isHeroFill) el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
       }
     });
 
     document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
       el.classList.toggle('is-waitlist', modoListaEspera);
-      // Crítico, só passa pra vermelho quando >80% da turma já está preenchida
       el.classList.toggle('is-critical', !modoListaEspera && pctFilled >= 80);
       el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
     });
 
-    // Hint do hero muda quando esgota
     const hint = document.getElementById('vagasHint');
     if (hint) {
       hint.innerHTML = modoListaEspera
         ? 'Vagas <strong>esgotadas</strong>. Entre na lista de espera abaixo.'
-        : 'Quando zerar, novas inscrições entram em <strong>lista de espera</strong>.';
+        : turma2
+          ? '🎉 <strong>Segunda turma aberta!</strong> Garanta sua vaga antes de esgotar.'
+          : 'Quando zerar, novas inscrições entram em <strong>lista de espera</strong>.';
     }
 
-    // Rótulo das contagens muda no modo lista de espera
     document.querySelectorAll('.vagas-counter__label').forEach(el => {
-      el.textContent = modoListaEspera ? 'Lista de espera' : 'Vagas limitadas';
+      el.textContent = modoListaEspera ? 'Lista de espera' : (turma2 ? 'Segunda turma' : 'Vagas limitadas');
     });
 
-    // Modal, título, subtítulo, botão e CTAs externos mudam quando esgota
     const modalTitle  = document.getElementById('modalTitle');
     const modalSub    = document.getElementById('modalSub');
     const modalSubmit = document.getElementById('modalSubmit');
@@ -6622,12 +6625,51 @@
       if (modalTitle)  modalTitle.innerHTML  = 'Entre na <span>lista de espera</span>';
       if (modalSub)    modalSub.textContent = 'Vagas esgotadas. Te avisamos quando reabrir:';
       if (modalSubmit) modalSubmit.textContent = 'ENTRAR NA LISTA DE ESPERA →';
+    } else if (turma2) {
+      if (modalTitle)  modalTitle.innerHTML  = 'Vaga na <span>segunda turma</span>';
+      if (modalSub)    modalSub.textContent = 'Somos +100 alunas! Preencha pra garantir a sua:';
+      if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
     } else {
       if (modalTitle)  modalTitle.innerHTML  = 'Falta pouco pra <span>sua liberdade</span>';
       if (modalSub)    modalSub.textContent = 'Preencha pra ir pro checkout seguro:';
       if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
     }
   }
+
+  // ── Comemoração dos 100 alunos (entra na 2ª turma) ──────────────────────
+  let _celebrated = false;
+  function maybeCelebrate() {
+    if (_celebrated) return;
+    let already = false; try { already = localStorage.getItem('mddnm_turma2_celebrated') === '1'; } catch (e) {}
+    if ((totalInscritos >= VAGAS_TOTAL && !already) || _forceCelebra) { _celebrated = true; showTurma2Celebration(); }
+  }
+  function ensureCelebraDom() {
+    if (document.getElementById('turma2Celebration')) return;
+    const st = document.createElement('style');
+    st.textContent = '.celebra{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:20px}.celebra.is-open{display:flex}.celebra__bg{position:absolute;inset:0;background:rgba(4,10,22,.86);backdrop-filter:blur(8px)}.celebra__card{position:relative;z-index:2;max-width:440px;width:100%;background:linear-gradient(160deg,#12264e,#0b1a38);border:2px solid rgba(255,214,10,.4);border-radius:28px;padding:38px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:celIn .5s cubic-bezier(.2,.9,.3,1.3)}@keyframes celIn{from{opacity:0;transform:translateY(30px) scale(.9)}to{opacity:1;transform:none}}.celebra__x{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.08);border:none;color:#cbd5e1;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1}.celebra__emoji{font-size:64px;line-height:1;margin-bottom:6px;animation:celPop 2s ease-in-out infinite}@keyframes celPop{0%,100%{transform:scale(1) rotate(-4deg)}50%{transform:scale(1.12) rotate(4deg)}}.celebra__badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#FFD60A;background:rgba(255,214,10,.12);border:1px solid rgba(255,214,10,.35);padding:5px 12px;border-radius:100px;margin-bottom:14px}.celebra__title{font-size:34px;line-height:1.05;font-weight:900;color:#fff;margin:0 0 10px}.celebra__title span{color:#FFD60A;text-shadow:0 0 30px rgba(255,214,10,.5)}.celebra__sub{font-size:16px;color:#cbd5e1;margin:0 0 24px}.celebra__sub strong{color:#fff}.celebra__cta{width:100%}.celebra__cf{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}.celebra__pc{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;opacity:.95;animation:celFall linear forwards}@keyframes celFall{to{transform:translateY(110vh) translateX(var(--drift,20px)) rotate(720deg);opacity:0}}.celebra{opacity:1;transition:opacity .45s ease}.celebra.is-closing{opacity:0}';
+    document.head.appendChild(st);
+    const el = document.createElement('div');
+    el.id = 'turma2Celebration'; el.className = 'celebra';
+    el.innerHTML = '<div class="celebra__bg"></div><div class="celebra__cf" id="celebraCf"></div><div class="celebra__card"><div class="celebra__emoji">🎉</div><div class="celebra__badge">Marco desbloqueado</div><h2 class="celebra__title">Somos <span>100 alunos!</span></h2><p class="celebra__sub">Inscrições para a <strong>segunda turma</strong> abertas!</p></div>';
+    document.body.appendChild(el);
+  }
+  function fireCelebraConfetti() {
+    const box = document.getElementById('celebraCf'); if (!box) return;
+    const colors = ['#FFD60A', '#FFC700', '#10b981', '#ffffff', '#3b82f6', '#ef4444'];
+    for (let i = 0; i < 90; i++) {
+      const p = document.createElement('span'); p.className = 'celebra__pc';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = colors[i % colors.length];
+      p.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
+      p.style.animationDelay = (Math.random() * .5) + 's';
+      p.style.animationDuration = (2.4 + Math.random() * 2) + 's';
+      box.appendChild(p);
+      setTimeout(function () { p.remove(); }, 4800);
+    }
+  }
+  function showTurma2Celebration() { ensureCelebraDom(); const el = document.getElementById('turma2Celebration'); el.classList.add('is-open'); fireCelebraConfetti(); setTimeout(closeTurma2Celebration, 5000); }
+  function closeTurma2Celebration() { const el = document.getElementById('turma2Celebration'); if (el) { el.classList.add('is-closing'); setTimeout(function () { el.classList.remove('is-open', 'is-closing'); }, 460); } try { localStorage.setItem('mddnm_turma2_celebrated', '1'); } catch (e) {} }
+  window.closeTurma2Celebration = closeTurma2Celebration;
 
   // Carrega ao iniciar e revalida a cada 60s caso o usuário fique muito tempo na página
   carregarVagas();
