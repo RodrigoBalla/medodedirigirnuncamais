@@ -18,8 +18,9 @@ import { StudentAccessPreview } from "@/components/admin/StudentAccessPreview";
 import MessagesManager from "@/components/admin/MessagesManager";
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { NpsTab } from "@/components/admin/NpsTab";
+import { TrafegoTab } from "@/components/admin/TrafegoTab";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego";
 
 interface AccessGroup {
   id: string;
@@ -657,6 +658,7 @@ export default function Admin() {
 
   const TABS: { key: AdminTab; icon: string; label: string }[] = [
     { key: "dashboard", icon: "dashboard", label: "Dashboard" },
+    { key: "trafego", icon: "speed", label: "Tráfego" },
     { key: "analytics", icon: "monitoring", label: "Analytics" },
     { key: "students", icon: "group", label: "Alunos" },
     { key: "products", icon: "video_library", label: "Cursos" },
@@ -1690,6 +1692,7 @@ export default function Admin() {
           {tab === "messages" && <MessagesManager />}
 
           {tab === "nps" && <NpsTab />}
+          {tab === "trafego" && <TrafegoTab />}
 
           {tab === "comments" && <CommentsModeration />}
 
