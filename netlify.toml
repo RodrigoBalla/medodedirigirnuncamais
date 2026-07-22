@@ -36,6 +36,12 @@
   to     = "/carla.html"
   status = 200
 
+# Painel de tráfego ao vivo (estático, fora do SPA; protegido por chave ?k=).
+[[redirects]]
+  from   = "/trafego"
+  to     = "/trafego.html"
+  status = 200
+
 # Painel admin de comportamento/analytics (estático, fora do SPA).
 # Permite acessar tanto /admin-dash quanto /admin-dash.html
 [[redirects]]

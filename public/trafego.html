@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Tráfego ao vivo · Medo de Dirigir Nunca Mais</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1A38; --navy2:#122a4f; --navy3:#16264D;
+    --yellow:#FFD60A; --yellow-dim:#e6c009;
+    --ink:#EAF0FA; --ink2:#AEC0DC; --ink3:#7C90B4;
+    --line:rgba(255,255,255,.09); --green:#4ade80; --red:#f87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Lexend',system-ui,sans-serif;background:var(--navy);color:var(--ink);
+    background-image:radial-gradient(120% 80% at 50% -10%, #12294d 0%, var(--navy) 55%);
+    min-height:100vh;padding:22px 16px 60px;
+  }
+  .wrap{max-width:1060px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  h1{font-size:clamp(17px,3vw,22px);font-weight:900;letter-spacing:-.01em}
+  h1 span{color:var(--yellow)}
+  .upd{font-size:12px;color:var(--ink3);text-align:right}
+  .upd b{color:var(--ink2);font-variant-numeric:tabular-nums}
+
+  .sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:10px}
+  .sec h2{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
+  .sec small{font-size:11px;color:var(--ink3)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .card{background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .card .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+  .card .val{font-size:clamp(20px,3.4vw,28px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
+  .card .sub{font-size:11px;color:var(--ink3);margin-top:2px;font-variant-numeric:tabular-nums}
+  .card.hero{background:linear-gradient(135deg,#1a2f5c,var(--navy3));border-color:rgba(255,214,10,.35)}
+  .card.hero .val{color:var(--yellow)}
+  .good{color:var(--green)} .bad{color:var(--red)}
+
+  .banner{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.3);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink2);line-height:1.55;margin-top:10px}
+  .banner b{color:var(--yellow)}
+  .banner code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--yellow)}
+
+  table{width:100%;border-collapse:collapse;background:var(--navy3);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13px}
+  th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right}
+  .tblwrap{overflow-x:auto;border-radius:14px}
+  .mono{color:var(--ink2)}
+  .pill{display:inline-block;background:var(--yellow);color:var(--navy);font-weight:800;font-size:11px;padding:2px 9px;border-radius:999px}
+
+  .err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:10px}
+  .lock{max-width:420px;margin:16vh auto;text-align:center}
+  .lock .em{font-size:44px}
+  .lock h2{margin:12px 0 8px;font-size:20px}
+  .lock p{font-size:14px;color:var(--ink2);line-height:1.6}
+  footer{margin-top:34px;text-align:center;font-size:11px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="lock" id="lock" style="display:none">
+    <div class="em">🔒</div>
+    <h2>Painel protegido</h2>
+    <p>Este painel precisa da chave de acesso na URL.<br>Use o link completo que foi te enviado (com <b>?k=...</b>).</p>
+  </div>
+
+  <div id="dash" style="display:none">
+    <header>
+      <div class="brand">
+        <div class="dot"></div>
+        <h1>Tráfego <span>ao vivo</span> · MDNM</h1>
+      </div>
+      <div class="upd">Atualizado às <b id="updAt">—</b><br>próxima em <b id="updIn">—</b>s</div>
+    </header>
+
+    <div class="sec"><h2>💰 Vendas reais</h2><small>direto do banco · tempo real · fuso Brasília</small></div>
+    <div class="cards" id="vendasCards"></div>
+    <div class="tblwrap" style="margin-top:10px">
+      <table id="vendasTbl" style="display:none">
+        <thead><tr><th>Última vendas</th><th>Quando</th><th class="num">Valor</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="sec"><h2>📣 Meta Ads · hoje</h2><small>campanha VENDAS CBO · via API do Meta</small></div>
+    <div id="metaWrap"></div>
+
+    <div class="sec" id="secAds" style="display:none"><h2>🏁 Por anúncio · hoje</h2><small>só quem teve entrega</small></div>
+    <div class="tblwrap"><table id="adsTbl" style="display:none">
+      <thead><tr><th>Anúncio</th><th class="num">Gasto</th><th class="num">Impr.</th><th class="num">Cliques</th><th class="num">Compras</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+
+    <div class="sec" id="secTot" style="display:none"><h2>📊 Campanha · desde o início</h2></div>
+    <div class="cards" id="totCards"></div>
+
+    <footer>Medo de Dirigir Nunca Mais · painel interno · atualiza sozinho a cada 30s</footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  var K = new URLSearchParams(location.search).get('k');
+  if(!K){ document.getElementById('lock').style.display='block'; return; }
+  document.getElementById('dash').style.display='block';
+
+  var URL_FN = 'https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/ads-stats?k=' + encodeURIComponent(K);
+  var EVERY = 30, left = EVERY;
+
+  function brl(n){ return (n==null||isNaN(n)) ? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  function int(n){ return (n==null||isNaN(n)) ? '—' : Math.round(n).toLocaleString('pt-BR'); }
+  function card(lbl,val,sub,hero,cls){
+    return '<div class="card'+(hero?' hero':'')+'"><div class="lbl">'+lbl+'</div><div class="val '+(cls||'')+'">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
+  }
+  function hora(iso){
+    var d=new Date(iso);
+    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function render(d){
+    document.getElementById('updAt').textContent = new Date().toLocaleTimeString('pt-BR');
+
+    // vendas
+    var v = d.vendas || {};
+    if(!v.error){
+      document.getElementById('vendasCards').innerHTML =
+        card('Vendas hoje', int(v.hoje), null, true) +
+        card('Receita hoje', brl(v.receita_hoje), null, true) +
+        card('Vendas · 7 dias', int(v.semana)) +
+        card('Receita · 7 dias', brl(v.receita_semana));
+      var tb = document.getElementById('vendasTbl');
+      if(v.ultimas && v.ultimas.length){
+        tb.style.display='table';
+        tb.querySelector('tbody').innerHTML = v.ultimas.map(function(u){
+          return '<tr><td class="mono">'+u.email+'</td><td class="mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
+        }).join('');
+      }
+    } else {
+      document.getElementById('vendasCards').innerHTML = '<div class="err">Erro ao ler vendas: '+v.error+'</div>';
+    }
+
+    // meta
+    var m = d.meta || {};
+    var w = document.getElementById('metaWrap');
+    if(m.error === 'missing_token'){
+      w.innerHTML = '<div class="banner">⏳ <b>Métricas do Meta aguardando o token.</b> Falta adicionar o secret <code>META_ADS_TOKEN</code> no Supabase (token com permissão <code>ads_read</code>). As vendas acima já são tempo real; assim que o token entrar, esta seção liga sozinha.</div>';
+    } else if(m.error){
+      w.innerHTML = '<div class="err">Meta API: '+m.error+'</div>';
+    } else if(m.hoje){
+      var h=m.hoje, o=m.ontem||{};
+      w.innerHTML = '<div class="cards">' +
+        card('Investido hoje', brl(h.gasto), 'ontem: '+brl(o.gasto), true) +
+        card('Compras (Meta)', int(h.compras), 'ontem: '+int(o.compras)) +
+        card('ROAS', (h.roas?h.roas.toFixed(2):'—'), 'ontem: '+(o.roas?o.roas.toFixed(2):'—'), false, h.roas>=1?'good':(h.gasto>0?'bad':'')) +
+        card('CPA', h.compras>0?brl(h.cpa):'—') +
+        card('Cliques', int(h.cliques), 'CTR '+(h.ctr?h.ctr.toFixed(2)+'%':'—')) +
+        card('Impressões', int(h.impressoes), 'CPM '+brl(h.cpm)) +
+        '</div>';
+      if(m.anuncios_hoje && m.anuncios_hoje.length){
+        document.getElementById('secAds').style.display='flex';
+        var at = document.getElementById('adsTbl');
+        at.style.display='table';
+        at.querySelector('tbody').innerHTML = m.anuncios_hoje.map(function(a){
+          return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num">'+brl(a.gasto)+'</td><td class="num">'+int(a.impressoes)+'</td><td class="num">'+int(a.cliques)+'</td><td class="num">'+int(a.compras)+'</td></tr>';
+        }).join('');
+      }
+      if(m.total){
+        document.getElementById('secTot').style.display='flex';
+        document.getElementById('totCards').innerHTML =
+          card('Investido total', brl(m.total.gasto)) +
+          card('Compras', int(m.total.compras)) +
+          card('Receita (Meta)', brl(m.total.receita)) +
+          card('ROAS geral', m.total.roas?m.total.roas.toFixed(2):'—', null, false, m.total.roas>=1?'good':'');
+      }
+    }
+  }
+
+  function tick(){
+    left--;
+    if(left<=0){ left=EVERY; load(); }
+    document.getElementById('updIn').textContent = left;
+  }
+  function load(){
+    fetch(URL_FN).then(function(r){return r.json();}).then(render).catch(function(e){
+      document.getElementById('metaWrap').innerHTML = '<div class="err">Falha ao atualizar: '+e+'</div>';
+    });
+  }
+  load();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
