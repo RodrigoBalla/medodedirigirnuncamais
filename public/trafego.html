@@ -23,7 +23,7 @@
     min-height:100vh;padding:22px 16px 60px;
   }
   .wrap{max-width:1060px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
   .brand{display:flex;align-items:center;gap:10px}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -32,22 +32,38 @@
   .upd{font-size:12px;color:var(--ink3);text-align:right}
   .upd b{color:var(--ink2);font-variant-numeric:tabular-nums}
 
-  .sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:10px}
+  /* placar do dia */
+  .placar{
+    background:linear-gradient(135deg,#1a2f5c,var(--navy3));
+    border:1px solid rgba(255,214,10,.3);border-radius:20px;padding:22px;margin-bottom:14px;
+  }
+  .placar .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .placar .titulo{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:15px;
+    padding:8px 18px;border-radius:999px;letter-spacing:.06em;
+  }
+  .badge.pos{background:rgba(74,222,128,.14);color:var(--green);border:1px solid rgba(74,222,128,.4)}
+  .badge.neg{background:rgba(248,113,113,.14);color:var(--red);border:1px solid rgba(248,113,113,.4)}
+  .badge.wait{background:rgba(255,214,10,.1);color:var(--yellow);border:1px solid rgba(255,214,10,.3);font-size:12px}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .pcell .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+  .pcell .val{font-size:clamp(24px,4.5vw,38px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.1}
+  .pcell .sub{font-size:11px;color:var(--ink3);margin-top:3px}
+  .vyellow{color:var(--yellow)} .vgreen{color:var(--green)} .vred{color:var(--red)}
+
+  .sec{margin:20px 0 10px;display:flex;align-items:baseline;gap:10px}
   .sec h2{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
   .sec small{font-size:11px;color:var(--ink3)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .card{background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+  .card .lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+  .card .val{font-size:clamp(17px,2.6vw,23px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
 
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-  .card{background:var(--navy3);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-  .card .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
-  .card .val{font-size:clamp(20px,3.4vw,28px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
-  .card .sub{font-size:11px;color:var(--ink3);margin-top:2px;font-variant-numeric:tabular-nums}
-  .card.hero{background:linear-gradient(135deg,#1a2f5c,var(--navy3));border-color:rgba(255,214,10,.35)}
-  .card.hero .val{color:var(--yellow)}
-  .good{color:var(--green)} .bad{color:var(--red)}
-
-  .banner{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.3);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink2);line-height:1.55;margin-top:10px}
+  .banner{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.3);border-radius:12px;padding:13px 16px;font-size:13px;color:var(--ink2);line-height:1.55;margin-top:8px}
   .banner b{color:var(--yellow)}
   .banner code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--yellow)}
+  .err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:8px}
 
   table{width:100%;border-collapse:collapse;background:var(--navy3);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13px}
   th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700}
@@ -57,17 +73,17 @@
   .tblwrap{overflow-x:auto;border-radius:14px}
   .mono{color:var(--ink2)}
   .pill{display:inline-block;background:var(--yellow);color:var(--navy);font-weight:800;font-size:11px;padding:2px 9px;border-radius:999px}
+  .vazio{padding:18px;text-align:center;color:var(--ink3);font-size:13px;background:var(--navy3);border:1px dashed var(--line);border-radius:14px}
 
-  .err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:10px}
   .lock{max-width:420px;margin:16vh auto;text-align:center}
   .lock .em{font-size:44px}
   .lock h2{margin:12px 0 8px;font-size:20px}
   .lock p{font-size:14px;color:var(--ink2);line-height:1.6}
-  footer{margin-top:34px;text-align:center;font-size:11px;color:var(--ink3)}
+  footer{margin-top:32px;text-align:center;font-size:11px;color:var(--ink3)}
 </style>
 </head>
 <body>
-<div class="wrap" id="app">
+<div class="wrap">
   <div class="lock" id="lock" style="display:none">
     <div class="em">🔒</div>
     <h2>Painel protegido</h2>
@@ -76,26 +92,23 @@
 
   <div id="dash" style="display:none">
     <header>
-      <div class="brand">
-        <div class="dot"></div>
-        <h1>Tráfego <span>ao vivo</span> · MDNM</h1>
-      </div>
+      <div class="brand"><div class="dot"></div><h1>Placar do <span>dia</span> · MDNM</h1></div>
       <div class="upd">Atualizado às <b id="updAt">—</b><br>próxima em <b id="updIn">—</b>s</div>
     </header>
 
-    <div class="sec"><h2>💰 Vendas reais</h2><small>direto do banco · tempo real · fuso Brasília</small></div>
-    <div class="cards" id="vendasCards"></div>
-    <div class="tblwrap" style="margin-top:10px">
-      <table id="vendasTbl" style="display:none">
-        <thead><tr><th>Última vendas</th><th>Quando</th><th class="num">Valor</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="placar">
+      <div class="top">
+        <div class="titulo">⚡ Hoje · vendas × tráfego</div>
+        <div id="resultado"></div>
+      </div>
+      <div class="pgrid" id="placarGrid"></div>
+      <div id="metaAviso"></div>
     </div>
 
-    <div class="sec"><h2>📣 Meta Ads · hoje</h2><small>campanha VENDAS CBO · via API do Meta</small></div>
-    <div id="metaWrap"></div>
+    <div class="sec"><h2>💰 Vendas de hoje</h2><small>direto do banco (Eduzz) · tempo real · fuso Brasília</small></div>
+    <div id="vendasWrap"></div>
 
-    <div class="sec" id="secAds" style="display:none"><h2>🏁 Por anúncio · hoje</h2><small>só quem teve entrega</small></div>
+    <div class="sec" id="secAds" style="display:none"><h2>🏁 Por anúncio · hoje</h2><small>gasto e resultado de cada criativo (Meta)</small></div>
     <div class="tblwrap"><table id="adsTbl" style="display:none">
       <thead><tr><th>Anúncio</th><th class="num">Gasto</th><th class="num">Impr.</th><th class="num">Cliques</th><th class="num">Compras</th></tr></thead>
       <tbody></tbody>
@@ -119,70 +132,78 @@
 
   function brl(n){ return (n==null||isNaN(n)) ? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
   function int(n){ return (n==null||isNaN(n)) ? '—' : Math.round(n).toLocaleString('pt-BR'); }
-  function card(lbl,val,sub,hero,cls){
-    return '<div class="card'+(hero?' hero':'')+'"><div class="lbl">'+lbl+'</div><div class="val '+(cls||'')+'">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
-  }
-  function hora(iso){
-    var d=new Date(iso);
-    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  function hora(iso){ return new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  function pcell(lbl,val,cls,sub){
+    return '<div class="pcell"><div class="lbl">'+lbl+'</div><div class="val '+(cls||'')+'">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
   }
 
   function render(d){
     document.getElementById('updAt').textContent = new Date().toLocaleTimeString('pt-BR');
 
-    // vendas
     var v = d.vendas || {};
-    if(!v.error){
-      document.getElementById('vendasCards').innerHTML =
-        card('Vendas hoje', int(v.hoje), null, true) +
-        card('Receita hoje', brl(v.receita_hoje), null, true) +
-        card('Vendas · 7 dias', int(v.semana)) +
-        card('Receita · 7 dias', brl(v.receita_semana));
-      var tb = document.getElementById('vendasTbl');
-      if(v.ultimas && v.ultimas.length){
-        tb.style.display='table';
-        tb.querySelector('tbody').innerHTML = v.ultimas.map(function(u){
-          var quem = (u.nome ? '<div style="font-weight:700">'+u.nome+'</div>' : '') + '<div class="mono" style="font-size:12px">'+u.email+'</div>';
-          return '<tr><td>'+quem+'</td><td class="mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
-        }).join('');
-      }
+    var m = d.meta || {};
+    var receita = (!v.error && v.receita_hoje != null) ? v.receita_hoje : null;
+    var gasto = (m.hoje && m.hoje.gasto != null) ? m.hoje.gasto : null;
+
+    // ── PLACAR ──
+    var roas = (receita != null && gasto != null && gasto > 0) ? receita / gasto : null;
+    var lucro = (receita != null && gasto != null) ? receita - gasto : null;
+
+    var res = document.getElementById('resultado');
+    if (lucro != null) {
+      if (lucro >= 0) res.innerHTML = '<div class="badge pos">✅ POSITIVO · +' + brl(lucro) + '</div>';
+      else res.innerHTML = '<div class="badge neg">🔻 NEGATIVO · ' + brl(lucro) + '</div>';
     } else {
-      document.getElementById('vendasCards').innerHTML = '<div class="err">Erro ao ler vendas: '+v.error+'</div>';
+      res.innerHTML = '<div class="badge wait">⏳ aguardando dados do Meta</div>';
     }
 
-    // meta
-    var m = d.meta || {};
-    var w = document.getElementById('metaWrap');
-    if(m.error === 'missing_token'){
-      w.innerHTML = '<div class="banner">⏳ <b>Métricas do Meta aguardando o token.</b> Falta adicionar o secret <code>META_ADS_TOKEN</code> no Supabase (token com permissão <code>ads_read</code>). As vendas acima já são tempo real; assim que o token entrar, esta seção liga sozinha.</div>';
-    } else if(m.error){
-      w.innerHTML = '<div class="err">Meta API: '+m.error+'</div>';
-    } else if(m.hoje){
-      var h=m.hoje, o=m.ontem||{};
-      w.innerHTML = '<div class="cards">' +
-        card('Investido hoje', brl(h.gasto), 'ontem: '+brl(o.gasto), true) +
-        card('Compras (Meta)', int(h.compras), 'ontem: '+int(o.compras)) +
-        card('ROAS', (h.roas?h.roas.toFixed(2):'—'), 'ontem: '+(o.roas?o.roas.toFixed(2):'—'), false, h.roas>=1?'good':(h.gasto>0?'bad':'')) +
-        card('CPA', h.compras>0?brl(h.cpa):'—') +
-        card('Cliques', int(h.cliques), 'CTR '+(h.ctr?h.ctr.toFixed(2)+'%':'—')) +
-        card('Impressões', int(h.impressoes), 'CPM '+brl(h.cpm)) +
-        '</div>';
-      if(m.anuncios_hoje && m.anuncios_hoje.length){
-        document.getElementById('secAds').style.display='flex';
-        var at = document.getElementById('adsTbl');
-        at.style.display='table';
-        at.querySelector('tbody').innerHTML = m.anuncios_hoje.map(function(a){
-          return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num">'+brl(a.gasto)+'</td><td class="num">'+int(a.impressoes)+'</td><td class="num">'+int(a.cliques)+'</td><td class="num">'+int(a.compras)+'</td></tr>';
-        }).join('');
-      }
-      if(m.total){
-        document.getElementById('secTot').style.display='flex';
-        document.getElementById('totCards').innerHTML =
-          card('Investido total', brl(m.total.gasto)) +
-          card('Compras', int(m.total.compras)) +
-          card('Receita (Meta)', brl(m.total.receita)) +
-          card('ROAS geral', m.total.roas?m.total.roas.toFixed(2):'—', null, false, m.total.roas>=1?'good':'');
-      }
+    document.getElementById('placarGrid').innerHTML =
+      pcell('Investido hoje', gasto != null ? brl(gasto) : '—', '', 'Meta Ads · campanha VENDAS') +
+      pcell('Receita hoje', receita != null ? brl(receita) : '—', 'vyellow', (v.hoje||0) + ' venda' + (v.hoje===1?'':'s') + ' · Eduzz (real)') +
+      pcell('ROAS', roas != null ? roas.toFixed(2) : '—', roas == null ? '' : (roas >= 1 ? 'vgreen' : 'vred'), 'receita ÷ investido') +
+      pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido');
+
+    var aviso = document.getElementById('metaAviso');
+    if (m.error === 'missing_token') {
+      aviso.innerHTML = '<div class="banner">⏳ <b>Investimento do Meta aguardando o token.</b> Adicione o secret <code>META_ADS_TOKEN</code> (permissão <code>ads_read</code>) no Supabase. As vendas já são tempo real.</div>';
+    } else if (m.error) {
+      aviso.innerHTML = '<div class="banner">⚠️ <b>Meta indisponível:</b> ' + m.error + '</div>';
+    } else { aviso.innerHTML = ''; }
+
+    // ── VENDAS DE HOJE ──
+    var w = document.getElementById('vendasWrap');
+    if (v.error) {
+      w.innerHTML = '<div class="err">Erro ao ler vendas: ' + v.error + '</div>';
+    } else if (!v.lista || !v.lista.length) {
+      w.innerHTML = '<div class="vazio">Nenhuma venda hoje ainda — o dia está só começando. 🚗</div>';
+    } else {
+      w.innerHTML = '<div class="tblwrap"><table><thead><tr><th>Aluna</th><th class="num">Hora</th><th class="num">Valor</th></tr></thead><tbody>' +
+        v.lista.map(function(u){
+          var quem = (u.nome ? '<div style="font-weight:700">'+u.nome+'</div>' : '') + '<div class="mono" style="font-size:12px">'+u.email+'</div>';
+          return '<tr><td>'+quem+'</td><td class="num mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    // ── POR ANÚNCIO ──
+    if (m.anuncios_hoje && m.anuncios_hoje.length) {
+      document.getElementById('secAds').style.display='flex';
+      var at = document.getElementById('adsTbl');
+      at.style.display='table';
+      at.querySelector('tbody').innerHTML = m.anuncios_hoje.map(function(a){
+        return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num">'+brl(a.gasto)+'</td><td class="num">'+int(a.impressoes)+'</td><td class="num">'+int(a.cliques)+'</td><td class="num">'+int(a.compras)+'</td></tr>';
+      }).join('');
+    }
+
+    // ── TOTAL DA CAMPANHA ──
+    if (m.total) {
+      document.getElementById('secTot').style.display='flex';
+      var t = m.total;
+      var troas = t.gasto > 0 ? (t.receita / t.gasto) : null;
+      document.getElementById('totCards').innerHTML =
+        '<div class="card"><div class="lbl">Investido total</div><div class="val">'+brl(t.gasto)+'</div></div>' +
+        '<div class="card"><div class="lbl">Compras (Meta)</div><div class="val">'+int(t.compras)+'</div></div>' +
+        '<div class="card"><div class="lbl">Receita (Meta)</div><div class="val">'+brl(t.receita)+'</div></div>' +
+        '<div class="card"><div class="lbl">ROAS geral</div><div class="val '+(troas!=null&&troas>=1?'vgreen':'vred')+'">'+(troas!=null?troas.toFixed(2):'—')+'</div></div>';
     }
   }
 
@@ -193,7 +214,7 @@
   }
   function load(){
     fetch(URL_FN).then(function(r){return r.json();}).then(render).catch(function(e){
-      document.getElementById('metaWrap').innerHTML = '<div class="err">Falha ao atualizar: '+e+'</div>';
+      document.getElementById('metaAviso').innerHTML = '<div class="err">Falha ao atualizar: '+e+'</div>';
     });
   }
   load();
