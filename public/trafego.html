@@ -142,7 +142,8 @@
       if(v.ultimas && v.ultimas.length){
         tb.style.display='table';
         tb.querySelector('tbody').innerHTML = v.ultimas.map(function(u){
-          return '<tr><td class="mono">'+u.email+'</td><td class="mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
+          var quem = (u.nome ? '<div style="font-weight:700">'+u.nome+'</div>' : '') + '<div class="mono" style="font-size:12px">'+u.email+'</div>';
+          return '<tr><td>'+quem+'</td><td class="mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
         }).join('');
       }
     } else {
