@@ -32,16 +32,15 @@
   .upd{font-size:12px;color:var(--ink3);text-align:right}
   .upd b{color:var(--ink2);font-variant-numeric:tabular-nums}
 
-  /* placar do dia */
   .placar{
     background:linear-gradient(135deg,#1a2f5c,var(--navy3));
     border:1px solid rgba(255,214,10,.3);border-radius:20px;padding:22px;margin-bottom:14px;
   }
-  .placar .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .placar .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
   .placar .titulo{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
   .badge{
-    display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:15px;
-    padding:8px 18px;border-radius:999px;letter-spacing:.06em;
+    display:inline-flex;align-items:center;gap:8px;font-weight:900;font-size:16px;
+    padding:9px 20px;border-radius:999px;letter-spacing:.05em;
   }
   .badge.pos{background:rgba(74,222,128,.14);color:var(--green);border:1px solid rgba(74,222,128,.4)}
   .badge.neg{background:rgba(248,113,113,.14);color:var(--red);border:1px solid rgba(248,113,113,.4)}
@@ -52,6 +51,13 @@
   .pcell .sub{font-size:11px;color:var(--ink3);margin-top:3px}
   .vyellow{color:var(--yellow)} .vgreen{color:var(--green)} .vred{color:var(--red)}
 
+  .hoje{
+    margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+    display:flex;gap:22px;flex-wrap:wrap;align-items:baseline;font-size:13px;color:var(--ink2);
+  }
+  .hoje .hlbl{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+  .hoje b{font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink)}
+
   .sec{margin:20px 0 10px;display:flex;align-items:baseline;gap:10px}
   .sec h2{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--yellow)}
   .sec small{font-size:11px;color:var(--ink3)}
@@ -60,7 +66,7 @@
   .card .lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
   .card .val{font-size:clamp(17px,2.6vw,23px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
 
-  .banner{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.3);border-radius:12px;padding:13px 16px;font-size:13px;color:var(--ink2);line-height:1.55;margin-top:8px}
+  .banner{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.3);border-radius:12px;padding:13px 16px;font-size:13px;color:var(--ink2);line-height:1.55;margin-top:12px}
   .banner b{color:var(--yellow)}
   .banner code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--yellow)}
   .err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:8px}
@@ -73,6 +79,7 @@
   .tblwrap{overflow-x:auto;border-radius:14px}
   .mono{color:var(--ink2)}
   .pill{display:inline-block;background:var(--yellow);color:var(--navy);font-weight:800;font-size:11px;padding:2px 9px;border-radius:999px}
+  .tagHoje{display:inline-block;background:rgba(74,222,128,.15);color:var(--green);font-weight:800;font-size:10px;padding:2px 8px;border-radius:999px;margin-left:6px}
   .vazio{padding:18px;text-align:center;color:var(--ink3);font-size:13px;background:var(--navy3);border:1px dashed var(--line);border-radius:14px}
 
   .lock{max-width:420px;margin:16vh auto;text-align:center}
@@ -92,32 +99,30 @@
 
   <div id="dash" style="display:none">
     <header>
-      <div class="brand"><div class="dot"></div><h1>Placar do <span>dia</span> · MDNM</h1></div>
+      <div class="brand"><div class="dot"></div><h1>Placar da <span>campanha</span> · MDNM</h1></div>
       <div class="upd">Atualizado às <b id="updAt">—</b><br>próxima em <b id="updIn">—</b>s</div>
     </header>
 
     <div class="placar">
       <div class="top">
-        <div class="titulo">⚡ Hoje · vendas × tráfego</div>
+        <div class="titulo">🏁 Desde o início da campanha · 21/07</div>
         <div id="resultado"></div>
       </div>
       <div class="pgrid" id="placarGrid"></div>
+      <div class="hoje" id="hojeRow"></div>
       <div id="metaAviso"></div>
     </div>
 
-    <div class="sec"><h2>💰 Vendas de hoje</h2><small>direto do banco (Eduzz) · tempo real · fuso Brasília</small></div>
+    <div class="sec"><h2>💰 Últimas vendas</h2><small>direto do banco (Eduzz) · tempo real · fuso Brasília</small></div>
     <div id="vendasWrap"></div>
 
-    <div class="sec" id="secAds" style="display:none"><h2>🏁 Por anúncio · hoje</h2><small>gasto e resultado de cada criativo (Meta)</small></div>
+    <div class="sec" id="secAds" style="display:none"><h2>📣 Por anúncio · hoje</h2><small>gasto e resultado de cada criativo (Meta)</small></div>
     <div class="tblwrap"><table id="adsTbl" style="display:none">
       <thead><tr><th>Anúncio</th><th class="num">Gasto</th><th class="num">Impr.</th><th class="num">Cliques</th><th class="num">Compras</th></tr></thead>
       <tbody></tbody>
     </table></div>
 
-    <div class="sec" id="secTot" style="display:none"><h2>📊 Campanha · desde o início</h2></div>
-    <div class="cards" id="totCards"></div>
-
-    <footer>Medo de Dirigir Nunca Mais · painel interno · atualiza sozinho a cada 30s</footer>
+    <footer>Medo de Dirigir Nunca Mais · painel interno · atualiza sozinho a cada 10s</footer>
   </div>
 </div>
 
@@ -128,11 +133,18 @@
   document.getElementById('dash').style.display='block';
 
   var URL_FN = 'https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/ads-stats?k=' + encodeURIComponent(K);
-  var EVERY = 30, left = EVERY;
+  var EVERY = 10, left = EVERY;
 
   function brl(n){ return (n==null||isNaN(n)) ? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
   function int(n){ return (n==null||isNaN(n)) ? '—' : Math.round(n).toLocaleString('pt-BR'); }
-  function hora(iso){ return new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  function dh(iso){
+    var d=new Date(iso);
+    return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }
+  function isToday(iso){
+    var d=new Date(iso), n=new Date();
+    return d.toLocaleDateString('pt-BR') === n.toLocaleDateString('pt-BR');
+  }
   function pcell(lbl,val,cls,sub){
     return '<div class="pcell"><div class="lbl">'+lbl+'</div><div class="val '+(cls||'')+'">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
   }
@@ -142,12 +154,14 @@
 
     var v = d.vendas || {};
     var m = d.meta || {};
-    var receita = (!v.error && v.receita_hoje != null) ? v.receita_hoje : null;
-    var gasto = (m.hoje && m.hoje.gasto != null) ? m.hoje.gasto : null;
+    var receitaTotal = (!v.error && v.receita_total != null) ? v.receita_total : null;
+    var gastoTotal = (m.total && m.total.gasto != null) ? m.total.gasto : null;
+    var receitaHoje = (!v.error && v.receita_hoje != null) ? v.receita_hoje : null;
+    var gastoHoje = (m.hoje && m.hoje.gasto != null) ? m.hoje.gasto : null;
 
-    // ── PLACAR ──
-    var roas = (receita != null && gasto != null && gasto > 0) ? receita / gasto : null;
-    var lucro = (receita != null && gasto != null) ? receita - gasto : null;
+    // ── PLACAR GERAL (desde o início) ──
+    var roas = (receitaTotal != null && gastoTotal != null && gastoTotal > 0) ? receitaTotal / gastoTotal : null;
+    var lucro = (receitaTotal != null && gastoTotal != null) ? receitaTotal - gastoTotal : null;
 
     var res = document.getElementById('resultado');
     if (lucro != null) {
@@ -158,10 +172,19 @@
     }
 
     document.getElementById('placarGrid').innerHTML =
-      pcell('Investido hoje', gasto != null ? brl(gasto) : '—', '', 'Meta Ads · campanha VENDAS') +
-      pcell('Receita hoje', receita != null ? brl(receita) : '—', 'vyellow', (v.hoje||0) + ' venda' + (v.hoje===1?'':'s') + ' · Eduzz (real)') +
+      pcell('Investido total', gastoTotal != null ? brl(gastoTotal) : '—', '', 'Meta Ads · desde 21/07') +
+      pcell('Receita total', receitaTotal != null ? brl(receitaTotal) : '—', 'vyellow', (v.total||0) + ' venda' + (v.total===1?'':'s') + ' · Eduzz (real)') +
       pcell('ROAS', roas != null ? roas.toFixed(2) : '—', roas == null ? '' : (roas >= 1 ? 'vgreen' : 'vred'), 'receita ÷ investido') +
       pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido');
+
+    // ── LINHA DO HOJE ──
+    var roasHoje = (receitaHoje != null && gastoHoje != null && gastoHoje > 0) ? receitaHoje / gastoHoje : null;
+    document.getElementById('hojeRow').innerHTML =
+      '<span class="hlbl">⚡ Hoje</span>' +
+      '<span>Investido <b>' + (gastoHoje != null ? brl(gastoHoje) : '—') + '</b></span>' +
+      '<span>Vendas <b>' + int(v.hoje) + '</b></span>' +
+      '<span>Receita <b class="vyellow">' + (receitaHoje != null ? brl(receitaHoje) : '—') + '</b></span>' +
+      '<span>ROAS <b class="' + (roasHoje == null ? '' : (roasHoje >= 1 ? 'vgreen' : 'vred')) + '">' + (roasHoje != null ? roasHoje.toFixed(2) : '—') + '</b></span>';
 
     var aviso = document.getElementById('metaAviso');
     if (m.error === 'missing_token') {
@@ -170,21 +193,22 @@
       aviso.innerHTML = '<div class="banner">⚠️ <b>Meta indisponível:</b> ' + m.error + '</div>';
     } else { aviso.innerHTML = ''; }
 
-    // ── VENDAS DE HOJE ──
+    // ── ÚLTIMAS VENDAS ──
     var w = document.getElementById('vendasWrap');
     if (v.error) {
       w.innerHTML = '<div class="err">Erro ao ler vendas: ' + v.error + '</div>';
     } else if (!v.lista || !v.lista.length) {
-      w.innerHTML = '<div class="vazio">Nenhuma venda hoje ainda — o dia está só começando. 🚗</div>';
+      w.innerHTML = '<div class="vazio">Nenhuma venda desde o início da campanha ainda. 🚗</div>';
     } else {
-      w.innerHTML = '<div class="tblwrap"><table><thead><tr><th>Aluna</th><th class="num">Hora</th><th class="num">Valor</th></tr></thead><tbody>' +
+      w.innerHTML = '<div class="tblwrap"><table><thead><tr><th>Aluna</th><th class="num">Quando</th><th class="num">Valor</th></tr></thead><tbody>' +
         v.lista.map(function(u){
-          var quem = (u.nome ? '<div style="font-weight:700">'+u.nome+'</div>' : '') + '<div class="mono" style="font-size:12px">'+u.email+'</div>';
-          return '<tr><td>'+quem+'</td><td class="num mono">'+hora(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
+          var quem = (u.nome ? '<div style="font-weight:700">'+u.nome+(isToday(u.quando)?'<span class="tagHoje">HOJE</span>':'')+'</div>' : '') +
+                     '<div class="mono" style="font-size:12px">'+u.email+'</div>';
+          return '<tr><td>'+quem+'</td><td class="num mono">'+dh(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
         }).join('') + '</tbody></table></div>';
     }
 
-    // ── POR ANÚNCIO ──
+    // ── POR ANÚNCIO (hoje) ──
     if (m.anuncios_hoje && m.anuncios_hoje.length) {
       document.getElementById('secAds').style.display='flex';
       var at = document.getElementById('adsTbl');
@@ -192,18 +216,6 @@
       at.querySelector('tbody').innerHTML = m.anuncios_hoje.map(function(a){
         return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num">'+brl(a.gasto)+'</td><td class="num">'+int(a.impressoes)+'</td><td class="num">'+int(a.cliques)+'</td><td class="num">'+int(a.compras)+'</td></tr>';
       }).join('');
-    }
-
-    // ── TOTAL DA CAMPANHA ──
-    if (m.total) {
-      document.getElementById('secTot').style.display='flex';
-      var t = m.total;
-      var troas = t.gasto > 0 ? (t.receita / t.gasto) : null;
-      document.getElementById('totCards').innerHTML =
-        '<div class="card"><div class="lbl">Investido total</div><div class="val">'+brl(t.gasto)+'</div></div>' +
-        '<div class="card"><div class="lbl">Compras (Meta)</div><div class="val">'+int(t.compras)+'</div></div>' +
-        '<div class="card"><div class="lbl">Receita (Meta)</div><div class="val">'+brl(t.receita)+'</div></div>' +
-        '<div class="card"><div class="lbl">ROAS geral</div><div class="val '+(troas!=null&&troas>=1?'vgreen':'vred')+'">'+(troas!=null?troas.toFixed(2):'—')+'</div></div>';
     }
   }
 
