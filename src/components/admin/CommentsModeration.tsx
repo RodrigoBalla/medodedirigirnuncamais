@@ -22,6 +22,7 @@ type Comment = {
   // Enriched
   authorName: string;
   lessonTitle: string;
+  productId: string | null;
 };
 
 const FILTERS = [
@@ -71,11 +72,21 @@ export function CommentsModeration() {
           ? supabase.from("profiles").select("user_id, display_name").in("user_id", userIds)
           : Promise.resolve({ data: [] as any[] }),
         lessonIds.length > 0
-          ? supabase.from("lessons").select("id, title").in("id", lessonIds)
+          ? supabase.from("lessons").select("id, title, module_id").in("id", lessonIds)
           : Promise.resolve({ data: [] as any[] }),
       ]);
       const nameByUser = new Map((profilesRes.data ?? []).map((p: any) => [p.user_id, p.display_name || "Aluna"]));
       const titleByLesson = new Map((lessonsRes.data ?? []).map((l: any) => [l.id, l.title]));
+
+      // Aula → módulo → curso (pro botão "Ver aula" abrir /curso/:id?aula=:lessonId)
+      const moduleIds = Array.from(new Set((lessonsRes.data ?? []).map((l: any) => l.module_id).filter(Boolean)));
+      const modulesRes = moduleIds.length > 0
+        ? await supabase.from("modules").select("id, product_id").in("id", moduleIds)
+        : { data: [] as any[] };
+      const productByModule = new Map((modulesRes.data ?? []).map((m: any) => [m.id, m.product_id]));
+      const productByLesson = new Map(
+        (lessonsRes.data ?? []).map((l: any) => [l.id, productByModule.get(l.module_id) ?? null]),
+      );
 
       setComments(
         rows.map((r) => ({
@@ -83,6 +94,7 @@ export function CommentsModeration() {
           status: r.status as Comment["status"],
           authorName: nameByUser.get(r.user_id) || "Aluna",
           lessonTitle: titleByLesson.get(r.lesson_id) || "(aula desconhecida)",
+          productId: productByLesson.get(r.lesson_id) ?? null,
         })),
       );
     } catch (err) {
@@ -259,6 +271,17 @@ export function CommentsModeration() {
                       <span className="material-symbols-outlined text-base">{c.pinned ? "keep_off" : "push_pin"}</span>
                       {c.pinned ? "Desafixar" : "Fixar"}
                     </button>
+                  )}
+                  {c.productId && (
+                    <a
+                      href={`/curso/${c.productId}?aula=${c.lesson_id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="border border-border text-foreground/80 hover:text-foreground hover:border-primary/60 px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest flex items-center gap-1.5 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base">play_circle</span>
+                      Ver aula
+                    </a>
                   )}
                   <button
                     onClick={() => remove(c.id)}

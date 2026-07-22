@@ -105,6 +105,11 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       }
     }
 
+    // Deep link ?aula=<lessonId> — usado pelo admin (moderação de comentários)
+    // pra abrir o player já na aula certa. Só vale se a aula existir no curso.
+    const aulaParam = new URLSearchParams(window.location.search).get('aula');
+    const deepLinkLesson = aulaParam && lessonList.some((l) => l.id === aulaParam) ? aulaParam : null;
+
     if (user) {
        const { data: prog } = await supabase.from('user_progress').select('has_completed_tutorial').eq('user_id', user.id).maybeSingle();
        if (prog) {
@@ -124,15 +129,16 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          });
          setProgressByLesson(map);
 
-         // Aula inicial: a primeira não concluída com posição salva, ou a primeira do curso
+         // Aula inicial: deep link ?aula= tem prioridade; senão a primeira não
+         // concluída com posição salva, ou a primeira do curso
          const completedSet = new Set((lp ?? []).filter((r: any) => r.completed).map((r: any) => r.lesson_id));
          const firstUnfinished = lessonList.find((l) => !completedSet.has(l.id));
-         setActiveLessonId((firstUnfinished ?? lessonList[0]).id);
+         setActiveLessonId(deepLinkLesson ?? (firstUnfinished ?? lessonList[0]).id);
        } else {
          setActiveLessonId(null);
        }
     } else if (lessonList.length > 0) {
-       setActiveLessonId(lessonList[0].id);
+       setActiveLessonId(deepLinkLesson ?? lessonList[0].id);
     }
 
     setLoading(false);
