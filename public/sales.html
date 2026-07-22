@@ -6815,8 +6815,38 @@
   // abrir nova aba. Se `extra.cupom` vier (vindo do exit-intent), mostra
   // um banner com o cupom já no clipboard pra aluna colar manualmente
   // (a Eduzz bridge.js não aceita cupom pré-aplicado via URL/init).
+  // ── Meta: InitiateCheckout (Pixel + CAPI, deduplicado pelo mesmo event_id) ──
+  // Dispara 1x por visita, no 1º clique de qualquer CTA. Nunca bloqueia o checkout.
+  var _icFired = false;
+  function trackInitiateCheckout() {
+    if (_icFired) return;
+    _icFired = true;
+    try {
+      var eid = 'ic_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+      function ck(n) { var m = document.cookie.match('(^|;)\\s*' + n + '=([^;]+)'); return m ? m[2] : null; }
+      if (window.fbq) {
+        fbq('track', 'InitiateCheckout',
+          { value: 27, currency: 'BRL', content_name: 'Medo de Dirigir Nunca Mais — Combo' },
+          { eventID: eid });
+      }
+      var body = {
+        event_name: 'InitiateCheckout', event_id: eid,
+        event_source_url: window.location.href,
+        value: 27, currency: 'BRL',
+        content_name: 'Medo de Dirigir Nunca Mais — Combo'
+      };
+      var fbp = ck('_fbp'); if (fbp) body.fbp = fbp;
+      var fbc = ck('_fbc'); if (fbc) body.fbc = fbc;
+      fetch('https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/meta-capi', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body), keepalive: true
+      }).catch(function () {});
+    } catch (e) { /* nunca atrapalha o checkout */ }
+  }
+
   function goToCheckout(source, extra) {
     var label = source || 'cta';
+    trackInitiateCheckout();
     if (window.Track) {
       window.Track.event('clicou_cta_' + label, { label: label });
       window.Track.event('iniciou_checkout', { source: label });
