@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -6,8 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { flyCoins } from "@/lib/coinFly";
 
-// Moedas creditadas ao completar os 3 objetivos da semana.
-const WEEKLY_REWARD_COINS = 50;
+// Recompensa em moedas por TIPO de tarefa (cada tarefa tem a sua).
+// Prefixo do id do passo (practice/lesson/mission) → moedas. Total da semana = 50.
+const STEP_REWARDS: Record<string, number> = { practice: 20, lesson: 15, mission: 15 };
+const rewardForStep = (id: string): number => STEP_REWARDS[id.split("-")[0]] ?? 15;
 
 // ─── WeeklyPlanCard ──────────────────────────────────────────────────────────
 // Card no topo da biblioteca: "Esta semana você vai..."
@@ -19,7 +21,9 @@ const WEEKLY_REWARD_COINS = 50;
 // (00:00 horário local). Marcar como feito persiste em localStorage por
 // user (chave inclui userId + week_id) pra check ficar entre sessões.
 //
-// Quando todos os 3 itens são checados, mostra estado "✓ Semana completa!".
+// Ao CONCLUIR cada tarefa: dispara a animação de moedas subindo pro saldo
+// (a recompensa daquela tarefa), credita as moedas e a tarefa SOME da lista.
+// Quando todas somem, mostra "🎉 Semana completa!".
 // =============================================================================
 
 interface PlanStep {
@@ -175,14 +179,11 @@ export function WeeklyPlanCard() {
   const navigate = useNavigate();
   const weekId = useMemo(() => getWeekId(), []);
   const journey = useMemo(() => getJourneyForWeek(weekId), [weekId]);
-  const cardRef = useRef<HTMLDivElement>(null);
 
-  // Estado dos checks — persistido em localStorage por user+semana
+  // Estado dos checks — persistido em localStorage por user+semana.
+  // Uma tarefa concluída SOME da lista (não dá pra desmarcar).
   const storageKey = user ? `mddnm:weekly:${user.id}:${weekId}` : null;
-  // Flag: recompensa da semana já creditada? (evita re-creditar ao desmarcar/remarcar)
-  const rewardKey = user ? `mddnm:weekly-reward:${user.id}:${weekId}` : null;
   const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [rewardGiven, setRewardGiven] = useState(false);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -190,45 +191,39 @@ export function WeeklyPlanCard() {
       const raw = localStorage.getItem(storageKey);
       if (raw) setChecked(JSON.parse(raw));
     } catch {}
-    try {
-      setRewardGiven(rewardKey ? localStorage.getItem(rewardKey) === "1" : false);
-    } catch {}
-  }, [storageKey, rewardKey]);
+  }, [storageKey]);
 
-  // Credita as moedas (1x por semana) com a animação de moedas subindo pro saldo.
-  const grantWeeklyReward = () => {
-    if (!rewardKey || rewardGiven) return;
-    setRewardGiven(true);
-    try { localStorage.setItem(rewardKey, "1"); } catch {}
-    flyCoins({
-      fromEl: cardRef.current,
-      count: 16,
-      label: `+${WEEKLY_REWARD_COINS}`,
-      onDone: () => {
-        void addCoins(WEEKLY_REWARD_COINS);
-        toast.success(`+${WEEKLY_REWARD_COINS} moedas! Semana completa 💛`);
-      },
-    });
-  };
-
-  const toggle = (id: string) => {
-    const next = { ...checked, [id]: !checked[id] };
+  // Conclui uma tarefa: anima as moedas daquela tarefa subindo pro saldo,
+  // credita a recompensa (1x — guardado pelo próprio `checked`) e some da lista.
+  const complete = (step: PlanStep, originEl: HTMLElement | null) => {
+    if (checked[step.id]) return; // já concluída
+    const reward = rewardForStep(step.id);
+    const next = { ...checked, [step.id]: true };
     setChecked(next);
     if (storageKey) {
       try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     }
-    // Completou os 3 agora? dispara a recompensa (guardada por rewardKey).
-    if (journey.every((s) => next[s.id])) grantWeeklyReward();
+    flyCoins({
+      fromEl: originEl,
+      count: Math.max(8, Math.round(reward / 2)),
+      label: `+${reward}`,
+      onDone: () => {
+        void addCoins(reward);
+        toast.success(`+${reward} moedas! 💛`);
+      },
+    });
   };
 
+  const total = journey.length;
   const doneCount = journey.filter((s) => checked[s.id]).length;
-  const allDone = doneCount === journey.length;
+  const allDone = doneCount === total;
+  const pendingSteps = journey.filter((s) => !checked[s.id]);
+  const earnedThisWeek = journey.reduce((sum, s) => sum + (checked[s.id] ? rewardForStep(s.id) : 0), 0);
 
   if (!user) return null;
 
   return (
     <motion.div
-      ref={cardRef}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -244,12 +239,14 @@ export function WeeklyPlanCard() {
               🎯 Esta semana você vai…
             </p>
             <h3 className="font-black text-lg md:text-xl text-foreground leading-tight">
-              {allDone ? "🎉 Semana completa!" : `${doneCount} de ${journey.length} feitas`}
+              {allDone ? "🎉 Semana completa!" : `${doneCount} de ${total} feitas`}
             </h3>
-            <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-wide bg-yellow-500/10 text-yellow-600 border border-yellow-500/25 px-2 py-0.5 rounded-full">
-              <span className="material-symbols-outlined text-[13px] filled-icon text-yellow-500">database</span>
-              {rewardGiven ? `+${WEEKLY_REWARD_COINS} creditadas ✓` : `+${WEEKLY_REWARD_COINS} ao completar`}
-            </span>
+            {earnedThisWeek > 0 && (
+              <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-wide bg-yellow-500/10 text-yellow-600 border border-yellow-500/25 px-2 py-0.5 rounded-full">
+                <span className="material-symbols-outlined text-[13px] filled-icon text-yellow-500">database</span>
+                +{earnedThisWeek} moedas esta semana
+              </span>
+            )}
           </div>
           {/* Progress circle */}
           <div className="relative size-12 shrink-0">
@@ -258,60 +255,53 @@ export function WeeklyPlanCard() {
               <motion.circle
                 cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round"
                 className="text-primary"
-                strokeDasharray={`${(doneCount / journey.length) * 125.6} 125.6`}
+                strokeDasharray={`${(doneCount / total) * 125.6} 125.6`}
                 initial={{ strokeDasharray: "0 125.6" }}
-                animate={{ strokeDasharray: `${(doneCount / journey.length) * 125.6} 125.6` }}
+                animate={{ strokeDasharray: `${(doneCount / total) * 125.6} 125.6` }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
               />
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-sm font-black">
-              {Math.round((doneCount / journey.length) * 100)}%
+              {Math.round((doneCount / total) * 100)}%
             </span>
           </div>
         </div>
 
         <div className="space-y-2">
-          <AnimatePresence>
-            {journey.map((step) => {
-              const isDone = !!checked[step.id];
+          <AnimatePresence mode="popLayout">
+            {pendingSteps.map((step) => {
+              const reward = rewardForStep(step.id);
               return (
                 <motion.div
                   key={step.id}
+                  data-step-row
                   layout
-                  className={`flex items-start gap-3 p-3 md:p-4 rounded-2xl border transition-all ${
-                    isDone ? "bg-muted/40 border-border opacity-60" : step.bgColor
-                  }`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: 24, scale: 0.92, transition: { duration: 0.3 } }}
+                  className={`flex items-start gap-3 p-3 md:p-4 rounded-2xl border transition-all ${step.bgColor}`}
                 >
                   <button
-                    onClick={() => toggle(step.id)}
-                    className={`size-6 md:size-7 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mt-0.5 ${
-                      isDone
-                        ? "bg-emerald-500 border-emerald-500 text-white"
-                        : "border-muted-foreground/40 hover:border-primary hover:bg-primary/5"
-                    }`}
-                    aria-label={isDone ? "Desmarcar como feito" : "Marcar como feito"}
-                  >
-                    {isDone && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="material-symbols-outlined text-sm md:text-base filled-icon"
-                      >
-                        check
-                      </motion.span>
-                    )}
-                  </button>
+                    onClick={(e) => complete(step, (e.currentTarget as HTMLElement).closest("[data-step-row]") as HTMLElement)}
+                    className="size-6 md:size-7 rounded-full border-2 shrink-0 flex items-center justify-center transition-all mt-0.5 border-muted-foreground/40 hover:border-emerald-500 hover:bg-emerald-500/10"
+                    aria-label="Concluir tarefa"
+                    title="Marcar como concluída"
+                  />
 
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-black leading-tight mb-1 ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                    <p className="text-sm font-black leading-tight mb-1 text-foreground">
                       {step.title}
                     </p>
-                    <p className={`text-xs leading-snug ${isDone ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
+                    <p className="text-xs leading-snug text-muted-foreground">
                       {step.description}
                     </p>
+                    <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-black uppercase tracking-wide bg-yellow-500/10 text-yellow-600 border border-yellow-500/25 px-2 py-0.5 rounded-full">
+                      <span className="material-symbols-outlined text-[12px] filled-icon text-yellow-500">database</span>
+                      +{reward} ao concluir
+                    </span>
                   </div>
 
-                  {step.cta && !isDone && (
+                  {step.cta && (
                     <button
                       onClick={() => navigate(step.cta!.path)}
                       className="shrink-0 self-center px-3 py-1.5 rounded-lg bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:scale-[1.05] active:scale-95 transition-transform"
@@ -323,18 +313,32 @@ export function WeeklyPlanCard() {
               );
             })}
           </AnimatePresence>
+
+          {allDone && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-6"
+            >
+              <div className="text-4xl mb-2">🎉</div>
+              <p className="font-black text-foreground">Todas as tarefas da semana concluídas!</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Você ganhou <span className="text-yellow-600 font-black">+{earnedThisWeek} moedas</span> essa semana. Segunda começa um plano novo 💛
+              </p>
+            </motion.div>
+          )}
         </div>
 
         {/* Mensagem motivacional baseada no progresso */}
-        <p className="text-[11px] text-muted-foreground mt-3 text-center italic">
-          {allDone
-            ? "Você arrasou nessa semana. Segunda começa um novo plano 💛"
-            : doneCount === 0
-              ? "Comece pelo mais leve. Cada check é vitória."
-              : doneCount === journey.length - 1
+        {!allDone && (
+          <p className="text-[11px] text-muted-foreground mt-3 text-center italic">
+            {doneCount === 0
+              ? "Comece pelo mais leve. Cada tarefa concluída rende moedas."
+              : doneCount === total - 1
                 ? "Falta só uma! Tá quase lá."
                 : "No seu ritmo. Não precisa fazer tudo hoje."}
-        </p>
+          </p>
+        )}
       </div>
     </motion.div>
   );
