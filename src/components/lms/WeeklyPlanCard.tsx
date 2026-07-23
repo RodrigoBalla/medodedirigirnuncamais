@@ -183,7 +183,8 @@ function nextMondayMidnight(from = new Date()): Date {
   return next;
 }
 
-/** Formata ms restantes em "Xd YYh ZZm" ou "HHh MMm SSs" quando falta < 1 dia. */
+/** Formata ms restantes. Sempre inclui segundos pra ficar visível que está
+ *  correndo (sem eles, com dias restando, o texto parecia estático). */
 function formatCountdown(ms: number): string {
   if (ms <= 0) return "renovando…";
   const s = Math.floor(ms / 1000);
@@ -192,7 +193,9 @@ function formatCountdown(ms: number): string {
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
   const p = (n: number) => String(n).padStart(2, "0");
-  return d >= 1 ? `${d}d ${p(h)}h ${p(m)}m` : `${p(h)}h ${p(m)}m ${p(sec)}s`;
+  return d >= 1
+    ? `${d}d ${p(h)}:${p(m)}:${p(sec)}`
+    : `${p(h)}:${p(m)}:${p(sec)}`;
 }
 
 export function WeeklyPlanCard() {
