@@ -39,6 +39,7 @@ export function TrafegoTab() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string>("—");
+  const [countdown, setCountdown] = useState<number>(POLL_MS / 1000);
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -59,7 +60,13 @@ export function TrafegoTab() {
       }
     };
     load();
-    timer.current = window.setInterval(load, POLL_MS);
+    // Ticker de 1s: mostra o contador regressivo e dispara o reload quando zera
+    let left = POLL_MS / 1000;
+    timer.current = window.setInterval(() => {
+      left -= 1;
+      if (left <= 0) { left = POLL_MS / 1000; load(); }
+      if (alive) setCountdown(left);
+    }, 1000);
     return () => { alive = false; if (timer.current) window.clearInterval(timer.current); };
   }, []);
 
@@ -85,7 +92,9 @@ export function TrafegoTab() {
           <h2 className="text-lg font-extrabold">Placar da campanha</h2>
           <span className="text-xs text-muted-foreground">desde {stats?.inicio ? stats.inicio.split("-").reverse().slice(0, 2).join("/") : "21/07"} · atualiza a cada 15s</span>
         </div>
-        <span className="text-xs text-muted-foreground tabular-nums">atualizado às {updatedAt}</span>
+        <span className="text-xs text-muted-foreground tabular-nums">
+          atualizado às {updatedAt} · próxima em <b className="text-foreground inline-block w-[2ch] text-right">{countdown}</b>s
+        </span>
       </div>
 
       {err && (
