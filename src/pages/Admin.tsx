@@ -753,9 +753,9 @@ export default function Admin() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold">Visão Geral</h2>
               {/* KPI Cards — dados reais via admin_overview_kpis() */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 {[
-                  { icon: "group", label: "Alunos cadastrados", value: overviewKpis?.total_students ?? "—", color: "text-primary" },
+                  { icon: "group", label: "Alunas com acesso", value: overviewKpis?.total_students ?? "—", color: "text-primary" },
                   { icon: "video_library", label: "Cursos no catálogo", value: overviewKpis?.total_courses ?? "—", color: "text-blue-500" },
                   { icon: "school", label: "Aulas cadastradas", value: overviewKpis?.total_lessons ?? "—", color: "text-emerald-500" },
                   { icon: "check_circle", label: "Aulas concluídas", value: overviewKpis?.total_lessons_completed ?? "—", color: "text-amber-500" },
@@ -764,12 +764,14 @@ export default function Admin() {
                   { icon: "database", label: "XP total distribuído", value: overviewKpis?.total_xp_sum ?? "—", color: "text-rose-500" },
                   { icon: "forum", label: "Comentários pendentes", value: pendingComments, color: "text-orange-500" },
                 ].map((kpi) => (
-                  <div key={kpi.label} className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
+                  <div key={kpi.label} className="bg-card border border-border rounded-2xl p-3 md:p-4 flex flex-col gap-1.5 md:gap-2 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`material-symbols-outlined text-2xl ${kpi.color} filled-icon`}>{kpi.icon}</span>
+                      <span className={`material-symbols-outlined text-xl md:text-2xl ${kpi.color} filled-icon`}>{kpi.icon}</span>
                     </div>
-                    <p className="text-2xl font-bold">{kpi.value}</p>
-                    <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                    <p className="text-xl md:text-2xl font-bold tabular-nums">
+                      {typeof kpi.value === "number" ? kpi.value.toLocaleString("pt-BR") : kpi.value}
+                    </p>
+                    <p className="text-[11px] md:text-xs text-muted-foreground leading-tight">{kpi.label}</p>
                   </div>
                 ))}
               </div>
@@ -782,7 +784,7 @@ export default function Admin() {
                   Quantas aulas de cada curso foram concluídas no total (somando todas as alunas).
                 </p>
                 {courseCompletion.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">Sem cursos cadastrados ainda.</p>
+                  <p className="text-xs text-muted-foreground italic">Sem dados de conclusão ainda.</p>
                 ) : (
                   <div className="space-y-3">
                     {courseCompletion.map((c) => {
@@ -794,7 +796,7 @@ export default function Admin() {
                         <div key={c.product_id} className="flex items-center gap-3">
                           <span className="material-symbols-outlined text-blue-500">video_library</span>
                           <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center text-xs mb-1 gap-2">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-1 gap-0.5 sm:gap-2">
                               <span className="font-medium truncate">{c.product_title}</span>
                               <span className="text-muted-foreground shrink-0">
                                 {c.total_completions} conclusões · {c.unique_students_completed} aluna{c.unique_students_completed === 1 ? "" : "s"}
@@ -835,19 +837,19 @@ export default function Admin() {
                             ? "bg-primary/10 text-primary"
                             : "bg-muted text-muted-foreground";
                         return (
-                          <div key={s.user_id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                            <div className="flex items-center gap-3">
-                              <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                          <div key={s.user_id} className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-0">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="size-9 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                                 {s.display_name.charAt(0).toUpperCase()}
                               </div>
-                              <div>
-                                <p className="text-sm font-medium">{s.display_name}</p>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{s.display_name}</p>
                                 <p className="text-xs text-muted-foreground">
                                   Nv. {level} · {s.total_xp} XP · 🔥 {s.streak ?? 0} dia{(s.streak ?? 0) === 1 ? "" : "s"}
                                 </p>
                               </div>
                             </div>
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${statusClass}`}>
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full shrink-0 ${statusClass}`}>
                               {status}
                             </span>
                           </div>
