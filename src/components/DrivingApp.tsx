@@ -37,6 +37,15 @@ import { OnboardingGuide } from "@/components/lms/OnboardingGuide";
 type Screen = "welcome" | "welcome-back" | "app" | "course-player";
 type LessonScreenState = "none" | "lesson" | "conquest";
 
+// Persistência de navegação: qual rota restaurar quando o app cai na raiz "/".
+const LAST_PATH_KEY = "mddnm:last-path";
+// Só rotas internas de conteúdo são "restauráveis" (evita voltar pra telas
+// transitórias tipo /boas-vindas, ou rotas externas).
+const isRestorablePath = (p: string): boolean =>
+  /^\/(biblioteca|comunidade|perfil|treinos|ranking)$/.test(p) ||
+  /^\/curso\/[a-zA-Z0-9-]+$/.test(p) ||
+  /^\/aula\/\d+$/.test(p);
+
 const DrivingApp = () => {
   const { user } = useAuth();
   const { 
@@ -200,6 +209,16 @@ const DrivingApp = () => {
     }
   }, [location.pathname]);
 
+  // ─── Lembrar a última página (persistência de navegação) ──────────────────
+  // Guarda a rota atual (só páginas internas de conteúdo) pra restaurar quando
+  // o app cair na raiz "/" (refresh que perdeu a rota, ou login). Assim a aluna
+  // continua onde estava ao atualizar a página.
+  useEffect(() => {
+    if (isRestorablePath(location.pathname)) {
+      try { localStorage.setItem(LAST_PATH_KEY, location.pathname); } catch {}
+    }
+  }, [location.pathname]);
+
   // Detect unlock animation trigger from completion screen
   useEffect(() => {
     const unlocked = searchParams.get("unlocked");
@@ -237,11 +256,16 @@ const DrivingApp = () => {
       } else {
         setWelcomeVideoViews(0);
       }
-      // MVP: ao entrar na área de membros, sempre cair em "Meus Cursos".
-      // Vídeo de boas-vindas e tela "bem-vindo de volta" continuam acessíveis,
-      // mas não são mais redirecionamentos automáticos.
+      // Ao cair na raiz "/", restaura a última página onde a aluna estava
+      // (persistida em localStorage) — assim atualizar a página não joga ela
+      // de volta pros Cursos. Sem histórico salvo → default "Meus Cursos".
       if (location.pathname === "/") {
-        navigate("/biblioteca", { replace: true });
+        let dest = "/biblioteca";
+        try {
+          const saved = localStorage.getItem(LAST_PATH_KEY);
+          if (saved && isRestorablePath(saved)) dest = saved;
+        } catch {}
+        navigate(dest, { replace: true });
       }
     };
     loadProfile();
