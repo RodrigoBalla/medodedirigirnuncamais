@@ -206,6 +206,9 @@ export function WeeklyPlanCard() {
   // Uma tarefa concluída SOME da lista (não dá pra desmarcar).
   const storageKey = user ? `mddnm:weekly:${user.id}:${weekId}` : null;
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  // Só true quando a aluna fecha a última tarefa AGORA — a celebração aparece
+  // nesse momento e não se repete nas próximas visitas (aí vira barra slim).
+  const [justCompleted, setJustCompleted] = useState(false);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -225,6 +228,8 @@ export function WeeklyPlanCard() {
     if (storageKey) {
       try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
     }
+    // Fechou a última tarefa agora? mostra a celebração só nesta visita.
+    if (journey.every((s) => next[s.id])) setJustCompleted(true);
     flyCoins({
       fromEl: originEl,
       count: Math.max(8, Math.round(reward / 2)),
@@ -253,6 +258,35 @@ export function WeeklyPlanCard() {
   const earnedThisWeek = journey.reduce((sum, s) => sum + (checked[s.id] ? rewardForStep(s.id) : 0), 0);
 
   if (!user) return null;
+
+  // Semana já estava completa quando ela abriu a tela → não repete a festa.
+  // Vira uma barra slim: só o contador pra renovar + atalho pras missões.
+  if (allDone && !justCompleted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-card border border-border rounded-2xl px-4 py-3 mb-6 flex items-center justify-between gap-3"
+      >
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none">
+            Novas tarefas em
+          </p>
+          <p className="text-base md:text-lg font-black tabular-nums text-primary leading-tight mt-1">
+            {formatCountdown(resetMs)}
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/perfil")}
+          className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] tracking-widest hover:scale-[1.03] active:scale-95 transition-transform"
+        >
+          <span className="material-symbols-outlined text-base filled-icon">target</span>
+          Fazer missões 🪙
+        </button>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
