@@ -22,7 +22,7 @@ interface Stats {
   ts?: string;
   inicio?: string;
   vendas?: { hoje: number; receita_hoje: number; total: number; receita_total: number; lista: Venda[]; error?: string };
-  meta?: { hoje?: MetaBlock; total?: MetaBlock; anuncios_hoje?: AdRow[]; error?: string };
+  meta?: { hoje?: MetaBlock; total?: MetaBlock; anuncios_hoje?: AdRow[]; anuncios_total?: AdRow[]; error?: string };
 }
 
 const brl = (n: number | null | undefined) =>
@@ -207,23 +207,23 @@ export function TrafegoTab() {
         )}
       </div>
 
-      {/* Por anúncio */}
-      {m?.anuncios_hoje?.length ? (
+      {/* Por anúncio — acumulado desde o início (não zera à meia-noite) */}
+      {(m?.anuncios_total?.length || m?.anuncios_hoje?.length) ? (
         <div>
-          <p className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-primary mb-2">📣 Por anúncio · hoje <span className="text-muted-foreground normal-case font-normal tracking-normal">· só quem teve entrega (Meta)</span></p>
+          <p className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-primary mb-2">📣 Por anúncio · desde o início <span className="text-muted-foreground normal-case font-normal tracking-normal">· ordenado por compras (Meta)</span></p>
           <div className="rounded-xl border border-border overflow-hidden overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   <th className="text-left px-3 py-2 font-bold">Anúncio</th>
-                  <th className="text-right px-3 py-2 font-bold">Gasto</th>
-                  <th className="text-right px-3 py-2 font-bold">Impr.</th>
-                  <th className="text-right px-3 py-2 font-bold">Cliques</th>
                   <th className="text-right px-3 py-2 font-bold">Compras</th>
+                  <th className="text-right px-3 py-2 font-bold">Gasto</th>
+                  <th className="text-right px-3 py-2 font-bold hidden sm:table-cell">Impr.</th>
+                  <th className="text-right px-3 py-2 font-bold hidden sm:table-cell">Cliques</th>
                 </tr>
               </thead>
               <tbody>
-                {m.anuncios_hoje.map((a, i) => (
+                {(m.anuncios_total?.length ? m.anuncios_total : m.anuncios_hoje!).map((a, i) => (
                   <tr key={i} className="border-b border-border last:border-0">
                     <td className="px-3 py-2">
                       {a.nome}
@@ -233,10 +233,10 @@ export function TrafegoTab() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{brl(a.gasto)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{intBR(a.impressoes)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{intBR(a.cliques)}</td>
                     <td className="px-3 py-2 text-right tabular-nums font-bold">{intBR(a.compras)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{brl(a.gasto)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground hidden sm:table-cell">{intBR(a.impressoes)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground hidden sm:table-cell">{intBR(a.cliques)}</td>
                   </tr>
                 ))}
               </tbody>

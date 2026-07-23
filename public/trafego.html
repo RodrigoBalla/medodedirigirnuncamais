@@ -82,6 +82,7 @@
   .tagHoje{display:inline-block;background:rgba(74,222,128,.15);color:var(--green);font-weight:800;font-size:10px;padding:2px 8px;border-radius:999px;margin-left:6px}
   .vazio{padding:18px;text-align:center;color:var(--ink3);font-size:13px;background:var(--navy3);border:1px dashed var(--line);border-radius:14px}
 
+  @media (max-width:640px){ .hide-sm{display:none} }
   .lock{max-width:420px;margin:16vh auto;text-align:center}
   .lock .em{font-size:44px}
   .lock h2{margin:12px 0 8px;font-size:20px}
@@ -116,9 +117,9 @@
     <div class="sec"><h2>💰 Últimas vendas</h2><small>direto do banco (Eduzz) · tempo real · fuso Brasília</small></div>
     <div id="vendasWrap"></div>
 
-    <div class="sec" id="secAds" style="display:none"><h2>📣 Por anúncio · hoje</h2><small>gasto e resultado de cada criativo (Meta)</small></div>
+    <div class="sec" id="secAds" style="display:none"><h2>📣 Por anúncio · desde o início</h2><small>ordenado por compras (Meta)</small></div>
     <div class="tblwrap"><table id="adsTbl" style="display:none">
-      <thead><tr><th>Anúncio</th><th class="num">Gasto</th><th class="num">Impr.</th><th class="num">Cliques</th><th class="num">Compras</th></tr></thead>
+      <thead><tr><th>Anúncio</th><th class="num">Compras</th><th class="num">Gasto</th><th class="num hide-sm">Impr.</th><th class="num hide-sm">Cliques</th></tr></thead>
       <tbody></tbody>
     </table></div>
 
@@ -208,13 +209,14 @@
         }).join('') + '</tbody></table></div>';
     }
 
-    // ── POR ANÚNCIO (hoje) ──
-    if (m.anuncios_hoje && m.anuncios_hoje.length) {
+    // ── POR ANÚNCIO (desde o início — não zera à meia-noite) ──
+    var adsList = (m.anuncios_total && m.anuncios_total.length) ? m.anuncios_total : m.anuncios_hoje;
+    if (adsList && adsList.length) {
       document.getElementById('secAds').style.display='flex';
       var at = document.getElementById('adsTbl');
       at.style.display='table';
-      at.querySelector('tbody').innerHTML = m.anuncios_hoje.map(function(a){
-        return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num">'+brl(a.gasto)+'</td><td class="num">'+int(a.impressoes)+'</td><td class="num">'+int(a.cliques)+'</td><td class="num">'+int(a.compras)+'</td></tr>';
+      at.querySelector('tbody').innerHTML = adsList.map(function(a){
+        return '<tr><td>'+a.nome+(a.compras>0?' <span class="pill">'+a.compras+' venda'+(a.compras>1?'s':'')+'</span>':'')+'</td><td class="num"><b>'+int(a.compras)+'</b></td><td class="num">'+brl(a.gasto)+'</td><td class="num hide-sm">'+int(a.impressoes)+'</td><td class="num hide-sm">'+int(a.cliques)+'</td></tr>';
       }).join('');
     }
   }
