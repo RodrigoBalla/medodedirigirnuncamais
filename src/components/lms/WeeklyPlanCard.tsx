@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProgress } from "@/contexts/UserProgressContext";
+import { flyCoins } from "@/lib/coinFly";
+
+// Moedas creditadas ao completar os 3 objetivos da semana.
+const WEEKLY_REWARD_COINS = 50;
 
 // ─── WeeklyPlanCard ──────────────────────────────────────────────────────────
 // Card no topo da biblioteca: "Esta semana você vai..."
@@ -165,13 +171,18 @@ function getJourneyForWeek(weekId: string): PlanStep[] {
 
 export function WeeklyPlanCard() {
   const { user } = useAuth();
+  const { addCoins } = useUserProgress();
   const navigate = useNavigate();
   const weekId = useMemo(() => getWeekId(), []);
   const journey = useMemo(() => getJourneyForWeek(weekId), [weekId]);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Estado dos checks — persistido em localStorage por user+semana
   const storageKey = user ? `mddnm:weekly:${user.id}:${weekId}` : null;
+  // Flag: recompensa da semana já creditada? (evita re-creditar ao desmarcar/remarcar)
+  const rewardKey = user ? `mddnm:weekly-reward:${user.id}:${weekId}` : null;
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [rewardGiven, setRewardGiven] = useState(false);
 
   useEffect(() => {
     if (!storageKey) return;
@@ -179,16 +190,35 @@ export function WeeklyPlanCard() {
       const raw = localStorage.getItem(storageKey);
       if (raw) setChecked(JSON.parse(raw));
     } catch {}
-  }, [storageKey]);
+    try {
+      setRewardGiven(rewardKey ? localStorage.getItem(rewardKey) === "1" : false);
+    } catch {}
+  }, [storageKey, rewardKey]);
+
+  // Credita as moedas (1x por semana) com a animação de moedas subindo pro saldo.
+  const grantWeeklyReward = () => {
+    if (!rewardKey || rewardGiven) return;
+    setRewardGiven(true);
+    try { localStorage.setItem(rewardKey, "1"); } catch {}
+    flyCoins({
+      fromEl: cardRef.current,
+      count: 16,
+      label: `+${WEEKLY_REWARD_COINS}`,
+      onDone: () => {
+        void addCoins(WEEKLY_REWARD_COINS);
+        toast.success(`+${WEEKLY_REWARD_COINS} moedas! Semana completa 💛`);
+      },
+    });
+  };
 
   const toggle = (id: string) => {
-    setChecked((prev) => {
-      const next = { ...prev, [id]: !prev[id] };
-      if (storageKey) {
-        try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
-      }
-      return next;
-    });
+    const next = { ...checked, [id]: !checked[id] };
+    setChecked(next);
+    if (storageKey) {
+      try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
+    }
+    // Completou os 3 agora? dispara a recompensa (guardada por rewardKey).
+    if (journey.every((s) => next[s.id])) grantWeeklyReward();
   };
 
   const doneCount = journey.filter((s) => checked[s.id]).length;
@@ -198,6 +228,7 @@ export function WeeklyPlanCard() {
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -215,6 +246,10 @@ export function WeeklyPlanCard() {
             <h3 className="font-black text-lg md:text-xl text-foreground leading-tight">
               {allDone ? "🎉 Semana completa!" : `${doneCount} de ${journey.length} feitas`}
             </h3>
+            <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-black uppercase tracking-wide bg-yellow-500/10 text-yellow-600 border border-yellow-500/25 px-2 py-0.5 rounded-full">
+              <span className="material-symbols-outlined text-[13px] filled-icon text-yellow-500">database</span>
+              {rewardGiven ? `+${WEEKLY_REWARD_COINS} creditadas ✓` : `+${WEEKLY_REWARD_COINS} ao completar`}
+            </span>
           </div>
           {/* Progress circle */}
           <div className="relative size-12 shrink-0">
