@@ -259,9 +259,26 @@ export function AppLayout({
               <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
             </button>
           )}
-          {/* Avatar — mostra a foto que o user subiu (via UserAvatar +
-              hook useAvatarUrl). Cada user vê só a sua foto. */}
-          <UserAvatar displayName={liveName} size={36} />
+          {/* Avatar — clicável: leva pro Perfil da aluna. Mostra a foto que o
+              user subiu (via UserAvatar + hook useAvatarUrl). */}
+          <button
+            onClick={() => handleNavClick("perfil")}
+            title="Meu perfil"
+            aria-label="Ir para o meu perfil"
+            className="rounded-full ring-2 ring-transparent hover:ring-primary/50 focus:outline-none focus:ring-primary/60 transition-all active:scale-95"
+          >
+            <UserAvatar displayName={liveName} size={36} />
+          </button>
+
+          {/* Sair — logout rápido ao lado do avatar */}
+          <button
+            onClick={signOut}
+            title="Sair da conta"
+            aria-label="Sair da conta"
+            className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors active:scale-95"
+          >
+            <span className="material-symbols-outlined text-lg">logout</span>
+          </button>
         </div>
       </header>
 
