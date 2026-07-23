@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useMissions, type UserMission } from "@/hooks/useMissions";
+import { MissionsTutorial } from "./MissionsTutorial";
+
+// Guarda que o tutorial da 1ª missão já foi concluído/pulado (1x por navegador).
+const MISSIONS_TUTORIAL_KEY = "mddnm:missions-tutorial-done";
 
 // ─── MissionsPanel ───────────────────────────────────────────────────────────
 // Painel de missões mensais. Mostra:
@@ -120,6 +124,7 @@ function MissionCard({
   return (
     <motion.div
       layout
+      data-mission-id={mission.id}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
@@ -240,6 +245,55 @@ export function MissionsPanel() {
   }, [filtered]);
 
   const daysLeft = daysUntil(cycleEnd);
+
+  // ─── Tutorial guiado da 1ª missão ────────────────────────────────────────
+  // Mostra 1x (até a aluna concluir uma missão) quando ela chega no Perfil e
+  // ainda não resgatou nada. Aponta pro botão de ação de uma missão acionável.
+  const [tutorialDone, setTutorialDone] = useState<boolean>(() => {
+    try { return localStorage.getItem(MISSIONS_TUTORIAL_KEY) === "1"; } catch { return true; }
+  });
+  const [tutStep, setTutStep] = useState<"point" | "success" | null>(null);
+  const [claimedAtStart, setClaimedAtStart] = useState<number | null>(null);
+
+  // Missão-alvo do tutorial: prioriza uma "Fiz isso" (self_report, não feita),
+  // senão uma pronta pra "Resgatar". Se não houver acionável, não mostra.
+  const tutorialTarget = useMemo(() => {
+    const self = missions.find((m) => m.trigger_type === "self_report" && !m.completed_at && !m.claimed_at);
+    const ready = missions.find((m) => m.completed_at && !m.claimed_at);
+    return self ?? ready ?? null;
+  }, [missions]);
+  const tutorialActionLabel =
+    tutorialTarget && tutorialTarget.trigger_type === "self_report" && !tutorialTarget.completed_at
+      ? "Fiz isso"
+      : "Resgatar";
+
+  const finishTutorial = () => {
+    try { localStorage.setItem(MISSIONS_TUTORIAL_KEY, "1"); } catch {}
+    setTutorialDone(true);
+    setTutStep(null);
+  };
+
+  // Dispara o tutorial: abre o grupo do alvo, rola até ele e mostra o "apontar".
+  // Só pra quem nunca resgatou nada (novata de verdade) — não incomoda veterana.
+  useEffect(() => {
+    if (loading || tutorialDone || tutStep || !tutorialTarget) return;
+    if (counts.claimed > 0) { finishTutorial(); return; }
+    setOpenCats((s) => ({ ...s, [tutorialTarget.difficulty || "easy"]: true }));
+    setClaimedAtStart(counts.claimed);
+    setTutStep("point");
+    const id = tutorialTarget.id;
+    window.setTimeout(() => {
+      document.querySelector(`[data-mission-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 450);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, tutorialDone, tutStep, tutorialTarget]);
+
+  // Concluiu uma missão durante o tutorial? (claimed aumentou) → passo sucesso.
+  useEffect(() => {
+    if (tutStep === "point" && claimedAtStart != null && counts.claimed > claimedAtStart) {
+      setTutStep("success");
+    }
+  }, [counts.claimed, claimedAtStart, tutStep]);
 
   // Inicialmente abre o nível que tem missões prontas pra resgatar OU,
   // se não tem nenhuma pronta, abre o "Aquecimento" (porta de entrada).
@@ -417,6 +471,15 @@ export function MissionsPanel() {
       <p className="text-[10px] text-muted-foreground/60 text-center mt-4 italic">
         ⚡ Novas missões a cada ciclo. As moedas viram desconto nos próximos cursos.
       </p>
+
+      <MissionsTutorial
+        active={tutStep !== null}
+        step={tutStep ?? "point"}
+        targetId={tutorialTarget?.id ?? null}
+        actionLabel={tutorialActionLabel}
+        onSkip={finishTutorial}
+        onFinish={finishTutorial}
+      />
     </div>
   );
 }

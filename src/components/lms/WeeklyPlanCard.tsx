@@ -173,6 +173,28 @@ function getJourneyForWeek(weekId: string): PlanStep[] {
   return WEEKLY_JOURNEYS[weekNum % WEEKLY_JOURNEYS.length];
 }
 
+/** Próxima segunda 00:00 (horário local) — quando o plano renova. */
+function nextMondayMidnight(from = new Date()): Date {
+  const d = from.getDay(); // 0=domingo … 6=sábado
+  const add = ((1 - d + 7) % 7) || 7; // dias até a próxima segunda (hoje segunda → +7)
+  const next = new Date(from);
+  next.setHours(0, 0, 0, 0);
+  next.setDate(next.getDate() + add);
+  return next;
+}
+
+/** Formata ms restantes em "Xd YYh ZZm" ou "HHh MMm SSs" quando falta < 1 dia. */
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return "renovando…";
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return d >= 1 ? `${d}d ${p(h)}h ${p(m)}m` : `${p(h)}h ${p(m)}m ${p(sec)}s`;
+}
+
 export function WeeklyPlanCard() {
   const { user } = useAuth();
   const { addCoins } = useUserProgress();
@@ -218,6 +240,16 @@ export function WeeklyPlanCard() {
   const doneCount = journey.filter((s) => checked[s.id]).length;
   const allDone = doneCount === total;
   const pendingSteps = journey.filter((s) => !checked[s.id]);
+
+  // Contagem regressiva até renovar (só roda quando a semana está completa).
+  const [nowTs, setNowTs] = useState(() => Date.now());
+  useEffect(() => {
+    if (!allDone) return;
+    setNowTs(Date.now());
+    const t = window.setInterval(() => setNowTs(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, [allDone]);
+  const resetMs = nextMondayMidnight().getTime() - nowTs;
   const earnedThisWeek = journey.reduce((sum, s) => sum + (checked[s.id] ? rewardForStep(s.id) : 0), 0);
 
   if (!user) return null;
@@ -318,13 +350,37 @@ export function WeeklyPlanCard() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-6"
+              className="text-center py-5"
             >
               <div className="text-4xl mb-2">🎉</div>
               <p className="font-black text-foreground">Todas as tarefas da semana concluídas!</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Você ganhou <span className="text-yellow-600 font-black">+{earnedThisWeek} moedas</span> essa semana. Segunda começa um plano novo 💛
+                Você ganhou <span className="text-yellow-600 font-black">+{earnedThisWeek} moedas</span> essa semana 💛
               </p>
+
+              {/* Contador até liberar tarefas novas (próxima segunda) */}
+              <div className="mt-4 inline-flex flex-col items-center gap-0.5 bg-accent/40 border border-border rounded-2xl px-6 py-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Novas tarefas em
+                </span>
+                <span className="text-xl md:text-2xl font-black tabular-nums text-primary">
+                  {formatCountdown(resetMs)}
+                </span>
+              </div>
+
+              {/* Enquanto isso: missões no Perfil rendem moedas o mês todo */}
+              <div className="mt-5">
+                <button
+                  onClick={() => navigate("/perfil")}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs tracking-widest hover:scale-[1.03] active:scale-95 transition-transform shadow-lg shadow-primary/20"
+                >
+                  <span className="material-symbols-outlined text-base filled-icon">target</span>
+                  Fazer missões e ganhar mais 🪙
+                </button>
+                <p className="text-[11px] text-muted-foreground mt-2 max-w-xs mx-auto leading-snug">
+                  No seu Perfil tem missões que rendem moedas o mês inteiro — não precisa esperar a semana virar.
+                </p>
+              </div>
             </motion.div>
           )}
         </div>
