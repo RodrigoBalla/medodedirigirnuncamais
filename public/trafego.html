@@ -29,8 +29,15 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   h1{font-size:clamp(17px,3vw,22px);font-weight:900;letter-spacing:-.01em}
   h1 span{color:var(--yellow)}
-  .upd{font-size:12px;color:var(--ink3);text-align:right}
+  .upd{font-size:12px;color:var(--ink3);text-align:right;display:flex;align-items:center;gap:12px}
   .upd b{color:var(--ink2);font-variant-numeric:tabular-nums}
+  .btnUpd{
+    font-family:'Lexend',sans-serif;background:var(--yellow);color:var(--navy);border:0;
+    font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    padding:10px 18px;border-radius:10px;cursor:pointer;transition:.15s;
+  }
+  .btnUpd:hover{background:var(--yellow-dim)}
+  .btnUpd:disabled{opacity:.6;cursor:wait}
 
   .placar{
     background:linear-gradient(135deg,#1a2f5c,var(--navy3));
@@ -101,7 +108,10 @@
   <div id="dash" style="display:none">
     <header>
       <div class="brand"><div class="dot"></div><h1>Placar da <span>campanha</span> · MDNM</h1></div>
-      <div class="upd">Atualizado às <b id="updAt">—</b><br>próxima em <b id="updIn">—</b>s</div>
+      <div class="upd">
+        <span>Atualizado às <b id="updAt">—</b></span>
+        <button class="btnUpd" id="btnUpd" type="button">🔄 Atualizar</button>
+      </div>
     </header>
 
     <div class="placar">
@@ -123,7 +133,7 @@
       <tbody></tbody>
     </table></div>
 
-    <footer>Medo de Dirigir Nunca Mais · painel interno · atualiza sozinho a cada 10s</footer>
+    <footer>Medo de Dirigir Nunca Mais · painel interno · clique em Atualizar pra buscar os dados mais recentes</footer>
   </div>
 </div>
 
@@ -134,7 +144,6 @@
   document.getElementById('dash').style.display='block';
 
   var URL_FN = 'https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/ads-stats?k=' + encodeURIComponent(K);
-  var EVERY = 10, left = EVERY;
 
   function brl(n){ return (n==null||isNaN(n)) ? '—' : n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
   function int(n){ return (n==null||isNaN(n)) ? '—' : Math.round(n).toLocaleString('pt-BR'); }
@@ -221,18 +230,18 @@
     }
   }
 
-  function tick(){
-    left--;
-    if(left<=0){ left=EVERY; load(); }
-    document.getElementById('updIn').textContent = left;
-  }
+  // Atualização MANUAL — sem polling automático, pra não pesar o banco.
+  var btn = document.getElementById('btnUpd');
   function load(){
+    btn.disabled = true; btn.textContent = '⏳ Atualizando…';
     fetch(URL_FN).then(function(r){return r.json();}).then(render).catch(function(e){
       document.getElementById('metaAviso').innerHTML = '<div class="err">Falha ao atualizar: '+e+'</div>';
+    }).finally(function(){
+      btn.disabled = false; btn.textContent = '🔄 Atualizar';
     });
   }
-  load();
-  setInterval(tick, 1000);
+  btn.addEventListener('click', load);
+  load(); // 1x ao abrir; depois só no botão
 })();
 </script>
 </body>

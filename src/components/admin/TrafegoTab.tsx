@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 // =============================================================================
 
 const FN_URL = "https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/ads-stats";
-const POLL_MS = 15_000;
 
 interface MetaBlock {
   gasto: number; impressoes: number; cliques: number; ctr: number; cpm: number;
@@ -39,35 +38,34 @@ export function TrafegoTab() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string>("—");
-  const [countdown, setCountdown] = useState<number>(POLL_MS / 1000);
-  const timer = useRef<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const alive = useRef(true);
+
+  // Atualização MANUAL (botão) — sem polling automático, pra não pesar o banco.
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setErr("Sessão expirada — recarregue a página."); return; }
+      const r = await fetch(FN_URL, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const j = await r.json();
+      if (!alive.current) return;
+      if (j?.error) { setErr(j.error === "forbidden" ? "Acesso negado (precisa ser admin)." : String(j.error)); return; }
+      setErr(null);
+      setStats(j);
+      setUpdatedAt(new Date().toLocaleTimeString("pt-BR"));
+    } catch (e) {
+      if (alive.current) setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (alive.current) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { setErr("Sessão expirada — recarregue a página."); return; }
-        const r = await fetch(FN_URL, { headers: { Authorization: `Bearer ${session.access_token}` } });
-        const j = await r.json();
-        if (!alive) return;
-        if (j?.error) { setErr(j.error === "forbidden" ? "Acesso negado (precisa ser admin)." : String(j.error)); return; }
-        setErr(null);
-        setStats(j);
-        setUpdatedAt(new Date().toLocaleTimeString("pt-BR"));
-      } catch (e) {
-        if (alive) setErr(e instanceof Error ? e.message : String(e));
-      }
-    };
-    load();
-    // Ticker de 1s: mostra o contador regressivo e dispara o reload quando zera
-    let left = POLL_MS / 1000;
-    timer.current = window.setInterval(() => {
-      left -= 1;
-      if (left <= 0) { left = POLL_MS / 1000; load(); }
-      if (alive) setCountdown(left);
-    }, 1000);
-    return () => { alive = false; if (timer.current) window.clearInterval(timer.current); };
+    alive.current = true;
+    load(); // 1x ao abrir a aba; depois só no botão
+    return () => { alive.current = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const v = stats?.vendas;
@@ -90,11 +88,19 @@ export function TrafegoTab() {
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[hsl(var(--success))]" />
           </span>
           <h2 className="text-lg font-extrabold">Placar da campanha</h2>
-          <span className="text-xs text-muted-foreground">desde {stats?.inicio ? stats.inicio.split("-").reverse().slice(0, 2).join("/") : "21/07"} · atualiza a cada 15s</span>
+          <span className="text-xs text-muted-foreground">desde {stats?.inicio ? stats.inicio.split("-").reverse().slice(0, 2).join("/") : "21/07"}</span>
         </div>
-        <span className="text-xs text-muted-foreground tabular-nums">
-          atualizado às {updatedAt} · próxima em <b className="text-foreground inline-block w-[2ch] text-right">{countdown}</b>s
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground tabular-nums">atualizado às {updatedAt}</span>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-black uppercase text-xs tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            <span className={`material-symbols-outlined text-base ${loading ? "animate-spin" : ""}`}>refresh</span>
+            {loading ? "Atualizando…" : "Atualizar"}
+          </button>
+        </div>
       </div>
 
       {err && (
