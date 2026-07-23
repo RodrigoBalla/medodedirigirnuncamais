@@ -5,6 +5,7 @@ import { playCheckSound, playCoinSound } from "@/lib/sounds";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrackMission } from "@/hooks/useTrackMission";
+import { compressImage } from "@/lib/imageCompress";
 
 // =============================================================================
 // COMUNIDADE — agora 100% conectada ao Supabase.
@@ -28,6 +29,7 @@ type CommunityPost = {
   is_question: boolean;
   category: string;
   created_at: string;
+  image_url: string | null;
   // Campos derivados (preenchidos depois do fetch):
   authorName: string;
   authorInitial: string;
@@ -36,13 +38,19 @@ type CommunityPost = {
   isSaved: boolean;
 };
 
-const STORIES = [
-  { name: "Karla M.", online: true },
-  { name: "Sarah P.", online: false },
-  { name: "Coach Anna", online: true },
-  { name: "Regras", online: false, icon: "menu_book" },
-  { name: "Eventos", online: false, icon: "event" },
-];
+// Story real (tabela community_stories) — expira 24h depois de postado.
+type Story = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  image_url: string;
+  caption: string | null;
+  created_at: string;
+  expires_at: string;
+};
+
+// Stories agrupados por autora (cada bolinha = uma autora com N stories)
+type StoryGroup = { user_id: string; name: string; items: Story[] };
 
 const TABS = [
   { id: "feed", label: "Para Você" },
@@ -73,8 +81,17 @@ export function CommunityScreen() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  const [selectedStory, setSelectedStory] = useState<string | null>(null);
   const [isQuestion, setIsQuestion] = useState(false);
+
+  // ── Foto do post (comprimida no navegador antes de subir) ────────────
+  const feedFileRef = useRef<HTMLInputElement>(null);
+  const storyFileRef = useRef<HTMLInputElement>(null);
+  const [photo, setPhoto] = useState<{ blob: Blob; ext: string; preview: string } | null>(null);
+  const [preparing, setPreparing] = useState(false);
+
+  // ── Stories reais ────────────────────────────────────────────────────
+  const [stories, setStories] = useState<Story[]>([]);
+  const [viewer, setViewer] = useState<{ group: StoryGroup; index: number } | null>(null);
 
   // ── Auto-track de tempo na comunidade (community_read_time) ──────────
   // Soma segundos enquanto o user está com a aba ativa. Reporta a cada
@@ -169,6 +186,7 @@ export function CommunityScreen() {
           is_question: p.is_question,
           category: p.category,
           created_at: p.created_at,
+          image_url: (p as { image_url?: string | null }).image_url ?? null,
           authorName: name,
           authorInitial: name.charAt(0).toUpperCase(),
           likeCount: likeCountByPost.get(p.id) ?? 0,
@@ -207,6 +225,98 @@ export function CommunityScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // ── Stories: carrega os ativos (RPC já traz o nome da autora) ────────
+  async function loadStories() {
+    try {
+      const { data, error } = await supabase.rpc("list_active_stories");
+      if (error) throw error;
+      setStories((data ?? []) as Story[]);
+    } catch (err) {
+      console.warn("[community] loadStories:", err);
+    }
+  }
+  useEffect(() => {
+    if (!user) return;
+    loadStories();
+    const t = window.setInterval(loadStories, 120000); // revalida a cada 2min
+    return () => window.clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // Agrupa por autora, minha primeiro
+  const storyGroups: StoryGroup[] = (() => {
+    const map = new Map<string, StoryGroup>();
+    for (const s of stories) {
+      if (!map.has(s.user_id)) map.set(s.user_id, { user_id: s.user_id, name: s.display_name, items: [] });
+      map.get(s.user_id)!.items.push(s);
+    }
+    const arr = Array.from(map.values());
+    arr.forEach((g) => g.items.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at)));
+    return arr.sort((a, b) => (a.user_id === user?.id ? -1 : b.user_id === user?.id ? 1 : 0));
+  })();
+
+  // ── Foto do feed: comprime na hora que escolhe e mostra preview ───────
+  async function onPickFeedPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite escolher o mesmo arquivo de novo
+    if (!file) return;
+    setPreparing(true);
+    try {
+      const { blob, ext } = await compressImage(file);
+      if (photo?.preview) URL.revokeObjectURL(photo.preview);
+      setPhoto({ blob, ext, preview: URL.createObjectURL(blob) });
+    } catch (err) {
+      console.error("[community] compress:", err);
+      toast.error(err instanceof Error ? err.message : "Não consegui preparar essa foto.");
+    } finally {
+      setPreparing(false);
+    }
+  }
+
+  function clearPhoto() {
+    if (photo?.preview) URL.revokeObjectURL(photo.preview);
+    setPhoto(null);
+  }
+
+  /** Sobe pro bucket 'community' na pasta da própria aluna e devolve url+path. */
+  async function uploadToCommunity(blob: Blob, ext: string, folder: "feed" | "stories") {
+    if (!user) throw new Error("sem sessão");
+    const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("community")
+      .upload(path, blob, { contentType: blob.type, upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from("community").getPublicUrl(path);
+    return { url: data.publicUrl, path };
+  }
+
+  // ── Publicar um story (expira em 24h pelo default da tabela) ─────────
+  async function onPickStoryPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    setPreparing(true);
+    const t = toast.loading("Publicando seu story…");
+    try {
+      const { blob, ext } = await compressImage(file, { maxSize: 1280 });
+      const { url, path } = await uploadToCommunity(blob, ext, "stories");
+      const { error } = await supabase.from("community_stories").insert({
+        user_id: user.id,
+        image_url: url,
+        storage_path: path,
+      });
+      if (error) throw error;
+      playCoinSound();
+      toast.success("Story publicado! Some em 24h ⏳", { id: t });
+      loadStories();
+    } catch (err) {
+      console.error("[community] story:", err);
+      toast.error("Não consegui publicar o story.", { id: t });
+    } finally {
+      setPreparing(false);
+    }
+  }
+
   // ── Filtro por tab ───────────────────────────────────────────────────
   const filteredPosts = posts.filter((p) => p.category === activeTab);
 
@@ -217,19 +327,30 @@ export function CommunityScreen() {
       return;
     }
     const content = postText.trim().replace(/^❓ Dúvida:\s*/i, "").trim();
-    if (!content) {
-      toast.error("Escreva algo antes de postar!");
+    if (!content && !photo) {
+      toast.error("Escreva algo ou escolha uma foto!");
       return;
     }
     setPosting(true);
     try {
+      // Sobe a foto (se tiver) antes de criar o post
+      let imageUrl: string | null = null;
+      let imagePath: string | null = null;
+      if (photo) {
+        const up = await uploadToCommunity(photo.blob, photo.ext, "feed");
+        imageUrl = up.url;
+        imagePath = up.path;
+      }
       const { error } = await supabase.from("community_posts").insert({
         user_id: user.id,
         content,
         is_question: isQuestion,
         category: activeTab,
+        image_url: imageUrl,
+        image_path: imagePath,
       });
       if (error) throw error;
+      clearPhoto();
       playCoinSound();
       // Auto-track missões de post na comunidade (intro/win/fear/tip/etc.)
       trackProgress("community_post", 1);
@@ -354,51 +475,128 @@ export function CommunityScreen() {
         </button>
       </div>
 
-      {/* Stories */}
+      {/* Stories reais (expiram em 24h) */}
+      <input ref={storyFileRef} type="file" accept="image/*" className="hidden" onChange={onPickStoryPhoto} />
       <div className="flex gap-4 overflow-x-auto pb-4 mb-6 no-scrollbar">
-        {STORIES.map((s, i) => (
+        {/* Seu story: abre a câmera/galeria */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => storyFileRef.current?.click()}
+          disabled={preparing}
+          className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-60"
+        >
+          <div className="p-0.5 rounded-full bg-muted relative">
+            <div className="h-14 w-14 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">add_a_photo</span>
+            </div>
+          </div>
+          <span className="text-xs font-medium text-muted-foreground">Seu story</span>
+        </motion.button>
+
+        {storyGroups.map((g) => (
           <motion.button
-            key={i}
+            key={g.user_id}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleStoryClick(s.name)}
+            onClick={() => setViewer({ group: g, index: 0 })}
             className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
           >
-            <div className={`p-0.5 rounded-full ${s.online ? "bg-gradient-to-tr from-primary to-blue-300" : "bg-muted"}`}>
-              <div className="h-14 w-14 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center">
-                {s.icon ? (
-                  <span className="material-symbols-outlined text-primary text-2xl">{s.icon}</span>
-                ) : (
-                  <span className="font-bold text-primary text-lg">{s.name.charAt(0)}</span>
-                )}
+            <div className="p-0.5 rounded-full bg-gradient-to-tr from-primary to-blue-300">
+              <div className="h-14 w-14 rounded-full border-2 border-card overflow-hidden bg-primary/10 flex items-center justify-center">
+                <img src={g.items[g.items.length - 1].image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
               </div>
             </div>
-            <span className="text-xs font-medium text-muted-foreground">{s.name}</span>
+            <span className="text-xs font-medium text-muted-foreground max-w-[64px] truncate">
+              {g.user_id === user?.id ? "Você" : g.name.split(" ")[0]}
+            </span>
           </motion.button>
         ))}
+
+        {storyGroups.length === 0 && (
+          <div className="flex items-center text-xs text-muted-foreground italic">
+            Nenhum story ainda — seja a primeira! 📸
+          </div>
+        )}
       </div>
 
-      {/* Story Viewer */}
+      {/* Story Viewer — tela cheia, avança sozinho a cada 5s */}
       <AnimatePresence>
-        {selectedStory && (
+        {viewer && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-6 mb-6 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
+            onClick={() => setViewer(null)}
           >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-              <span className="text-2xl font-bold text-primary">{selectedStory.charAt(0)}</span>
+            {/* Barrinhas de progresso (uma por story da autora) */}
+            <div className="flex gap-1 p-3 pt-4" onClick={(e) => e.stopPropagation()}>
+              {viewer.group.items.map((_, i) => (
+                <div key={i} className="h-1 flex-1 bg-white/25 rounded-full overflow-hidden">
+                  {i < viewer.index && <div className="h-full w-full bg-white" />}
+                  {i === viewer.index && (
+                    <motion.div
+                      key={`${viewer.group.user_id}-${viewer.index}`}
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 5, ease: "linear" }}
+                      onAnimationComplete={() => {
+                        if (viewer.index + 1 < viewer.group.items.length) {
+                          setViewer({ ...viewer, index: viewer.index + 1 });
+                        } else {
+                          setViewer(null);
+                        }
+                      }}
+                      className="h-full bg-white"
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-            <p className="font-bold">{selectedStory}</p>
-            <p className="text-xs text-muted-foreground mt-1">Nenhum story recente</p>
-            <div className="h-1 w-full bg-muted rounded-full mt-4 overflow-hidden">
-              <motion.div
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 3, ease: "linear" }}
-                className="h-full bg-primary rounded-full"
+
+            <div className="flex items-center gap-3 px-4 pb-2" onClick={(e) => e.stopPropagation()}>
+              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                {viewer.group.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-sm truncate">
+                  {viewer.group.user_id === user?.id ? "Você" : viewer.group.name}
+                </p>
+                <p className="text-white/60 text-xs">{formatTimeAgo(viewer.group.items[viewer.index].created_at)}</p>
+              </div>
+              <button onClick={() => setViewer(null)} className="text-white/80 hover:text-white p-1">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Imagem + zonas de toque pra voltar/avançar */}
+            <div className="flex-1 relative flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={viewer.group.items[viewer.index].image_url}
+                alt=""
+                className="max-h-full max-w-full object-contain"
+              />
+              <button
+                aria-label="Anterior"
+                className="absolute left-0 top-0 bottom-0 w-1/3"
+                onClick={() => setViewer((v) => (v && v.index > 0 ? { ...v, index: v.index - 1 } : v))}
+              />
+              <button
+                aria-label="Próximo"
+                className="absolute right-0 top-0 bottom-0 w-1/3"
+                onClick={() =>
+                  setViewer((v) => {
+                    if (!v) return v;
+                    return v.index + 1 < v.group.items.length ? { ...v, index: v.index + 1 } : null;
+                  })
+                }
               />
             </div>
+
+            {viewer.group.items[viewer.index].caption && (
+              <p className="text-white text-center text-sm px-6 pb-6" onClick={(e) => e.stopPropagation()}>
+                {viewer.group.items[viewer.index].caption}
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -417,14 +615,34 @@ export function CommunityScreen() {
               placeholder="Compartilhe seu progresso..."
               maxLength={2000}
             />
+
+            {/* Preview da foto escolhida (já comprimida) */}
+            {photo && (
+              <div className="relative mt-2 rounded-xl overflow-hidden border border-border">
+                <img src={photo.preview} alt="Prévia" className="w-full max-h-72 object-cover" />
+                <button
+                  onClick={clearPhoto}
+                  className="absolute top-2 right-2 size-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                  aria-label="Remover foto"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              </div>
+            )}
+
+            <input ref={feedFileRef} type="file" accept="image/*" className="hidden" onChange={onPickFeedPhoto} />
+
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => toast("📸 Upload de fotos em breve!", { icon: "🔜" })}
-                  className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => feedFileRef.current?.click()}
+                  disabled={preparing}
+                  className={`flex items-center gap-1 transition-colors disabled:opacity-60 ${
+                    photo ? "text-primary" : "text-muted-foreground hover:text-primary"
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-lg">image</span>
-                  <span className="text-xs font-medium hidden sm:inline">Foto</span>
+                  <span className="material-symbols-outlined text-lg">{preparing ? "hourglass_top" : "image"}</span>
+                  <span className="text-xs font-medium hidden sm:inline">{preparing ? "Preparando…" : "Foto"}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -536,7 +754,19 @@ export function CommunityScreen() {
                       <p className="text-sm leading-relaxed font-medium italic">"{post.content}"</p>
                     </div>
                   ) : (
-                    <p className="text-sm leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
+                    post.content && <p className="text-sm leading-relaxed mb-3 whitespace-pre-wrap">{post.content}</p>
+                  )}
+
+                  {/* Foto do post */}
+                  {post.image_url && (
+                    <div className="-mx-4 md:-mx-6 mt-1">
+                      <img
+                        src={post.image_url}
+                        alt="Foto da postagem"
+                        loading="lazy"
+                        className="w-full max-h-[520px] object-cover bg-muted"
+                      />
+                    </div>
                   )}
                 </div>
 
