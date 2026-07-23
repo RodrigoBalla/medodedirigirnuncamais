@@ -348,39 +348,27 @@ export function WeeklyPlanCard() {
 
           {allDone && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-5"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between gap-3 bg-accent/40 border border-border rounded-2xl px-4 py-3"
             >
-              <div className="text-4xl mb-2">🎉</div>
-              <p className="font-black text-foreground">Todas as tarefas da semana concluídas!</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Você ganhou <span className="text-yellow-600 font-black">+{earnedThisWeek} moedas</span> essa semana 💛
-              </p>
-
-              {/* Contador até liberar tarefas novas (próxima segunda) */}
-              <div className="mt-4 inline-flex flex-col items-center gap-0.5 bg-accent/40 border border-border rounded-2xl px-6 py-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              {/* Contador até renovar (próxima segunda) */}
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none">
                   Novas tarefas em
-                </span>
-                <span className="text-xl md:text-2xl font-black tabular-nums text-primary">
+                </p>
+                <p className="text-lg font-black tabular-nums text-primary leading-tight mt-1">
                   {formatCountdown(resetMs)}
-                </span>
-              </div>
-
-              {/* Enquanto isso: missões no Perfil rendem moedas o mês todo */}
-              <div className="mt-5">
-                <button
-                  onClick={() => navigate("/perfil")}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-black uppercase text-xs tracking-widest hover:scale-[1.03] active:scale-95 transition-transform shadow-lg shadow-primary/20"
-                >
-                  <span className="material-symbols-outlined text-base filled-icon">target</span>
-                  Fazer missões e ganhar mais 🪙
-                </button>
-                <p className="text-[11px] text-muted-foreground mt-2 max-w-xs mx-auto leading-snug">
-                  No seu Perfil tem missões que rendem moedas o mês inteiro — não precisa esperar a semana virar.
                 </p>
               </div>
+              {/* Enquanto isso: missões no Perfil rendem moedas o mês todo */}
+              <button
+                onClick={() => navigate("/perfil")}
+                className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] tracking-widest hover:scale-[1.03] active:scale-95 transition-transform"
+              >
+                <span className="material-symbols-outlined text-base filled-icon">target</span>
+                Fazer missões 🪙
+              </button>
             </motion.div>
           )}
         </div>
