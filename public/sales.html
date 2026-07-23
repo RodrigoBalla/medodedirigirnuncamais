@@ -6551,8 +6551,7 @@
   let modoListaEspera = false;
   const _npUrl = new URL(location.href);
   const _previewInscritos = _npUrl.searchParams.has('inscritos') ? parseInt(_npUrl.searchParams.get('inscritos'), 10) : null;
-  const _forceCelebra = _npUrl.searchParams.get('celebra') === '1';
-  function setTotalInscritos(n) { totalInscritos = Math.max(0, n | 0); renderVagas(); maybeCelebrate(); }
+  function setTotalInscritos(n) { totalInscritos = Math.max(0, n | 0); renderVagas(); }
 
   async function carregarVagas() {
     if (_previewInscritos != null && !isNaN(_previewInscritos)) { setTotalInscritos(_previewInscritos); return; }
@@ -6677,14 +6676,10 @@
     }
   }
 
-  // ── Comemoração dos 100 alunos (entra na 2ª turma) ──────────────────────
-  let _celebrated = false;
-  function maybeCelebrate() {
-    if (_celebrated) return;
-    let already = false; try { already = localStorage.getItem('mddnm_turma2_celebrated') === '1'; } catch (e) {}
-    if ((totalInscritos >= VAGAS_TOTAL && !already) || _forceCelebra) { _celebrated = true; showTurma2Celebration(); }
-  }
-  function ensureCelebraDom() {
+  // (Popup de comemoração dos 100 alunos removido em 23/07 a pedido do Balla —
+  //  o contador da Segunda Turma continua; só o overlay/confetti saiu.)
+  /* eslint-disable no-unused-vars */
+  function _celebraRemovida() {
     if (document.getElementById('turma2Celebration')) return;
     const st = document.createElement('style');
     st.textContent = '.celebra{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:20px}.celebra.is-open{display:flex}.celebra__bg{position:absolute;inset:0;background:rgba(4,10,22,.86);backdrop-filter:blur(8px)}.celebra__card{position:relative;z-index:2;max-width:440px;width:100%;background:linear-gradient(160deg,#12264e,#0b1a38);border:2px solid rgba(255,214,10,.4);border-radius:28px;padding:38px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:celIn .5s cubic-bezier(.2,.9,.3,1.3)}@keyframes celIn{from{opacity:0;transform:translateY(30px) scale(.9)}to{opacity:1;transform:none}}.celebra__x{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.08);border:none;color:#cbd5e1;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1}.celebra__emoji{font-size:64px;line-height:1;margin-bottom:6px;animation:celPop 2s ease-in-out infinite}@keyframes celPop{0%,100%{transform:scale(1) rotate(-4deg)}50%{transform:scale(1.12) rotate(4deg)}}.celebra__badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#FFD60A;background:rgba(255,214,10,.12);border:1px solid rgba(255,214,10,.35);padding:5px 12px;border-radius:100px;margin-bottom:14px}.celebra__title{font-size:34px;line-height:1.05;font-weight:900;color:#fff;margin:0 0 10px}.celebra__title span{color:#FFD60A;text-shadow:0 0 30px rgba(255,214,10,.5)}.celebra__sub{font-size:16px;color:#cbd5e1;margin:0 0 24px}.celebra__sub strong{color:#fff}.celebra__cta{width:100%}.celebra__cf{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}.celebra__pc{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;opacity:.95;animation:celFall linear forwards}@keyframes celFall{to{transform:translateY(110vh) translateX(var(--drift,20px)) rotate(720deg);opacity:0}}.celebra{opacity:1;transition:opacity .45s ease}.celebra.is-closing{opacity:0}';
@@ -6694,23 +6689,6 @@
     el.innerHTML = '<div class="celebra__bg"></div><div class="celebra__cf" id="celebraCf"></div><div class="celebra__card"><div class="celebra__emoji">🎉</div><div class="celebra__badge">Marco desbloqueado</div><h2 class="celebra__title">Somos <span>100 alunos!</span></h2><p class="celebra__sub">Inscrições para a <strong>segunda turma</strong> abertas!</p></div>';
     document.body.appendChild(el);
   }
-  function fireCelebraConfetti() {
-    const box = document.getElementById('celebraCf'); if (!box) return;
-    const colors = ['#FFD60A', '#FFC700', '#10b981', '#ffffff', '#3b82f6', '#ef4444'];
-    for (let i = 0; i < 90; i++) {
-      const p = document.createElement('span'); p.className = 'celebra__pc';
-      p.style.left = Math.random() * 100 + '%';
-      p.style.background = colors[i % colors.length];
-      p.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
-      p.style.animationDelay = (Math.random() * .5) + 's';
-      p.style.animationDuration = (2.4 + Math.random() * 2) + 's';
-      box.appendChild(p);
-      setTimeout(function () { p.remove(); }, 4800);
-    }
-  }
-  function showTurma2Celebration() { ensureCelebraDom(); const el = document.getElementById('turma2Celebration'); el.classList.add('is-open'); fireCelebraConfetti(); setTimeout(closeTurma2Celebration, 5000); }
-  function closeTurma2Celebration() { const el = document.getElementById('turma2Celebration'); if (el) { el.classList.add('is-closing'); setTimeout(function () { el.classList.remove('is-open', 'is-closing'); }, 460); } try { localStorage.setItem('mddnm_turma2_celebrated', '1'); } catch (e) {} }
-  window.closeTurma2Celebration = closeTurma2Celebration;
 
   // Carrega ao iniciar e revalida a cada 60s caso o usuário fique muito tempo na página
   carregarVagas();
