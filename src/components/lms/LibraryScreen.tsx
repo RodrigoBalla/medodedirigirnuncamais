@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
 import { WeeklyPlanCard } from "./WeeklyPlanCard";
+import { CommunityHighlights } from "./CommunityHighlights";
 
 // =============================================================================
 // LibraryScreen — grid de cursos da área de membros
@@ -126,6 +127,9 @@ export function LibraryScreen() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 min-h-[calc(100vh-53px)] flex flex-col">
+      {/* Prévia da Comunidade — stories + posts do dia, pra puxar participação. */}
+      {!loading && <CommunityHighlights />}
+
       {/* Plano semanal — "Esta semana você vai..." (1 prática + 1 aula + 1 missão). */}
       {!loading && <WeeklyPlanCard />}
 

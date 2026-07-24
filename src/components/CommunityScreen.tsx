@@ -5,7 +5,14 @@ import { playCheckSound, playCoinSound } from "@/lib/sounds";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrackMission } from "@/hooks/useTrackMission";
+import { useUserProgress } from "@/contexts/UserProgressContext";
 import { compressImage } from "@/lib/imageCompress";
+import { flyCoins } from "@/lib/coinFly";
+
+// Recompensa por publicar (post OU story). Limite diário pra não virar
+// fábrica de moedas — publicações além do teto continuam valendo, só não pagam.
+const COINS_PER_PUBLICATION = 5;
+const MAX_PAID_PUBLICATIONS_PER_DAY = 5;
 
 // =============================================================================
 // COMUNIDADE — agora 100% conectada ao Supabase.
@@ -75,6 +82,7 @@ function formatTimeAgo(iso: string): string {
 
 export function CommunityScreen() {
   const { user } = useAuth();
+  const { addCoins } = useUserProgress();
   const { trackProgress } = useTrackMission();
   const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [postText, setPostText] = useState("");
@@ -307,6 +315,7 @@ export function CommunityScreen() {
       });
       if (error) throw error;
       playCoinSound();
+      rewardPublication(storyFileRef.current?.parentElement ?? null);
       toast.success("Story publicado! Some em 24h ⏳", { id: t });
       loadStories();
     } catch (err) {
@@ -315,6 +324,30 @@ export function CommunityScreen() {
     } finally {
       setPreparing(false);
     }
+  }
+
+  // ── Recompensa por publicar: +5 moedas (até 5 publicações pagas/dia) ──
+  function publicationsTodayByMe(): number {
+    if (!user) return 0;
+    const hoje = new Date().toLocaleDateString("pt-BR");
+    const meus = posts.filter(
+      (p) => p.user_id === user.id && new Date(p.created_at).toLocaleDateString("pt-BR") === hoje,
+    ).length;
+    const meusStories = stories.filter(
+      (s) => s.user_id === user.id && new Date(s.created_at).toLocaleDateString("pt-BR") === hoje,
+    ).length;
+    return meus + meusStories;
+  }
+
+  function rewardPublication(originEl?: HTMLElement | null) {
+    // `publicationsTodayByMe` ainda não conta a que acabou de ser criada
+    if (publicationsTodayByMe() >= MAX_PAID_PUBLICATIONS_PER_DAY) return;
+    flyCoins({
+      fromEl: originEl ?? null,
+      count: 10,
+      label: `+${COINS_PER_PUBLICATION}`,
+      onDone: () => void addCoins(COINS_PER_PUBLICATION),
+    });
   }
 
   // ── Filtro por tab ───────────────────────────────────────────────────
@@ -352,12 +385,13 @@ export function CommunityScreen() {
       if (error) throw error;
       clearPhoto();
       playCoinSound();
+      rewardPublication(document.getElementById("btn-postar"));
       // Auto-track missões de post na comunidade (intro/win/fear/tip/etc.)
       trackProgress("community_post", 1);
       // Bônus: post de manhã (antes das 9h) — missão "morning_post"
       const hour = new Date().getHours();
       if (hour < 9) trackProgress("community_morning_post", 1);
-      toast.success("Postagem enviada! +5 XP 🎉");
+      toast.success("Postagem enviada! +5 moedas 🪙");
       setPostText("");
       setIsQuestion(false);
       // Realtime já vai trazer; mas força um refresh imediato pra UX
@@ -537,64 +571,81 @@ export function CommunityScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
+            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-3 md:p-6"
             onClick={() => setViewer(null)}
           >
-            {/* Barrinhas de progresso (uma por story da autora) */}
-            <div className="flex gap-1 p-3 pt-4" onClick={(e) => e.stopPropagation()}>
-              {viewer.group.items.map((_, i) => (
-                <div key={i} className="h-1 flex-1 bg-white/25 rounded-full overflow-hidden">
-                  {i < viewer.index && <div className="h-full w-full bg-white" />}
-                  {i === viewer.index && (
-                    <motion.div
-                      key={`${viewer.group.user_id}-${viewer.index}`}
-                      initial={{ width: "0%" }}
-                      animate={{ width: "100%" }}
-                      transition={{ duration: 5, ease: "linear" }}
-                      onAnimationComplete={() => {
-                        if (viewer.index + 1 < viewer.group.items.length) {
-                          setViewer({ ...viewer, index: viewer.index + 1 });
-                        } else {
-                          setViewer(null);
-                        }
-                      }}
-                      className="h-full bg-white"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            {/* Fechar (canto da tela) */}
+            <button
+              onClick={() => setViewer(null)}
+              className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Fechar"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
 
-            <div className="flex items-center gap-3 px-4 pb-2" onClick={(e) => e.stopPropagation()}>
-              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                {viewer.group.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-bold text-sm truncate">
-                  {viewer.group.user_id === user?.id ? "Você" : viewer.group.name}
-                </p>
-                <p className="text-white/60 text-xs">{formatTimeAgo(viewer.group.items[viewer.index].created_at)}</p>
-              </div>
-              <button onClick={() => setViewer(null)} className="text-white/80 hover:text-white p-1">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            {/* Imagem + zonas de toque pra voltar/avançar */}
-            <div className="flex-1 relative flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {/* Card no formato de story (9:16), centralizado */}
+            <div
+              className="relative w-full max-w-[400px] h-full max-h-[85vh] bg-neutral-900 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
               <img
                 src={viewer.group.items[viewer.index].image_url}
                 alt=""
-                className="max-h-full max-w-full object-contain"
+                className="w-full h-full object-contain"
               />
+
+              {/* Gradiente pro texto do topo ficar legível sobre a foto */}
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+
+              {/* Barrinhas de progresso */}
+              <div className="absolute top-0 inset-x-0 flex gap-1 p-3">
+                {viewer.group.items.map((_, i) => (
+                  <div key={i} className="h-0.5 flex-1 bg-white/30 rounded-full overflow-hidden">
+                    {i < viewer.index && <div className="h-full w-full bg-white" />}
+                    {i === viewer.index && (
+                      <motion.div
+                        key={`${viewer.group.user_id}-${viewer.index}`}
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: 5, ease: "linear" }}
+                        onAnimationComplete={() => {
+                          if (viewer.index + 1 < viewer.group.items.length) {
+                            setViewer({ ...viewer, index: viewer.index + 1 });
+                          } else {
+                            setViewer(null);
+                          }
+                        }}
+                        className="h-full bg-white"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Autora */}
+              <div className="absolute top-6 inset-x-0 flex items-center gap-2.5 px-4">
+                <div className="h-8 w-8 rounded-full bg-primary/30 border border-white/30 flex items-center justify-center text-white font-bold text-xs">
+                  {viewer.group.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white font-bold text-sm truncate drop-shadow">
+                    {viewer.group.user_id === user?.id ? "Você" : viewer.group.name}
+                  </p>
+                  <p className="text-white/70 text-[11px] drop-shadow">
+                    {formatTimeAgo(viewer.group.items[viewer.index].created_at)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Zonas de toque: voltar / avançar */}
               <button
                 aria-label="Anterior"
-                className="absolute left-0 top-0 bottom-0 w-1/3"
+                className="absolute left-0 top-16 bottom-0 w-1/3"
                 onClick={() => setViewer((v) => (v && v.index > 0 ? { ...v, index: v.index - 1 } : v))}
               />
               <button
                 aria-label="Próximo"
-                className="absolute right-0 top-0 bottom-0 w-1/3"
+                className="absolute right-0 top-16 bottom-0 w-1/3"
                 onClick={() =>
                   setViewer((v) => {
                     if (!v) return v;
@@ -602,13 +653,13 @@ export function CommunityScreen() {
                   })
                 }
               />
-            </div>
 
-            {viewer.group.items[viewer.index].caption && (
-              <p className="text-white text-center text-sm px-6 pb-6" onClick={(e) => e.stopPropagation()}>
-                {viewer.group.items[viewer.index].caption}
-              </p>
-            )}
+              {viewer.group.items[viewer.index].caption && (
+                <p className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent text-white text-center text-sm px-6 pt-10 pb-6">
+                  {viewer.group.items[viewer.index].caption}
+                </p>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -678,6 +729,7 @@ export function CommunityScreen() {
                 </button>
               </div>
               <motion.button
+                id="btn-postar"
                 whileTap={{ scale: 0.95 }}
                 onClick={handlePost}
                 disabled={posting}
