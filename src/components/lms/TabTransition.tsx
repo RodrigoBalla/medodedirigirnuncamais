@@ -26,6 +26,14 @@ export function TabTransition({ tabKey, order = [], children }: Props) {
   const prevTab = useRef(tabKey);
   const dir = useRef(1);
 
+  // No celular: deslocamento menor e SEM desfoque. `filter: blur()` força o
+  // navegador a rasterizar a tela inteira a cada quadro — em aparelho simples
+  // isso engasga. O deslize + fade já dão a sensação, com custo bem menor.
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const slide = isMobile ? 14 : 26;
+  const blurIn = isMobile ? "blur(0px)" : "blur(6px)";
+  const blurOut = isMobile ? "blur(0px)" : "blur(4px)";
+
   // Sentido: +1 se avançou no menu, -1 se voltou.
   if (prevTab.current !== tabKey) {
     const de = order.indexOf(prevTab.current);
@@ -60,12 +68,12 @@ export function TabTransition({ tabKey, order = [], children }: Props) {
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={tabKey}
-          initial={{ opacity: 0, x: 26 * d, filter: "blur(6px)" }}
+          initial={{ opacity: 0, x: slide * d, filter: blurIn }}
           animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           exit={{
             opacity: 0,
-            x: -18 * d,
-            filter: "blur(4px)",
+            x: -(slide * 0.7) * d,
+            filter: blurOut,
             transition: { duration: 0.18, ease: "easeIn" },
           }}
           transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}

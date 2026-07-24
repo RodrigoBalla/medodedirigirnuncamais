@@ -87,7 +87,7 @@ export function CommunityHighlights() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="bg-card border border-border rounded-[24px] p-4 md:p-5 mb-6"
+      className="bg-card border border-border rounded-[20px] md:rounded-[24px] p-3.5 md:p-5 mb-5 md:mb-6"
     >
       <div className="flex items-center justify-between mb-3 gap-2">
         <p className="text-[10px] font-black uppercase tracking-widest text-primary">
@@ -103,18 +103,18 @@ export function CommunityHighlights() {
 
       {vazio ? (
         <div className="flex items-center gap-3">
-          <div className="size-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <div className="size-10 md:size-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-primary">forum</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold leading-tight">Ninguém postou hoje ainda</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
               Seja a primeira e ganhe <span className="text-yellow-600 font-black">🪙 5 moedas</span>.
             </p>
           </div>
           <button
             onClick={() => navigate("/comunidade")}
-            className="shrink-0 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-opacity"
+            className="shrink-0 px-3 md:px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-opacity active:scale-95"
           >
             Postar
           </button>

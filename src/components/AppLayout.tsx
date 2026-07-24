@@ -191,8 +191,9 @@ export function AppLayout({
           </div>
         </div>
 
-        {/* Right: Stats + Avatar */}
-        <div className="flex items-center gap-2 md:gap-3">
+        {/* Right: Stats + Avatar. No celular tudo encolhe (gap e pílulas menores)
+            pra caber vidas+streak+moedas+avatar+sair sem estourar em 360px. */}
+        <div className="flex items-center gap-1.5 md:gap-3 min-w-0">
           {/* Vidas / Streak / Moedas — aparecem nas abas Missões, Perfil
               e Ranking (onde moedas é critério de desempate). Nas outras
               abas (Cursos, Trilha) ficam ocultos pra não poluir a UI. */}
@@ -202,7 +203,7 @@ export function AppLayout({
               <motion.div
                 id="onboarding-lives"
                 whileHover={{ scale: 1.05 }}
-                className={`flex items-center gap-1.5 bg-accent px-3 py-1.5 rounded-full border border-border ${lives <= 1 ? 'animate-pulse border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : ''}`}
+                className={`flex items-center gap-1 md:gap-1.5 bg-accent px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-border shrink-0 ${lives <= 1 ? 'animate-pulse border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : ''}`}
               >
                 <span className={`material-symbols-outlined text-red-500 text-base filled-icon ${lives <= 1 ? 'animate-bounce' : ''}`}>favorite</span>
                 <span className="text-xs font-black text-foreground">{lives}</span>
@@ -213,7 +214,7 @@ export function AppLayout({
               {streak >= 2 && (
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-1.5 bg-orange-500/10 px-3 py-1.5 rounded-full border border-orange-500/30 group cursor-help"
+                  className="flex items-center gap-1 md:gap-1.5 bg-orange-500/10 px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-orange-500/30 group cursor-help shrink-0"
                   title={`${streak} dias seguidos! Não deixe o fogo apagar.`}
                 >
                   <span className="material-symbols-outlined text-orange-500 text-base filled-icon animate-pulse group-hover:scale-125 transition-transform">local_fire_department</span>
@@ -230,7 +231,7 @@ export function AppLayout({
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCashback(true)}
                 title="Ver saldo e converter em cupom de desconto"
-                className="flex items-center gap-1.5 bg-accent px-3 py-1.5 rounded-full border border-border cursor-pointer group relative"
+                className="flex items-center gap-1 md:gap-1.5 bg-accent px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-border cursor-pointer group relative shrink-0"
               >
                 <span className="material-symbols-outlined text-yellow-500 text-base filled-icon group-hover:rotate-12 transition-transform">database</span>
                 <span className="text-xs font-black text-foreground">{coins}</span>
@@ -253,7 +254,7 @@ export function AppLayout({
           {isAdmin && (
             <button
               onClick={() => nav("/admin")}
-              className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="size-8 md:size-9 shrink-0 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               title="Painel Admin"
             >
               <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
@@ -265,7 +266,7 @@ export function AppLayout({
             onClick={() => handleNavClick("perfil")}
             title="Meu perfil"
             aria-label="Ir para o meu perfil"
-            className="rounded-full ring-2 ring-transparent hover:ring-primary/50 focus:outline-none focus:ring-primary/60 transition-all active:scale-95"
+            className="rounded-full shrink-0 ring-2 ring-transparent hover:ring-primary/50 focus:outline-none focus:ring-primary/60 transition-all active:scale-95"
           >
             <UserAvatar displayName={liveName} size={36} />
           </button>
@@ -275,7 +276,7 @@ export function AppLayout({
             onClick={signOut}
             title="Sair da conta"
             aria-label="Sair da conta"
-            className="size-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors active:scale-95"
+            className="size-8 md:size-9 shrink-0 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors active:scale-95"
           >
             <span className="material-symbols-outlined text-lg">logout</span>
           </button>

@@ -270,22 +270,24 @@ export function WeeklyPlanCard() {
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-card border border-border rounded-2xl px-4 py-3 mb-6 flex items-center justify-between gap-3"
+        className="bg-card border border-border rounded-2xl px-3.5 md:px-4 py-3 mb-5 md:mb-6 flex items-center justify-between gap-2 md:gap-3"
       >
         <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none">
             Novas tarefas em
           </p>
-          <p className="text-base md:text-lg font-black tabular-nums text-primary leading-tight mt-1">
+          <p className="text-sm md:text-lg font-black tabular-nums text-primary leading-tight mt-1 whitespace-nowrap">
             {formatCountdown(resetMs)}
           </p>
         </div>
         <button
           onClick={() => navigate("/perfil")}
-          className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] tracking-widest hover:scale-[1.03] active:scale-95 transition-transform"
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[10px] md:text-[11px] tracking-widest hover:scale-[1.03] active:scale-95 transition-transform"
         >
           <span className="material-symbols-outlined text-base filled-icon">target</span>
-          Fazer missões 🪙
+          {/* No celular o rótulo encurta pra caber ao lado do contador */}
+          <span className="sm:hidden">Missões 🪙</span>
+          <span className="hidden sm:inline">Fazer missões 🪙</span>
         </button>
       </motion.div>
     );

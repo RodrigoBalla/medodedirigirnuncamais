@@ -587,16 +587,18 @@ export function CommunityScreen() {
 
       {/* Stories reais (expiram em 24h) — em card, com título */}
       <input ref={storyFileRef} type="file" accept="image/*" className="hidden" onChange={onPickStoryPhoto} />
-      <div className="bg-card border border-border rounded-2xl p-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+      <div className="bg-card border border-border rounded-2xl p-3 md:p-4 mb-5 md:mb-6">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
             📸 Stories da turma
           </p>
-          <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
             somem em 24h
           </span>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar">
+        {/* -mx-3 no mobile: as bolinhas rolam até a borda do card (sensação de
+            carrossel), com padding interno pra primeira/última não colarem. */}
+        <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
         {/* Seu story: abre a câmera/galeria */}
         <motion.button
           id="btn-seu-story"
@@ -666,21 +668,22 @@ export function CommunityScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-3 md:p-6"
+            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-0 md:p-6"
             onClick={() => setViewer(null)}
           >
-            {/* Fechar (canto da tela) */}
+            {/* Fechar — no mobile fica sobre a foto (canto do próprio story) */}
             <button
               onClick={() => setViewer(null)}
-              className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              className="absolute top-3 right-3 md:top-4 md:right-4 z-30 size-10 rounded-full bg-black/40 md:bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
               aria-label="Fechar"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
 
-            {/* Card no formato de story (9:16), centralizado */}
+            {/* Mobile: tela cheia (imersivo, como story nativo).
+                Desktop: card 9:16 centralizado. */}
             <div
-              className="relative w-full max-w-[400px] h-full max-h-[85vh] bg-neutral-900 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
+              className="relative w-full h-full md:max-w-[400px] md:max-h-[85vh] bg-neutral-900 rounded-none md:rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
               <img
@@ -692,8 +695,11 @@ export function CommunityScreen() {
               {/* Gradiente pro texto do topo ficar legível sobre a foto */}
               <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
 
-              {/* Barrinha de progresso do story atual (avança pro próximo ao fim) */}
-              <div className="absolute top-0 inset-x-0 flex gap-1 p-3">
+              {/* Barrinha de progresso (pr-14 no mobile: não passa sob o "X") */}
+              <div
+                className="absolute top-0 inset-x-0 flex gap-1 pl-3 pb-3 pr-16 md:pr-3"
+                style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+              >
                 <div className="h-0.5 flex-1 bg-white/30 rounded-full overflow-hidden">
                   <motion.div
                     key={viewer.list[viewer.index].id}
@@ -715,7 +721,10 @@ export function CommunityScreen() {
               </div>
 
               {/* Autora do story atual */}
-              <div className="absolute top-6 inset-x-0 flex items-center gap-2.5 px-4">
+              <div
+                className="absolute inset-x-0 flex items-center gap-2.5 px-4 pr-16 md:pr-4"
+                style={{ top: "calc(max(0.75rem, env(safe-area-inset-top)) + 1.1rem)" }}
+              >
                 <div className="h-8 w-8 rounded-full bg-primary/30 border border-white/30 flex items-center justify-center text-white font-bold text-xs">
                   {viewer.list[viewer.index].display_name.charAt(0).toUpperCase()}
                 </div>
@@ -998,8 +1007,9 @@ export function CommunityScreen() {
 
         </div>
 
-        {/* ── Painel lateral (desktop) ─────────────────────────────────── */}
-        <aside className="hidden lg:flex flex-col gap-4 sticky top-20">
+        {/* ── Painel lateral. No desktop fica fixo à direita; no mobile a grid
+               vira 1 coluna e ele cai naturalmente abaixo do feed. ───────── */}
+        <aside className="flex flex-col gap-4 mt-2 lg:mt-0 lg:sticky lg:top-20">
           {/* Como funciona */}
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="font-black text-sm mb-3 flex items-center gap-2">
