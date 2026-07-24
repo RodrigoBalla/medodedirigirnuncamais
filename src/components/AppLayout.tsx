@@ -10,6 +10,10 @@ import { CashbackModal } from "@/components/lms/CashbackModal";
 import { EmergencyContactFab } from "@/components/EmergencyContactFab";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getLevelInfo } from "@/lib/levels";
+import { TabTransition } from "@/components/lms/TabTransition";
+
+// Ordem das abas — define o SENTIDO da animação ao trocar de aba.
+const TAB_ORDER = ["biblioteca", "comunidade", "perfil", "home", "treinos", "ranking"];
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { useAccessStatus } from "@/hooks/useAccessStatus";
 import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
@@ -469,7 +473,10 @@ export function AppLayout({
             barra de scroll quando o conteúdo passa da altura. `clip` corta
             no eixo X sem afetar o eixo Y. */}
         <main className="flex-1 pb-20 lg:pb-0 overflow-x-clip min-w-0">
-          {children}
+          {/* Transição entre abas — conteúdo desliza + faixa de pista no topo */}
+          <TabTransition tabKey={activeTab} order={TAB_ORDER}>
+            {children}
+          </TabTransition>
         </main>
       </div>
 
