@@ -40,27 +40,35 @@ function buildSteps(firstName: string): Step[] {
     },
     {
       emoji: "🎬",
-      title: "Aqui ficam seus CURSOS",
+      title: "Onde está o curso que você comprou",
       body:
-        "É onde você assiste as aulas no seu ritmo. Cada curso tem várias aulas curtas — pode pausar, voltar, assistir de novo. É seu pra sempre.",
+        "Em MEUS CURSOS. Toque na capa do curso, escolha a aula e dê play. Pode pausar, voltar e assistir quantas vezes quiser — ele já volta de onde você parou. É seu, no seu ritmo.",
       color: "from-blue-500/30 to-blue-500/5",
       icon: "video_library",
     },
     {
-      emoji: "💬",
-      title: "Aqui é a COMUNIDADE",
+      emoji: "🎯",
+      title: "As MISSÕES valem moedas",
       body:
-        "Onde você conversa com outras alunas, tira dúvidas e vê dicas minhas. Não precisa fazer nada agora — só quando se sentir à vontade.",
-      color: "from-purple-500/30 to-purple-500/5",
-      icon: "forum",
+        "No seu PERFIL tem missões simples (assistir uma aula, praticar, postar). Toque em “Fiz isso” ou “Resgatar” e as moedas caem na sua conta. Elas viram desconto nos próximos cursos.",
+      color: "from-orange-500/30 to-orange-500/5",
+      icon: "target",
     },
     {
-      emoji: "👤",
-      title: "Aqui é seu PERFIL",
+      emoji: "⭐",
+      title: "Seu NÍVEL sobe junto",
       body:
-        "Mostra seu progresso: aulas concluídas, dias estudados, moedas que você ganha por engajamento. Tudo no seu próprio ritmo, sem cobrança.",
+        "Todo mundo começa no Nível 1. Conforme você faz missões e junta moedas, vai subindo — são 33 níveis até virar Lenda do Volante. Sem pressa e sem cobrança.",
       color: "from-yellow-500/30 to-yellow-500/5",
-      icon: "person",
+      icon: "workspace_premium",
+    },
+    {
+      emoji: "💬",
+      title: "Precisou de ajuda? Me chama",
+      body:
+        "Vê aquele botão amarelo redondo no canto da tela? É o meu chat. Toque nele e me manda a dúvida — eu respondo por ali mesmo. Também tem a COMUNIDADE, pra trocar ideia com outras alunas.",
+      color: "from-purple-500/30 to-purple-500/5",
+      icon: "support_agent",
     },
     {
       emoji: "🚗💨",

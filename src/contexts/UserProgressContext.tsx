@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
+import { getLevelInfo } from "@/lib/levels";
 
 interface UserProgressContextType {
   lives: number;
@@ -133,7 +134,7 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
         
         setStreak(newStreak);
         setLastLoginAt(now.toISOString());
-        setLevel(Math.floor((data.total_xp ?? 0) / 100) + 1);
+        setLevel(getLevelInfo(data.total_xp ?? 0, data.coins ?? 0).level);
         
         await supabase
           .from("user_progress")
@@ -158,7 +159,7 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
           setConfidence(newData.confidence ?? 3);
           setStreakFreezeCount(newData.streak_freeze_count ?? 0);
           setXpBoostExpiresAt(newData.xp_boost_expires_at);
-          setLevel(Math.floor((newData.total_xp ?? 0) / 100) + 1);
+          setLevel(getLevelInfo(newData.total_xp ?? 0, newData.coins ?? 0).level);
         }
       )
       .subscribe();

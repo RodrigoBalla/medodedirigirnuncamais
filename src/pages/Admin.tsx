@@ -18,6 +18,7 @@ import { StudentAccessPreview } from "@/components/admin/StudentAccessPreview";
 import MessagesManager from "@/components/admin/MessagesManager";
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { NpsTab } from "@/components/admin/NpsTab";
+import { getLevelInfo } from "@/lib/levels";
 import { TrafegoTab } from "@/components/admin/TrafegoTab";
 
 type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego";
@@ -830,7 +831,7 @@ export default function Admin() {
                       .filter((s) => s.user_id !== user?.id)
                       .slice(0, 5)
                       .map((s) => {
-                        const level = Math.floor(s.total_xp / 100) + 1;
+                        const level = getLevelInfo(s.total_xp, s.coins).level;
                         const status = s.total_xp >= 100 ? "Em progresso" : s.total_xp > 0 ? "Começando" : "Novo";
                         const statusClass =
                           s.total_xp >= 500

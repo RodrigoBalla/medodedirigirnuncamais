@@ -9,6 +9,7 @@ import { ShopModal } from "@/components/lms/ShopModal";
 import { CashbackModal } from "@/components/lms/CashbackModal";
 import { EmergencyContactFab } from "@/components/EmergencyContactFab";
 import { UserAvatar } from "@/components/UserAvatar";
+import { getLevelInfo } from "@/lib/levels";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { useAccessStatus } from "@/hooks/useAccessStatus";
 import { AccessExpiredScreen } from "@/components/AccessExpiredScreen";
@@ -59,12 +60,7 @@ const SIDEBAR_ITEMS_FULL: { tab: AppTab; icon: string; label: string }[] = [
   { tab: "ranking", icon: "trophy", label: "Rankings" },
 ];
 
-function getLevel(xp: number) {
-  const level = Math.floor(xp / 100) + 1;
-  const titles = ["Iniciante", "Aprendiz", "Praticante", "Intermediário", "Avançado", "Expert", "Mestre"];
-  const title = titles[Math.min(level - 1, titles.length - 1)];
-  return { level, title, current: xp % 100, next: 100 };
-}
+// Nível vem de @/lib/levels (XP + moedas, máx. 33) — fonte única do app.
 
 function getCarInfo(level: number) {
   if (level >= 30) return { icon: "sports_motorsports", name: "Supercarro", color: "bg-yellow-500/10 text-yellow-500", border: "border-yellow-500/30" };
@@ -99,7 +95,7 @@ export function AppLayout({
   // — dispara animação cinematográfica 1x quando ela ganha acesso a um curso novo
   const { newModule, markSeen } = useDetectNewModules();
   const { lives, coins, totalXP, streak, xpBoostExpiresAt } = useUserProgress();
-  const { level, title, current, next } = getLevel(totalXP);
+  const { level, title, current, next } = getLevelInfo(totalXP, coins);
   const car = getCarInfo(level);
   const [showShop, setShowShop] = useState(false);
   const [showCashback, setShowCashback] = useState(false);

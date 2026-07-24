@@ -1,3 +1,4 @@
+import { getLevelInfo } from "@/lib/levels";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,7 +102,7 @@ export function StudentAccessPreview({
   }
 
   const student = snap?.student;
-  const level = student ? Math.floor((student.total_xp || 0) / 100) + 1 : 1;
+  const level = student ? getLevelInfo(student.total_xp || 0, student.coins || 0).level : 1;
   const unlockedCount = snap?.courses.filter((c) => c.unlocked).length ?? 0;
   const lockedCount = snap?.courses.filter((c) => !c.unlocked).length ?? 0;
 
