@@ -724,18 +724,20 @@ export default function Admin() {
           </nav>
         </aside>
 
-        {/* Mobile tabs */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1.5 flex justify-between z-50">
+        {/* Mobile tabs — são 11 abas: com `justify-between` cada uma ficava com
+            ~34px num celular de 375px (ilegível e sem como alcançar as últimas).
+            Agora a barra ROLA na horizontal, com largura mínima por item. */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1.5 flex gap-1 overflow-x-auto no-scrollbar z-50">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-lg transition-colors ${
-                tab === t.key ? "text-primary" : "text-muted-foreground"
+              className={`relative flex flex-col items-center gap-0.5 shrink-0 min-w-[62px] px-1 py-1.5 rounded-lg transition-colors ${
+                tab === t.key ? "text-primary bg-primary/10" : "text-muted-foreground"
               }`}
             >
               <span className={`material-symbols-outlined text-xl ${tab === t.key ? "filled-icon" : ""}`}>{t.icon}</span>
-              <span className="text-[10px] font-bold">{t.label}</span>
+              <span className="text-[9px] font-bold leading-tight text-center whitespace-nowrap">{t.label}</span>
               {t.key === "comments" && pendingComments > 0 && (
                 <span className="absolute -top-0.5 right-1/2 translate-x-[16px] text-[8px] font-black bg-amber-500 text-black px-1 py-px rounded-full min-w-[14px] text-center leading-none">
                   {pendingComments}
