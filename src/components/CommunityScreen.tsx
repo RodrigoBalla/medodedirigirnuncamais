@@ -9,6 +9,11 @@ import { useUserProgress } from "@/contexts/UserProgressContext";
 import { compressImage } from "@/lib/imageCompress";
 import { flyCoins } from "@/lib/coinFly";
 import { getSeenStories, markStorySeen, pruneSeenStories } from "@/lib/storiesSeen";
+import { getGuideState, saveGuideState, type GuideState } from "@/lib/communityGuide";
+import { CommunityGuide, type GuideStep } from "@/components/lms/CommunityGuide";
+
+// Recompensa por concluir o passo a passo da primeira publicação.
+const GUIDE_REWARD_COINS = 50;
 
 // Recompensa por publicar (post OU story). Limite diário pra não virar
 // fábrica de moedas — publicações além do teto continuam valendo, só não pagam.
@@ -103,6 +108,11 @@ export function CommunityScreen() {
   const [viewer, setViewer] = useState<{ list: Story[]; index: number } | null>(null);
   // Ids dos stories já vistos (localStorage) — controla o anel colorido.
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
+
+  // ── Guia da primeira publicação ──────────────────────────────────────
+  const [guide, setGuide] = useState<GuideState | null>(null);
+  const [guideIntro, setGuideIntro] = useState(true); // mostra a abertura
+  const [guideDismissed, setGuideDismissed] = useState(false); // saiu nesta visita
 
   // ── Auto-track de tempo na comunidade (community_read_time) ──────────
   // Soma segundos enquanto o user está com a aba ativa. Reporta a cada
@@ -329,7 +339,8 @@ export function CommunityScreen() {
       });
       if (error) throw error;
       playCoinSound();
-      rewardPublication(storyFileRef.current?.parentElement ?? null);
+      markGuideStep("story");
+      rewardPublication(document.getElementById("btn-seu-story"));
       toast.success("Story publicado! Some em 24h ⏳", { id: t });
       loadStories();
     } catch (err) {
@@ -338,6 +349,54 @@ export function CommunityScreen() {
     } finally {
       setPreparing(false);
     }
+  }
+
+  // ── Guia: decide se aparece (só pra quem ainda não publicou) ─────────
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      const salvo = getGuideState(user.id);
+      if (salvo) { if (alive) setGuide(salvo); return; }
+      // Primeira avaliação: quem JÁ publicou antes não vê o guia.
+      const { count } = await supabase
+        .from("community_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      if (!alive) return;
+      const jaPublicou = (count ?? 0) > 0;
+      setGuide(saveGuideState(user.id, jaPublicou
+        ? { post: true, story: true, done: true }        // veterana: nunca mostra
+        : { post: false, story: false, done: false }));  // novata: mostra
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  /** Marca um passo do guia como concluído (se o guia estiver ativo). */
+  function markGuideStep(campo: "post" | "story") {
+    if (!user || !guide || guide.done || guide[campo]) return;
+    setGuide(saveGuideState(user.id, { ...guide, [campo]: true }));
+  }
+
+  // Passo atual do guia (ou null quando não deve aparecer)
+  const guideStep: GuideStep | null = (() => {
+    if (!guide || guide.done || guideDismissed) return null;
+    if (guide.post && guide.story) return "done";
+    if (guideIntro && !guide.post && !guide.story) return "intro";
+    return guide.post ? "story" : "feed";
+  })();
+
+  function finishGuide() {
+    if (!user || !guide) return;
+    setGuide(saveGuideState(user.id, { ...guide, done: true }));
+    flyCoins({
+      count: 20,
+      label: `+${GUIDE_REWARD_COINS}`,
+      onDone: () => {
+        void addCoins(GUIDE_REWARD_COINS);
+        toast.success(`+${GUIDE_REWARD_COINS} moedas! Bem-vinda à turma 💛`);
+      },
+    });
   }
 
   // ── Recompensa por publicar: +5 moedas (até 5 publicações pagas/dia) ──
@@ -399,6 +458,7 @@ export function CommunityScreen() {
       if (error) throw error;
       clearPhoto();
       playCoinSound();
+      markGuideStep("post");
       rewardPublication(document.getElementById("btn-postar"));
       // Auto-track missões de post na comunidade (intro/win/fear/tip/etc.)
       trackProgress("community_post", 1);
@@ -539,6 +599,7 @@ export function CommunityScreen() {
         <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar">
         {/* Seu story: abre a câmera/galeria */}
         <motion.button
+          id="btn-seu-story"
           whileTap={{ scale: 0.9 }}
           onClick={() => storyFileRef.current?.click()}
           disabled={preparing}
@@ -586,6 +647,17 @@ export function CommunityScreen() {
           )}
         </div>
       </div>
+
+      {/* Guia da primeira publicação (feed → story → 50 moedas) */}
+      {guideStep && (
+        <CommunityGuide
+          step={guideStep}
+          targetId={guideStep === "feed" ? "btn-postar" : guideStep === "story" ? "btn-seu-story" : null}
+          onStart={() => setGuideIntro(false)}
+          onExit={() => setGuideDismissed(true)}
+          onFinish={finishGuide}
+        />
+      )}
 
       {/* Story Viewer — tela cheia, avança sozinho a cada 5s */}
       <AnimatePresence>
