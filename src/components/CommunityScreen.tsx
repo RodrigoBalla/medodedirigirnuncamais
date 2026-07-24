@@ -57,8 +57,6 @@ type Story = {
   expires_at: string;
 };
 
-// Stories agrupados por autora (cada bolinha = uma autora com N stories)
-type StoryGroup = { user_id: string; name: string; items: Story[] };
 
 const TABS = [
   { id: "feed", label: "Para Você" },
@@ -100,7 +98,9 @@ export function CommunityScreen() {
 
   // ── Stories reais ────────────────────────────────────────────────────
   const [stories, setStories] = useState<Story[]>([]);
-  const [viewer, setViewer] = useState<{ group: StoryGroup; index: number } | null>(null);
+  // Visualizador: guarda uma CÓPIA da lista no momento do clique (pra reordenação
+  // por "visto" não embaralhar o que está sendo visto) + o índice atual.
+  const [viewer, setViewer] = useState<{ list: Story[]; index: number } | null>(null);
   // Ids dos stories já vistos (localStorage) — controla o anel colorido.
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
 
@@ -263,29 +263,19 @@ export function CommunityScreen() {
   // Ao abrir/avançar no visualizador, marca aquele story como visto
   useEffect(() => {
     if (!viewer || !user) return;
-    const atual = viewer.group.items[viewer.index];
+    const atual = viewer.list[viewer.index];
     if (atual) setSeenIds(markStorySeen(user.id, atual.id));
   }, [viewer, user?.id]);
 
-  // Agrupa por autora. Ordem: não vistos primeiro (anel colorido), depois os
-  // já vistos; dentro de cada bloco, o meu vem antes.
-  const storyGroups: (StoryGroup & { unseen: boolean })[] = (() => {
-    const map = new Map<string, StoryGroup>();
-    for (const s of stories) {
-      if (!map.has(s.user_id)) map.set(s.user_id, { user_id: s.user_id, name: s.display_name, items: [] });
-      map.get(s.user_id)!.items.push(s);
-    }
-    const arr = Array.from(map.values()).map((g) => {
-      g.items.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
-      return { ...g, unseen: g.items.some((s) => !seenIds.has(s.id)) };
+  // TODOS os stories, um por bolinha (se a mesma aluna postou 3, aparecem 3).
+  // Ordem: não vistos primeiro (anel colorido), depois os já vistos; dentro de
+  // cada bloco, do mais recente pro mais antigo.
+  const orderedStories: (Story & { unseen: boolean })[] = stories
+    .map((s) => ({ ...s, unseen: !seenIds.has(s.id) }))
+    .sort((a, b) => {
+      if (a.unseen !== b.unseen) return a.unseen ? -1 : 1;
+      return +new Date(b.created_at) - +new Date(a.created_at);
     });
-    return arr.sort((a, b) => {
-      if (a.unseen !== b.unseen) return a.unseen ? -1 : 1;      // novidade primeiro
-      if (a.user_id === user?.id) return -1;
-      if (b.user_id === user?.id) return 1;
-      return 0;
-    });
-  })();
 
   // ── Foto do feed: comprime na hora que escolhe e mostra preview ───────
   async function onPickFeedPhoto(e: React.ChangeEvent<HTMLInputElement>) {
@@ -562,34 +552,34 @@ export function CommunityScreen() {
           <span className="text-xs font-medium text-muted-foreground">Seu story</span>
         </motion.button>
 
-        {storyGroups.map((g) => (
-          <motion.button
-            key={g.user_id}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setViewer({ group: g, index: 0 })}
-            className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
-          >
-            <div
-              className={`p-0.5 rounded-full transition-colors ${
-                g.unseen ? "bg-gradient-to-tr from-primary via-amber-400 to-blue-300" : "bg-muted"
-              }`}
+          {orderedStories.map((s, i) => (
+            <motion.button
+              key={s.id}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setViewer({ list: orderedStories, index: i })}
+              className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
             >
-              <div className="h-14 w-14 rounded-full border-2 border-card overflow-hidden bg-primary/10 flex items-center justify-center">
-                <img
-                  src={g.items[g.items.length - 1].image_url}
-                  alt=""
-                  loading="lazy"
-                  className={`h-full w-full object-cover transition-opacity ${g.unseen ? "" : "opacity-70"}`}
-                />
+              <div
+                className={`p-0.5 rounded-full transition-colors ${
+                  s.unseen ? "bg-gradient-to-tr from-primary via-amber-400 to-blue-300" : "bg-muted"
+                }`}
+              >
+                <div className="h-14 w-14 rounded-full border-2 border-card overflow-hidden bg-primary/10 flex items-center justify-center">
+                  <img
+                    src={s.image_url}
+                    alt=""
+                    loading="lazy"
+                    className={`h-full w-full object-cover transition-opacity ${s.unseen ? "" : "opacity-70"}`}
+                  />
+                </div>
               </div>
-            </div>
-            <span className={`text-xs max-w-[64px] truncate ${g.unseen ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
-              {g.user_id === user?.id ? "Você" : g.name.split(" ")[0]}
-            </span>
-          </motion.button>
-        ))}
+              <span className={`text-xs max-w-[64px] truncate ${s.unseen ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
+                {s.user_id === user?.id ? "Você" : s.display_name.split(" ")[0]}
+              </span>
+            </motion.button>
+          ))}
 
-          {storyGroups.length === 0 && (
+          {orderedStories.length === 0 && (
             <div className="flex items-center text-xs text-muted-foreground italic pl-1">
               Nenhum story ainda — seja a primeira!
             </div>
@@ -622,7 +612,7 @@ export function CommunityScreen() {
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={viewer.group.items[viewer.index].image_url}
+                src={viewer.list[viewer.index].image_url}
                 alt=""
                 className="w-full h-full object-contain"
               />
@@ -630,42 +620,39 @@ export function CommunityScreen() {
               {/* Gradiente pro texto do topo ficar legível sobre a foto */}
               <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
 
-              {/* Barrinhas de progresso */}
+              {/* Barrinha de progresso do story atual (avança pro próximo ao fim) */}
               <div className="absolute top-0 inset-x-0 flex gap-1 p-3">
-                {viewer.group.items.map((_, i) => (
-                  <div key={i} className="h-0.5 flex-1 bg-white/30 rounded-full overflow-hidden">
-                    {i < viewer.index && <div className="h-full w-full bg-white" />}
-                    {i === viewer.index && (
-                      <motion.div
-                        key={`${viewer.group.user_id}-${viewer.index}`}
-                        initial={{ width: "0%" }}
-                        animate={{ width: "100%" }}
-                        transition={{ duration: 5, ease: "linear" }}
-                        onAnimationComplete={() => {
-                          if (viewer.index + 1 < viewer.group.items.length) {
-                            setViewer({ ...viewer, index: viewer.index + 1 });
-                          } else {
-                            setViewer(null);
-                          }
-                        }}
-                        className="h-full bg-white"
-                      />
-                    )}
-                  </div>
-                ))}
+                <div className="h-0.5 flex-1 bg-white/30 rounded-full overflow-hidden">
+                  <motion.div
+                    key={viewer.list[viewer.index].id}
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 5, ease: "linear" }}
+                    onAnimationComplete={() =>
+                      setViewer((v) => {
+                        if (!v) return v;
+                        return v.index + 1 < v.list.length ? { ...v, index: v.index + 1 } : null;
+                      })
+                    }
+                    className="h-full bg-white"
+                  />
+                </div>
+                <span className="text-white/70 text-[10px] font-bold tabular-nums shrink-0 -mt-1">
+                  {viewer.index + 1}/{viewer.list.length}
+                </span>
               </div>
 
-              {/* Autora */}
+              {/* Autora do story atual */}
               <div className="absolute top-6 inset-x-0 flex items-center gap-2.5 px-4">
                 <div className="h-8 w-8 rounded-full bg-primary/30 border border-white/30 flex items-center justify-center text-white font-bold text-xs">
-                  {viewer.group.name.charAt(0).toUpperCase()}
+                  {viewer.list[viewer.index].display_name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <p className="text-white font-bold text-sm truncate drop-shadow">
-                    {viewer.group.user_id === user?.id ? "Você" : viewer.group.name}
+                    {viewer.list[viewer.index].user_id === user?.id ? "Você" : viewer.list[viewer.index].display_name}
                   </p>
                   <p className="text-white/70 text-[11px] drop-shadow">
-                    {formatTimeAgo(viewer.group.items[viewer.index].created_at)}
+                    {formatTimeAgo(viewer.list[viewer.index].created_at)}
                   </p>
                 </div>
               </div>
@@ -682,14 +669,14 @@ export function CommunityScreen() {
                 onClick={() =>
                   setViewer((v) => {
                     if (!v) return v;
-                    return v.index + 1 < v.group.items.length ? { ...v, index: v.index + 1 } : null;
+                    return v.index + 1 < v.list.length ? { ...v, index: v.index + 1 } : null;
                   })
                 }
               />
 
-              {viewer.group.items[viewer.index].caption && (
+              {viewer.list[viewer.index].caption && (
                 <p className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent text-white text-center text-sm px-6 pt-10 pb-6">
-                  {viewer.group.items[viewer.index].caption}
+                  {viewer.list[viewer.index].caption}
                 </p>
               )}
             </div>
@@ -986,7 +973,7 @@ export function CommunityScreen() {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Posts</p>
               </div>
               <div>
-                <p className="text-xl font-black text-primary tabular-nums">{storyGroups.length}</p>
+                <p className="text-xl font-black text-primary tabular-nums">{orderedStories.length}</p>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Stories ativos</p>
               </div>
             </div>
