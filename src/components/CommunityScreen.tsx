@@ -8,6 +8,7 @@ import { useTrackMission } from "@/hooks/useTrackMission";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { compressImage } from "@/lib/imageCompress";
 import { flyCoins } from "@/lib/coinFly";
+import { getSeenStories, markStorySeen, pruneSeenStories } from "@/lib/storiesSeen";
 
 // Recompensa por publicar (post OU story). Limite diário pra não virar
 // fábrica de moedas — publicações além do teto continuam valendo, só não pagam.
@@ -100,6 +101,8 @@ export function CommunityScreen() {
   // ── Stories reais ────────────────────────────────────────────────────
   const [stories, setStories] = useState<Story[]>([]);
   const [viewer, setViewer] = useState<{ group: StoryGroup; index: number } | null>(null);
+  // Ids dos stories já vistos (localStorage) — controla o anel colorido.
+  const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
 
   // ── Auto-track de tempo na comunidade (community_read_time) ──────────
   // Soma segundos enquanto o user está com a aba ativa. Reporta a cada
@@ -251,16 +254,37 @@ export function CommunityScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Agrupa por autora, minha primeiro
-  const storyGroups: StoryGroup[] = (() => {
+  // Carrega as "vistas" e poda os ids de stories que já expiraram
+  useEffect(() => {
+    if (!user) return;
+    setSeenIds(stories.length > 0 ? pruneSeenStories(user.id, stories.map((s) => s.id)) : getSeenStories(user.id));
+  }, [user?.id, stories]);
+
+  // Ao abrir/avançar no visualizador, marca aquele story como visto
+  useEffect(() => {
+    if (!viewer || !user) return;
+    const atual = viewer.group.items[viewer.index];
+    if (atual) setSeenIds(markStorySeen(user.id, atual.id));
+  }, [viewer, user?.id]);
+
+  // Agrupa por autora. Ordem: não vistos primeiro (anel colorido), depois os
+  // já vistos; dentro de cada bloco, o meu vem antes.
+  const storyGroups: (StoryGroup & { unseen: boolean })[] = (() => {
     const map = new Map<string, StoryGroup>();
     for (const s of stories) {
       if (!map.has(s.user_id)) map.set(s.user_id, { user_id: s.user_id, name: s.display_name, items: [] });
       map.get(s.user_id)!.items.push(s);
     }
-    const arr = Array.from(map.values());
-    arr.forEach((g) => g.items.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at)));
-    return arr.sort((a, b) => (a.user_id === user?.id ? -1 : b.user_id === user?.id ? 1 : 0));
+    const arr = Array.from(map.values()).map((g) => {
+      g.items.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      return { ...g, unseen: g.items.some((s) => !seenIds.has(s.id)) };
+    });
+    return arr.sort((a, b) => {
+      if (a.unseen !== b.unseen) return a.unseen ? -1 : 1;      // novidade primeiro
+      if (a.user_id === user?.id) return -1;
+      if (b.user_id === user?.id) return 1;
+      return 0;
+    });
   })();
 
   // ── Foto do feed: comprime na hora que escolhe e mostra preview ───────
@@ -545,12 +569,21 @@ export function CommunityScreen() {
             onClick={() => setViewer({ group: g, index: 0 })}
             className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer"
           >
-            <div className="p-0.5 rounded-full bg-gradient-to-tr from-primary to-blue-300">
+            <div
+              className={`p-0.5 rounded-full transition-colors ${
+                g.unseen ? "bg-gradient-to-tr from-primary via-amber-400 to-blue-300" : "bg-muted"
+              }`}
+            >
               <div className="h-14 w-14 rounded-full border-2 border-card overflow-hidden bg-primary/10 flex items-center justify-center">
-                <img src={g.items[g.items.length - 1].image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                <img
+                  src={g.items[g.items.length - 1].image_url}
+                  alt=""
+                  loading="lazy"
+                  className={`h-full w-full object-cover transition-opacity ${g.unseen ? "" : "opacity-70"}`}
+                />
               </div>
             </div>
-            <span className="text-xs font-medium text-muted-foreground max-w-[64px] truncate">
+            <span className={`text-xs max-w-[64px] truncate ${g.unseen ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
               {g.user_id === user?.id ? "Você" : g.name.split(" ")[0]}
             </span>
           </motion.button>

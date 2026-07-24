@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getSeenStories } from "@/lib/storiesSeen";
 
 // ─── CommunityHighlights ─────────────────────────────────────────────────────
 // Prévia da Comunidade no topo da tela principal: stories ativos + posts de
@@ -77,6 +78,9 @@ export function CommunityHighlights() {
   if (!user || loading) return null;
 
   const vazio = stories.length === 0 && posts.length === 0;
+  // Quais stories ainda não foram vistos (mesma marcação da Comunidade)
+  const seen = getSeenStories(user.id);
+  const novos = stories.filter((s) => !seen.has(s.id)).length;
 
   return (
     <motion.div
@@ -124,19 +128,31 @@ export function CommunityHighlights() {
               className="flex items-center gap-2 mb-3 w-full text-left"
             >
               <div className="flex -space-x-3">
-                {stories.map((s) => (
-                  <div key={s.id} className="size-11 rounded-full p-0.5 bg-gradient-to-tr from-primary to-blue-300">
-                    <img
-                      src={s.image_url}
-                      alt=""
-                      loading="lazy"
-                      className="size-full rounded-full object-cover border-2 border-card"
-                    />
-                  </div>
-                ))}
+                {stories.map((s) => {
+                  const novo = !seen.has(s.id);
+                  return (
+                    <div
+                      key={s.id}
+                      className={`size-11 rounded-full p-0.5 ${
+                        novo ? "bg-gradient-to-tr from-primary via-amber-400 to-blue-300" : "bg-muted"
+                      }`}
+                    >
+                      <img
+                        src={s.image_url}
+                        alt=""
+                        loading="lazy"
+                        className={`size-full rounded-full object-cover border-2 border-card ${novo ? "" : "opacity-70"}`}
+                      />
+                    </div>
+                  );
+                })}
               </div>
               <span className="text-xs text-muted-foreground">
-                {stories.length} story{stories.length > 1 ? "s" : ""} ativo{stories.length > 1 ? "s" : ""} · toque pra ver
+                {novos > 0 ? (
+                  <><span className="text-primary font-black">{novos} novo{novos > 1 ? "s" : ""}</span> · toque pra ver</>
+                ) : (
+                  <>{stories.length} story{stories.length > 1 ? "s" : ""} · você já viu</>
+                )}
               </span>
             </button>
           )}
