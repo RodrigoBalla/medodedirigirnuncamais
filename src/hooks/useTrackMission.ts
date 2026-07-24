@@ -29,6 +29,8 @@ export type MissionTriggerType =
   | "comment_count"
   | "community_post"
   | "community_like"
+  | "community_read_time"
+  | "community_morning_post"
   | "profile_avatar_uploaded"
   | "profile_name_edited"
   | "report_problem"

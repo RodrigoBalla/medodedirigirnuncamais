@@ -209,7 +209,9 @@ export default function Admin() {
       setLoading(false);
       return;
     }
-    const rows = (data || []) as Array<{
+    // Cast via unknown: a RPC devolve `groups` como jsonb (Json), que o TS não
+    // consegue estreitar sozinho pro shape abaixo.
+    const rows = (data || []) as unknown as Array<{
       user_id: string;
       display_name: string | null;
       email: string | null;

@@ -283,7 +283,6 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
       try {
         if (embed.kind === "native") {
           const v = p as HTMLVideoElement & { requestPictureInPicture?: () => Promise<unknown> };
-          // @ts-expect-error PiP API
           if (document.pictureInPictureElement) await document.exitPictureInPicture?.();
           else if (v.requestPictureInPicture) await v.requestPictureInPicture();
         } else {

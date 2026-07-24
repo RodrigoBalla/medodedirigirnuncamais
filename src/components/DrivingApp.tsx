@@ -772,21 +772,9 @@ const DrivingApp = () => {
     );
   }
 
-  if (lessonScreen === "conquest" && phase) {
-    return (
-      <>
-        {overlays}
-        <ConquestScreen
-          phase={phase}
-          unlockedPhase={unlockedPhase}
-          coinsEarned={50}
-          xpEarned={phase.xp}
-          comboHits={comboCount}
-          onContinue={handleReturnToDashboard}
-        />
-      </>
-    );
-  }
+  // (A tela de conquista é renderizada por renderContent(), dentro do AppLayout.
+  //  O bloco antigo que existia aqui usava props inexistentes e uma função que
+  //  não existe mais — quebrava em runtime se essa rota fosse alcançada.)
 
   return (
     <>

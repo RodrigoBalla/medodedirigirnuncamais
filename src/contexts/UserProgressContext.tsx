@@ -83,7 +83,12 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
         setCompletedLessons(Array.isArray(data.completed_lessons) ? data.completed_lessons : []);
         setConfidence(data.confidence ?? 3);
         setLeague(data.league ?? "Bronze");
-        setBadges(Array.isArray(data.badges) ? data.badges : []);
+        // badges vem como jsonb (Json[]) — filtra só as strings pro estado.
+        setBadges(
+          Array.isArray(data.badges)
+            ? data.badges.filter((b): b is string => typeof b === "string")
+            : [],
+        );
         setDailyXP(data.daily_xp ?? 0);
         setDailyLessons(data.daily_lessons ?? 0);
         setStreakFreezeCount(data.streak_freeze_count ?? 0);
