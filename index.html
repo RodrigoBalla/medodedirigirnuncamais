@@ -19,6 +19,16 @@
     <link rel="dns-prefetch" href="https://elements2.eduzz.com" />
     <link rel="dns-prefetch" href="https://elements-api.eduzz.com" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- PWA: instalável no celular (Adicionar à tela de início) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0B1A38" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Medo de Dirigir" />
+
     <title>MEDO DE DIRIGIR NUNCA MAIS</title>
     <meta name="description" content="Aprenda a dirigir com facilidade.">
     <meta name="author" content="MEDO DE DIRIGIR NUNCA MAIS" />
@@ -41,5 +51,14 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Registra o service worker (PWA). Só em produção: em dev atrapalharia o
+         hot-reload. Falha silenciosa — o app funciona igual sem ele. -->
+    <script>
+      if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
   </body>
 </html>

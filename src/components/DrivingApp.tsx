@@ -64,26 +64,43 @@ const DrivingApp = () => {
     dailyLessons,
     addBadge,
     badges,
-    spendCoins
+    spendCoins,
+    loading: progressLoading
   } = useUserProgress();
   
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const [lastLevel, setLastLevel] = useState<number | null>(null);
 
   // Level Up Detection — modal "Você subiu de nível!".
-  // Atribuição de medalhas migrou pro hook useBadgeRules (centraliza
-  // as 6 regras: primeiros_km, corajoso, estudioso, maratonista,
-  // colecionador, investidor). Não duplicar aqui.
+  //
+  // BUG corrigido (24/07): o nível celebrado ficava só em memória. Como o
+  // contexto começa em `level = 1` e só depois carrega o valor real do banco,
+  // toda visita tinha um "1 → 3" que era lido como subida — a festa aparecia
+  // SEMPRE. Agora o último nível comemorado é gravado por aluna no navegador e
+  // só comemoramos depois que os dados carregaram (loading === false).
+  //
+  // Atribuição de medalhas fica no hook useBadgeRules — não duplicar aqui.
   useEffect(() => {
-    if (lastLevel === null) {
-      setLastLevel(globalLevel);
+    if (progressLoading || !user) return; // espera o valor real do banco
+    const key = `mddnm:last-level:${user.id}`;
+    let saved: number | null = null;
+    try {
+      const raw = localStorage.getItem(key);
+      saved = raw === null ? null : Number(raw);
+    } catch { /* localStorage bloqueado (aba anônima) — não comemora */ }
+
+    // Primeira vez nesta aluna/navegador: só registra, sem comemorar.
+    if (saved === null || Number.isNaN(saved)) {
+      try { localStorage.setItem(key, String(globalLevel)); } catch { /* ignora */ }
       return;
     }
-    if (globalLevel > lastLevel) {
+    if (globalLevel > saved) {
       setShowLevelUp(true);
-      setLastLevel(globalLevel);
+      try { localStorage.setItem(key, String(globalLevel)); } catch { /* ignora */ }
+    } else if (globalLevel < saved) {
+      // Nível caiu (ex.: recálculo da fórmula) — realinha sem comemorar.
+      try { localStorage.setItem(key, String(globalLevel)); } catch { /* ignora */ }
     }
-  }, [globalLevel, lastLevel]);
+  }, [globalLevel, progressLoading, user?.id]);
 
   // ─── Regras de medalha — roda em QUALQUER tela do app.
   // Verifica condições no banco e dispara addBadge automaticamente.
