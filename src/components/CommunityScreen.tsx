@@ -453,31 +453,42 @@ export function CommunityScreen() {
     }
   }
 
-  function handleStoryClick(name: string) {
-    setSelectedStory(name);
-    setTimeout(() => setSelectedStory(null), 3000);
-  }
-
   // Avatar inicial do usuário logado pro card de criação
   const myInitial = user?.email?.charAt(0).toUpperCase() ?? "?";
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-6xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Comunidade</h1>
+      <div className="flex items-end justify-between mb-5 gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">
+            🚗 Você não está sozinha
+          </p>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight">Comunidade</h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">
+            Compartilhe suas vitórias, tire dúvidas e acompanhe quem está no mesmo caminho.
+          </p>
+        </div>
         <button
           onClick={() => toast("Nenhuma notificação nova", { icon: "🔔" })}
-          className="relative p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors"
+          className="relative p-2 shrink-0 text-muted-foreground hover:bg-muted rounded-full transition-colors"
         >
           <span className="material-symbols-outlined">notifications</span>
-          <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full border-2 border-card"></span>
         </button>
       </div>
 
-      {/* Stories reais (expiram em 24h) */}
+      {/* Stories reais (expiram em 24h) — em card, com título */}
       <input ref={storyFileRef} type="file" accept="image/*" className="hidden" onChange={onPickStoryPhoto} />
-      <div className="flex gap-4 overflow-x-auto pb-4 mb-6 no-scrollbar">
+      <div className="bg-card border border-border rounded-2xl p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            📸 Stories da turma
+          </p>
+          <span className="text-[10px] font-bold text-muted-foreground/70 bg-muted px-2 py-0.5 rounded-full">
+            somem em 24h
+          </span>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar">
         {/* Seu story: abre a câmera/galeria */}
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -511,11 +522,12 @@ export function CommunityScreen() {
           </motion.button>
         ))}
 
-        {storyGroups.length === 0 && (
-          <div className="flex items-center text-xs text-muted-foreground italic">
-            Nenhum story ainda — seja a primeira! 📸
-          </div>
-        )}
+          {storyGroups.length === 0 && (
+            <div className="flex items-center text-xs text-muted-foreground italic pl-1">
+              Nenhum story ainda — seja a primeira!
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Story Viewer — tela cheia, avança sozinho a cada 5s */}
@@ -600,6 +612,10 @@ export function CommunityScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Layout 2 colunas no desktop: feed + painel lateral */}
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-6 items-start">
+        <div className="min-w-0">
 
       {/* Post creation */}
       <div className="bg-card rounded-2xl p-4 md:p-6 border border-border mb-6 shadow-sm">
@@ -698,14 +714,31 @@ export function CommunityScreen() {
             Carregando posts…
           </div>
         ) : filteredPosts.length === 0 ? (
-          <div className="text-center py-10">
-            <div className="inline-block p-3 rounded-full bg-primary/10 text-primary mb-3">
-              <span className="material-symbols-outlined text-3xl">forum</span>
+          <div className="text-center py-12 px-6 bg-card border border-dashed border-border rounded-2xl">
+            <div className="inline-block p-4 rounded-full bg-primary/10 text-primary mb-4">
+              <span className="material-symbols-outlined text-4xl">forum</span>
             </div>
-            <h3 className="text-lg font-bold">Sem posts em {TABS.find((t) => t.id === activeTab)?.label}</h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Seja a primeira a compartilhar algo aqui!
+            <h3 className="text-lg font-black">Sem posts em {TABS.find((t) => t.id === activeTab)?.label}</h3>
+            <p className="text-muted-foreground text-sm mt-1 max-w-sm mx-auto leading-snug">
+              Seja a primeira a compartilhar! Pode ser a vitória de hoje, um medo que passou
+              ou uma dúvida — tem alguém aqui passando pelo mesmo. 💛
             </p>
+            <div className="flex items-center justify-center gap-2 mt-5 flex-wrap">
+              <button
+                onClick={() => storyFileRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] tracking-widest hover:opacity-90 transition-opacity"
+              >
+                <span className="material-symbols-outlined text-base">add_a_photo</span>
+                Postar um story
+              </button>
+              <button
+                onClick={() => feedFileRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-foreground font-black uppercase text-[11px] tracking-widest hover:border-primary/60 transition-colors"
+              >
+                <span className="material-symbols-outlined text-base">image</span>
+                Compartilhar foto
+              </button>
+            </div>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -818,6 +851,69 @@ export function CommunityScreen() {
           <p className="text-muted-foreground text-sm mt-1">Volte mais tarde para novas postagens.</p>
         </div>
       )}
+
+        </div>
+
+        {/* ── Painel lateral (desktop) ─────────────────────────────────── */}
+        <aside className="hidden lg:flex flex-col gap-4 sticky top-20">
+          {/* Como funciona */}
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <h3 className="font-black text-sm mb-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg filled-icon">lightbulb</span>
+              Como funciona
+            </h3>
+            <ul className="space-y-3 text-xs text-muted-foreground leading-snug">
+              <li className="flex gap-2.5">
+                <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">edit</span>
+                <span><b className="text-foreground">Poste sua vitória</b> — mesmo a pequena. Dirigiu até a padaria? Conta pra gente.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">help</span>
+                <span><b className="text-foreground">Marque "Dúvida"</b> e sua pergunta ganha destaque pra ser respondida.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="material-symbols-outlined text-sm text-primary shrink-0 mt-0.5">photo_camera</span>
+                <span><b className="text-foreground">Stories somem em 24h</b> — perfeito pro registro do dia sem compromisso.</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Combinados da turma */}
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <h3 className="font-black text-sm mb-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg filled-icon">volunteer_activism</span>
+              Combinados da turma
+            </h3>
+            <ul className="space-y-2 text-xs text-muted-foreground leading-snug">
+              <li className="flex gap-2"><span className="text-[hsl(var(--success))]">✓</span> Aqui ninguém julga medo de dirigir.</li>
+              <li className="flex gap-2"><span className="text-[hsl(var(--success))]">✓</span> Toda vitória conta — celebre a das colegas.</li>
+              <li className="flex gap-2"><span className="text-[hsl(var(--success))]">✓</span> Dúvida "boba" não existe. Pergunte.</li>
+              <li className="flex gap-2"><span className="text-destructive">✕</span> Sem vendas, spam ou link de fora.</li>
+            </ul>
+          </div>
+
+          {/* Pulso da comunidade (dados reais do que está carregado) */}
+          <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 rounded-2xl p-5">
+            <h3 className="font-black text-sm mb-3">🔥 Pulso da comunidade</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xl font-black text-primary tabular-nums">{posts.length}</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Posts</p>
+              </div>
+              <div>
+                <p className="text-xl font-black text-primary tabular-nums">{storyGroups.length}</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Stories ativos</p>
+              </div>
+            </div>
+            <button
+              onClick={() => storyFileRef.current?.click()}
+              className="mt-4 w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-black uppercase text-[11px] tracking-widest hover:opacity-90 transition-opacity"
+            >
+              Postar um story 📸
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
