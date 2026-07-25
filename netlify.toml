@@ -30,6 +30,25 @@
   to     = "/obrigado.html"
   status = 200
 
+# Política de Privacidade e Termos de Uso (estáticas, fora do SPA).
+# URLs públicas usadas também no app oficial do WhatsApp (Meta) e no rodapé.
+[[redirects]]
+  from   = "/privacidade"
+  to     = "/privacidade.html"
+  status = 200
+[[redirects]]
+  from   = "/privacy"
+  to     = "/privacidade.html"
+  status = 200
+[[redirects]]
+  from   = "/termos"
+  to     = "/termos.html"
+  status = 200
+[[redirects]]
+  from   = "/terms"
+  to     = "/termos.html"
+  status = 200
+
 # Ferramenta interna pra Carla organizar conteúdos (estática, fora do SPA).
 [[redirects]]
   from   = "/carla"

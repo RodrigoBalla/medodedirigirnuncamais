@@ -193,8 +193,8 @@ export default function SalesPage() {
       <footer className="py-8 border-t border-white/5 text-center text-white/30 text-sm">
         <p className="mb-4">© {new Date().getFullYear()} Medo de Dirigir Nunca Mais. Todos os direitos reservados.</p>
         <div className="flex justify-center gap-4">
-          <a href="#" className="hover:text-white transition-colors">Termos de Uso</a>
-          <a href="#" className="hover:text-white transition-colors">Política de Privacidade</a>
+          <a href="/termos" className="hover:text-white transition-colors">Termos de Uso</a>
+          <a href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</a>
           <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Contato</a>
         </div>
       </footer>
