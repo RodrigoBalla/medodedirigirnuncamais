@@ -136,31 +136,31 @@ export function TrafegoTab() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Investido total</p>
-            <p className="text-2xl md:text-3xl font-black tabular-nums mt-1">{gastoTotal != null ? brl(gastoTotal) : "—"}</p>
+            <p className="text-xl xl:text-2xl font-black tabular-nums mt-1">{gastoTotal != null ? brl(gastoTotal) : "—"}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Meta Ads</p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Receita total</p>
-            <p className="text-2xl md:text-3xl font-black tabular-nums mt-1 text-primary">{receitaTotal != null ? brl(receitaTotal) : "—"}</p>
+            <p className="text-xl xl:text-2xl font-black tabular-nums mt-1 text-primary">{receitaTotal != null ? brl(receitaTotal) : "—"}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{v?.total ?? 0} venda{(v?.total ?? 0) === 1 ? "" : "s"} · Eduzz (real)</p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">ROAS</p>
-            <p className={`text-2xl md:text-3xl font-black tabular-nums mt-1 ${roas == null ? "" : roas >= 1 ? "text-[hsl(var(--success))]" : "text-destructive"}`}>
+            <p className={`text-xl xl:text-2xl font-black tabular-nums mt-1 ${roas == null ? "" : roas >= 1 ? "text-[hsl(var(--success))]" : "text-destructive"}`}>
               {roas != null ? roas.toFixed(2) : "—"}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">receita ÷ investido</p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Resultado</p>
-            <p className={`text-2xl md:text-3xl font-black tabular-nums mt-1 ${lucro == null ? "" : lucro >= 0 ? "text-[hsl(var(--success))]" : "text-destructive"}`}>
+            <p className={`text-xl xl:text-2xl font-black tabular-nums mt-1 ${lucro == null ? "" : lucro >= 0 ? "text-[hsl(var(--success))]" : "text-destructive"}`}>
               {lucro != null ? brl(lucro) : "—"}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">receita − investido</p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Conversão da página</p>
-            <p className="text-2xl md:text-3xl font-black tabular-nums mt-1 text-primary">
+            <p className="text-xl xl:text-2xl font-black tabular-nums mt-1 text-primary">
               {convTotal != null ? `${convTotal.toFixed(1)}%` : "—"}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
