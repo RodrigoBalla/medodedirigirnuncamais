@@ -187,12 +187,25 @@
     var convTotal = (!v.error && v.total != null && lpvTotal != null && lpvTotal > 0) ? (v.total / lpvTotal) * 100 : null;
     var convHoje = (!v.error && v.hoje != null && lpvHoje != null && lpvHoje > 0) ? (v.hoje / lpvHoje) * 100 : null;
 
+    // Dias de campanha (inclusivo: 21/07 = dia 1), virada de dia no fuso de Brasília.
+    var dias = null;
+    if (d.inicio) {
+      var pi = d.inicio.split('-');
+      var iniUTC = Date.UTC(+pi[0], +pi[1] - 1, +pi[2]);
+      var spNow = new Date(Date.now() - 3 * 3600e3);
+      var hojeUTC = Date.UTC(spNow.getUTCFullYear(), spNow.getUTCMonth(), spNow.getUTCDate());
+      dias = Math.floor((hojeUTC - iniUTC) / 86400000) + 1;
+      if (dias < 1) dias = 1;
+    }
+    var mediaVendasDia = (dias && !v.error && v.total != null) ? v.total / dias : null;
+
     document.getElementById('placarGrid').innerHTML =
       pcell('Investido total', gastoTotal != null ? brl(gastoTotal) : '—', '', 'Meta Ads · desde 21/07') +
       pcell('Receita total', receitaTotal != null ? brl(receitaTotal) : '—', 'vyellow', (v.total||0) + ' venda' + (v.total===1?'':'s') + ' · Eduzz (real)') +
       pcell('ROAS', roas != null ? roas.toFixed(2) : '—', roas == null ? '' : (roas >= 1 ? 'vgreen' : 'vred'), 'receita ÷ investido') +
       pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido') +
-      pcell('Conversão da página', convTotal != null ? convTotal.toFixed(1) + '%' : '—', 'vyellow', lpvTotal != null ? int(v.total) + ' vendas ÷ ' + int(lpvTotal) + ' visitas' : 'vendas ÷ visitas da página');
+      pcell('Conversão da página', convTotal != null ? convTotal.toFixed(1) + '%' : '—', 'vyellow', lpvTotal != null ? int(v.total) + ' vendas ÷ ' + int(lpvTotal) + ' visitas' : 'vendas ÷ visitas da página') +
+      pcell('Dias de campanha', dias != null ? String(dias) : '—', '', mediaVendasDia != null ? 'média de ' + mediaVendasDia.toFixed(1).replace('.', ',') + ' vendas/dia' : 'desde 21/07');
 
     // ── LINHA DO HOJE ──
     var roasHoje = (receitaHoje != null && gastoHoje != null && gastoHoje > 0) ? receitaHoje / gastoHoje : null;

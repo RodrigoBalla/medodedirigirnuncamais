@@ -82,6 +82,16 @@ export function TrafegoTab() {
   const lpvHoje = m?.hoje?.lpv ?? null;
   const convTotal = v && !v.error && lpvTotal != null && lpvTotal > 0 ? (v.total / lpvTotal) * 100 : null;
   const convHoje = v && !v.error && lpvHoje != null && lpvHoje > 0 ? (v.hoje / lpvHoje) * 100 : null;
+  // Dias de campanha (inclusivo: 21/07 = dia 1), virada de dia no fuso de Brasília.
+  let dias: number | null = null;
+  if (stats?.inicio) {
+    const [yy, mm, dd] = stats.inicio.split("-").map(Number);
+    const iniUTC = Date.UTC(yy, mm - 1, dd);
+    const spNow = new Date(Date.now() - 3 * 3600e3);
+    const hojeUTC = Date.UTC(spNow.getUTCFullYear(), spNow.getUTCMonth(), spNow.getUTCDate());
+    dias = Math.max(1, Math.floor((hojeUTC - iniUTC) / 86400000) + 1);
+  }
+  const mediaVendasDia = dias && v && !v.error ? v.total / dias : null;
 
   return (
     <div className="space-y-5">
@@ -133,7 +143,7 @@ export function TrafegoTab() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Investido total</p>
             <p className="text-xl xl:text-2xl font-black tabular-nums mt-1">{gastoTotal != null ? brl(gastoTotal) : "—"}</p>
@@ -165,6 +175,13 @@ export function TrafegoTab() {
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {lpvTotal != null ? `${intBR(v?.total)} vendas ÷ ${intBR(lpvTotal)} visitas` : "vendas ÷ visitas da página"}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Dias de campanha</p>
+            <p className="text-xl xl:text-2xl font-black tabular-nums mt-1">{dias != null ? dias : "—"}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {mediaVendasDia != null ? `média de ${mediaVendasDia.toFixed(1).replace(".", ",")} vendas/dia` : "desde 21/07"}
             </p>
           </div>
         </div>
