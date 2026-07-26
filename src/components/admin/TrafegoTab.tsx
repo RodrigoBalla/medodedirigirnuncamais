@@ -13,7 +13,7 @@ const FN_URL = "https://qkvinhzwiptfobdvsdtr.supabase.co/functions/v1/ads-stats"
 
 interface MetaBlock {
   gasto: number; impressoes: number; cliques: number; ctr: number; cpm: number;
-  compras: number; receita: number;
+  compras: number; receita: number; lpv?: number;
 }
 interface AdRow { nome: string; gasto: number; impressoes: number; cliques: number; compras: number }
 interface Venda { email: string; nome: string | null; quando: string; valor: number | null }
@@ -77,6 +77,11 @@ export function TrafegoTab() {
   const roas = receitaTotal != null && gastoTotal != null && gastoTotal > 0 ? receitaTotal / gastoTotal : null;
   const lucro = receitaTotal != null && gastoTotal != null ? receitaTotal - gastoTotal : null;
   const roasHoje = receitaHoje != null && gastoHoje != null && gastoHoje > 0 ? receitaHoje / gastoHoje : null;
+  // Conversão da página: vendas reais (banco) ÷ visitas na página de vendas (landing_page_view do Meta).
+  const lpvTotal = m?.total?.lpv ?? null;
+  const lpvHoje = m?.hoje?.lpv ?? null;
+  const convTotal = v && !v.error && lpvTotal != null && lpvTotal > 0 ? (v.total / lpvTotal) * 100 : null;
+  const convHoje = v && !v.error && lpvHoje != null && lpvHoje > 0 ? (v.hoje / lpvHoje) * 100 : null;
 
   return (
     <div className="space-y-5">
@@ -128,7 +133,7 @@ export function TrafegoTab() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Investido total</p>
             <p className="text-2xl md:text-3xl font-black tabular-nums mt-1">{gastoTotal != null ? brl(gastoTotal) : "—"}</p>
@@ -153,6 +158,15 @@ export function TrafegoTab() {
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">receita − investido</p>
           </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Conversão da página</p>
+            <p className="text-2xl md:text-3xl font-black tabular-nums mt-1 text-primary">
+              {convTotal != null ? `${convTotal.toFixed(1)}%` : "—"}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {lpvTotal != null ? `${intBR(v?.total)} vendas ÷ ${intBR(lpvTotal)} visitas` : "vendas ÷ visitas da página"}
+            </p>
+          </div>
         </div>
 
         {/* Linha do hoje */}
@@ -162,6 +176,8 @@ export function TrafegoTab() {
           <span>Vendas <b className="text-foreground tabular-nums">{intBR(v?.hoje)}</b></span>
           <span>Receita <b className="text-primary tabular-nums">{receitaHoje != null ? brl(receitaHoje) : "—"}</b></span>
           <span>ROAS <b className={`tabular-nums ${roasHoje == null ? "text-foreground" : roasHoje >= 1 ? "text-[hsl(var(--success))]" : "text-destructive"}`}>{roasHoje != null ? roasHoje.toFixed(2) : "—"}</b></span>
+          <span>Visitas <b className="text-foreground tabular-nums">{intBR(lpvHoje)}</b></span>
+          <span>Conversão <b className="text-primary tabular-nums">{convHoje != null ? `${convHoje.toFixed(1)}%` : "—"}</b></span>
         </div>
 
         {m?.error === "missing_token" && (

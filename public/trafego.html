@@ -181,11 +181,18 @@
       res.innerHTML = '<div class="badge wait">⏳ aguardando dados do Meta</div>';
     }
 
+    // Conversão da página: vendas reais (banco) ÷ visitas na página (landing_page_view do Meta).
+    var lpvTotal = (m.total && m.total.lpv != null) ? m.total.lpv : null;
+    var lpvHoje = (m.hoje && m.hoje.lpv != null) ? m.hoje.lpv : null;
+    var convTotal = (!v.error && v.total != null && lpvTotal != null && lpvTotal > 0) ? (v.total / lpvTotal) * 100 : null;
+    var convHoje = (!v.error && v.hoje != null && lpvHoje != null && lpvHoje > 0) ? (v.hoje / lpvHoje) * 100 : null;
+
     document.getElementById('placarGrid').innerHTML =
       pcell('Investido total', gastoTotal != null ? brl(gastoTotal) : '—', '', 'Meta Ads · desde 21/07') +
       pcell('Receita total', receitaTotal != null ? brl(receitaTotal) : '—', 'vyellow', (v.total||0) + ' venda' + (v.total===1?'':'s') + ' · Eduzz (real)') +
       pcell('ROAS', roas != null ? roas.toFixed(2) : '—', roas == null ? '' : (roas >= 1 ? 'vgreen' : 'vred'), 'receita ÷ investido') +
-      pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido');
+      pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido') +
+      pcell('Conversão da página', convTotal != null ? convTotal.toFixed(1) + '%' : '—', 'vyellow', lpvTotal != null ? int(v.total) + ' vendas ÷ ' + int(lpvTotal) + ' visitas' : 'vendas ÷ visitas da página');
 
     // ── LINHA DO HOJE ──
     var roasHoje = (receitaHoje != null && gastoHoje != null && gastoHoje > 0) ? receitaHoje / gastoHoje : null;
@@ -194,7 +201,9 @@
       '<span>Investido <b>' + (gastoHoje != null ? brl(gastoHoje) : '—') + '</b></span>' +
       '<span>Vendas <b>' + int(v.hoje) + '</b></span>' +
       '<span>Receita <b class="vyellow">' + (receitaHoje != null ? brl(receitaHoje) : '—') + '</b></span>' +
-      '<span>ROAS <b class="' + (roasHoje == null ? '' : (roasHoje >= 1 ? 'vgreen' : 'vred')) + '">' + (roasHoje != null ? roasHoje.toFixed(2) : '—') + '</b></span>';
+      '<span>ROAS <b class="' + (roasHoje == null ? '' : (roasHoje >= 1 ? 'vgreen' : 'vred')) + '">' + (roasHoje != null ? roasHoje.toFixed(2) : '—') + '</b></span>' +
+      '<span>Visitas <b>' + int(lpvHoje) + '</b></span>' +
+      '<span>Conversão <b class="vyellow">' + (convHoje != null ? convHoje.toFixed(1) + '%' : '—') + '</b></span>';
 
     var aviso = document.getElementById('metaAviso');
     if (m.error === 'missing_token') {
