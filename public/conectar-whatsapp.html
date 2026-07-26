@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Conectar WhatsApp (coexistência) · MDNM interno</title>
+<!--
+  PÁGINA INTERNA (uso do Balla) — dispara o Embedded Signup da Meta com a
+  feature de COEXISTÊNCIA ("whatsapp_business_app_onboarding"): conecta o número
+  do app WhatsApp Business à Cloud API SEM tirar o número do celular (via QR).
+
+  App Meta: MDNM Mensagens (2060588131561366)
+  Config do Login for Business (Cadastro Incorporado): 37108193078826207
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0B1A38;--navy2:#16264D;--yellow:#FFD60A;--ink:#EAF0FA;--ink2:#AEC0DC;--line:rgba(255,255,255,.1);--verde:#25D366}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lexend',system-ui,sans-serif;color:var(--ink);background:var(--navy);background-image:radial-gradient(120% 70% at 50% -10%,#12294d 0%,var(--navy) 55%);line-height:1.6;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:560px;width:100%;background:var(--navy2);border:1px solid var(--line);border-radius:20px;padding:32px 30px}
+  h1{font-size:22px;font-weight:900;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:20px}
+  ol{color:var(--ink2);font-size:14px;padding-left:22px;margin-bottom:24px}
+  li{margin:6px 0}
+  li b{color:#fff}
+  .go{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--verde);color:#fff;font-weight:900;font-size:16px;padding:15px 22px;border:none;border-radius:14px;cursor:pointer;font-family:inherit;transition:filter .2s}
+  .go:hover{filter:brightness(1.07)}
+  .go:disabled{opacity:.55;cursor:wait}
+  #out{margin-top:18px;font-size:12.5px;color:var(--ink2);background:var(--navy);border:1px solid var(--line);border-radius:12px;padding:12px 14px;white-space:pre-wrap;word-break:break-all;display:none}
+  .warn{margin-top:14px;font-size:12px;color:var(--ink2)}
+  .warn b{color:var(--yellow)}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔌 Conectar WhatsApp em coexistência</h1>
+  <p class="sub">Página interna — conecta o <b>+55 21 99368-5289</b> à API oficial <b>mantendo o número no app WhatsApp Business</b> (via QR Code).</p>
+  <ol>
+    <li>Clique no botão abaixo (abre popup da Meta — faça login se pedir).</li>
+    <li>Escolha o portfólio <b>Manda Balla BM01</b> e a conta <b>Medo de Dirigir Nunca Mais</b>.</li>
+    <li>Na etapa do número, escolha <b>usar o número existente do app WhatsApp Business</b> (coexistência).</li>
+    <li>Abra o WhatsApp Business no celular → <b>Dispositivos conectados → Conectar dispositivo</b> → escaneie o <b>QR Code</b>.</li>
+  </ol>
+  <button class="go" id="btn" onclick="launchES()">▶ Iniciar conexão</button>
+  <p class="warn"><b>Importante:</b> se em algum momento oferecer só SMS/ligação, feche — isso seria migração (derruba o app). O caminho certo é o do QR.</p>
+  <div id="out"></div>
+</div>
+
+<script>
+  const OUT = document.getElementById('out');
+  function show(msg){ OUT.style.display='block'; OUT.textContent += msg + "\n\n"; }
+
+  // Captura eventos do Embedded Signup (dá pra ver waba_id / phone_number_id no final).
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://www.facebook.com' && event.origin !== 'https://web.facebook.com') return;
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'WA_EMBEDDED_SIGNUP') {
+        show('EVENTO: ' + JSON.stringify(data, null, 2));
+      }
+    } catch { /* mensagens não-JSON são normais */ }
+  });
+
+  window.fbAsyncInit = function() {
+    FB.init({ appId: '2060588131561366', autoLogAppEvents: true, xfbml: false, version: 'v21.0' });
+  };
+
+  function launchES() {
+    document.getElementById('btn').disabled = true;
+    FB.login(function (response) {
+      document.getElementById('btn').disabled = false;
+      if (response && response.authResponse && response.authResponse.code) {
+        show('✅ Fluxo concluído (code recebido). Pode fechar esta página e avisar o Claude.');
+      } else {
+        show('Fluxo fechado sem concluir. Status: ' + JSON.stringify(response && response.status));
+      }
+    }, {
+      config_id: '37108193078826207',
+      response_type: 'code',
+      override_default_response_type: true,
+      extras: {
+        sessionInfoVersion: '3',
+        // Liga o modo COEXISTÊNCIA (onboarding de usuários do app WhatsApp Business):
+        featureType: 'whatsapp_business_app_onboarding',
+        setup: {}
+      }
+    });
+  }
+</script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/pt_BR/sdk.js"></script>
+</body>
+</html>

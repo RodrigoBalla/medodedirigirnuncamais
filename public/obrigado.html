@@ -241,6 +241,22 @@
     }
     .wa-btn:hover { filter: brightness(1.08); }
 
+    /* CTA PRIMÁRIA: liberar acesso na hora pelo WhatsApp (não depende de e-mail) */
+    .liberar { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .liberar-btn {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      background: var(--verde); color: #fff;
+      font-weight: 900; font-size: clamp(15px, 2.3vh, 18px); letter-spacing: .01em;
+      padding: clamp(13px, 2.1vh, 17px) 22px; border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.32);
+      transition: filter .2s, transform .2s;
+    }
+    .liberar-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .liberar-hint { font-size: clamp(12px, 1.7vh, 13.5px); font-weight: 500; color: var(--suave); line-height: 1.4; }
+    .liberar-hint b { color: #fff; font-weight: 700; }
+
     #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
 
     /* ─── Blindagem contra extensões de "scroll animation" ──────────────────
@@ -251,7 +267,7 @@
        Forçamos os elementos de CONTEÚDO a ficarem sempre visíveis. Os
        decorativos (.check-circle, .pulse-dot) mantêm suas animações próprias. */
     .wrap, .tag, h1, .sub, .alert, .alert *, .steps, .step, .step *,
-    .returning, .returning *, .enter-btn,
+    .returning, .returning *, .enter-btn, .liberar, .liberar-btn, .liberar-hint,
     .from-line, .support, .wa-btn, .clock {
       opacity: 1 !important;
       animation: none !important;
@@ -274,12 +290,21 @@
     <p class="tag">✅ Pagamento confirmado</p>
     <h1>Sua matrícula está <span class="hl">confirmada!</span></h1>
     <p class="sub">
-      Falta só <strong>1 passo</strong>: criar sua senha. Te mandamos o link por e-mail agora. ✨
+      Falta só <strong>1 passo</strong>: criar sua senha pra entrar. Escolha o jeito mais fácil 👇
     </p>
 
+    <!-- CAMINHO PRINCIPAL: liberar acesso na hora pelo WhatsApp (não depende de e-mail) -->
+    <div class="liberar">
+      <a class="liberar-btn" href="https://wa.me/5521993685289?text=Oi!%20Quero%20liberar%20meu%20acesso%20%C3%A0%20plataforma%20%F0%9F%9A%97" target="_blank" rel="noopener noreferrer">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm5.52 11.99c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+        🔓 Liberar acesso à plataforma
+      </a>
+      <p class="liberar-hint">Clique, mande a mensagem e a gente te devolve seu acesso <b>na hora</b> pelo WhatsApp. ✅</p>
+    </div>
+
     <div class="alert">
-      <p class="big">📩 Olhe seu e-mail agora</p>
-      <p class="desc">O link pra <strong style="color:#fff">criar sua senha</strong> chega em até <strong style="color:#fff">5 minutos</strong>.</p>
+      <p class="big">📩 Ou olhe seu e-mail</p>
+      <p class="desc">Também te mandamos o link pra <strong style="color:#fff">criar sua senha</strong> por e-mail (chega em até <strong style="color:#fff">5 minutos</strong>).</p>
       <div class="clock">
         <span class="pulse-dot"></span>
         <span id="countdown">Chega em até 5:00</span>
