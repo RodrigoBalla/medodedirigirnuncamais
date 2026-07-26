@@ -61,6 +61,12 @@
   to     = "/conectar-whatsapp.html"
   status = 200
 
+# Página interna: console de demonstração da API (Análise do App / Tech Provider).
+[[redirects]]
+  from   = "/console-api"
+  to     = "/console-api.html"
+  status = 200
+
 # Painel de tráfego ao vivo (estático, fora do SPA; protegido por chave ?k=).
 [[redirects]]
   from   = "/trafego"
