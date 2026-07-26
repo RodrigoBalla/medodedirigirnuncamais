@@ -52,9 +52,10 @@
   .badge.pos{background:rgba(74,222,128,.14);color:var(--green);border:1px solid rgba(74,222,128,.4)}
   .badge.neg{background:rgba(248,113,113,.14);color:var(--red);border:1px solid rgba(248,113,113,.4)}
   .badge.wait{background:rgba(255,214,10,.1);color:var(--yellow);border:1px solid rgba(255,214,10,.3);font-size:12px}
-  .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
+  @media (max-width:640px){ .pgrid{grid-template-columns:repeat(2,1fr)} }
   .pcell .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
-  .pcell .val{font-size:clamp(19px,2.8vw,29px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.1;overflow-wrap:anywhere}
+  .pcell .val{font-size:clamp(22px,4vw,34px);font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.1}
   .pcell .sub{font-size:11px;color:var(--ink3);margin-top:3px}
   .vyellow{color:var(--yellow)} .vgreen{color:var(--green)} .vred{color:var(--red)}
 
