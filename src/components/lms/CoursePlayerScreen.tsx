@@ -29,7 +29,7 @@ interface Props {
 
 export function CoursePlayerScreen({ productId, onBack }: Props) {
   const { user } = useAuth();
-  const { lives, coins, totalXP, loseLife, addCoins, completeLesson, completedLessons } = useUserProgress();
+  const { lives, coins, totalXP, loseLife, addCoins, completeLesson, completedLessons, refreshProgress } = useUserProgress();
   const [product, setProduct] = useState<Product | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -344,6 +344,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
     const idx = lessons.findIndex((l) => l.id === lessonId);
     if (lessonId && !isLessonCompleted(lessonId)) await completeLesson(lessonId);
     if (idx >= 0 && idx < lessons.length - 1) setActiveLessonId(lessons[idx + 1].id);
+    // A prova creditou XP/moedas via RPC (fora do contexto) → sincroniza o header.
+    await refreshProgress();
   };
 
   const handleLoseLife = async () => {

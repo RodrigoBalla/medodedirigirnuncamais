@@ -30,6 +30,9 @@ interface UserProgressContextType {
   buyItem: (itemType: "life" | "full_lives" | "streak_freeze" | "xp_boost") => Promise<boolean>;
   addBadge: (badgeId: string) => Promise<void>;
   spendCoins: (amount: number) => Promise<boolean>;
+  /** Re-lê o progresso do banco (moedas/XP/nível/vidas) e atualiza o header.
+   *  Usar depois de RPCs que creditam fora do contexto (ex.: prova/quiz). */
+  refreshProgress: () => Promise<void>;
 }
 
 const UserProgressContext = createContext<UserProgressContextType | undefined>(undefined);
@@ -286,6 +289,21 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
     return false;
   };
 
+  const refreshProgress = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("user_progress")
+      .select("lives, coins, total_xp, league, badges")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!data) return;
+    setLives(data.lives ?? 5);
+    setCoins(data.coins ?? 0);
+    setTotalXP(data.total_xp ?? 0);
+    setLeague(data.league ?? "Bronze");
+    setLevel(getLevelInfo(data.total_xp ?? 0, data.coins ?? 0).level);
+  };
+
   const addBadge = async (badgeId: string) => {
     if (!user || badges.includes(badgeId)) return;
     const newList = [...badges, badgeId];
@@ -298,7 +316,7 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
     <UserProgressContext.Provider value={{
       lives, coins, totalXP, completedPhases, completedLessons, confidence, streak, lastLoginAt, loading,
       loseLife, addCoins, addXP, completeLesson, completePhase, updateConfidence,
-      level, league, badges, dailyXP, dailyLessons, streakFreezeCount, xpBoostExpiresAt, buyItem, addBadge, spendCoins
+      level, league, badges, dailyXP, dailyLessons, streakFreezeCount, xpBoostExpiresAt, buyItem, addBadge, spendCoins, refreshProgress
     }}>
       {children}
     </UserProgressContext.Provider>
