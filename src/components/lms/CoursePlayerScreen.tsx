@@ -109,6 +109,19 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       .catch(() => setGateLoaded(true)); // fail-open
   }, [user]);
 
+  // Se a aluna já concluiu a Aula 00 mas ainda não respondeu a pesquisa (e é
+  // "nova"), abre a pesquisa ao entrar — senão ela ficaria presa na Aula 01
+  // travada sem gatilho pra responder.
+  useEffect(() => {
+    if (!gateLoaded || lessons.length === 0 || surveyDone || showSurvey || quizLessonId) return;
+    const aula0 = lessons[0];
+    const isNew = !lessons.slice(1).some((l) => completedLessons.includes(l.id));
+    if (aula0 && isNew && completedLessons.includes(aula0.id)) {
+      setShowSurvey(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gateLoaded, lessons, surveyDone, completedLessons]);
+
   useEffect(() => {
      if (lives <= 0 && showChallenge) {
         setShowGameOver(true);
@@ -657,9 +670,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                                         key={lesson.id}
                                         onClick={() => {
                                             if (locked) {
-                                               toast(!surveyDone && isNewStudent()
-                                                  ? "Responda a pesquisa rapidinha pra liberar as aulas 💛"
-                                                  : "Faça a prova da aula anterior pra liberar esta 😉");
+                                               if (!surveyDone && isNewStudent()) setShowSurvey(true);
+                                               else toast("Faça a prova da aula anterior pra liberar esta 😉");
                                                return;
                                             }
                                             setActiveLessonId(lesson.id);
