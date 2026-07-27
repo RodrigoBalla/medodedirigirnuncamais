@@ -54,6 +54,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const [lessonsWithQuiz, setLessonsWithQuiz] = useState<Set<string>>(new Set());
   const [showSurvey, setShowSurvey] = useState(false);
   const [quizLessonId, setQuizLessonId] = useState<string | null>(null);
+  const [studentFirstName, setStudentFirstName] = useState("");
 
   // Progresso individual de aula (resume position) — Map<lessonId, seconds>
   const [progressByLesson, setProgressByLesson] = useState<Map<string, number>>(new Map());
@@ -155,6 +156,10 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
        if (prog) {
           setHasCompletedTutorial(prog.has_completed_tutorial ?? false);
        }
+       // Primeiro nome da aluna (pra tela de parabéns da prova)
+       const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle();
+       const fn = (profile?.display_name || user.email?.split('@')[0] || '').trim().split(' ')[0];
+       setStudentFirstName(fn);
 
        // Carrega lesson_progress (posição + flags) pra retomar de onde parou
        if (lessonList.length > 0) {
@@ -416,6 +421,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          <LessonQuiz
             lessonId={quizLessonId}
             lessonTitle={lessons.find((l) => l.id === quizLessonId)?.title || ""}
+            studentName={studentFirstName}
             onDone={onQuizDone}
          />
       )}
