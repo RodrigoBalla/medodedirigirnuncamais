@@ -421,7 +421,24 @@ export default function Admin() {
     }
   }
 
-  async function copyFirstAccessLink(userId: string) {
+  // Monta a mensagem pronta de boas-vindas (personaliza nome + link).
+  // Normaliza o domínio pro .com.br mesmo se o link vier do .netlify.app.
+  function buildFirstAccessMessage(displayName: string | null | undefined, rawLink: string): string {
+    const first = (displayName || "").trim().split(/\s+/)[0] || "";
+    const tokenMatch = rawLink.match(/token=([^&\s]+)/);
+    const link = tokenMatch
+      ? `https://medodedirigirnuncamais.com.br/primeiro-acesso?token=${tokenMatch[1]}`
+      : rawLink;
+    const saudacao = first ? `Parabéns, ${first}! 🎉` : "Parabéns! 🎉";
+    return (
+      `${saudacao} Sua matrícula no Medo de Dirigir Nunca Mais foi confirmada. ` +
+      `Eu sou o Balla, seu suporte por aqui — qualquer dúvida é só me chamar nesse número.\n\n` +
+      `Pra começar, clique no link pra criar sua senha e fazer o primeiro acesso. Bons estudos! 🚗\n\n` +
+      link
+    );
+  }
+
+  async function copyFirstAccessLink(userId: string, displayName?: string | null) {
     setFirstAccessBusy((p) => ({ ...p, [userId]: "copy" }));
     try {
       const { data, error } = await supabase.functions.invoke("admin-first-access", {
@@ -435,16 +452,17 @@ export default function Admin() {
         });
         return;
       }
-      const copied = await tryCopyToClipboard(link);
+      const message = buildFirstAccessMessage(displayName, link);
+      const copied = await tryCopyToClipboard(message);
       if (copied) {
-        toast.success("Link copiado!", {
-          description: "Cole onde quiser. Expira em 7 dias.",
+        toast.success("Mensagem copiada!", {
+          description: "Cole no WhatsApp da aluna. Link expira em 7 dias.",
           duration: 4000,
         });
       } else {
         // Clipboard bloqueado (user gesture perdido). Mostra modal com
-        // o link visível + botão "Copiar" que dispara com gesture novo.
-        setFirstAccessLinkModal(link);
+        // a mensagem visível + botão "Copiar" que dispara com gesture novo.
+        setFirstAccessLinkModal(message);
       }
     } finally {
       setFirstAccessBusy((p) => ({ ...p, [userId]: null }));
@@ -1049,19 +1067,19 @@ export default function Admin() {
                             {s.access_status === "expired" ? "Reativar acesso" : "Marcar expirada"}
                           </button>
 
-                          {/* Copiar link de primeiro acesso */}
+                          {/* Copiar mensagem de primeiro acesso (personalizada + link) */}
                           <button
-                            onClick={() => copyFirstAccessLink(s.user_id)}
+                            onClick={() => copyFirstAccessLink(s.user_id, s.display_name)}
                             disabled={firstAccessBusy[s.user_id] === "copy"}
                             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Gera/recupera o token de primeiro acesso e copia a URL pro clipboard (válida por 7 dias)"
+                            title="Copia a mensagem de boas-vindas pronta (nome + link de primeiro acesso, válido por 7 dias) pra colar no WhatsApp da aluna"
                           >
                             {firstAccessBusy[s.user_id] === "copy" ? (
                               <span className="size-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                             ) : (
-                              <span className="material-symbols-outlined text-base">link</span>
+                              <span className="material-symbols-outlined text-base">content_copy</span>
                             )}
-                            Copiar link
+                            Copiar mensagem
                           </button>
 
                           {/* Reenviar email de primeiro acesso */}
@@ -1443,11 +1461,11 @@ export default function Admin() {
                   >
                     <div className="text-center mb-5">
                       <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                        <span className="material-symbols-outlined text-primary text-2xl">link</span>
+                        <span className="material-symbols-outlined text-primary text-2xl">content_copy</span>
                       </div>
-                      <h3 className="text-lg font-bold">Link de primeiro acesso</h3>
+                      <h3 className="text-lg font-bold">Mensagem de primeiro acesso</h3>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Clica em "Copiar" abaixo. Expira em 7 dias.
+                        Clica em "Copiar" abaixo e cola no WhatsApp da aluna. Link expira em 7 dias.
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -1455,8 +1473,8 @@ export default function Admin() {
                         readOnly
                         value={firstAccessLinkModal}
                         onFocus={(e) => e.currentTarget.select()}
-                        className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-xs font-mono break-all resize-none focus:outline-none focus:border-primary"
-                        rows={3}
+                        className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-xs leading-relaxed resize-none focus:outline-none focus:border-primary"
+                        rows={8}
                       />
                       <div className="flex gap-2">
                         <button
@@ -1470,14 +1488,14 @@ export default function Admin() {
                             // Gesture fresco aqui — clipboard funciona
                             const ok = await tryCopyToClipboard(firstAccessLinkModal);
                             if (ok) {
-                              toast.success("Link copiado!", {
-                                description: "Cole onde quiser. Expira em 7 dias.",
+                              toast.success("Mensagem copiada!", {
+                                description: "Cole no WhatsApp da aluna. Link expira em 7 dias.",
                                 duration: 4000,
                               });
                               setFirstAccessLinkModal(null);
                             } else {
                               toast.error("Não consegui copiar automaticamente", {
-                                description: "Seleciona o link no campo acima e copia com Ctrl+C.",
+                                description: "Seleciona o texto acima e copia com Ctrl+C.",
                               });
                             }
                           }}
