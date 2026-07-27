@@ -36,6 +36,16 @@ export interface QuizResult {
   correct: number;
   total: number;
   passed: boolean;
+  /** XP creditado nesta prova (0 se já tinha feito antes). */
+  xp_awarded: number;
+  /** Moedas creditadas (0 se 0 acertos ou já tinha feito). */
+  coins_awarded: number;
+  /** Saldo de moedas do cofrinho DEPOIS da recompensa. */
+  new_balance: number;
+  /** XP total acumulado depois da recompensa. */
+  new_total_xp: number;
+  /** true se foi a primeira vez que fez essa prova (só aí recompensa). */
+  first_time: boolean;
 }
 
 export async function getPurchaseSurvey(): Promise<SurveyQuestion[]> {
