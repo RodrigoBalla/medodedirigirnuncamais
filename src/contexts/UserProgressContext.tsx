@@ -177,22 +177,31 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
     await supabase.from("user_progress").update({ lives: newLives }).eq("user_id", user.id);
   };
 
-  const addCoins = async (amount: number) => {
-    if (!user) return;
-    const newCoins = coins + amount;
-    setCoins(newCoins);
-    await supabase.from("user_progress").update({ coins: newCoins }).eq("user_id", user.id);
+  // Toda mutação de moeda passa por RPC (grava extrato coin_transactions + espelho
+  // user_progress.coins juntos) pra header e Cashback NUNCA divergirem.
+  const addCoins = async (amount: number, reason = "reward") => {
+    if (!user || amount <= 0) return;
+    setCoins((c) => c + amount); // otimista
+    // add_coins é RPC nova (ainda não nos types gerados) → cast localizado.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.rpc as any)("add_coins", { p_amount: amount, p_reason: reason });
+    if (error) { console.error("add_coins:", error); return; }
+    if (typeof data === "number") setCoins(data);
   };
 
-  const spendCoins = async (amount: number): Promise<boolean> => {
+  const spendCoins = async (amount: number, reason = "spend"): Promise<boolean> => {
     if (!user) return false;
     if (coins < amount) {
       toast.error("Moedas insuficientes!");
       return false;
     }
-    const newCoins = coins - amount;
-    setCoins(newCoins);
-    await supabase.from("user_progress").update({ coins: newCoins }).eq("user_id", user.id);
+    const { data, error } = await supabase.rpc("spend_coins", { p_amount: amount, p_reason: reason });
+    if (error) {
+      toast.error("Moedas insuficientes!");
+      return false;
+    }
+    if (typeof data === "number") setCoins(data);
+    else setCoins((c) => Math.max(0, c - amount));
     return true;
   };
 
@@ -276,10 +285,15 @@ export const UserProgressProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (coins < cost) { toast.error("Moedas insuficientes!"); return false; }
-    const newCoins = coins - cost;
-    const { error } = await supabase.from("user_progress").update({ ...updates, coins: newCoins }).eq("user_id", user.id);
+    // Gasta o custo pela RPC (extrato + espelho juntos, checa saldo no servidor)...
+    const { data: newBalance, error: spendErr } = await supabase.rpc("spend_coins", {
+      p_amount: cost, p_reason: "shop:" + itemType,
+    });
+    if (spendErr) { toast.error("Moedas insuficientes!"); return false; }
+    // ...depois aplica o efeito do item (sem tocar em coins — já debitado).
+    const { error } = await supabase.from("user_progress").update(updates).eq("user_id", user.id);
     if (!error) {
-       setCoins(newCoins);
+       if (typeof newBalance === "number") setCoins(newBalance);
        if (updates.lives) setLives(updates.lives);
        if (updates.streak_freeze_count) setStreakFreezeCount(updates.streak_freeze_count);
        if (updates.xp_boost_expires_at) setXpBoostExpiresAt(updates.xp_boost_expires_at);
