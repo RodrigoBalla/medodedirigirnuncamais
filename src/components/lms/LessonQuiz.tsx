@@ -39,7 +39,7 @@ export function LessonQuiz({
 
   if (!questions) {
     return (
-      <div className="fixed inset-0 z-[300] bg-background/95 backdrop-blur-sm flex items-center justify-center">
+      <div className="fixed inset-0 z-[300] bg-background flex items-center justify-center">
         <div className="animate-spin size-10 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -67,7 +67,7 @@ export function LessonQuiz({
     const pct = Math.round((result.correct / result.total) * 100);
     const great = pct >= 67;
     return (
-      <div className="fixed inset-0 z-[300] bg-background/97 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[300] bg-background flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -110,7 +110,7 @@ export function LessonQuiz({
 
   // ── Perguntas ──
   return (
-    <div className="fixed inset-0 z-[300] bg-background/97 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[300] bg-background flex items-center justify-center p-4 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

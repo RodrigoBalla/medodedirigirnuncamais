@@ -31,7 +31,7 @@ export function PurchaseSurvey({ onDone }: { onDone: () => void }) {
 
   if (!questions) {
     return (
-      <div className="fixed inset-0 z-[300] bg-background/95 backdrop-blur-sm flex items-center justify-center">
+      <div className="fixed inset-0 z-[300] bg-background flex items-center justify-center">
         <div className="animate-spin size-10 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -79,7 +79,7 @@ export function PurchaseSurvey({ onDone }: { onDone: () => void }) {
     selected === OTHER ? (otherText[q.id] || "").trim().length > 0 : !!selected;
 
   return (
-    <div className="fixed inset-0 z-[300] bg-background/97 backdrop-blur-md flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[300] bg-background flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
