@@ -164,14 +164,19 @@ export function LessonQuiz({
             transition={{ type: "spring", stiffness: 200, damping: 11, delay: 0.1 }}
             className={`relative mx-auto size-24 rounded-full flex items-center justify-center mb-4 ${zero ? "bg-primary/15" : "bg-[hsl(var(--success)/0.15)]"}`}
           >
-            <span className={`material-symbols-outlined text-6xl filled-icon ${zero ? "text-primary" : "text-[hsl(var(--success))]"}`}>
-              {zero ? "volunteering" : perfect ? "emoji_events" : "workspace_premium"}
-            </span>
+            {zero ? (
+              // emoji (à prova de falha) — o Material Symbol "volunteering" não vinha na fonte
+              <span className="text-5xl leading-none" role="img" aria-label="Força">💪</span>
+            ) : (
+              <span className="material-symbols-outlined text-6xl filled-icon text-[hsl(var(--success))]">
+                {perfect ? "emoji_events" : "workspace_premium"}
+              </span>
+            )}
           </motion.div>
 
           {/* título */}
           <h2 className="relative text-2xl font-black text-foreground mb-1 text-balance leading-tight">
-            {zero ? "Quase lá... 💪" : perfect ? "GABARITOU! 🏆" : `Parabéns${nome ? `, ${nome}` : ""}! 🎉`}
+            {zero ? "Quase lá..." : perfect ? "GABARITOU! 🏆" : `Parabéns${nome ? `, ${nome}` : ""}! 🎉`}
           </h2>
           <p className="relative text-base font-black text-primary mb-3">
             {zero ? "Você tá quase!" : perfect ? "Você foi impecável!" : "Muito bem!"}
