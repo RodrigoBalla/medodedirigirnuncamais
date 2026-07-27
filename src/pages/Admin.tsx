@@ -20,8 +20,9 @@ import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { NpsTab } from "@/components/admin/NpsTab";
 import { getLevelInfo } from "@/lib/levels";
 import { TrafegoTab } from "@/components/admin/TrafegoTab";
+import { AproveitamentoTab } from "@/components/admin/AproveitamentoTab";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego" | "aproveitamento";
 
 interface AccessGroup {
   id: string;
@@ -669,6 +670,7 @@ export default function Admin() {
     { key: "notifications", icon: "campaign", label: "Notificações" },
     { key: "messages", icon: "chat", label: "Mensagens" },
     { key: "nps", icon: "insights", label: "Pesquisa NPS" },
+    { key: "aproveitamento", icon: "school", label: "Aproveitamento" },
     { key: "comments", icon: "forum", label: "Comentários" },
     { key: "reports", icon: "analytics", label: "Relatórios" },
   ];
@@ -1700,6 +1702,7 @@ export default function Admin() {
 
           {tab === "nps" && <NpsTab />}
           {tab === "trafego" && <TrafegoTab />}
+          {tab === "aproveitamento" && <AproveitamentoTab />}
 
           {tab === "comments" && <CommentsModeration />}
 

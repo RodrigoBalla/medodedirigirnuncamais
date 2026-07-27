@@ -18,6 +18,9 @@ import { useVideoKeyboardShortcuts } from "@/hooks/useVideoKeyboardShortcuts";
 import { useTeacherOnline } from "@/hooks/useTeacherPresence";
 import { StreakBadge } from "./StreakBadge";
 import { useTrackMission } from "@/hooks/useTrackMission";
+import { PurchaseSurvey } from "./PurchaseSurvey";
+import { LessonQuiz } from "./LessonQuiz";
+import { getLearningState } from "@/lib/provas";
 
 interface Props {
   productId: string;
@@ -40,6 +43,17 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   const [showChallenge, setShowChallenge] = useState(false);
   const [showRoulette, setShowRoulette] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
+
+  // ─── Bloqueio: pesquisa de compra (após Aula 00) + provas (por aula) ─────────
+  // Fail-open: enquanto não carrega, nada trava. Aluna "antiga" (já concluiu
+  // aulas além da 00) é grandfathered — não é obrigada à pesquisa nem às provas
+  // retroativas.
+  const [gateLoaded, setGateLoaded] = useState(false);
+  const [surveyDone, setSurveyDone] = useState(false);
+  const [quizzedLessons, setQuizzedLessons] = useState<Set<string>>(new Set());
+  const [lessonsWithQuiz, setLessonsWithQuiz] = useState<Set<string>>(new Set());
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [quizLessonId, setQuizLessonId] = useState<string | null>(null);
 
   // Progresso individual de aula (resume position) — Map<lessonId, seconds>
   const [progressByLesson, setProgressByLesson] = useState<Map<string, number>>(new Map());
@@ -81,6 +95,19 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   useEffect(() => {
     loadCourse();
   }, [productId, user]);
+
+  // Carrega estado de aprendizado (pesquisa feita + provas feitas) pro bloqueio
+  useEffect(() => {
+    if (!user) return;
+    getLearningState()
+      .then((st) => {
+        setSurveyDone(!!st.survey_done);
+        setQuizzedLessons(new Set(st.quizzed_lessons || []));
+        setLessonsWithQuiz(new Set(st.lessons_with_quiz || []));
+        setGateLoaded(true);
+      })
+      .catch(() => setGateLoaded(true)); // fail-open
+  }, [user]);
 
   useEffect(() => {
      if (lives <= 0 && showChallenge) {
@@ -189,8 +216,9 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
     [user, trackProgress],
   );
 
-  // Marca aula como concluída no banco (lesson_progress) e dispara avanço
-  const handleLessonAutoComplete = useCallback(async () => {
+  // Marca aula como concluída no banco (lesson_progress) e dispara avanço.
+  // Função simples (não memoizada) pra ler sempre o estado atual do bloqueio.
+  const handleLessonAutoComplete = async () => {
     if (!activeLessonId || !user) return;
     if (isLessonCompleted(activeLessonId)) {
       // Já concluída — abre countdown direto
@@ -198,6 +226,10 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       if (idx >= 0 && idx < lessons.length - 1) setShowAutoplay(true);
       return;
     }
+    // Portão (pesquisa/prova) ANTES de concluir e avançar
+    const gIdx = lessons.findIndex((l) => l.id === activeLessonId);
+    const gLesson = lessons[gIdx];
+    if (gLesson && maybeGate(gLesson, gIdx)) return;
     try {
       await supabase.from('lesson_progress').upsert({
         user_id: user.id,
@@ -225,8 +257,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
     } else {
       toast("🎉 Parabéns! Você concluiu todas as aulas deste curso!");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLessonId, user, lessons]);
+  };
 
   function goToNextLesson() {
     setShowAutoplay(false);
@@ -249,6 +280,54 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
 
   const isLessonCompleted = (lessonId: string) => completedLessons.includes(lessonId);
 
+  // ─── Lógica de bloqueio ──────────────────────────────────────────────────────
+  // Aluna "nova" = ainda não concluiu nenhuma aula além da 00.
+  const isNewStudent = () => gateLoaded && !lessons.slice(1).some((l) => isLessonCompleted(l.id));
+
+  // Uma aula está trancada se: (index>0) e a pesquisa não foi feita (só pra aluna
+  // nova), OU alguma aula anterior tem prova ainda não feita (e não concluída).
+  const isLessonLocked = (index: number): boolean => {
+    if (!gateLoaded) return false;
+    if (index <= 0) return false;
+    if (!surveyDone && isNewStudent()) return true;
+    for (let j = 1; j < index; j++) {
+      const lj = lessons[j];
+      if (lj && lessonsWithQuiz.has(lj.id) && !quizzedLessons.has(lj.id) && !isLessonCompleted(lj.id)) return true;
+    }
+    return false;
+  };
+
+  // Ao concluir uma aula, decide se abre a pesquisa/prova ANTES de avançar.
+  // Retorna true se abriu um portão (o chamador NÃO deve avançar).
+  const maybeGate = (lesson: Lesson, index: number): boolean => {
+    if (!gateLoaded) return false;
+    if (index === 0 && !surveyDone && isNewStudent()) { setShowSurvey(true); return true; }
+    if (lessonsWithQuiz.has(lesson.id) && !quizzedLessons.has(lesson.id) && !isLessonCompleted(lesson.id)) {
+      setQuizLessonId(lesson.id);
+      return true;
+    }
+    return false;
+  };
+
+  // Pesquisa concluída → marca feita, conclui a Aula 00 e avança
+  const onSurveyDone = async () => {
+    setShowSurvey(false);
+    setSurveyDone(true);
+    const idx = lessons.findIndex((l) => l.id === activeLessonId);
+    if (activeLessonId && !isLessonCompleted(activeLessonId)) await completeLesson(activeLessonId);
+    if (idx >= 0 && idx < lessons.length - 1) setActiveLessonId(lessons[idx + 1].id);
+  };
+
+  // Prova concluída → marca prova feita, conclui a aula e avança
+  const onQuizDone = async () => {
+    const lessonId = quizLessonId;
+    setQuizLessonId(null);
+    if (lessonId) setQuizzedLessons((prev) => new Set(prev).add(lessonId));
+    const idx = lessons.findIndex((l) => l.id === lessonId);
+    if (lessonId && !isLessonCompleted(lessonId)) await completeLesson(lessonId);
+    if (idx >= 0 && idx < lessons.length - 1) setActiveLessonId(lessons[idx + 1].id);
+  };
+
   const handleLoseLife = async () => {
      await loseLife();
      if (lives <= 1) {
@@ -268,13 +347,17 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
 
   const handleMarkCompleted = async () => {
     if (!activeLessonId || !user) return;
-    
+
+    const currentIndex = lessons.findIndex(l => l.id === activeLessonId);
+    const cur = lessons[currentIndex];
+    // Portão (pesquisa/prova) ANTES de concluir e avançar
+    if (cur && maybeGate(cur, currentIndex)) return;
+
     if (!isLessonCompleted(activeLessonId)) {
       await completeLesson(activeLessonId);
     }
 
     // Advance
-    const currentIndex = lessons.findIndex(l => l.id === activeLessonId);
     if (currentIndex >= 0 && currentIndex < lessons.length - 1) {
        setActiveLessonId(lessons[currentIndex + 1].id);
     } else {
@@ -313,6 +396,16 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          {showRoulette && <LuckRoulette onComplete={onRouletteComplete} />}
          {showGameOver && <GameOverModal onBack={onBack} onReset={() => setShowGameOver(false)} />}
       </AnimatePresence>
+
+      {/* Pesquisa de compra (bloqueante, após Aula 00) + Prova da aula (bloqueante) */}
+      {showSurvey && <PurchaseSurvey onDone={onSurveyDone} />}
+      {quizLessonId && (
+         <LessonQuiz
+            lessonId={quizLessonId}
+            lessonTitle={lessons.find((l) => l.id === quizLessonId)?.title || ""}
+            onDone={onQuizDone}
+         />
+      )}
 
       {/* Aviso anti-pirataria: detecção de DevTools / captura de tela.
           Não bloqueia a aula, mas exibe aviso "esta sessão está sendo monitorada"
@@ -557,30 +650,40 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
                                 {modLessons.map((lesson, idx) => {
                                    const isActive = activeLessonId === lesson.id;
                                    const isDone = isLessonCompleted(lesson.id);
+                                   const gIdx = lessons.findIndex((l) => l.id === lesson.id);
+                                   const locked = isLessonLocked(gIdx);
                                    return (
-                                      <button 
-                                        key={lesson.id} 
+                                      <button
+                                        key={lesson.id}
                                         onClick={() => {
+                                            if (locked) {
+                                               toast(!surveyDone && isNewStudent()
+                                                  ? "Responda a pesquisa rapidinha pra liberar as aulas 💛"
+                                                  : "Faça a prova da aula anterior pra liberar esta 😉");
+                                               return;
+                                            }
                                             setActiveLessonId(lesson.id);
                                             setShowChallenge(false);
                                         }}
                                         className={`flex items-start gap-4 px-5 py-4 text-left transition-all relative ${
-                                           isActive 
-                                             ? 'bg-primary/5 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary' 
+                                           isActive
+                                             ? 'bg-primary/5 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary'
+                                             : locked ? 'opacity-55 hover:bg-accent/30 cursor-not-allowed'
                                              : 'hover:bg-accent/50'
                                         }`}
                                       >
                                          <div className={`mt-0.5 size-8 rounded-full flex items-center justify-center shrink-0 transition-all border-2 ${
-                                           isActive && !isDone ? 'border-primary bg-background text-primary shadow-lg shadow-primary/30 scale-110' 
-                                           : isDone ? 'border-[hsl(var(--success))] bg-[hsl(var(--success))] text-white shadow-md' 
+                                           locked ? 'border-muted-foreground/25 bg-muted text-muted-foreground'
+                                           : isActive && !isDone ? 'border-primary bg-background text-primary shadow-lg shadow-primary/30 scale-110'
+                                           : isDone ? 'border-[hsl(var(--success))] bg-[hsl(var(--success))] text-white shadow-md'
                                            : 'border-muted-foreground/30 bg-background text-muted-foreground'
                                          }`}>
-                                            <span className={`material-symbols-outlined text-[16px] ${isDone || isActive ? 'filled-icon' : ''}`}>
-                                               {isDone ? 'check' : lesson.video_url ? 'play_arrow' : 'article'}
+                                            <span className={`material-symbols-outlined text-[16px] ${(isDone || isActive) && !locked ? 'filled-icon' : ''}`}>
+                                               {locked ? 'lock' : isDone ? 'check' : lesson.video_url ? 'play_arrow' : 'article'}
                                             </span>
                                          </div>
                                          <div className="flex-1 pt-1.5">
-                                            <p className={`text-sm font-bold leading-tight ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                                            <p className={`text-sm font-bold leading-tight ${isActive ? 'text-primary' : locked ? 'text-muted-foreground' : 'text-foreground'}`}>
                                                {lesson.title}
                                             </p>
                                          </div>
