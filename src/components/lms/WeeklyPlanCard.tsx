@@ -5,6 +5,11 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
 import { flyCoins } from "@/lib/coinFly";
+import { supabase } from "@/integrations/supabase/client";
+
+// Tabela/RPC novas ainda não estão nos types gerados → cast localizado.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 // Recompensa em moedas por TIPO de tarefa (cada tarefa tem a sua).
 // Prefixo do id do passo (practice/lesson/mission) → moedas. Total da semana = 50.
@@ -200,26 +205,53 @@ function formatCountdown(ms: number): string {
 
 export function WeeklyPlanCard() {
   const { user } = useAuth();
-  const { addCoins } = useUserProgress();
+  const { refreshProgress } = useUserProgress();
   const navigate = useNavigate();
   const weekId = useMemo(() => getWeekId(), []);
   const journey = useMemo(() => getJourneyForWeek(weekId), [weekId]);
 
-  // Estado dos checks — persistido em localStorage por user+semana.
+  // Estado dos checks — persistido no BANCO por user+semana (cross-device).
   // Uma tarefa concluída SOME da lista (não dá pra desmarcar).
-  const storageKey = user ? `mddnm:weekly:${user.id}:${weekId}` : null;
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   // Só true quando a aluna fecha a última tarefa AGORA — a celebração aparece
   // nesse momento e não se repete nas próximas visitas (aí vira barra slim).
   const [justCompleted, setJustCompleted] = useState(false);
 
   useEffect(() => {
-    if (!storageKey) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) setChecked(JSON.parse(raw));
-    } catch {}
-  }, [storageKey]);
+    if (!user) return;
+    let active = true;
+    (async () => {
+      // 1) Migra concluídos antigos do localStorage → banco (SEM re-creditar:
+      //    as moedas já foram dadas no dispositivo onde foram marcados).
+      const legacyKey = `mddnm:weekly:${user.id}:${weekId}`;
+      try {
+        const raw = localStorage.getItem(legacyKey);
+        const legacy = raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+        const doneIds = Object.keys(legacy).filter((k) => legacy[k]);
+        if (doneIds.length) {
+          const rows = doneIds.map((step_id) => ({
+            user_id: user.id, week_id: weekId, step_id, reward: rewardForStep(step_id),
+          }));
+          await sb.from("weekly_plan_completions").upsert(rows, {
+            onConflict: "user_id,week_id,step_id", ignoreDuplicates: true,
+          });
+          localStorage.removeItem(legacyKey); // migrado; não repete
+        }
+      } catch { /* localStorage indisponível/JSON inválido → ignora */ }
+
+      // 2) Carrega do banco (fonte de verdade, igual em todos os dispositivos).
+      const { data } = await sb
+        .from("weekly_plan_completions")
+        .select("step_id")
+        .eq("user_id", user.id)
+        .eq("week_id", weekId);
+      if (!active) return;
+      const map: Record<string, boolean> = {};
+      (data ?? []).forEach((r: { step_id: string }) => { map[r.step_id] = true; });
+      setChecked(map);
+    })();
+    return () => { active = false; };
+  }, [user, weekId]);
 
   // Conclui uma tarefa: anima as moedas daquela tarefa subindo pro saldo,
   // credita a recompensa (1x — guardado pelo próprio `checked`) e some da lista.
@@ -227,19 +259,29 @@ export function WeeklyPlanCard() {
     if (checked[step.id]) return; // já concluída
     const reward = rewardForStep(step.id);
     const next = { ...checked, [step.id]: true };
-    setChecked(next);
-    if (storageKey) {
-      try { localStorage.setItem(storageKey, JSON.stringify(next)); } catch {}
-    }
+    setChecked(next); // otimista (o banco confirma no onDone)
     // Fechou a última tarefa agora? mostra a celebração só nesta visita.
     if (journey.every((s) => next[s.id])) setJustCompleted(true);
     flyCoins({
       fromEl: originEl,
       count: Math.max(8, Math.round(reward / 2)),
       label: `+${reward}`,
-      onDone: () => {
-        void addCoins(reward);
-        toast.success(`+${reward} moedas! 💛`);
+      onDone: async () => {
+        // Persiste + credita no servidor (idempotente: 1 crédito por passo/semana).
+        const { data, error } = await sb.rpc("complete_weekly_step", {
+          p_week_id: weekId, p_step_id: step.id,
+        });
+        if (error) {
+          // Falhou → reverte o check pra não mostrar "feito" fantasma.
+          setChecked((prev) => { const c = { ...prev }; delete c[step.id]; return c; });
+          setJustCompleted(false);
+          toast.error("Não consegui salvar. Tenta de novo?");
+          return;
+        }
+        if (data?.credited) {
+          toast.success(`+${data.reward ?? reward} moedas! 💛`);
+        }
+        await refreshProgress(); // sincroniza o saldo do header
       },
     });
   };
