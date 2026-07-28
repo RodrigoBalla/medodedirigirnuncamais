@@ -595,13 +595,9 @@ const DrivingApp = () => {
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Daily Bonus Grid */}
         <div id="onboarding-daily-bonus" className="mb-6">
-          <DailyBonusGrid 
-            currentStreak={streak} 
-            onClaimBonus={(day, reward) => {
-              if (reward.type === "coins") addCoins(reward.amount);
-              if (reward.type === "xp") addXP(reward.amount);
-            }}
-          />
+          {/* Crédito do bônus é server-side (RPC idempotente claim_daily_bonus),
+              persiste no banco e sincroniza mobile/web — não credita mais aqui. */}
+          <DailyBonusGrid currentStreak={streak} />
         </div>
 
         <div className="mb-6">

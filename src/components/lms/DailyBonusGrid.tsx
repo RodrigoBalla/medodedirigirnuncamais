@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserProgress } from "@/contexts/UserProgressContext";
+import { supabase } from "@/integrations/supabase/client";
 import { playCoinSound, playStreakSound } from "@/lib/sounds";
+
+// Tabela/RPC novas ainda não estão nos types gerados → cast localizado.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
 
 interface DailyBonusGridProps {
   currentStreak: number;
-  onClaimBonus: (day: number, reward: { type: string; amount: number }) => void;
 }
 
 const DAILY_REWARDS = [
@@ -17,25 +23,76 @@ const DAILY_REWARDS = [
   { day: 7, icon: "diamond", label: "BAÚ!", type: "chest", amount: 100, color: "text-cyan-400" },
 ];
 
-export function DailyBonusGrid({ currentStreak, onClaimBonus }: DailyBonusGridProps) {
+/** Dia-calendário em America/Sao_Paulo no formato YYYY-MM-DD — bate com a
+ *  claim_date que a RPC grava (independe do fuso do aparelho da aluna). */
+function spToday(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
+
+// ─── Bônus Diário ────────────────────────────────────────────────────────────
+// Escadinha de 7 dias de streak. O "já resgatei hoje" e o CRÉDITO da recompensa
+// vivem no BANCO (não mais em localStorage), então:
+//   • sincroniza entre mobile e web (fonte de verdade única);
+//   • a aluna NÃO consegue mais resgatar em dobro (uma vez no cel, outra na web).
+// A RPC claim_daily_bonus() é idempotente (1 crédito por dia) e decide a
+// recompensa pelo streak no servidor. Migração do localStorage antigo é feita no
+// mount, SEM re-creditar (as moedas já foram dadas no dispositivo antigo).
+// =============================================================================
+export function DailyBonusGrid({ currentStreak }: DailyBonusGridProps) {
+  const { user } = useAuth();
+  const { refreshProgress } = useUserProgress();
   const [claimedToday, setClaimedToday] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const todaySlot = Math.min(currentStreak, 7);
 
   useEffect(() => {
-    const lastClaim = localStorage.getItem("daily_bonus_claimed");
-    if (lastClaim === new Date().toDateString()) {
-      setClaimedToday(true);
-    }
-  }, []);
+    if (!user) return;
+    let active = true;
+    (async () => {
+      const today = spToday();
 
-  const handleClaim = (dayIndex: number) => {
-    if (claimedToday || dayIndex + 1 !== todaySlot) return;
-    const reward = DAILY_REWARDS[dayIndex];
+      // 1) Migra o "resgatado hoje" do localStorage → banco (SEM re-creditar).
+      //    A chave legada era global (não por user): só migra se for de hoje.
+      try {
+        const legacy = localStorage.getItem("daily_bonus_claimed");
+        if (legacy && legacy === new Date().toDateString()) {
+          await sb.from("daily_bonus_claims").upsert(
+            { user_id: user.id, claim_date: today, reward_type: "legacy" },
+            { onConflict: "user_id,claim_date", ignoreDuplicates: true },
+          );
+        }
+        if (legacy) localStorage.removeItem("daily_bonus_claimed"); // migrado; não repete
+      } catch { /* localStorage indisponível → ignora */ }
+
+      // 2) Carrega do banco (fonte de verdade, igual em todos os dispositivos).
+      const { data } = await sb
+        .from("daily_bonus_claims")
+        .select("claim_date")
+        .eq("user_id", user.id)
+        .eq("claim_date", today)
+        .maybeSingle();
+      if (!active) return;
+      setClaimedToday(!!data);
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  const handleClaim = async (dayIndex: number) => {
+    if (claimedToday || claiming || dayIndex + 1 !== todaySlot) return;
+    setClaiming(true);
+    // Otimista: trava o botão já (a RPC confirma/reverte logo abaixo).
+    setClaimedToday(true);
     playCoinSound();
     setTimeout(() => playStreakSound(), 300);
-    onClaimBonus(dayIndex + 1, { type: reward.type, amount: reward.amount });
-    setClaimedToday(true);
-    localStorage.setItem("daily_bonus_claimed", new Date().toDateString());
+    const { data, error } = await sb.rpc("claim_daily_bonus");
+    if (data?.credited) {
+      await refreshProgress(); // sincroniza moedas/XP do header
+    } else if (error || data?.reason !== "already_claimed") {
+      // Erro real (ou nada a resgatar) → reabre pra tentar de novo. Se já estava
+      // resgatado (outro dispositivo), mantém travado — está correto.
+      setClaimedToday(false);
+    }
+    setClaiming(false);
   };
 
   return (
@@ -56,7 +113,6 @@ export function DailyBonusGrid({ currentStreak, onClaimBonus }: DailyBonusGridPr
           const isPast = i + 1 < todaySlot;
           const isToday = i + 1 === todaySlot && !claimedToday;
           const isClaimed = i + 1 === todaySlot && claimedToday;
-          const isFuture = i + 1 > todaySlot;
 
           return (
             <motion.button

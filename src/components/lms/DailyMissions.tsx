@@ -1,30 +1,68 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/contexts/UserProgressContext";
+import { supabase } from "@/integrations/supabase/client";
 import { playCoinSound, playCheckSound } from "@/lib/sounds";
 import { toast } from "sonner";
 
+// Tabela/RPC novas ainda não estão nos types gerados → cast localizado.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sb = supabase as any;
+
+/** Dia-calendário em America/Sao_Paulo (YYYY-MM-DD) — bate com a claim_date da RPC. */
+function spToday(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
+
+// ─── Missões Diárias ─────────────────────────────────────────────────────────
+// O "já resgatei" e o CRÉDITO de cada missão vivem no BANCO (não mais em
+// localStorage): sincroniza mobile/web e a aluna não resgata em dobro. A RPC
+// claim_daily_mission() é idempotente (1 crédito por dia/missão) e valida
+// server-side que a missão está mesmo cumprida. Migração do localStorage antigo
+// no mount, SEM re-creditar.
+// =============================================================================
 export function DailyMissions() {
-  const { dailyXP, dailyLessons, streak, addCoins, addXP } = useUserProgress();
+  const { user } = useAuth();
+  const { dailyXP, dailyLessons, streak, refreshProgress } = useUserProgress();
   const [claimed, setClaimed] = useState<string[]>([]);
+  const [claiming, setClaiming] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load claimed from localStorage. Reset if day changed.
-    const lastClaimDate = localStorage.getItem("daily_missions_date");
-    const today = new Date().toDateString();
-    if (lastClaimDate !== today) {
-      localStorage.setItem("daily_missions_date", today);
-      localStorage.setItem("daily_missions_claimed", JSON.stringify([]));
-      setClaimed([]);
-    } else {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      const today = spToday();
+
+      // 1) Migra o "resgatado hoje" do localStorage → banco (SEM re-creditar).
       try {
-        const stored = JSON.parse(localStorage.getItem("daily_missions_claimed") || "[]");
-        setClaimed(stored);
-      } catch {
-        setClaimed([]);
-      }
-    }
-  }, []);
+        const lastDate = localStorage.getItem("daily_missions_date");
+        if (lastDate === new Date().toDateString()) {
+          const stored: string[] = JSON.parse(localStorage.getItem("daily_missions_claimed") || "[]");
+          if (Array.isArray(stored) && stored.length) {
+            await sb.from("daily_mission_claims").upsert(
+              stored.map((mission_id) => ({
+                user_id: user.id, claim_date: today, mission_id, reward_type: "legacy",
+              })),
+              { onConflict: "user_id,claim_date,mission_id", ignoreDuplicates: true },
+            );
+          }
+        }
+        localStorage.removeItem("daily_missions_date");    // migrado; não repete
+        localStorage.removeItem("daily_missions_claimed");
+      } catch { /* localStorage indisponível/JSON inválido → ignora */ }
+
+      // 2) Carrega do banco os resgates de hoje (fonte de verdade).
+      const { data } = await sb
+        .from("daily_mission_claims")
+        .select("mission_id")
+        .eq("user_id", user.id)
+        .eq("claim_date", today);
+      if (!active) return;
+      setClaimed((data ?? []).map((r: { mission_id: string }) => r.mission_id));
+    })();
+    return () => { active = false; };
+  }, [user]);
 
   const missions = [
     {
@@ -56,27 +94,34 @@ export function DailyMissions() {
     },
   ];
 
-  const handleClaim = (missionId: string, rewardType: string, rewardAmount: number) => {
-    if (claimed.includes(missionId)) return;
-    
-    // Play sounds and animations
+  const handleClaim = async (missionId: string, rewardType: string, rewardAmount: number) => {
+    if (claimed.includes(missionId) || claiming) return;
+    setClaiming(missionId);
+    // Otimista: marca resgatado já (a RPC confirma/reverte logo abaixo).
+    setClaimed((prev) => [...prev, missionId]);
+
     playCoinSound();
     setTimeout(() => playCheckSound(), 200);
-    
-    // Add rewards
-    if (rewardType === "coins") {
-      addCoins(rewardAmount);
-      toast.success("Missão Concluída! 🎯", { description: `+${rewardAmount} moedas`, icon: "🪙" });
-    } else {
-      addXP(rewardAmount);
-      // addXP already throws a toast sometimes, but a direct toast is good:
-      toast.success("Missão Concluída! 🎯", { description: `+${rewardAmount} XP`, icon: "⚡" });
+
+    const { data, error } = await sb.rpc("claim_daily_mission", { p_mission_id: missionId });
+    if (!data?.credited) {
+      // Não creditou. Se foi erro ou a missão não estava cumprida no servidor,
+      // reverte o otimismo. Se já estava resgatada (outro dispositivo), mantém
+      // marcada — está resgatada de verdade, só não creditou de novo.
+      if (error || data?.reason !== "already_claimed") {
+        setClaimed((prev) => prev.filter((id) => id !== missionId));
+      }
+      setClaiming(null);
+      return;
     }
 
-    // Save claim state
-    const newClaimed = [...claimed, missionId];
-    setClaimed(newClaimed);
-    localStorage.setItem("daily_missions_claimed", JSON.stringify(newClaimed));
+    if (rewardType === "coins") {
+      toast.success("Missão Concluída! 🎯", { description: `+${rewardAmount} moedas`, icon: "🪙" });
+    } else {
+      toast.success("Missão Concluída! 🎯", { description: `+${rewardAmount} XP`, icon: "⚡" });
+    }
+    await refreshProgress(); // sincroniza moedas/XP do header
+    setClaiming(null);
   };
 
   return (
@@ -117,13 +162,14 @@ export function DailyMissions() {
                   )}
                 </div>
               </div>
-              
+
               {canClaim && (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
+                  disabled={claiming === m.id}
                   onClick={() => handleClaim(m.id, m.rewardType, m.rewardAmount)}
-                  className="relative z-10 mt-1 w-full bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20 animate-pulse"
+                  className="relative z-10 mt-1 w-full bg-primary text-primary-foreground font-black text-[11px] uppercase tracking-wider py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20 animate-pulse disabled:opacity-60"
                 >
                   Resgatar Recompensa
                 </motion.button>
