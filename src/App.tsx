@@ -19,6 +19,7 @@ import PreviewAlert from "./pages/PreviewAlert";
 import Pesquisa from "./pages/Pesquisa";
 import { CarCursor } from "./components/CarCursor";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AppUpdateWatcher } from "./components/AppUpdateWatcher";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <AppUpdateWatcher />
         {/* <CarCursor /> — cursor de carro desativado temporariamente; reativar quando quiser */}
         <AuthProvider>
           <UserProgressProvider>
