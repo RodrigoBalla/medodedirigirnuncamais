@@ -496,6 +496,60 @@ export type Database = {
           },
         ]
       }
+      daily_bonus_claims: {
+        Row: {
+          claim_date: string
+          created_at: string
+          reward_amount: number | null
+          reward_type: string | null
+          slot: number | null
+          user_id: string
+        }
+        Insert: {
+          claim_date: string
+          created_at?: string
+          reward_amount?: number | null
+          reward_type?: string | null
+          slot?: number | null
+          user_id: string
+        }
+        Update: {
+          claim_date?: string
+          created_at?: string
+          reward_amount?: number | null
+          reward_type?: string | null
+          slot?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_mission_claims: {
+        Row: {
+          claim_date: string
+          created_at: string
+          mission_id: string
+          reward_amount: number | null
+          reward_type: string | null
+          user_id: string
+        }
+        Insert: {
+          claim_date: string
+          created_at?: string
+          mission_id: string
+          reward_amount?: number | null
+          reward_type?: string | null
+          user_id: string
+        }
+        Update: {
+          claim_date?: string
+          created_at?: string
+          mission_id?: string
+          reward_amount?: number | null
+          reward_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_wheel_prizes: {
         Row: {
           active: boolean
@@ -786,6 +840,7 @@ export type Database = {
           notes: string | null
           pending_group_ids: string[] | null
           product_id: string | null
+          refunded_at: string | null
         }
         Insert: {
           email: string
@@ -793,6 +848,7 @@ export type Database = {
           notes?: string | null
           pending_group_ids?: string[] | null
           product_id?: string | null
+          refunded_at?: string | null
         }
         Update: {
           email?: string
@@ -800,6 +856,7 @@ export type Database = {
           notes?: string | null
           pending_group_ids?: string[] | null
           product_id?: string | null
+          refunded_at?: string | null
         }
         Relationships: [
           {
@@ -1482,6 +1539,139 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_survey_questions: {
+        Row: {
+          active: boolean
+          allow_other: boolean
+          created_at: string
+          id: string
+          options: Json
+          order_index: number
+          question: string
+        }
+        Insert: {
+          active?: boolean
+          allow_other?: boolean
+          created_at?: string
+          id?: string
+          options?: Json
+          order_index?: number
+          question: string
+        }
+        Update: {
+          active?: boolean
+          allow_other?: boolean
+          created_at?: string
+          id?: string
+          options?: Json
+          order_index?: number
+          question?: string
+        }
+        Relationships: []
+      }
+      purchase_survey_responses: {
+        Row: {
+          answers: Json
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          correct_count: number
+          created_at: string
+          id: string
+          lesson_id: string
+          passed: boolean
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          correct_count?: number
+          created_at?: string
+          id?: string
+          lesson_id: string
+          passed?: boolean
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          correct_count?: number
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          passed?: boolean
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          id: string
+          lesson_id: string
+          options: Json
+          order_index: number
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          correct_index?: number
+          created_at?: string
+          id?: string
+          lesson_id: string
+          options?: Json
+          order_index?: number
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          options?: Json
+          order_index?: number
+          question?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_requests: {
         Row: {
           admin_notes: string | null
@@ -1670,6 +1860,54 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_plan_completions: {
+        Row: {
+          created_at: string
+          id: string
+          reward: number
+          step_id: string
+          user_id: string
+          week_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reward?: number
+          step_id: string
+          user_id: string
+          week_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reward?: number
+          step_id?: string
+          user_id?: string
+          week_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_welcome_log: {
+        Row: {
+          created_at: string
+          phone: string
+          sent_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+          sent_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+          sent_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_student_events: {
@@ -1691,6 +1929,10 @@ export type Database = {
     }
     Functions: {
       _is_admin: { Args: never; Returns: boolean }
+      add_coins: {
+        Args: { p_amount: number; p_reason?: string }
+        Returns: number
+      }
       admin_activity_candles: {
         Args: { p_days?: number }
         Returns: {
@@ -1702,6 +1944,7 @@ export type Database = {
           total_count: number
         }[]
       }
+      admin_aproveitamento: { Args: never; Returns: Json }
       admin_completion_by_course: {
         Args: never
         Returns: {
@@ -1858,6 +2101,7 @@ export type Database = {
           is_blocked: boolean
           lives: number
           phone: string
+          refunded: boolean
           streak: number
           total_xp: number
           user_id: string
@@ -1910,6 +2154,7 @@ export type Database = {
           total_xp_sum: number
         }[]
       }
+      admin_purchase_survey_summary: { Args: never; Returns: Json }
       admin_recent_events: {
         Args: { p_limit?: number }
         Returns: {
@@ -1957,6 +2202,14 @@ export type Database = {
         Args: { p_phone: string; p_user_id: string }
         Returns: Json
       }
+      admin_set_student_refunded: {
+        Args: { p_refunded: boolean; p_user_id: string }
+        Returns: {
+          affected: number
+          ok: boolean
+          refunded: boolean
+        }[]
+      }
       admin_set_user_access_status: {
         Args: { p_status: string; p_user_id: string }
         Returns: {
@@ -1964,6 +2217,7 @@ export type Database = {
           ok: boolean
         }[]
       }
+      admin_student_quiz_detail: { Args: { p_user_id: string }; Returns: Json }
       admin_toggle_student_blocked: {
         Args: { p_blocked: boolean; p_user_id: string }
         Returns: undefined
@@ -1994,6 +2248,8 @@ export type Database = {
       }
       check_enrollment: { Args: { p_email: string }; Returns: boolean }
       check_existing_user: { Args: { p_email: string }; Returns: Json }
+      claim_daily_bonus: { Args: never; Returns: Json }
+      claim_daily_mission: { Args: { p_mission_id: string }; Returns: Json }
       claim_first_access_token: {
         Args: { p_token: string }
         Returns: {
@@ -2011,6 +2267,10 @@ export type Database = {
           ok: boolean
           total_balance: number
         }[]
+      }
+      complete_weekly_step: {
+        Args: { p_step_id: string; p_week_id: string }
+        Returns: Json
       }
       consume_first_access_token: {
         Args: { p_token: string }
@@ -2054,7 +2314,17 @@ export type Database = {
         Args: { p_product_id: string; p_product_name: string }
         Returns: string[]
       }
+      get_lesson_quiz: {
+        Args: { p_lesson_id: string }
+        Returns: {
+          id: string
+          options: Json
+          order_index: number
+          question: string
+        }[]
+      }
       get_my_access_status: { Args: never; Returns: string }
+      get_my_learning_state: { Args: never; Returns: Json }
       get_my_nps_status: {
         Args: never
         Returns: {
@@ -2074,6 +2344,16 @@ export type Database = {
           id: string
           key: string
           title: string
+        }[]
+      }
+      get_purchase_survey: {
+        Args: never
+        Returns: {
+          allow_other: boolean
+          id: string
+          options: Json
+          order_index: number
+          question: string
         }[]
       }
       get_user_id_by_email: { Args: { p_email: string }; Returns: string }
@@ -2190,6 +2470,11 @@ export type Database = {
           balance: number
           reward_coins: number
         }[]
+      }
+      submit_purchase_survey: { Args: { p_answers: Json }; Returns: undefined }
+      submit_quiz: {
+        Args: { p_answers: Json; p_lesson_id: string }
+        Returns: Json
       }
       tick_user_streak: {
         Args: never

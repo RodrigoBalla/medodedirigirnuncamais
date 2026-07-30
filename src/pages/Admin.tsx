@@ -48,6 +48,7 @@ interface StudentData {
   badges: string[];
   is_blocked: boolean;
   access_status?: "active" | "expired";
+  refunded?: boolean;
   groups: AccessGroup[];
 }
 
@@ -224,6 +225,7 @@ export default function Admin() {
       groups: Array<{ id: string; name: string }>;
       total_xp: number; coins: number; lives: number; streak: number;
       completed_phases: number[]; badges: unknown; daily_xp: number; confidence: number;
+      access_status: string | null; refunded: boolean | null;
     }>;
     const merged: StudentData[] = rows.map((r) => ({
       user_id: r.user_id,
@@ -233,6 +235,8 @@ export default function Admin() {
       avatar_url: r.avatar_url,
       created_at: r.created_at,
       is_blocked: r.is_blocked || false,
+      access_status: r.access_status === "expired" ? "expired" : "active",
+      refunded: r.refunded || false,
       groups: r.groups || [],
       completed_phases: r.completed_phases || [],
       total_xp: r.total_xp || 0,
@@ -336,6 +340,48 @@ export default function Admin() {
       confirmLabel: "Marcar como expirada",
       variant: "warning",
       onConfirm: () => doSetAccessStatus(userId, "expired"),
+    });
+  }
+
+  // ─── Reembolso ───────────────────────────────────────────────────────
+  // Marca (ou desmarca) TODAS as compras do email do aluno como reembolsadas
+  // (enrolled_emails.refunded_at). Isso tira a receita dele do painel de
+  // tráfego (Resultado = receita líquida − gasto) e conta no contador de
+  // reembolsos. Por decisão do Balla, também EXPIRA o acesso (desfazer reativa).
+  async function doSetRefunded(userId: string, refunded: boolean) {
+    // @ts-ignore — RPC nova, types podem não estar regenerados ainda
+    const { data, error } = await supabase.rpc("admin_set_student_refunded", {
+      p_user_id: userId,
+      p_refunded: refunded,
+    });
+    if (error) {
+      toast.error("Erro ao alterar reembolso", { description: error.message });
+      return;
+    }
+    const affected = (data as unknown as Array<{ affected: number }>)?.[0]?.affected ?? 0;
+    toast.success(
+      refunded ? "Aluno marcado como reembolso" : "Reembolso desfeito",
+      {
+        description: refunded
+          ? `${affected} compra(s) descontada(s) do lucro no painel de tráfego · acesso expirado`
+          : "Compras voltam pro lucro · acesso reativado",
+      },
+    );
+    fetchStudents();
+  }
+
+  function toggleRefund(userId: string, currentRefunded: boolean | undefined, studentName: string) {
+    if (currentRefunded) {
+      // Desfazer não precisa de confirmação
+      doSetRefunded(userId, false);
+      return;
+    }
+    setConfirmModal({
+      title: "Marcar como reembolso?",
+      message: `As compras de ${studentName} serão descontadas do lucro no painel de tráfego e contadas como reembolso. O acesso dele(a) também será marcado como EXPIRADO (verá a tela de renovação). Dá pra desfazer depois.`,
+      confirmLabel: "Marcar reembolso",
+      variant: "danger",
+      onConfirm: () => doSetRefunded(userId, true),
     });
   }
 
@@ -952,7 +998,13 @@ export default function Admin() {
                                <div className="flex items-center gap-2">
                                 <p className={`font-bold ${s.is_blocked ? "text-destructive line-through opacity-70" : ""}`}>{s.display_name}</p>
                                 {s.is_blocked && <span className="text-[9px] font-bold px-1.5 py-0.5 bg-destructive/10 text-destructive rounded uppercase">Inativo</span>}
-                                {s.access_status === "expired" && !s.is_blocked && (
+                                {s.refunded && !s.is_blocked && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-destructive/10 text-destructive rounded uppercase inline-flex items-center gap-1" title="Compras reembolsadas — descontadas do lucro no painel de tráfego">
+                                    <span className="material-symbols-outlined text-[10px]">undo</span>
+                                    Reembolsado
+                                  </span>
+                                )}
+                                {s.access_status === "expired" && !s.is_blocked && !s.refunded && (
                                   <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded uppercase inline-flex items-center gap-1">
                                     <span className="material-symbols-outlined text-[10px]">schedule</span>
                                     Expirado
@@ -1065,6 +1117,28 @@ export default function Admin() {
                               {s.access_status === "expired" ? "verified" : "schedule"}
                             </span>
                             {s.access_status === "expired" ? "Reativar acesso" : "Marcar expirada"}
+                          </button>
+
+                          {/* Marcar/desfazer reembolso. Desconta as compras do
+                              aluno do lucro no painel de tráfego + conta no
+                              contador de reembolsos. Também expira o acesso. */}
+                          <button
+                            onClick={() => toggleRefund(s.user_id, s.refunded, s.display_name)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${
+                              s.refunded
+                                ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.25)]"
+                                : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                            }`}
+                            title={
+                              s.refunded
+                                ? "Desfazer reembolso — volta a contar no lucro e reativa o acesso"
+                                : "Marcar como reembolso — desconta as compras do lucro no painel de tráfego, conta no contador e expira o acesso"
+                            }
+                          >
+                            <span className="material-symbols-outlined text-base">
+                              {s.refunded ? "undo" : "currency_exchange"}
+                            </span>
+                            {s.refunded ? "Desfazer reembolso" : "Marcar reembolso"}
                           </button>
 
                           {/* Copiar mensagem de primeiro acesso (personalizada + link) */}

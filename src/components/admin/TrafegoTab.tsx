@@ -17,10 +17,11 @@ interface MetaBlock {
 }
 interface AdRow { nome: string; gasto: number; impressoes: number; cliques: number; compras: number }
 interface Venda { email: string; nome: string | null; quando: string; valor: number | null }
+interface Reembolsos { total: number; valor: number; hoje: number; valor_hoje: number }
 interface Stats {
   ts?: string;
   inicio?: string;
-  vendas?: { hoje: number; receita_hoje: number; total: number; receita_total: number; lista: Venda[]; error?: string };
+  vendas?: { hoje: number; receita_hoje: number; total: number; receita_total: number; reembolsos?: Reembolsos; lista: Venda[]; error?: string };
   meta?: { hoje?: MetaBlock; total?: MetaBlock; anuncios_hoje?: AdRow[]; anuncios_total?: AdRow[]; error?: string };
 }
 
@@ -70,6 +71,8 @@ export function TrafegoTab() {
 
   const v = stats?.vendas;
   const m = stats?.meta;
+  // Reembolsos: já vêm descontados da receita (receita_total/hoje são LÍQUIDAS).
+  const reemb = v && !v.error ? v.reembolsos : null;
   const receitaTotal = v && !v.error ? v.receita_total : null;
   const gastoTotal = m?.total?.gasto ?? null;
   const receitaHoje = v && !v.error ? v.receita_hoje : null;
@@ -152,7 +155,9 @@ export function TrafegoTab() {
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">Receita total</p>
             <p className="text-xl xl:text-2xl font-black tabular-nums mt-1 text-primary">{receitaTotal != null ? brl(receitaTotal) : "—"}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{v?.total ?? 0} venda{(v?.total ?? 0) === 1 ? "" : "s"} · Eduzz (real)</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {v?.total ?? 0} venda{(v?.total ?? 0) === 1 ? "" : "s"} · Eduzz (real){reemb && reemb.total > 0 ? " · líquida de reembolsos" : ""}
+            </p>
           </div>
           <div>
             <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-muted-foreground">ROAS</p>
@@ -183,6 +188,30 @@ export function TrafegoTab() {
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {mediaVendasDia != null ? `média de ${mediaVendasDia.toFixed(1).replace(".", ",")} vendas/dia` : "desde 21/07"}
             </p>
+          </div>
+        </div>
+
+        {/* Contador de reembolsos da plataforma — já descontados do Resultado */}
+        <div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-destructive text-lg">undo</span>
+            <span className="text-[10px] font-extrabold tracking-[0.14em] uppercase text-muted-foreground">Reembolsos da plataforma</span>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm">
+            <span className="tabular-nums">
+              <b className={`text-lg ${reemb && reemb.total > 0 ? "text-destructive" : "text-foreground"}`}>{intBR(reemb?.total ?? 0)}</b>
+              <span className="text-muted-foreground"> reembolso{(reemb?.total ?? 0) === 1 ? "" : "s"}</span>
+            </span>
+            <span className="tabular-nums">
+              <span className="text-muted-foreground">valor </span>
+              <b className={reemb && reemb.valor > 0 ? "text-destructive" : "text-foreground"}>− {brl(reemb?.valor ?? 0)}</b>
+            </span>
+            {reemb && reemb.hoje > 0 && (
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {intBR(reemb.hoje)} hoje (− {brl(reemb.valor_hoje)})
+              </span>
+            )}
+            <span className="text-[11px] text-muted-foreground">já descontado do Resultado</span>
           </div>
         </div>
 

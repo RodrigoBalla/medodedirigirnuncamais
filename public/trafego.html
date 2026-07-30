@@ -121,6 +121,7 @@
         <div id="resultado"></div>
       </div>
       <div class="pgrid" id="placarGrid"></div>
+      <div class="hoje" id="reembRow"></div>
       <div class="hoje" id="hojeRow"></div>
       <div id="metaAviso"></div>
     </div>
@@ -169,6 +170,9 @@
     var gastoTotal = (m.total && m.total.gasto != null) ? m.total.gasto : null;
     var receitaHoje = (!v.error && v.receita_hoje != null) ? v.receita_hoje : null;
     var gastoHoje = (m.hoje && m.hoje.gasto != null) ? m.hoje.gasto : null;
+    // Reembolsos: já descontados da receita (receita_total/hoje são LÍQUIDAS).
+    var reemb = (!v.error && v.reembolsos) ? v.reembolsos : null;
+    var temReemb = reemb && reemb.total > 0;
 
     // ── PLACAR GERAL (desde o início) ──
     var roas = (receitaTotal != null && gastoTotal != null && gastoTotal > 0) ? receitaTotal / gastoTotal : null;
@@ -202,7 +206,7 @@
 
     document.getElementById('placarGrid').innerHTML =
       pcell('Investido total', gastoTotal != null ? brl(gastoTotal) : '—', '', 'Meta Ads · desde 21/07') +
-      pcell('Receita total', receitaTotal != null ? brl(receitaTotal) : '—', 'vyellow', (v.total||0) + ' venda' + (v.total===1?'':'s') + ' · Eduzz (real)') +
+      pcell('Receita total', receitaTotal != null ? brl(receitaTotal) : '—', 'vyellow', (v.total||0) + ' venda' + (v.total===1?'':'s') + ' · Eduzz (real)' + (temReemb ? ' · líquida de reembolsos' : '')) +
       pcell('ROAS', roas != null ? roas.toFixed(2) : '—', roas == null ? '' : (roas >= 1 ? 'vgreen' : 'vred'), 'receita ÷ investido') +
       pcell('Resultado', lucro != null ? brl(lucro) : '—', lucro == null ? '' : (lucro >= 0 ? 'vgreen' : 'vred'), 'receita − investido') +
       pcell('Conversão da página', convTotal != null ? convTotal.toFixed(1) + '%' : '—', 'vyellow', lpvTotal != null ? int(v.total) + ' vendas ÷ ' + int(lpvTotal) + ' visitas' : 'vendas ÷ visitas da página') +
@@ -218,6 +222,14 @@
       '<span>ROAS <b class="' + (roasHoje == null ? '' : (roasHoje >= 1 ? 'vgreen' : 'vred')) + '">' + (roasHoje != null ? roasHoje.toFixed(2) : '—') + '</b></span>' +
       '<span>Visitas <b>' + int(lpvHoje) + '</b></span>' +
       '<span>Conversão <b class="vyellow">' + (convHoje != null ? convHoje.toFixed(1) + '%' : '—') + '</b></span>';
+
+    // ── CONTADOR DE REEMBOLSOS DA PLATAFORMA (já descontado do Resultado) ──
+    document.getElementById('reembRow').innerHTML =
+      '<span class="hlbl">↩️ Reembolsos</span>' +
+      '<span><b class="' + (temReemb ? 'vred' : '') + '">' + int(reemb ? reemb.total : 0) + '</b> reembolso' + ((reemb && reemb.total === 1) ? '' : 's') + '</span>' +
+      '<span>Valor <b class="' + (temReemb ? 'vred' : '') + '">− ' + brl(reemb ? reemb.valor : 0) + '</b></span>' +
+      ((reemb && reemb.hoje > 0) ? '<span style="color:var(--ink3);font-size:12px">' + int(reemb.hoje) + ' hoje (− ' + brl(reemb.valor_hoje) + ')</span>' : '') +
+      '<span style="color:var(--ink3);font-size:12px">já descontado do Resultado</span>';
 
     var aviso = document.getElementById('metaAviso');
     if (m.error === 'missing_token') {
