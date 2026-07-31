@@ -17,7 +17,8 @@ interface MetaBlock {
 }
 interface AdRow { nome: string; gasto: number; impressoes: number; cliques: number; compras: number }
 interface Venda { email: string; nome: string | null; quando: string; valor: number | null }
-interface Reembolsos { total: number; valor: number; hoje: number; valor_hoje: number }
+interface ReembProduto { produto: string; qtd: number; valor: number }
+interface Reembolsos { total: number; valor: number; hoje: number; valor_hoje: number; por_produto?: ReembProduto[] }
 interface Stats {
   ts?: string;
   inicio?: string;
@@ -274,6 +275,33 @@ export function TrafegoTab() {
           </div>
         )}
       </div>
+
+      {/* Reembolsos por produto — tags vermelhas: quais produtos foram reembolsados
+          e quanto. Reembolso não é atribuível a um anúncio específico (o Meta não
+          informa de qual anúncio veio a venda estornada), por isso agrupamos por
+          PRODUTO. Escopo = campanha (desde 21/07), igual ao resto do placar. */}
+      {reemb?.por_produto?.length ? (
+        <div>
+          <p className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-destructive mb-2">
+            🔻 Reembolsos por produto <span className="text-muted-foreground normal-case font-normal tracking-normal">· quais produtos foram reembolsados</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {reemb.por_produto.map((p, i) => (
+              <span
+                key={i}
+                title={p.produto}
+                className="inline-flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-sm"
+              >
+                <span className="font-semibold text-foreground max-w-[240px] truncate">{p.produto.split(" | ")[0]}</span>
+                <span className="rounded-full bg-destructive text-destructive-foreground text-[11px] font-black px-2 py-0.5 tabular-nums whitespace-nowrap">
+                  {intBR(p.qtd)} reemb.
+                </span>
+                {p.valor > 0 && <span className="text-destructive font-bold tabular-nums text-xs whitespace-nowrap">− {brl(p.valor)}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Por anúncio — acumulado desde o início (não zera à meia-noite) */}
       {(m?.anuncios_total?.length || m?.anuncios_hoje?.length) ? (

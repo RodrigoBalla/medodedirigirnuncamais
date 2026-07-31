@@ -129,6 +129,9 @@
     <div class="sec"><h2>💰 Últimas vendas</h2><small>direto do banco (Eduzz) · tempo real · fuso Brasília</small></div>
     <div id="vendasWrap"></div>
 
+    <div class="sec" id="secReembProd" style="display:none"><h2>🔻 Reembolsos por produto</h2><small>quais produtos foram reembolsados · desde 21/07</small></div>
+    <div id="reembProdWrap"></div>
+
     <div class="sec" id="secAds" style="display:none"><h2>📣 Por anúncio · desde o início</h2><small>ordenado por compras (Meta)</small></div>
     <div class="tblwrap"><table id="adsTbl" style="display:none">
       <thead><tr><th>Anúncio</th><th class="num">Compras</th><th class="num">Gasto</th><th class="num hide-sm">Impr.</th><th class="num hide-sm">Cliques</th></tr></thead>
@@ -251,6 +254,27 @@
                      '<div class="mono" style="font-size:12px">'+u.email+'</div>';
           return '<tr><td>'+quem+'</td><td class="num mono">'+dh(u.quando)+'</td><td class="num">'+(u.valor?brl(u.valor):'—')+'</td></tr>';
         }).join('') + '</tbody></table></div>';
+    }
+
+    // ── REEMBOLSOS POR PRODUTO (tags vermelhas — quais produtos foram reembolsados) ──
+    // Reembolso não é atribuível a um anúncio (o Meta não diz de qual anúncio veio a
+    // venda estornada), então agrupamos por PRODUTO. Escopo = campanha (desde 21/07).
+    var rp = (reemb && reemb.por_produto) ? reemb.por_produto : [];
+    var secRP = document.getElementById('secReembProd');
+    var wrapRP = document.getElementById('reembProdWrap');
+    if (rp.length) {
+      secRP.style.display = 'flex';
+      wrapRP.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px">' + rp.map(function(p){
+        var nomeCurto = String(p.produto || '').split(' | ')[0];
+        return '<span style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.12);border-radius:999px;padding:6px 12px;font-size:13px" title="'+String(p.produto||'').replace(/"/g,'&quot;')+'">'
+          + '<span style="font-weight:700;color:var(--ink)">'+nomeCurto+'</span>'
+          + '<span style="background:var(--red);color:#3a0d0d;font-weight:800;font-size:11px;padding:2px 9px;border-radius:999px;white-space:nowrap">'+int(p.qtd)+' reemb.</span>'
+          + (p.valor > 0 ? '<span style="color:var(--red);font-weight:800;font-size:12px;white-space:nowrap">− '+brl(p.valor)+'</span>' : '')
+          + '</span>';
+      }).join('') + '</div>';
+    } else {
+      secRP.style.display = 'none';
+      wrapRP.innerHTML = '';
     }
 
     // ── POR ANÚNCIO (desde o início — não zera à meia-noite) ──

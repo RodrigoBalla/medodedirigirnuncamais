@@ -1,10 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-// ads-stats v10 — sobre v9: + reembolsos. Compras com enrolled_emails.refunded_at
-// não NULL saem da receita/contagem (receita_total/hoje viram LÍQUIDAS) e entram
-// num bloco `reembolsos` (contador + valor) que o painel de tráfego mostra.
-// Assim o reembolso é "extraído do lucro" (Resultado = receita líquida − gasto).
+// ads-stats v11 — sobre v10: reembolsos.por_produto (quais produtos foram
+// reembolsados + quantidade) pro painel mostrar tags vermelhas por produto.
+// v10: compras com enrolled_emails.refunded_at não NULL saem da receita/contagem
+// (receita_total/hoje viram LÍQUIDAS) e entram no bloco `reembolsos` (contador +
+// valor). Assim o reembolso é "extraído do lucro" (Resultado = receita líquida −
+// gasto). Escopo = janela da campanha (desde 21/07), igual ao resto do placar.
 // AUTH: ?k=DASH_KEY OU Bearer JWT de admin (user_roles). Meta: cache 60s.
 
 const DASH_KEY = "mdnm-trafego-x7k92f4q8b";
@@ -77,6 +79,18 @@ Deno.serve(async (req) => {
     const today = rows.filter((r: any) => r.enrolled_at >= startToday);
     // "reembolsos hoje" = processados hoje (por refunded_at), não pela data da compra
     const refToday = refunded.filter((r: any) => new Date(r.refunded_at).getTime() >= startTodayMs);
+    // Reembolsos por produto: quais produtos foram reembolsados + quantidade.
+    // Nome do produto vem do notes (produto=<nome> | itens=...); o nome pode ter " | "
+    // interno (ex: "... + atualizações | Combo"), por isso casa até " | itens=".
+    const prodName = (r: any) => { const mm = String(r.notes || "").match(/produto=(.+?)\s*\|\s*itens=/); return mm ? mm[1].trim() : "Outro"; };
+    const porProdutoMap: Record<string, { produto: string; qtd: number; valor: number }> = {};
+    for (const r of refunded) {
+      const p = prodName(r);
+      if (!porProdutoMap[p]) porProdutoMap[p] = { produto: p, qtd: 0, valor: 0 };
+      porProdutoMap[p].qtd++;
+      porProdutoMap[p].valor += val(r);
+    }
+    const porProduto = Object.values(porProdutoMap).sort((a, b) => (b.qtd - a.qtd) || (b.valor - a.valor));
     out.vendas = {
       hoje: today.length,
       receita_hoje: today.reduce((s: number, r: any) => s + val(r), 0),
@@ -87,6 +101,7 @@ Deno.serve(async (req) => {
         valor: refunded.reduce((s: number, r: any) => s + val(r), 0),
         hoje: refToday.length,
         valor_hoje: refToday.reduce((s: number, r: any) => s + val(r), 0),
+        por_produto: porProduto,
       },
       lista: rows.slice(0, 10).map((r: any) => ({ email: r.email, nome: nome(r), quando: r.enrolled_at, valor: val(r) || null })),
     };
