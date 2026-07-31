@@ -10,6 +10,8 @@
 //
 // SECURITY:
 // - Requer Authorization Bearer com JWT do Supabase Auth
+// - NEGA aluna com matrícula expirada/reembolsada (profiles.access_status
+//   = 'expired') — server-side, não dá pra burlar pelo frontend. Admin passa.
 // - Extrai o usuário autenticado e usa o email/id na watermark
 // - Nunca expõe a chave secreta (fica no env do servidor)
 // ════════════════════════════════════════════════════════════════
@@ -50,6 +52,31 @@ serve(async (req) => {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) {
     return jsonResponse(401, { error: "unauthorized" });
+  }
+
+  // 1.5 Bloqueia vídeo pra aluna com matrícula expirada/reembolsada (server-side).
+  //     access_status='expired' é setado tanto no reembolso quanto no "marcar
+  //     expirada" do admin. Admin sempre passa. Fail-open em erro de lookup (não
+  //     trava aluna paga por falha transitória) — só nega quando é comprovadamente
+  //     'expired'. Usa service role pra ler profiles sem depender de RLS.
+  try {
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (serviceKey) {
+      const svc = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+      const { data: adminRole } = await svc
+        .from("user_roles").select("role")
+        .eq("user_id", user.id).eq("role", "admin").maybeSingle();
+      if (!adminRole) {
+        const { data: prof } = await svc
+          .from("profiles").select("access_status")
+          .eq("user_id", user.id).maybeSingle();
+        if (prof?.access_status === "expired") {
+          return jsonResponse(403, { error: "access_expired" });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[panda-jwt] access check skipped (fail-open):", err);
   }
 
   // 2. Lê configuração do Panda DRM
