@@ -1672,6 +1672,44 @@ export type Database = {
           },
         ]
       }
+      scheduled_group_grants: {
+        Row: {
+          created_at: string
+          granted_at: string | null
+          group_id: string
+          id: string
+          release_at: string
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_at?: string | null
+          group_id: string
+          id?: string
+          release_at: string
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_at?: string | null
+          group_id?: string
+          id?: string
+          release_at?: string
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_group_grants_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "access_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_requests: {
         Row: {
           admin_notes: string | null
@@ -2362,6 +2400,18 @@ export type Database = {
         Args: { p_group_id: string; p_months?: number; p_user_id: string }
         Returns: undefined
       }
+      grant_or_schedule_groups: {
+        Args: {
+          p_delay_days?: number
+          p_group_ids: string[]
+          p_months?: number
+          p_user_id: string
+        }
+        Returns: {
+          granted: number
+          scheduled: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2428,6 +2478,7 @@ export type Database = {
           was_replaced: boolean
         }[]
       }
+      release_due_group_grants: { Args: never; Returns: number }
       self_report_mission: {
         Args: { p_user_mission_id: string }
         Returns: {
