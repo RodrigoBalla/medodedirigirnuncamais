@@ -102,15 +102,49 @@ export default function MessagesManager() {
     return ids.size;
   }, [recipients, inbox, onlineIds]);
 
-  const filteredRecipients = useMemo(() => {
+  // "Nova conversa": filtra pela busca e SEPARA em online / offline (online
+  // primeiro). Ordem estável dentro de cada grupo (mantém a ordem original).
+  const pickerGroups = useMemo(() => {
     const q = pickerSearch.trim().toLowerCase();
-    if (!q) return recipients;
-    return recipients.filter(
-      (r) =>
-        r.display_name.toLowerCase().includes(q) ||
-        (r.email || "").toLowerCase().includes(q),
-    );
-  }, [recipients, pickerSearch]);
+    const base = q
+      ? recipients.filter(
+          (r) =>
+            r.display_name.toLowerCase().includes(q) ||
+            (r.email || "").toLowerCase().includes(q),
+        )
+      : recipients;
+    return {
+      online: base.filter((r) => onlineIds.has(r.user_id)),
+      offline: base.filter((r) => !onlineIds.has(r.user_id)),
+    };
+  }, [recipients, pickerSearch, onlineIds]);
+
+  const renderPickerRow = (r: (typeof recipients)[number]) => (
+    <button
+      key={r.user_id}
+      onClick={() => {
+        setSelected({ id: r.user_id, name: r.display_name });
+        setShowPicker(false);
+        setPickerSearch("");
+      }}
+      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent transition-colors flex items-center gap-3"
+    >
+      <div className="relative shrink-0">
+        <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+          {r.display_name.charAt(0).toUpperCase()}
+        </div>
+        {onlineIds.has(r.user_id) && (
+          <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-emerald-500 border-2 border-card" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-medium truncate">{r.display_name}</p>
+        {r.email && (
+          <p className="text-[11px] text-muted-foreground truncate">{r.email}</p>
+        )}
+      </div>
+    </button>
+  );
 
   const totalUnread = useMemo(
     () => inbox.reduce((a, r) => a + (r.unread_from_student || 0), 0),
@@ -313,37 +347,29 @@ export default function MessagesManager() {
               />
             </div>
             <div className="flex-1 overflow-y-auto px-2 pb-2">
-              {filteredRecipients.length === 0 ? (
+              {pickerGroups.online.length + pickerGroups.offline.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-8">
                   Nenhuma aluna encontrada.
                 </p>
               ) : (
-                filteredRecipients.map((r) => (
-                  <button
-                    key={r.user_id}
-                    onClick={() => {
-                      setSelected({ id: r.user_id, name: r.display_name });
-                      setShowPicker(false);
-                      setPickerSearch("");
-                    }}
-                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-accent transition-colors flex items-center gap-3"
-                  >
-                    <div className="relative shrink-0">
-                      <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                        {r.display_name.charAt(0).toUpperCase()}
-                      </div>
-                      {onlineIds.has(r.user_id) && (
-                        <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-emerald-500 border-2 border-card" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{r.display_name}</p>
-                      {r.email && (
-                        <p className="text-[11px] text-muted-foreground truncate">{r.email}</p>
-                      )}
-                    </div>
-                  </button>
-                ))
+                <>
+                  {/* Online primeiro */}
+                  {pickerGroups.online.length > 0 && (
+                    <p className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                      <span className="size-1.5 rounded-full bg-emerald-500" />
+                      Online · {pickerGroups.online.length}
+                    </p>
+                  )}
+                  {pickerGroups.online.map(renderPickerRow)}
+
+                  {/* Depois offline */}
+                  {pickerGroups.offline.length > 0 && (
+                    <p className="px-3 pt-3 pb-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Offline · {pickerGroups.offline.length}
+                    </p>
+                  )}
+                  {pickerGroups.offline.map(renderPickerRow)}
+                </>
               )}
             </div>
           </div>
