@@ -28,13 +28,36 @@ import { CommunityHighlights } from "./CommunityHighlights";
 //   • locked   → publicado sem acesso → "Quero esse curso" → /curso-info/:id
 type CardState = "unlocked" | "pending" | "locked";
 
-// Dias inteiros até a liberação (arredonda pra cima). "Libera hoje/amanhã/em N dias".
+// Rótulo curto pra tooltip/acessibilidade (não fica na tela). Dias arredondados.
 function releaseLabel(iso?: string): string {
   if (!iso) return "Em breve";
   const days = Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
   if (days <= 0) return "Libera hoje";
   if (days === 1) return "Libera amanhã";
   return `Libera em ${days} dias`;
+}
+
+// Contagem regressiva AO VIVO (dias · horas · minutos · segundos), atualiza a cada
+// 1s. Componente próprio pra só o texto re-renderizar (não a biblioteca inteira).
+function Countdown({ iso, className }: { iso?: string; className?: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (!iso) return <span className={className}>Em breve</span>;
+  const diff = new Date(iso).getTime() - now;
+  if (diff <= 0) return <span className={className}>Liberando…</span>;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return (
+    <span className={className}>
+      {d}d {p(h)}h {p(m)}m {p(s)}s
+    </span>
+  );
 }
 
 export function LibraryScreen() {
@@ -298,18 +321,25 @@ function CourseCard({
         {/* Overlay sutil pra contraste do título sobre a thumb */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
-        {/* Ícone central — cadeado (trancado) ou relógio (represado) */}
-        {(locked || pending) && (
+        {/* Centro do card represado: relógio + CONTAGEM REGRESSIVA ao vivo (d/h/m/s) */}
+        {pending && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-2 pointer-events-none">
+            <div className="size-12 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-xl">schedule</span>
+            </div>
+            <div className="rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1">
+              <Countdown iso={releaseAt} className="text-primary font-black text-[13px] tabular-nums whitespace-nowrap" />
+            </div>
+            <span className="text-[8px] font-black uppercase tracking-[0.18em] text-white/70">até liberar</span>
+          </div>
+        )}
+
+        {/* Ícone de cadeado central — só quando trancado */}
+        {locked && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className={`size-14 rounded-full backdrop-blur-md border flex items-center justify-center transition-colors ${
-              pending
-                ? "bg-primary/20 border-primary/50"
-                : "bg-black/60 border-white/20 group-hover:bg-primary group-hover:border-primary"
-            }`}>
-              <span className={`material-symbols-outlined text-2xl transition-colors ${
-                pending ? "text-primary" : "text-white group-hover:text-primary-foreground"
-              }`}>
-                {pending ? "schedule" : "lock"}
+            <div className="size-14 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">
+              <span className="material-symbols-outlined text-white text-2xl group-hover:text-primary-foreground transition-colors">
+                lock
               </span>
             </div>
           </div>
@@ -356,8 +386,8 @@ function CourseCard({
               Você já garantiu
             </span>
             <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg">
-              <span className="material-symbols-outlined text-sm">schedule</span>
-              {releaseLabel(releaseAt)}
+              <span className="material-symbols-outlined text-sm">autorenew</span>
+              Libera sozinho
             </span>
           </>
         ) : locked ? (
