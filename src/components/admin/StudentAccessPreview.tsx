@@ -18,8 +18,27 @@ interface Course {
   title: string;
   image_url: string | null;
   unlocked: boolean;
+  release_at?: string | null; // agendado no drip de 7 dias (comprado, ainda represado)
   lessons_total: number;
   lessons_completed: number;
+}
+
+// Contagem regressiva ao vivo (d/h/m/s) — igual à da biblioteca da aluna.
+function Countdown({ iso, className }: { iso?: string | null; className?: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (!iso) return <span className={className}>em breve</span>;
+  const diff = new Date(iso).getTime() - now;
+  if (diff <= 0) return <span className={className}>liberando…</span>;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return <span className={className}>{d}d {p(h)}h {p(m)}m {p(s)}s</span>;
 }
 interface Snapshot {
   student: {
@@ -104,7 +123,8 @@ export function StudentAccessPreview({
   const student = snap?.student;
   const level = student ? getLevelInfo(student.total_xp || 0, student.coins || 0).level : 1;
   const unlockedCount = snap?.courses.filter((c) => c.unlocked).length ?? 0;
-  const lockedCount = snap?.courses.filter((c) => !c.unlocked).length ?? 0;
+  const pendingCount = snap?.courses.filter((c) => !c.unlocked && !!c.release_at).length ?? 0;
+  const lockedCount = snap?.courses.filter((c) => !c.unlocked && !c.release_at).length ?? 0;
 
   const state = student?.is_blocked
     ? { cls: "bg-destructive/10 text-destructive border-destructive/30", icon: "block", title: "Conta inativa", desc: "Não consegue logar — vê a tela de bloqueio. Reative pra liberar o acesso." }
@@ -227,7 +247,7 @@ export function StudentAccessPreview({
 
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                  Biblioteca dele ({unlockedCount} liberado{unlockedCount === 1 ? "" : "s"} · {lockedCount} trancado{lockedCount === 1 ? "" : "s"})
+                  Biblioteca dele ({unlockedCount} liberado{unlockedCount === 1 ? "" : "s"}{pendingCount > 0 ? ` · ${pendingCount} chegando` : ""} · {lockedCount} trancado{lockedCount === 1 ? "" : "s"})
                 </p>
                 {snap!.courses.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic">Nenhum curso publicado no catálogo.</p>
@@ -235,6 +255,7 @@ export function StudentAccessPreview({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {snap!.courses.map((c) => {
                       const pct = c.lessons_total > 0 ? Math.round((c.lessons_completed / c.lessons_total) * 100) : 0;
+                      const pending = !c.unlocked && !!c.release_at;
                       return (
                         <button
                           key={c.product_id}
@@ -245,18 +266,18 @@ export function StudentAccessPreview({
                         >
                           <div className="relative aspect-[9/16] bg-muted">
                             {c.image_url ? (
-                              <img src={c.image_url} alt={c.title} className={`w-full h-full object-cover ${c.unlocked ? "" : "grayscale brightness-75"}`} loading="lazy" />
+                              <img src={c.image_url} alt={c.title} className={`w-full h-full object-cover ${c.unlocked ? "" : pending ? "brightness-[0.7]" : "grayscale brightness-75"}`} loading="lazy" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <span className="material-symbols-outlined text-4xl text-border">video_library</span>
                               </div>
                             )}
-                            <span className={`absolute top-1.5 left-1.5 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${c.unlocked ? "bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))]" : "bg-black/70 text-white"}`}>
-                              {c.unlocked ? "Liberado" : "Trancado"}
+                            <span className={`absolute top-1.5 left-1.5 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${c.unlocked ? "bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))]" : pending ? "bg-amber-500 text-black" : "bg-black/70 text-white"}`}>
+                              {c.unlocked ? "Liberado" : pending ? "Chegando" : "Trancado"}
                             </span>
                             {!c.unlocked && (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-white/80 text-3xl">lock</span>
+                                <span className={`material-symbols-outlined text-3xl ${pending ? "text-amber-300" : "text-white/80"}`}>{pending ? "schedule" : "lock"}</span>
                               </div>
                             )}
                           </div>
@@ -273,6 +294,13 @@ export function StudentAccessPreview({
                               ) : (
                                 <p className="text-[9px] text-muted-foreground mt-1">Sem aulas cadastradas</p>
                               )
+                            ) : pending ? (
+                              <div className="mt-1">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">Comprado · a caminho</p>
+                                <p className="text-[10px] font-black text-amber-600 dark:text-amber-400 tabular-nums mt-0.5">
+                                  Libera em <Countdown iso={c.release_at} />
+                                </p>
+                              </div>
                             ) : (
                               <p className="text-[9px] text-primary mt-1 font-bold inline-flex items-center gap-0.5">Ver como ela vê <span className="material-symbols-outlined text-[11px]">chevron_right</span></p>
                             )}
@@ -293,6 +321,31 @@ export function StudentAccessPreview({
 
 // ─── Sub-view: dentro de um curso ────────────────────────────────────────────
 function CourseView({ course, detail, loading }: { course: Course; detail: CourseDetail | null; loading: boolean }) {
+  const pending = !course.unlocked && !!course.release_at;
+
+  if (pending) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          {course.image_url && <img src={course.image_url} alt="" className="w-16 aspect-[9/16] object-cover rounded-lg brightness-[0.7]" />}
+          <div>
+            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500 text-black">Chegando</span>
+            <p className="font-bold text-sm mt-1">{course.title}</p>
+          </div>
+        </div>
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-amber-700 dark:text-amber-300">
+          <p className="font-black text-sm flex items-center gap-2">
+            <span className="material-symbols-outlined text-base">schedule</span>
+            Comprado — libera em <Countdown iso={course.release_at} className="tabular-nums" />
+          </p>
+          <p className="text-xs mt-1.5 leading-snug opacity-90">
+            Ela <strong>já comprou</strong> esse módulo (liberação escalonada de 7 dias). Até liberar, ela vê o card "Chegando" com o contador e <strong>não acessa as aulas</strong>. Libera sozinho — sem ação necessária.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!course.unlocked) {
     return (
       <div className="space-y-4">
