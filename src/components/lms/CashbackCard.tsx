@@ -29,6 +29,7 @@ interface Config {
   max_discount_pct: number;
   validity_days: number;
   min_coins_to_convert: number;
+  monthly_cap_brl: number;
 }
 
 interface Coupon {
@@ -71,8 +72,27 @@ export function CashbackCard() {
   if (!config) return null;
 
   const valueBrl = (amount / config.coins_per_brl).toFixed(2);
-  const canConvert = coins >= amount && amount >= config.min_coins_to_convert;
   const totalCashbackBrl = (coins / config.coins_per_brl).toFixed(2);
+
+  // Teto mensal de resgate (transparente). Quanto já virou cupom neste mês
+  // (calendário local ≈ fuso Brasília da base) e quanto ainda dá pra resgatar.
+  // As moedas não convertidas continuam na carteira.
+  const monthlyCap = config.monthly_cap_brl ?? 10;
+  const nowRef = new Date();
+  const usedThisMonthBrl = coupons
+    .filter((c) => {
+      const d = new Date(c.created_at);
+      return d.getFullYear() === nowRef.getFullYear() && d.getMonth() === nowRef.getMonth();
+    })
+    .reduce((s, c) => s + Number(c.value_brl), 0);
+  const remainingMonthBrl = Math.max(0, monthlyCap - usedThisMonthBrl);
+  const remainingMonthCoins = Math.floor(remainingMonthBrl * config.coins_per_brl);
+  const maxConvertibleCoins = Math.min(coins, remainingMonthCoins);
+  const monthCapReached = remainingMonthCoins < config.min_coins_to_convert;
+  const canConvert =
+    coins >= amount &&
+    amount >= config.min_coins_to_convert &&
+    amount <= remainingMonthCoins;
 
   async function convert() {
     if (!canConvert || converting) return;
@@ -93,7 +113,16 @@ export function CashbackCard() {
       }
     } catch (err: any) {
       console.warn("[cashback] convert error:", err);
-      toast.error("Não foi possível converter", { description: err?.message ?? "Tente novamente." });
+      const msg = String(err?.message || "");
+      if (msg.includes("monthly_cap_reached")) {
+        toast.info("Limite de resgate do mês atingido", {
+          description: `Você pode resgatar até R$ ${monthlyCap.toFixed(2)} em cashback por mês. Suas moedas continuam guardadas na carteira 🪙 — dá pra resgatar mais no mês que vem.`,
+          duration: 7000,
+        });
+        await loadData();
+      } else {
+        toast.error("Não foi possível converter", { description: err?.message ?? "Tente novamente." });
+      }
     } finally {
       setConverting(false);
     }
@@ -145,6 +174,17 @@ export function CashbackCard() {
           Use como desconto no próximo curso
         </p>
 
+        {/* Teto mensal transparente — regra clara, sem pegadinha. Moedas ficam na carteira. */}
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-700/90 dark:text-amber-300/90">
+          <span className="material-symbols-outlined text-[14px]">calendar_month</span>
+          <span>
+            Resgate até <b>R$ {monthlyCap.toFixed(2)}</b> por mês
+            {usedThisMonthBrl > 0 && !monthCapReached && (
+              <> · resta <b>R$ {remainingMonthBrl.toFixed(2)}</b> este mês</>
+            )}
+          </span>
+        </div>
+
         {/* Item 8: Progress até o mínimo OU CTA proeminente quando atinge */}
         {coins < config.min_coins_to_convert ? (
           <div className="mt-3 pt-3 border-t border-amber-500/20">
@@ -180,34 +220,48 @@ export function CashbackCard() {
         )}
       </div>
 
-      <div className="space-y-2 mb-3">
-        <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-          Converter quantas moedas em cupom?
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={config.min_coins_to_convert}
-            step={config.min_coins_to_convert}
-            max={coins}
-            value={amount}
-            onChange={(e) => setAmount(Math.max(0, Math.floor(Number(e.target.value) || 0)))}
-            className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono"
-          />
-          <span className="text-sm font-bold text-foreground whitespace-nowrap">= R$ {valueBrl}</span>
+      {monthCapReached && coins >= config.min_coins_to_convert ? (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 mb-1">
+          <p className="text-[11px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 mb-1 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[15px]">check_circle</span>
+            Resgate do mês concluído
+          </p>
+          <p className="text-[12px] text-muted-foreground leading-relaxed">
+            Você já resgatou R$ {monthlyCap.toFixed(2)} em cashback este mês. Suas <b>moedas continuam guardadas na carteira</b> 🪙 — você pode resgatar mais no mês que vem.
+          </p>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          Mínimo: {config.min_coins_to_convert} moedas (R$ {(config.min_coins_to_convert / config.coins_per_brl).toFixed(2)})
-        </p>
-      </div>
+      ) : (
+        <>
+          <div className="space-y-2 mb-3">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Converter quantas moedas em cupom?
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={config.min_coins_to_convert}
+                step={config.min_coins_to_convert}
+                max={maxConvertibleCoins}
+                value={amount}
+                onChange={(e) => setAmount(Math.min(maxConvertibleCoins, Math.max(0, Math.floor(Number(e.target.value) || 0))))}
+                className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono"
+              />
+              <span className="text-sm font-bold text-foreground whitespace-nowrap">= R$ {valueBrl}</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Mínimo: {config.min_coins_to_convert} moedas (R$ {(config.min_coins_to_convert / config.coins_per_brl).toFixed(2)}) · até R$ {monthlyCap.toFixed(2)} por mês
+            </p>
+          </div>
 
-      <button
-        onClick={convert}
-        disabled={!canConvert || converting}
-        className="w-full px-4 py-2.5 text-sm font-black uppercase tracking-widest bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {converting ? "Gerando…" : "Converter em cupom"}
-      </button>
+          <button
+            onClick={convert}
+            disabled={!canConvert || converting}
+            className="w-full px-4 py-2.5 text-sm font-black uppercase tracking-widest bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {converting ? "Gerando…" : "Converter em cupom"}
+          </button>
+        </>
+      )}
 
       {/* Bloco do cupom recém-gerado — destaque alto com CTA pra ativar via WhatsApp.
           Aparece SÓ depois que a aluna acabou de converter, pra reduzir fricção

@@ -245,6 +245,7 @@ export type Database = {
           id: number
           max_discount_pct: number
           min_coins_to_convert: number
+          monthly_cap_brl: number
           updated_at: string | null
           validity_days: number
         }
@@ -253,6 +254,7 @@ export type Database = {
           id?: number
           max_discount_pct?: number
           min_coins_to_convert?: number
+          monthly_cap_brl?: number
           updated_at?: string | null
           validity_days?: number
         }
@@ -261,6 +263,7 @@ export type Database = {
           id?: number
           max_discount_pct?: number
           min_coins_to_convert?: number
+          monthly_cap_brl?: number
           updated_at?: string | null
           validity_days?: number
         }
