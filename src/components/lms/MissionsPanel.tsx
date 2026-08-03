@@ -330,9 +330,18 @@ export function MissionsPanel() {
       }
     } catch (err: any) {
       console.warn("[missions] action error:", err);
-      toast.error("Não foi possível registrar agora", {
-        description: "Tenta de novo em instantes.",
-      });
+      const msg = String(err?.message || "");
+      if (msg.includes("daily_cap_reached")) {
+        // Teto diário de moedas de missão atingido — mensagem positiva, sem erro.
+        toast.info("Você já garantiu bastante hoje! 🎉", {
+          description: "Volte amanhã pra pegar mais moedas nas missões.",
+          duration: 4500,
+        });
+      } else {
+        toast.error("Não foi possível registrar agora", {
+          description: "Tenta de novo em instantes.",
+        });
+      }
     } finally {
       setClaiming(null);
     }
