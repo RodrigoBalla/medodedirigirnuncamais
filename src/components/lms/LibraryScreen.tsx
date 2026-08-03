@@ -321,16 +321,16 @@ function CourseCard({
         {/* Overlay sutil pra contraste do título sobre a thumb */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
-        {/* Centro do card represado: relógio + CONTAGEM REGRESSIVA ao vivo (d/h/m/s) */}
+        {/* Centro do card represado: relógio + selo "Comprado". O CONTADOR ao vivo
+            fica no rodapé (sempre visível, inclusive no mobile). */}
         {pending && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-2 pointer-events-none">
-            <div className="size-12 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-xl">schedule</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-2 pointer-events-none">
+            <div className="size-14 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">schedule</span>
             </div>
-            <div className="rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1">
-              <Countdown iso={releaseAt} className="text-primary font-black text-[13px] tabular-nums whitespace-nowrap" />
-            </div>
-            <span className="text-[8px] font-black uppercase tracking-[0.18em] text-white/70">até liberar</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white bg-black/55 backdrop-blur-md rounded-full px-3 py-1">
+              Comprado · a caminho
+            </span>
           </div>
         )}
 
@@ -381,15 +381,18 @@ function CourseCard({
       {/* Rodapé do card — CTA / status */}
       <div className="p-3 md:p-4 flex items-center justify-between gap-2 bg-card/60">
         {pending ? (
-          <>
-            <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
-              Você já garantiu
-            </span>
-            <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg">
-              <span className="material-symbols-outlined text-sm">autorenew</span>
-              Libera sozinho
-            </span>
-          </>
+          <div className="w-full">
+            <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-[hsl(var(--success))]">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              Você já comprou
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2">
+              <span className="material-symbols-outlined text-primary text-base">schedule</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Libera em</span>
+              <Countdown iso={releaseAt} className="text-primary font-black text-sm tabular-nums ml-auto" />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Abre sozinho — você não precisa fazer nada.</p>
+          </div>
         ) : locked ? (
           <>
             <span className="text-xs text-muted-foreground line-clamp-1 flex-1">

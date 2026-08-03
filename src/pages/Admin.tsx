@@ -50,6 +50,8 @@ interface StudentData {
   access_status?: "active" | "expired";
   refunded?: boolean;
   groups: AccessGroup[];
+  // Grupos comprados mas represados no drip de 7 dias (ainda não liberados).
+  pending_groups?: Array<{ id: string; name: string; release_at: string }>;
 }
 
 interface EditModal {
@@ -223,6 +225,7 @@ export default function Admin() {
       created_at: string;
       is_blocked: boolean;
       groups: Array<{ id: string; name: string }>;
+      pending_groups: Array<{ id: string; name: string; release_at: string }> | null;
       total_xp: number; coins: number; lives: number; streak: number;
       completed_phases: number[]; badges: unknown; daily_xp: number; confidence: number;
       access_status: string | null; refunded: boolean | null;
@@ -238,6 +241,7 @@ export default function Admin() {
       access_status: r.access_status === "expired" ? "expired" : "active",
       refunded: r.refunded || false,
       groups: r.groups || [],
+      pending_groups: r.pending_groups || [],
       completed_phases: r.completed_phases || [],
       total_xp: r.total_xp || 0,
       confidence: r.confidence || 0,
@@ -1053,6 +1057,25 @@ export default function Admin() {
                                       </button>
                                     </span>
                                   ))}
+                                </div>
+                              )}
+
+                              {/* Grupos comprados mas represados no drip de 7 dias — "A LIBERAR" */}
+                              {s.pending_groups && s.pending_groups.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {s.pending_groups.map((pg) => {
+                                    const days = Math.max(0, Math.ceil((new Date(pg.release_at).getTime() - Date.now()) / 86400000));
+                                    return (
+                                      <span
+                                        key={pg.id}
+                                        className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30"
+                                        title={`Comprado — libera em ${days} dia(s) (drip de 7 dias)`}
+                                      >
+                                        <span className="material-symbols-outlined text-[11px] leading-none">schedule</span>
+                                        A liberar · {pg.name} · {days}d
+                                      </span>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
