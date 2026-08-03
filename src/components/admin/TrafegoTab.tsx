@@ -47,10 +47,25 @@ export function TrafegoTab() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Pega a sessão; no mobile a aba fica em 2º plano e o auto-refresh do token
+      // pausa — então o access_token pode estar vencido aqui. Renova se preciso.
+      let session = (await supabase.auth.getSession()).data.session;
+      if (!session) session = (await supabase.auth.refreshSession()).data.session;
       if (!session) { setErr("Sessão expirada — recarregue a página."); return; }
-      const r = await fetch(FN_URL, { headers: { Authorization: `Bearer ${session.access_token}` } });
-      const j = await r.json();
+
+      const call = async (token: string) => {
+        const r = await fetch(FN_URL, { headers: { Authorization: `Bearer ${token}` } });
+        return r.json();
+      };
+
+      let j = await call(session.access_token);
+      // Token velho (mobile voltando do 2º plano) → ads-stats devolve "forbidden".
+      // Renova a sessão e tenta 1x antes de mostrar "acesso negado".
+      if (j?.error === "forbidden") {
+        const fresh = (await supabase.auth.refreshSession()).data.session;
+        if (fresh?.access_token) j = await call(fresh.access_token);
+      }
+
       if (!alive.current) return;
       if (j?.error) { setErr(j.error === "forbidden" ? "Acesso negado (precisa ser admin)." : String(j.error)); return; }
       setErr(null);
