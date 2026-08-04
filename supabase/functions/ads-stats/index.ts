@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       try {
         const { data: u } = await svc.auth.getUser(jwt);
         if (u?.user?.id) {
-          const { data: role } = await svc.from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
+          const { data: role } = await svc.from("user_roles").select("role").eq("user_id", u.user.id).in("role", ["admin", "support"]).maybeSingle();
           ok = !!role;
         }
       } catch (_) { /* nega */ }

@@ -63,7 +63,7 @@ interface EditModal {
 
 export default function Admin() {
   const { user, signOut } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, isReadOnly, loading: adminLoading } = useAdmin();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [tab, setTab] = useState<AdminTab>("dashboard");
@@ -762,6 +762,17 @@ export default function Admin() {
           </button>
         </div>
       </header>
+
+      {/* Banner de modo somente-leitura (papel "support" — ex: Jô). Ela vê tudo e
+          responde mensagens; qualquer edição é bloqueada no servidor (RLS/RPCs). */}
+      {isReadOnly && (
+        <div className="sticky top-[57px] z-40 bg-amber-500/15 border-b border-amber-500/30 px-4 md:px-6 py-2 flex items-center gap-2 text-amber-700 dark:text-amber-300">
+          <span className="material-symbols-outlined text-base">visibility</span>
+          <p className="text-xs font-bold">
+            Modo somente-leitura — você vê tudo e responde as mensagens dos alunos. Alterações não são salvas.
+          </p>
+        </div>
+      )}
 
       <div className="flex">
         {/* Sidebar (desktop) */}
