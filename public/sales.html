@@ -6541,13 +6541,14 @@
     setInterval(showViewers, 25000);
   })();
 
-  // ── VAGAS LIMITADAS (100 turmas, decresce com vendas) ─
-  // Lê o número de inscritos da tabela enrolled_emails (populada pelo
-  // webhook da Eduzz quando a venda é aprovada). Quando atinge 100,
-  // o site muda automaticamente pra modo "lista de espera".
-  const VAGAS_TOTAL = 100;            // turma 1
-  const CAP_T2 = 200;                  // turma 2 = limite máximo de vagas
-  let totalInscritos = 0;              // nº de ALUNAS com acesso (RPC inscritos_total)
+  // ── VAGAS POR TURMA (blocos de 100, viram sozinhas) ─
+  // Lê o nº de inscritos (RPC inscritos_total, alimentado pelo webhook da Eduzz).
+  // Turmas contadas de 100 em 100: turma 1 = 1–100, turma 2 = 101–200,
+  // turma 3 = 201–300... Ao lotar uma turma (cruzar um múltiplo de 100), a próxima
+  // abre AUTOMATICAMENTE com +100 vagas e a contagem continua de onde parou.
+  // Nunca "esgota" — sempre há uma turma aberta.
+  const TURMA_SIZE = 100;             // tamanho de cada turma
+  let totalInscritos = 0;              // nº de ALUNAS com acesso (cumulativo)
   let modoListaEspera = false;
   const _npUrl = new URL(location.href);
   const _previewInscritos = _npUrl.searchParams.has('inscritos') ? parseInt(_npUrl.searchParams.get('inscritos'), 10) : null;
@@ -6602,78 +6603,68 @@
     return { r, g, b, css: `rgb(${r}, ${g}, ${b})` };
   }
 
+  // Ordinal feminino da turma (pra copy). Fallback "Nª turma".
+  function ordinalTurma(n) {
+    const o = ['', 'primeira', 'segunda', 'terceira', 'quarta', 'quinta', 'sexta', 'sétima', 'oitava', 'nona', 'décima'];
+    return o[n] || (n + 'ª');
+  }
+
   function renderVagas() {
     const total = totalInscritos;
-    const turma2 = total >= VAGAS_TOTAL;            // >=100 → segunda turma
-    const cap = turma2 ? CAP_T2 : VAGAS_TOTAL;
-    const remaining = Math.max(0, cap - total);
-    modoListaEspera = total >= CAP_T2;               // turma 2 cheia (>=200)
-    const pctFilled = Math.min(100, (total / cap) * 100);
+    // Turma atual e vagas: blocos de 100, viram sozinhas. Nunca esgota.
+    const turma     = Math.floor(total / TURMA_SIZE) + 1;   // 1, 2, 3, ...
+    const filled    = total % TURMA_SIZE;                    // preenchidas na turma atual (0..99)
+    const remaining = TURMA_SIZE - filled;                  // restantes na turma atual (1..100)
+    const pctFilled = (filled / TURMA_SIZE) * 100;          // 0..~99
+    const ordinal   = ordinalTurma(turma);
+    modoListaEspera = false;                                 // sempre há turma aberta
 
-    // Texto do contador. Turma 1: "Restam X/100". Turma 2: "X/200 alunas" (conta de 100 até 200).
+    // Contador: escassez que reinicia a cada turma — "Restam X/100 vagas".
     const heroTxt = document.getElementById('vagasCountText');
-    if (heroTxt) heroTxt.innerHTML = turma2
-      ? '<strong id="vagasRemaining">' + total + '</strong>/' + CAP_T2 + ' alunas'
-      : 'Restam <strong id="vagasRemaining">' + remaining + '</strong>/' + VAGAS_TOTAL;
+    if (heroTxt) heroTxt.innerHTML = 'Restam <strong id="vagasRemaining">' + remaining + '</strong>/' + TURMA_SIZE + ' vagas';
     const modalTxt = document.getElementById('modalVagasCountText');
-    if (modalTxt) modalTxt.innerHTML = turma2
-      ? '<strong id="modalVagasRemaining">' + total + '</strong> de ' + CAP_T2 + ' alunas'
-      : 'Restam <strong id="modalVagasRemaining">' + remaining + '</strong> de ' + VAGAS_TOTAL;
+    if (modalTxt) modalTxt.innerHTML = 'Restam <strong id="modalVagasRemaining">' + remaining + '</strong> de ' + TURMA_SIZE + ' vagas';
 
-    // Barra
+    // Barra (progresso DENTRO da turma atual)
     document.querySelectorAll('#vagasBarFill, #modalVagasBarFill').forEach(el => {
       const isHeroFill = el.id === 'vagasBarFill';
-      if (modoListaEspera) {
-        el.style.width = '100%';
-        el.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-        el.style.opacity = isHeroFill ? '.45' : '1';
-        if (!isHeroFill) el.style.boxShadow = '0 0 12px rgba(239, 68, 68, .6)';
-      } else {
-        const widthShown = Math.max(pctFilled, pctFilled > 0 ? 4 : 0);
-        el.style.width = widthShown + '%';
-        const c1 = getUrgencyColor(pctFilled);
-        const c2 = getUrgencyColor(Math.min(100, pctFilled + 20));
-        el.style.background = `linear-gradient(90deg, ${c1.css}, ${c2.css})`;
-        el.style.opacity = isHeroFill ? '.28' : '1';
-        if (!isHeroFill) el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
-      }
+      const widthShown = Math.max(pctFilled, pctFilled > 0 ? 4 : 0);
+      el.style.width = widthShown + '%';
+      const c1 = getUrgencyColor(pctFilled);
+      const c2 = getUrgencyColor(Math.min(100, pctFilled + 20));
+      el.style.background = `linear-gradient(90deg, ${c1.css}, ${c2.css})`;
+      el.style.opacity = isHeroFill ? '.28' : '1';
+      if (!isHeroFill) el.style.boxShadow = `0 0 8px rgba(${c2.r}, ${c2.g}, ${c2.b}, .55)`;
     });
 
     document.querySelectorAll('#vagasCounter, #modalVagasCounter').forEach(el => {
-      el.classList.toggle('is-waitlist', modoListaEspera);
-      el.classList.toggle('is-critical', !modoListaEspera && pctFilled >= 80);
-      el.dataset.vagasMode = modoListaEspera ? 'waitlist' : 'open';
+      el.classList.toggle('is-waitlist', false);
+      el.classList.toggle('is-critical', pctFilled >= 80);   // <20 vagas = crítico (vermelho)
+      el.dataset.vagasMode = 'open';
     });
 
     const hint = document.getElementById('vagasHint');
     if (hint) {
-      hint.innerHTML = modoListaEspera
-        ? 'Vagas <strong>esgotadas</strong>. Entre na lista de espera abaixo.'
-        : turma2
-          ? '🎉 <strong>Segunda turma aberta!</strong> Garanta sua vaga antes de esgotar.'
-          : 'Quando zerar, novas inscrições entram em <strong>lista de espera</strong>.';
+      hint.innerHTML = turma === 1
+        ? 'Vagas limitadas. Ao lotar, abrimos a <strong>próxima turma</strong> automaticamente.'
+        : '🎉 <strong>' + ordinal.charAt(0).toUpperCase() + ordinal.slice(1) + ' turma aberta!</strong> Restam ' + remaining + ' vagas — quando zerar, abre a próxima.';
     }
 
     document.querySelectorAll('.vagas-counter__label').forEach(el => {
-      el.textContent = modoListaEspera ? 'Lista de espera' : (turma2 ? 'Segunda turma' : 'Vagas limitadas');
+      el.textContent = 'Turma ' + turma;
     });
 
     const modalTitle  = document.getElementById('modalTitle');
     const modalSub    = document.getElementById('modalSub');
     const modalSubmit = document.getElementById('modalSubmit');
-    if (modoListaEspera) {
-      if (modalTitle)  modalTitle.innerHTML  = 'Entre na <span>lista de espera</span>';
-      if (modalSub)    modalSub.textContent = 'Vagas esgotadas. Te avisamos quando reabrir:';
-      if (modalSubmit) modalSubmit.textContent = 'ENTRAR NA LISTA DE ESPERA →';
-    } else if (turma2) {
-      if (modalTitle)  modalTitle.innerHTML  = 'Vaga na <span>segunda turma</span>';
-      if (modalSub)    modalSub.textContent = 'Somos +100 alunas! Preencha pra garantir a sua:';
-      if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
-    } else {
+    if (turma === 1) {
       if (modalTitle)  modalTitle.innerHTML  = 'Falta pouco pra <span>sua liberdade</span>';
       if (modalSub)    modalSub.textContent = 'Preencha pra ir pro checkout seguro:';
-      if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
+    } else {
+      if (modalTitle)  modalTitle.innerHTML  = 'Vaga na <span>' + ordinal + ' turma</span>';
+      if (modalSub)    modalSub.textContent = 'Restam ' + remaining + ' vagas nesta turma. Preencha pra garantir a sua:';
     }
+    if (modalSubmit) modalSubmit.textContent = 'IR PARA O CHECKOUT →';
   }
 
   // (Popup de comemoração dos 100 alunos removido em 23/07 a pedido do Balla —
