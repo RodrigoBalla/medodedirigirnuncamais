@@ -6688,8 +6688,8 @@
   // ── CHECKOUT EMBEDADO (Eduzz bridge.js) ─────────────────
   // Link único do produto na Eduzz. ID do produto extraído pra usar como
   // contentId do bridge.js.
-  const CHECKOUT_URL = 'https://chk.eduzz.com/8WPN5ZZE0P';
-  const EDUZZ_CONTENT_ID = (CHECKOUT_URL.match(/chk\.eduzz\.com\/([A-Za-z0-9]+)/) || [])[1] || '8WPN5ZZE0P';
+  const CHECKOUT_URL = 'https://chk.eduzz.com/7WXG5VDY0A';
+  const EDUZZ_CONTENT_ID = (CHECKOUT_URL.match(/chk\.eduzz\.com\/([A-Za-z0-9]+)/) || [])[1] || '7WXG5VDY0A';
 
   // ── FIX: bloquear modal "Currency / Browsing from outside Brazil?" do Eduzz ──
   // O bridge.js da Eduzz às vezes injeta um modal fullscreen perguntando se a
@@ -7293,7 +7293,7 @@
       if (window.goToCheckout) {
         window.goToCheckout('exit_cupom', { cupom: code });
       } else {
-        window.location.href = 'https://chk.eduzz.com/8WPN5ZZE0P?cupom=' + encodeURIComponent(code);
+        window.location.href = 'https://chk.eduzz.com/7WXG5VDY0A?cupom=' + encodeURIComponent(code);
       }
     };
 
