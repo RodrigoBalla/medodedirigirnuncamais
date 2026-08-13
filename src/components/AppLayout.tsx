@@ -22,6 +22,7 @@ import { useDetectNewModules } from "@/hooks/useDetectNewModules";
 import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
 import { StudentMessenger } from "@/components/StudentMessenger";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
+import { FullAccessBanner } from "@/components/FullAccessBanner";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -282,6 +283,11 @@ export function AppLayout({
           </button>
         </div>
       </header>
+
+      {/* Botão/banner de oferta no TOPO — "Liberar acesso completo (OFERTA
+          ESPECIAL)". Só aparece pra quem ainda não tem o acesso completo à
+          plataforma (some depois que a aluna compra). */}
+      <FullAccessBanner />
 
       <div className="flex flex-1">
         {/* Desktop Sidebar COLAPSÁVEL — w-64 (expandido) ou w-16 (só ícones).
