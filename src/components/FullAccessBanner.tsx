@@ -1,74 +1,67 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── FullAccessBanner ────────────────────────────────────────────────────────
-// Botão/banner no TOPO da área de membros: "Liberar acesso completo (OFERTA
-// ESPECIAL)" → leva pro checkout Eduzz da oferta que entrega o grupo
-// "Acesso completo a plataforma" (libera TODOS os cursos, atuais e futuros,
-// por 12 meses).
+// Barra FIXA (sticky) no topo da área de membros — fica visível em todas as
+// abas mesmo com scroll. Texto rotativo com fade in/out (3 mensagens). Ao
+// clicar, leva pra página interna /acesso-completo (checkout embutido +
+// explicação da oferta).
 //
-// Visibilidade: só aparece pra quem AINDA NÃO tem esse grupo. Quem já comprou o
-// acesso completo à plataforma não vê (não faz sentido "liberar" o que já tem).
-// A checagem é por membership em access_group_users (mesmo critério que a
-// Biblioteca usa pra destravar curso).
+// A visibilidade (só pra quem ainda NÃO tem o acesso completo) é decidida no
+// AppLayout via useHasFullPlatformAccess — aqui é só a apresentação. Fica
+// grudado logo abaixo do header (top-[53px]) com altura fixa (h-10) pra o
+// AppLayout compensar o offset da sidebar no desktop.
 // =============================================================================
 
-// Grupo criado no banco (migration) — libera todos os produtos via trigger.
-const FULL_PLATFORM_GROUP_ID = "87b174f5-f094-4fe4-895e-dbc62c422da8";
-const CHECKOUT_URL = "https://chk.eduzz.com/6W4GVO430Z";
+const MESSAGES = [
+  "Oportunidade única",
+  "Tudo o que a plataforma já tem",
+  "Clique aqui e saiba mais",
+];
 
 export function FullAccessBanner() {
-  const { user } = useAuth();
-  // null = ainda carregando (não pisca o banner à toa); false = não tem → mostra.
-  const [hasFullAccess, setHasFullAccess] = useState<boolean | null>(null);
+  const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    if (!user?.id) {
-      setHasFullAccess(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("access_group_users")
-        .select("group_id")
-        .eq("user_id", user.id)
-        .eq("group_id", FULL_PLATFORM_GROUP_ID)
-        .maybeSingle();
-      if (!cancelled) setHasFullAccess(!!data);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  // Enquanto carrega OU já tem o acesso completo → não renderiza nada.
-  if (hasFullAccess !== false) return null;
+    const t = window.setInterval(() => {
+      setIdx((i) => (i + 1) % MESSAGES.length);
+    }, 2600);
+    return () => window.clearInterval(t);
+  }, []);
 
   return (
-    <a
-      href={CHECKOUT_URL}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      to="/acesso-completo"
       title="Liberar acesso completo à plataforma — oferta especial"
-      className="group block w-full bg-gradient-to-r from-primary to-yellow-400 text-primary-foreground shadow-sm"
+      className="group sticky top-[53px] z-40 flex h-10 w-full items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-primary to-yellow-400 px-3 text-primary-foreground shadow-md md:gap-3"
     >
-      <div className="flex items-center justify-center gap-2 md:gap-3 px-3 py-2.5 md:py-3">
-        <span className="material-symbols-outlined text-xl md:text-2xl filled-icon animate-pulse shrink-0">
-          bolt
-        </span>
-        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest bg-black/85 text-primary px-2 py-0.5 rounded-full shrink-0">
-          Oferta especial
-        </span>
-        <span className="text-xs md:text-sm font-black leading-tight">
-          <span className="hidden sm:inline">Libere o acesso completo à plataforma — </span>
-          Liberar acesso completo
-        </span>
-        <span className="material-symbols-outlined text-base md:text-lg shrink-0 group-hover:translate-x-0.5 transition-transform">
-          arrow_forward
-        </span>
-      </div>
-    </a>
+      <span className="material-symbols-outlined shrink-0 text-xl filled-icon animate-pulse">
+        bolt
+      </span>
+      <span className="shrink-0 rounded-full bg-black/85 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary md:text-[10px]">
+        Oferta especial
+      </span>
+
+      {/* Texto rotativo com fade in/out */}
+      <span className="relative flex h-5 min-w-0 flex-1 items-center justify-center overflow-hidden text-center md:flex-none md:justify-start">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={idx}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.4 }}
+            className="block truncate text-xs font-black leading-none md:text-sm"
+          >
+            {MESSAGES[idx]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+
+      <span className="material-symbols-outlined shrink-0 text-base transition-transform group-hover:translate-x-0.5 md:text-lg">
+        arrow_forward
+      </span>
+    </Link>
   );
 }

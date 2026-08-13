@@ -23,6 +23,7 @@ import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
 import { StudentMessenger } from "@/components/StudentMessenger";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 import { FullAccessBanner } from "@/components/FullAccessBanner";
+import { useHasFullPlatformAccess } from "@/hooks/useHasFullPlatformAccess";
 
 export type AppTab = "home" | "treinos" | "ranking" | "comunidade" | "biblioteca" | "perfil";
 
@@ -91,6 +92,11 @@ export function AppLayout({
   // Tema fixo em dark — sem necessidade de toggle
 
   const { isAdmin } = useAdmin();
+  // Oferta "Acesso completo à plataforma": a barra fixa no topo SÓ aparece pra
+  // quem ainda NÃO tem esse acesso (null = carregando → não pisca; true = já
+  // tem → não mostra). Quem já comprou o acesso completo não vê a barra.
+  const hasFullPlatform = useHasFullPlatformAccess();
+  const showOfferBar = hasFullPlatform === false;
   const nav = useNavigate();
   // Status de acesso da aluna (active/expired). Se 'expired' E não for admin,
   // bloqueia TODA navegação interna e mostra só AccessExpiredScreen.
@@ -284,18 +290,18 @@ export function AppLayout({
         </div>
       </header>
 
-      {/* Botão/banner de oferta no TOPO — "Liberar acesso completo (OFERTA
-          ESPECIAL)". Só aparece pra quem ainda não tem o acesso completo à
-          plataforma (some depois que a aluna compra). */}
-      <FullAccessBanner />
+      {/* Barra FIXA de oferta "Acesso completo à plataforma" — texto rotativo,
+          clique leva pra /acesso-completo. Só pra quem ainda não tem o acesso
+          completo (some depois que compra). */}
+      {showOfferBar && <FullAccessBanner />}
 
       <div className="flex flex-1">
         {/* Desktop Sidebar COLAPSÁVEL — w-64 (expandido) ou w-16 (só ícones).
             User pode recolher pra ganhar largura útil pro conteúdo. */}
         <aside
-          className={`hidden lg:flex flex-col bg-black p-3 sticky top-[53px] h-[calc(100vh-53px)] relative transition-[width] duration-300 ease-out ${
-            sidebarCollapsed ? "w-16" : "w-64"
-          }`}
+          className={`hidden lg:flex flex-col bg-black p-3 sticky relative transition-[width] duration-300 ease-out ${
+            showOfferBar ? "top-[93px] h-[calc(100vh-93px)]" : "top-[53px] h-[calc(100vh-53px)]"
+          } ${sidebarCollapsed ? "w-16" : "w-64"}`}
         >
           <div className="caution-tape--vertical absolute top-0 right-0 bottom-0 w-1.5" aria-hidden="true" />
 

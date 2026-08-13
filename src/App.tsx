@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import { CompletionScreen } from "./components/CompletionScreen";
 import SalesPage from "./pages/SalesPage";
 import CourseInfo from "./pages/CourseInfo";
+import AcessoCompleto from "./pages/AcessoCompleto";
 import FirstAccess from "./pages/FirstAccess";
 import PreviewUnlock from "./pages/PreviewUnlock";
 import PreviewAlert from "./pages/PreviewAlert";
@@ -66,6 +67,7 @@ const App = () => (
                   <Route path="/aula/:id" element={<Index />} />
                   <Route path="/curso/:id" element={<Index />} />
                   <Route path="/curso-info/:id" element={<CourseInfo />} />
+                  <Route path="/acesso-completo" element={<AcessoCompleto />} />
                   <Route path="/primeiro-acesso" element={<FirstAccess />} />
                   <Route path="/primeiro-acesso/:token" element={<FirstAccess />} />
                   <Route path="/preview-unlock" element={<PreviewUnlock />} />
