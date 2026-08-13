@@ -21,6 +21,8 @@ import { useTrackMission } from "@/hooks/useTrackMission";
 import { PurchaseSurvey } from "./PurchaseSurvey";
 import { LessonQuiz } from "./LessonQuiz";
 import { getLearningState } from "@/lib/provas";
+import { FullAccessBanner } from "@/components/FullAccessBanner";
+import { useHasFullPlatformAccess } from "@/hooks/useHasFullPlatformAccess";
 
 interface Props {
   productId: string;
@@ -28,6 +30,9 @@ interface Props {
 }
 
 export function CoursePlayerScreen({ productId, onBack }: Props) {
+  // Barra de oferta "Acesso completo" também DENTRO do módulo (enquanto estuda).
+  // Só pra quem ainda não tem o acesso completo à plataforma.
+  const showFullAccessBar = useHasFullPlatformAccess() === false;
   const { user } = useAuth();
   const { lives, coins, totalXP, loseLife, addCoins, completeLesson, completedLessons, refreshProgress } = useUserProgress();
   const [product, setProduct] = useState<Product | null>(null);
@@ -506,6 +511,9 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden relative">
         {/* Main Content Area (Video OR Challenge) */}
         <main className="flex-1 overflow-y-auto bg-black/5 flex flex-col items-center custom-scrollbar">
+           {/* Barra fixa de oferta — grudada no topo do conteúdo, visível
+               enquanto a aluna estuda o módulo (rola só o conteúdo). */}
+           {showFullAccessBar && <FullAccessBanner stickyTopClass="top-0" />}
            {activeLesson ? (
               <div className="w-full max-w-6xl mx-auto xl:px-8 xl:py-6">
                  

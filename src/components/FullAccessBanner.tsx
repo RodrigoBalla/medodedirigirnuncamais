@@ -20,7 +20,13 @@ const MESSAGES = [
   "Clique aqui e saiba mais",
 ];
 
-export function FullAccessBanner() {
+interface Props {
+  // Offset do sticky conforme o contexto: abaixo do header do app (top-[53px],
+  // default) ou no topo do conteúdo dentro do course player (top-0).
+  stickyTopClass?: string;
+}
+
+export function FullAccessBanner({ stickyTopClass = "top-[53px]" }: Props) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
@@ -34,7 +40,7 @@ export function FullAccessBanner() {
     <Link
       to="/acesso-completo"
       title="Liberar acesso completo à plataforma — oferta especial"
-      className="group sticky top-[53px] z-40 flex h-10 w-full items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-primary to-yellow-400 px-3 text-primary-foreground shadow-md md:gap-3"
+      className={`group sticky ${stickyTopClass} z-40 flex h-10 w-full items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-primary to-yellow-400 px-3 text-primary-foreground shadow-md md:gap-3`}
     >
       <span className="material-symbols-outlined shrink-0 text-xl filled-icon animate-pulse">
         bolt
