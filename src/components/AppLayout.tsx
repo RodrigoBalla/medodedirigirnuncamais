@@ -7,7 +7,6 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShopModal } from "@/components/lms/ShopModal";
 import { CashbackModal } from "@/components/lms/CashbackModal";
-import { EmergencyContactFab } from "@/components/EmergencyContactFab";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getLevelInfo } from "@/lib/levels";
 import { TabTransition } from "@/components/lms/TabTransition";
@@ -507,10 +506,6 @@ export function AppLayout({
       {/* Cashback Modal — acionado pelo clique no contador de moedas no header */}
       <CashbackModal open={showCashback} onClose={() => setShowCashback(false)} />
 
-      {/* FAB "Travou? Me chama" — sempre visível em toda tela do app.
-          Pra quem tem ataque de pânico no volante, ter contato a 1 clique
-          vale mais que gamificação. */}
-      <EmergencyContactFab />
 
       {/* Chat direto com a Carla (admin) — popup de mensagem nova + painel de
           conversa. Só pra alunas; admin tem o painel completo em /admin.
