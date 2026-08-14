@@ -139,13 +139,13 @@ const Auth = () => {
               </h1>
               <p className="text-white/70 text-base leading-relaxed mb-8">
                 Sua jornada continua aqui. Aulas no seu ritmo, comunidade só de
-                mulheres e a Carla a um clique de distância.
+                mulheres e o suporte a um clique de distância.
               </p>
               <ul className="space-y-3">
                 {[
                   { icon: "play_circle", text: "Aulas em vídeo, no seu tempo" },
                   { icon: "groups", text: "Comunidade pra trocar com outras alunas" },
-                  { icon: "support_agent", text: "Carla no WhatsApp quando travar" },
+                  { icon: "support_agent", text: "Suporte no WhatsApp quando travar" },
                   { icon: "emoji_events", text: "Conquistas e recompensas pra te manter no caminho" },
                 ].map((b) => (
                   <li key={b.icon} className="flex items-center gap-3 text-white/85 text-sm">

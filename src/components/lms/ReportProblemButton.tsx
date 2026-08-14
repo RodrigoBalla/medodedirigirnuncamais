@@ -50,7 +50,7 @@ export function ReportProblemButton({ lessonId, getCurrentTime, className }: Pro
       });
       if (error) throw error;
       trackProgress("report_problem", 1);
-      toast.success("📨 Reporte enviado! A Carla vai dar uma olhada.");
+      toast.success("📨 Reporte enviado! Nossa equipe vai dar uma olhada.");
       setText("");
       setOpen(false);
     } catch (err) {

@@ -14,12 +14,12 @@ import { motion, AnimatePresence } from "framer-motion";
 // =============================================================================
 
 const SUPPORT = {
-  name: "Carla",
-  role: "sua instrutora",
+  name: "Suporte",
+  role: "equipe de suporte",
   // Número no formato internacional sem espaços/parênteses.
   // Mensagem pré-preenchida vai no `text=`.
-  whatsapp: "5521974703113",
-  whatsappMessage: "Me salva Carla! Travei na aula!!!",
+  whatsapp: "5521993685289",
+  whatsappMessage: "Preciso de ajuda! Travei na aula!!!",
   // Avatar opcional (URL ou inicial). Por enquanto usa a letra inicial.
 };
 
@@ -71,7 +71,7 @@ export function EmergencyContactFab() {
         whileTap={{ scale: 0.92 }}
         className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-40 size-14 md:size-16 rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_8px_30px_rgba(244,63,94,.5)] flex items-center justify-center group"
         aria-label="Pedir ajuda"
-        title="Fala com a Carla"
+        title="Fala com o suporte"
       >
         {/* Pulse aura quando ainda não foi descoberto */}
         {showTip && (
@@ -92,7 +92,7 @@ export function EmergencyContactFab() {
             animate={{ opacity: 1, x: 0 }}
             className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap bg-foreground text-background text-xs font-black uppercase tracking-widest px-3 py-2 rounded-xl shadow-lg pointer-events-none"
           >
-            Fala com a Carla
+            Fala com o suporte
             <span className="absolute left-full top-1/2 -translate-y-1/2 size-0 border-l-[6px] border-y-[6px] border-y-transparent border-l-foreground" />
           </motion.div>
         )}
@@ -148,10 +148,10 @@ export function EmergencyContactFab() {
                   </div>
                 </div>
 
-                {/* Mensagem da Carla — tom natural, como se ela tivesse digitado */}
+                {/* Mensagem do suporte — tom natural, acolhedor */}
                 <div className="bg-rose-500/5 border border-rose-500/15 rounded-2xl p-4 mb-4">
                   <p className="text-sm text-foreground leading-relaxed">
-                    Oi, é a Carla. Travou? Me chama no zap. Pode ser texto ou áudio,
+                    Oi! Travou? Chama a gente no zap. Pode ser texto ou áudio,
                     do jeito que for mais fácil pra você.
                   </p>
                   <p className="text-sm text-foreground leading-relaxed mt-2">

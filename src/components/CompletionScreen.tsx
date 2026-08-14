@@ -204,8 +204,8 @@ export function CompletionScreen() {
               </div>
             </div>
             <div className="p-4 border-t border-border">
-              <p className="text-sm font-bold text-foreground mb-1">Mensagem da mentora Karla</p>
-              <p className="text-xs text-muted-foreground">Ela tem uma mensagem especial para você!</p>
+              <p className="text-sm font-bold text-foreground mb-1">Mensagem da nossa equipe</p>
+              <p className="text-xs text-muted-foreground">Temos uma mensagem especial para você!</p>
             </div>
           </motion.div>
 

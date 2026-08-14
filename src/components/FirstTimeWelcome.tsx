@@ -34,7 +34,7 @@ function buildSteps(firstName: string): Step[] {
       emoji: "👋",
       title: `Oi, ${firstName}!`,
       body:
-        "Sou a Carla, vou te acompanhar nessa jornada. Em 30 segundos eu te mostro como tudo funciona aqui. Bora?",
+        "Que bom te ver por aqui! A gente vai te acompanhar nessa jornada. Em 30 segundos te mostramos como tudo funciona. Bora?",
       color: "from-primary/30 to-primary/5",
       icon: "waving_hand",
     },

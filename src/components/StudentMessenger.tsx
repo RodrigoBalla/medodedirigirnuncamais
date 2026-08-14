@@ -187,8 +187,8 @@ export function StudentMessenger() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         className="fixed bottom-[10.5rem] right-4 lg:bottom-28 lg:right-6 z-40 size-14 md:size-16 rounded-full bg-gradient-to-br from-primary to-yellow-500 text-primary-foreground shadow-[0_8px_30px_rgba(255,214,10,.35)] flex items-center justify-center"
-        aria-label="Mensagens da Carla"
-        title="Mensagens da Carla"
+        aria-label="Mensagens do suporte"
+        title="Mensagens do suporte"
       >
         <span className="material-symbols-outlined filled-icon text-2xl md:text-3xl relative z-10">
           forum
@@ -223,17 +223,17 @@ export function StudentMessenger() {
             >
               <div className="caution-tape h-2" aria-hidden />
               <div className="p-6 md:p-7">
-                {/* Carla */}
+                {/* Suporte */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="size-12 rounded-2xl bg-gradient-to-br from-primary to-yellow-500 text-primary-foreground font-black text-2xl flex items-center justify-center shrink-0 shadow-lg">
-                    C
+                    S
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">
-                      Mensagem da Carla
+                      Mensagem do suporte
                     </p>
                     <h2 className="font-black text-lg text-foreground leading-tight flex items-center gap-2">
-                      Carla
+                      Suporte
                       {carlaOnline && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500">
                           <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -241,7 +241,7 @@ export function StudentMessenger() {
                         </span>
                       )}
                     </h2>
-                    <p className="text-xs text-muted-foreground">sua instrutora</p>
+                    <p className="text-xs text-muted-foreground">equipe de suporte</p>
                   </div>
                 </div>
 
@@ -322,10 +322,10 @@ export function StudentMessenger() {
               <div className="caution-tape h-1.5 shrink-0" aria-hidden />
               <header className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
                 <div className="size-10 rounded-xl bg-gradient-to-br from-primary to-yellow-500 text-primary-foreground font-black text-xl flex items-center justify-center shrink-0">
-                  C
+                  S
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-black text-foreground leading-tight">Carla</p>
+                  <p className="font-black text-foreground leading-tight">Suporte</p>
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                     {carlaOnline ? (
                       <>
@@ -333,7 +333,7 @@ export function StudentMessenger() {
                         online agora
                       </>
                     ) : (
-                      "sua instrutora"
+                      "equipe de suporte"
                     )}
                   </p>
                 </div>
@@ -354,9 +354,9 @@ export function StudentMessenger() {
                     <span className="material-symbols-outlined text-4xl text-primary/60">
                       waving_hand
                     </span>
-                    <p className="text-sm font-medium">Fale com a Carla por aqui.</p>
+                    <p className="text-sm font-medium">Fale com o suporte por aqui.</p>
                     <p className="text-xs text-muted-foreground/70">
-                      Mande sua dúvida que ela responde direto na plataforma.
+                      Mande sua dúvida que a gente responde direto na plataforma.
                     </p>
                   </div>
                 ) : (
@@ -376,7 +376,7 @@ export function StudentMessenger() {
                         >
                           {!mine && (
                             <p className="text-[10px] font-black uppercase tracking-widest text-primary/80 mb-1">
-                              Carla
+                              Suporte
                             </p>
                           )}
                           {m.body && <span>{m.body}</span>}

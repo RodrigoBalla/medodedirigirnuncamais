@@ -285,7 +285,7 @@ export default function CourseInfo() {
                   </span>
                   <p className="text-sm font-bold text-muted-foreground">Checkout ainda não configurado</p>
                   <p className="text-xs text-muted-foreground/70 mt-1">
-                    Fale com a Carla pra liberar a compra deste curso.
+                    Fale com o suporte pra liberar a compra deste curso.
                   </p>
                 </div>
               )}

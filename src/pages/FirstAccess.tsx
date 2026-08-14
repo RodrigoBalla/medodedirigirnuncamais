@@ -323,7 +323,7 @@ export default function FirstAccess() {
                   className="absolute inset-0 w-full h-full"
                   frameBorder={0}
                   allow="autoplay; fullscreen; picture-in-picture"
-                  title="Boas-vindas da Carla"
+                  title="Boas-vindas"
                 />
               </motion.div>
 

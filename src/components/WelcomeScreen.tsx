@@ -203,8 +203,8 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
               <span className="material-symbols-outlined text-primary text-2xl">person</span>
             </div>
             <div>
-              <p className="font-semibold text-foreground text-sm">Karla Margaretch</p>
-              <p className="text-xs text-muted-foreground">Sua mentora</p>
+              <p className="font-semibold text-foreground text-sm">Medo de Dirigir Nunca Mais</p>
+              <p className="text-xs text-muted-foreground">Sua mentoria</p>
             </div>
           </div>
 

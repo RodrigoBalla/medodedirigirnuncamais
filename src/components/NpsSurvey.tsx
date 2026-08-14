@@ -108,7 +108,7 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
   function waUrl(mod: LockedModuleLite): string {
     const nome = firstName || "Aluna";
     const txt =
-      `Oi Carla! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
+      `Oi! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
       `Respondi a pesquisa e ganhei *R$ 10 em moedas* 🪙.\n` +
       `Quero usar pra comprar o *${mod.title}*. Como aplico o desconto? 💛`;
     return `https://wa.me/${NPS_WHATSAPP}?text=${encodeURIComponent(txt)}`;
@@ -265,7 +265,7 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
                     <h3 className="font-black text-lg text-foreground mb-1 leading-tight" style={{ textWrap: "balance" }}>{pickedModule.title}</h3>
                     <div className="flex items-start gap-2 text-left text-[12px] text-primary bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 my-4">
                       <span className="material-symbols-outlined text-base mt-0.5">savings</span>
-                      <span>Você tem <strong>R$ {brl(reward)}</strong> de saldo. Fale com a Carla no WhatsApp <strong>antes de pagar</strong> pra ela aplicar seu desconto no checkout. 💛</span>
+                      <span>Você tem <strong>R$ {brl(reward)}</strong> de saldo. Fale com a nossa equipe no WhatsApp <strong>antes de pagar</strong> pra aplicar seu desconto no checkout. 💛</span>
                     </div>
                     <a href={waUrl(pickedModule)} target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-black px-4 py-3.5 rounded-2xl shadow-lg shadow-[#25D366]/30 uppercase tracking-wide text-xs transition-all mb-2">
                       <span className="material-symbols-outlined text-base">chat</span>Pegar meu desconto no WhatsApp

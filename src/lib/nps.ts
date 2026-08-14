@@ -71,7 +71,7 @@ export const NPS_QUESTIONS: NpsQuestion[] = [
     title: "O que você MAIS gostou?",
     subtitle: "Pode marcar até 2",
     options: [
-      { v: "didatica", l: "A didática da Carla" },
+      { v: "didatica", l: "A didática das aulas" },
       { v: "videos", l: "As aulas em vídeo" },
       { v: "passo_a_passo", l: "O passo a passo" },
       { v: "comunidade", l: "A comunidade" },
@@ -87,7 +87,7 @@ export const NPS_QUESTIONS: NpsQuestion[] = [
     subtitle: "Marque até 2 — isso vira nosso próximo passo",
     options: [
       { v: "mais_praticas", l: "Mais aulas práticas" },
-      { v: "ao_vivo", l: "Aulas ao vivo com a Carla" },
+      { v: "ao_vivo", l: "Aulas ao vivo" },
       { v: "simulados", l: "Simulados da prova" },
       { v: "balizas", l: "Baliza e manobras" },
       { v: "ansiedade", l: "Ansiedade e pânico no volante" },
@@ -108,7 +108,7 @@ export const NPS_QUESTIONS: NpsQuestion[] = [
     type: "testimonial",
     title: "Se o curso te ajudou, conta em 2-3 linhas o que mudou pra você 💛",
     optional: true,
-    consentLabel: "Autorizo a Carla a usar meu depoimento (com meu primeiro nome) pra inspirar outras mulheres.",
+    consentLabel: "Autorizo o uso do meu depoimento (com meu primeiro nome) pra inspirar outras mulheres.",
   },
   {
     id: "continue_interest",
@@ -134,7 +134,7 @@ export const NPS_LABELS: Record<string, string> = {
   talvez: "Talvez",
   nao: "Não",
   // liked_most
-  didatica: "Didática da Carla",
+  didatica: "Didática das aulas",
   videos: "Aulas em vídeo",
   passo_a_passo: "Passo a passo",
   comunidade: "Comunidade",

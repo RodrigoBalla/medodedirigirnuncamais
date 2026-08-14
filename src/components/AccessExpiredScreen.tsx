@@ -99,7 +99,7 @@ export function AccessExpiredScreen() {
             transition={{ delay: 0.2 }}
             className="text-center text-sm md:text-base text-muted-foreground leading-relaxed mb-8 max-w-md mx-auto"
           >
-            Pra continuar dirigindo com a Carla, escolha uma das opções abaixo:
+            Pra continuar o seu curso, escolha uma das opções abaixo:
           </motion.p>
 
           {/* CTAs */}

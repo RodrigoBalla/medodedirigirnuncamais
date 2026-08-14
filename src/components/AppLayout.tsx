@@ -490,6 +490,14 @@ export function AppLayout({
           <TabTransition tabKey={activeTab} order={TAB_ORDER}>
             {children}
           </TabTransition>
+
+          {/* Rodapé da área de membros — direitos autorais Manda Balla Produções */}
+          <footer className="mt-8 border-t border-border/60 px-4 py-6 text-center">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              © {new Date().getFullYear()} Medo de Dirigir Nunca Mais · Todo o conteúdo
+              pertence a <span className="font-semibold text-foreground/80">Manda Balla Produções</span>.
+            </p>
+          </footer>
         </main>
       </div>
 

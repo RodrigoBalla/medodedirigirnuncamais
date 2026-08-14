@@ -470,14 +470,14 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
          <div className="flex items-center gap-3">
             {/* Streak diário — 🔥 X dias */}
             <StreakBadge />
-            {/* Carla online — badge real-time via Supabase Presence */}
+            {/* Suporte online — badge real-time via Supabase Presence */}
             {carlaOnline && (
                <div
                   className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  title="A Carla está online agora"
+                  title="O suporte está online agora"
                >
                   <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest">Carla online</span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest">Suporte online</span>
                </div>
             )}
             {/* Vidas ❤️ */}
