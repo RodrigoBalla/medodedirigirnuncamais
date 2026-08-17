@@ -27,9 +27,12 @@
   **Manda Balla Produções — CNPJ 24.858.692/0001-71**".
 - **Primeiro acesso:** vídeo de boas-vindas removido (só mensagem). **Login:** imagens removidas
   (painel navy). Git usa e-mail **noreply** do GitHub (GH007 bloqueava o gmail).
+- **Capas dos produtos:** substituídas por **capas genéricas** (SVG navy+amarelo, volante, nome do
+  produto) em `public/modulos/*-9x16.svg`; `products.image_url` apontando pra elas; título do
+  principal no banco = **"Escola de Condutores (Módulo Completo)"**. Imagens genéricas pra Eduzz
+  (JPG 1080×1080, geradas via sharp) entregues ao Balla p/ upload manual no painel da Eduzz.
 - **Pendências:** renomear produtos na Eduzz + template WhatsApp `matricula_confirmada` (Meta);
-  capas genéricas dos produtos geradas (SVG) mas **aguardando aprovação** (não deployadas);
-  imagens genéricas pra Eduzz a criar; docs CLAUDE.md/ESCOPO.md ainda com nome antigo.
+  sales.html ainda tem Carla (Balla mexe depois); docs CLAUDE.md/ESCOPO.md ainda com nome antigo.
 
 ---
 
