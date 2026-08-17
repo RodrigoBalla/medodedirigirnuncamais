@@ -10,8 +10,8 @@ const Index = () => {
   const { user, loading } = useAuth();
   useActivityTracker();
   usePresenceTracker();
-  // Se o user logado for admin (Carla), faz track no canal "teacher-presence"
-  // pra que os alunos vejam o badge "Carla online" no header do player.
+  // Se o user logado for admin (admin), faz track no canal "teacher-presence"
+  // pra que os alunos vejam o badge "admin online" no header do player.
   useTrackTeacherPresence();
   // Sessão única (1 device): registra esta sessão e escuta sinal de logout
   // de Realtime — derruba este browser se outro device logar com a mesma conta.

@@ -174,7 +174,7 @@ export function SupportChat() {
     await new Promise((r) => setTimeout(r, 600));
 
     // Sempre confirma pra aluna (mesmo se o email falhou, o lead já está em DB
-    // e a Carla recupera pela aba Suporte do admin). Se quiser distinguir,
+    // e a admin recupera pela aba Suporte do admin). Se quiser distinguir,
     // posso adicionar fallback explícito — mas isso adiciona ruído pra ela.
     setMessages((prev) => [
       ...prev,

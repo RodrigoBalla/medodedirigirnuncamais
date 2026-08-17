@@ -12,7 +12,7 @@ import { toast } from "sonner";
 //      banco mudar pra um valor diferente do nosso, significa que outro
 //      device logou. Faz signOut() e mostra toast.
 //
-// Pulado pra admins (Carla pode estar em vários lugares ao mesmo tempo).
+// Pulado pra admins (admin pode estar em vários lugares ao mesmo tempo).
 // =============================================================================
 
 const STORAGE_KEY = "mddnm_session_token";

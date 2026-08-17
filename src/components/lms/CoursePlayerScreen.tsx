@@ -84,8 +84,8 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
   // Detecta DevTools, bloqueia right-click, captura de tela
   const { blocked: piracyBlocked, reason: piracyReason, reset: resetPiracy } = useAntiPiracy();
 
-  // Indicador "Carla online" — badge no header
-  const carlaOnline = useTeacherOnline();
+  // Indicador "admin online" — badge no header
+  const teacherOnline = useTeacherOnline();
 
   // Atalhos de teclado (espaço/setas/F/M/C)
   const playerActions = useMemo(() => ({
@@ -471,7 +471,7 @@ export function CoursePlayerScreen({ productId, onBack }: Props) {
             {/* Streak diário — 🔥 X dias */}
             <StreakBadge />
             {/* Suporte online — badge real-time via Supabase Presence */}
-            {carlaOnline && (
+            {teacherOnline && (
                <div
                   className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   title="O suporte está online agora"

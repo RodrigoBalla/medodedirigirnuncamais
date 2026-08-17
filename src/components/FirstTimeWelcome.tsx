@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 //
 // Princípios:
 //  - Telas grandes, 1 ideia por card (cabe na cabeça de quem tem 5 anos)
-//  - Linguagem da Carla, calorosa, sem termos técnicos
+//  - Linguagem da admin, calorosa, sem termos técnicos
 //  - 1 botão por vez ("Próximo") — sem opções pra confundir
 //  - Pode pular a qualquer momento (X no canto)
 //  - Mobile-first: todo o layout otimizado pra 390px

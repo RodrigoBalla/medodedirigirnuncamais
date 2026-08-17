@@ -5,7 +5,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 
 // ─── useTeacherPresence ──────────────────────────────────────────────────────
 // Canal Realtime dedicado pra detectar se "a professora" (qualquer admin) está
-// online. Aluno chama `useTeacherOnline()` pra exibir badge "🟢 Carla online".
+// online. Aluno chama `useTeacherOnline()` pra exibir badge "🟢 admin online".
 //
 // Implementação:
 //   - Admin loga → `useTrackTeacherPresence()` faz `track()` no canal "teacher-presence"

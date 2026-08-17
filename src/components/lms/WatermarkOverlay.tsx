@@ -26,7 +26,7 @@ const POSITIONS: Record<Position, string> = {
 const ORDER: Position[] = ["tr", "bl", "tl", "br", "c"];
 
 interface Props {
-  /** Email ou identificador do aluno (ex: carla@example.com) */
+  /** Email ou identificador do aluno (ex: aluno@example.com) */
   viewerId?: string;
   /** Intervalo entre trocas de posição em ms — default 8s */
   intervalMs?: number;

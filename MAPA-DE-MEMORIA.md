@@ -1,4 +1,4 @@
-# 🗺️ Mapa de Memória — Medo de Dirigir Nunca Mais (MDNM)
+# 🗺️ Mapa de Memória — Escola de Condutores (MDNM)
 
 > Documento vivo com o **histórico descritivo e detalhado** de tudo o que foi construído
 > neste projeto. Serve como memória de longo prazo: contexto, arquitetura, decisões,
@@ -8,13 +8,34 @@
 > Complementa (não substitui): [`CLAUDE.md`](CLAUDE.md) (instruções pro agente),
 > [`ESCOPO.md`](ESCOPO.md) (escopo formal) e [`README.md`](README.md).
 >
-> **Última atualização:** 2026-08-13.
+> **Última atualização:** 2026-08-17.
+
+---
+
+## ⚠️ Estado atual (2026-08-17 — virada grande)
+
+- **A plataforma foi RENOMEADA** de "Medo de Dirigir Nunca Mais" para **"Escola de Condutores"**.
+  A MARCA antiga foi removida de todo o app/site/e-mails (o TEMA "medo de dirigir" como dor/assunto
+  permanece). Trechos abaixo que ainda citam o nome antigo são **históricos**.
+- **A Carla saiu do projeto.** Toda menção a ela e ao contato dela foi removida do app; o suporte
+  agora é da **equipe** (WhatsApp **5521993685289**). O Balla está trazendo **instrutores como
+  coprodutores** (50/50). *(Trechos que citam "Carla/Jó" abaixo são históricos.)*
+- **Site público (/vendas + raiz deslogada) está em MANUTENÇÃO** (`public/manutencao.html`). A
+  `sales.html` fica acessível só em `/sales.html` (privada, pro Balla editar). **Área de membros
+  dos alunos segue 100% no ar.**
+- **Direito de marca:** todos os copyrights agora dizem "Todo o conteúdo e a marca pertencem a
+  **Manda Balla Produções — CNPJ 24.858.692/0001-71**".
+- **Primeiro acesso:** vídeo de boas-vindas removido (só mensagem). **Login:** imagens removidas
+  (painel navy). Git usa e-mail **noreply** do GitHub (GH007 bloqueava o gmail).
+- **Pendências:** renomear produtos na Eduzz + template WhatsApp `matricula_confirmada` (Meta);
+  capas genéricas dos produtos geradas (SVG) mas **aguardando aprovação** (não deployadas);
+  imagens genéricas pra Eduzz a criar; docs CLAUDE.md/ESCOPO.md ainda com nome antigo.
 
 ---
 
 ## 1. Visão geral
 
-**Medo de Dirigir Nunca Mais (MDNM)** é uma **plataforma web gamificada / área de membros (LMS)**
+**Escola de Condutores (MDNM)** é uma **plataforma web gamificada / área de membros (LMS)**
 para pessoas — em especial mulheres — que têm medo de dirigir. O curso é da **Carla (persona
 pública "Jô")**, instrutora. A plataforma entrega os cursos em vídeo com uma camada de
 gamificação estilo Duolingo (XP, moedas, missões, roleta, ranking, níveis), comunidade e
@@ -112,7 +133,7 @@ suporte direto.
 | **Acesso completo a plataforma** *(novo, 2026-08-13)* | `87b174f5-f094-4fe4-895e-dbc62c422da8` | 3084222 |
 
 ### Catálogo (84 aulas em 5 cursos)
-- **Medo de Dirigir Nunca Mais — Método Completo** (módulo "Conhecendo o Carro") — 21 aulas.
+- **Escola de Condutores — Método Completo** (módulo "Conhecendo o Carro") — 21 aulas.
 - **Dominando as Balizas** — 12 · **Ladeiras** — 16 · **Marchas** — 14 · **O Mapa do Condutor** — 21.
 
 ### Controle de acesso (RLS + frontend)
@@ -254,6 +275,12 @@ deployadas (não versionadas no repo): `first-access`, `submit-support-request`,
   por grupo; panda-jwt nega expirada; WhatsApp reativo na /obrigado; LGPD + Termos.
 - **2026-08** — Teto transparente de cashback; anti-abuso de missões; papel `support`; turmas
   automáticas de 100 em 100; **(13/08) sessão detalhada abaixo**.
+- **2026-08-17 — VIRADA:** Carla saiu → removida do app + contatos (suporte vira equipe);
+  **rebrand** "Medo de Dirigir Nunca Mais" → **"Escola de Condutores"** (app/site/e-mails/PWA/edge
+  functions; tema "medo de dirigir" mantido); **site público em manutenção** (`manutencao.html`,
+  sales.html vira privada em `/sales.html`); copyright → **Manda Balla Produções · CNPJ
+  24.858.692/0001-71**; primeiro-acesso sem vídeo (só mensagem); login sem imagens; git via
+  e-mail noreply (GH007). Ver o callout "Estado atual" no topo.
 
 ---
 
@@ -277,7 +304,7 @@ Tudo o que foi feito nesta data, em ordem:
    Widevine), baixado via `yt-dlp` — a "DRM" é overlay do player. (2,2 GB, 0 falhas.)
 
 4. **Investiguei uma venda que não contabilizou** (`gleide258@gmail.com`). **Causa raiz:** a
-   variação nova `7WXG5VDY0A` = product_id **3085197** / nome **"Medo de Dirigir Nunca Mais
+   variação nova `7WXG5VDY0A` = product_id **3085197** / nome **"Escola de Condutores
    (Modulo completo)"** não estava mapeada → webhook **IGNOROU**. **Fix:** cadastrei o id 3085197 +
    o nome no grupo Acesso Completo. **Recuperação:** reenviei o postback real pelo Console de
    developers da Eduzz → conta criada + Acesso Completo + e-mail de 1º acesso + WhatsApp + CAPI

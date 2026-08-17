@@ -12,7 +12,7 @@ import confetti from "canvas-confetti";
 // Fluxo:
 //   1. Lê `?token=...` da URL
 //   2. POST /functions/v1/first-access {action:"validate"} → pega nome/curso
-//   3. Mostra "Parabéns, {Nome}!" + confetes + vídeo da Carla + onboarding
+//   3. Mostra "Parabéns, {Nome}!" + confetes + mensagem de boas-vindas + onboarding
 //   4. Form de senha forte
 //   5. POST /functions/v1/first-access {action:"set_password"} → seta senha
 //   6. signInWithPassword com a senha recém criada → cai logada na /biblioteca
@@ -311,20 +311,21 @@ export default function FirstAccess() {
                 </motion.p>
               </div>
 
-              {/* Vídeo da Carla — mesmo Vimeo usado na WelcomeScreen original */}
+              {/* Mensagem de boas-vindas (substitui o vídeo) */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.65 }}
-                className="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 bg-black"
+                className="relative w-full rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/10 bg-card p-6 md:p-8 text-center"
               >
-                <iframe
-                  src="https://player.vimeo.com/video/1170037067?badge=0&autopause=0&controls=1&title=0&byline=0&portrait=0&autoplay=1&muted=1&background=0&dnt=1&quality=auto"
-                  className="absolute inset-0 w-full h-full"
-                  frameBorder={0}
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  title="Boas-vindas"
-                />
+                <span className="material-symbols-outlined text-primary text-4xl md:text-5xl mb-3 block filled-icon">celebration</span>
+                <p className="text-lg md:text-xl font-black text-foreground leading-snug mb-2">
+                  Que bom ter você aqui! 🚗
+                </p>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  Você deu o primeiro passo pra dirigir com confiança. É só criar sua senha
+                  aqui embaixo e entrar na plataforma pra começar agora mesmo, no seu ritmo.
+                </p>
               </motion.div>
 
               {/* Onboarding em 3 passos */}

@@ -12,13 +12,13 @@ import {
 } from "@/lib/directMessages";
 
 // ─── StudentMessenger ────────────────────────────────────────────────────────
-// Canal de comunicação direto da aluna com a Carla (admin). Montado no AppLayout
+// Canal de comunicação direto da aluna com a admin (admin). Montado no AppLayout
 // só pra alunas (admin tem o painel completo em /admin).
 //
 //   • Mensagem do admin chega → POPUP automático (com botões-link, se houver),
 //     em tempo real se a aluna estiver online, ou no próximo login se offline.
 //   • FAB (canto inferior esquerdo) com badge de não-lidas abre o painel de chat.
-//   • Painel: thread completa + caixa pra RESPONDER a Carla.
+//   • Painel: thread completa + caixa pra RESPONDER a admin.
 //
 // Isolamento: a aluna só enxerga/escreve na PRÓPRIA conversa (RLS por student_id).
 // Nunca vê a conversa de outra aluna nem consegue mandar pra outra aluna.
@@ -26,7 +26,7 @@ import {
 
 export function StudentMessenger() {
   const { user } = useAuth();
-  const carlaOnline = useTeacherOnline();
+  const teacherOnline = useTeacherOnline();
 
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -234,7 +234,7 @@ export function StudentMessenger() {
                     </p>
                     <h2 className="font-black text-lg text-foreground leading-tight flex items-center gap-2">
                       Suporte
-                      {carlaOnline && (
+                      {teacherOnline && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500">
                           <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                           online
@@ -327,7 +327,7 @@ export function StudentMessenger() {
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-foreground leading-tight">Suporte</p>
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                    {carlaOnline ? (
+                    {teacherOnline ? (
                       <>
                         <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                         online agora

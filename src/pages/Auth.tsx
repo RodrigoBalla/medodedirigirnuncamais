@@ -77,28 +77,14 @@ const Auth = () => {
           Desktop: coluna esquerda (lg:flex-1, h tela inteira).
           Mobile: bloco no topo. */}
       <aside className="relative flex flex-col lg:overflow-hidden lg:flex-1 lg:border-r border-white/5 lg:min-h-screen">
-        {/* MOBILE: imagem hero 1:1 com Carla centralizada. */}
-        <div className="lg:hidden relative w-full h-[28vh] min-h-[200px] max-h-[260px] overflow-hidden">
-          <img
-            src="/hero/area-de-membros-mobile.jpg"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            fetchPriority="high"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[hsl(var(--blue-900))] z-10" />
-          <div className="absolute top-4 left-5 z-20 flex items-center gap-2.5">
-            <div className="size-9 bg-primary/30 rounded-lg flex items-center justify-center border border-primary/40 backdrop-blur-md">
+        {/* MOBILE: header enxuto (sem imagem) */}
+        <div className="lg:hidden px-6 pt-6 pb-3 bg-[hsl(var(--blue-900))] text-center">
+          <div className="inline-flex items-center gap-2.5 mb-3">
+            <div className="size-9 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
               <span className="material-symbols-outlined text-primary text-base filled-icon">directions_car</span>
             </div>
-            <div>
-              <p className="text-white font-black text-xs leading-tight drop-shadow-lg">Escola de Condutores</p>
-              <p className="text-primary font-black text-xs leading-tight drop-shadow-lg">Nunca Mais</p>
-            </div>
+            <p className="text-white font-black text-sm leading-tight">Escola de <span className="text-primary">Condutores</span></p>
           </div>
-        </div>
-
-        <div className="lg:hidden px-6 pt-3 pb-3 bg-[hsl(var(--blue-900))] text-center">
           <p className="inline-block px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/30 text-[9px] font-black uppercase tracking-widest text-primary mb-2">
             🛞 Sua área de membros
           </p>
@@ -107,15 +93,8 @@ const Auth = () => {
           </h1>
         </div>
 
-        {/* DESKTOP: layout completo com imagem cobrindo a coluna */}
-        <div className="hidden lg:block absolute inset-0">
-          <img
-            src="/hero/area-de-membros-desktop.jpg"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover"
-            fetchPriority="high"
-          />
+        {/* DESKTOP: painel navy (sem imagem) */}
+        <div className="hidden lg:block absolute inset-0 bg-[hsl(var(--blue-900))]">
           <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(var(--blue-900))]/95 via-[hsl(var(--blue-900))]/70 to-[hsl(var(--blue-900))]/30 z-10" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,214,10,0.12),transparent_55%)] z-10" />
           <div className="caution-tape absolute top-0 left-0 right-0 h-2 z-30" aria-hidden />
@@ -126,8 +105,8 @@ const Auth = () => {
                 <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
               </div>
               <div>
-                <p className="text-white font-black text-sm leading-tight">Escola de Condutores</p>
-                <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
+                <p className="text-white font-black text-sm leading-tight">Escola de</p>
+                <p className="text-primary font-black text-sm leading-tight">Condutores</p>
               </div>
             </div>
             <div className="max-w-lg">

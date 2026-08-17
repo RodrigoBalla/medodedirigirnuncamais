@@ -507,7 +507,7 @@ export function AppLayout({
       <CashbackModal open={showCashback} onClose={() => setShowCashback(false)} />
 
 
-      {/* Chat direto com a Carla (admin) — popup de mensagem nova + painel de
+      {/* Chat direto com a admin (admin) — popup de mensagem nova + painel de
           conversa. Só pra alunas; admin tem o painel completo em /admin.
           Canal isolado por aluna (RLS) — ninguém vê a conversa de ninguém. */}
       {!isAdmin && <StudentMessenger />}
