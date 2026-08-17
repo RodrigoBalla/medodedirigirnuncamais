@@ -3,7 +3,7 @@
 // Assina um JWT (HS256) que vai como `&watermark={JWT}` na URL do
 // iframe Panda Video. O JWT carrega:
 //   - drm_group_id: ID do grupo DRM Watermark (env PANDA_DRM_GROUP_ID)
-//   - string1: "Aluno · Medo de Dirigir Nunca Mais"
+//   - string1: "Aluno · Escola de Condutores"
 //   - string2: email do aluno (renderizado sobre o vídeo)
 //   - string3: ID curto da sessão (rastreio)
 // Expira em 1h (token rotativo — limita janela de compartilhamento).
@@ -92,7 +92,7 @@ serve(async (req) => {
   const userIdShort = (user.id || "").slice(0, 8);
   const payload = {
     drm_group_id: drmGroupId,
-    string1: "Medo de Dirigir Nunca Mais",
+    string1: "Escola de Condutores",
     string2: email,
     string3: `ID: ${userIdShort}`,
     exp: getNumericDate(60 * 60), // 1h — token rotativo

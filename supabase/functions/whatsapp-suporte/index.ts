@@ -78,7 +78,7 @@ async function sendWelcome(to: string, nome: string, link: string): Promise<{ ok
   if (!token) return { ok: false, reason: "missing_suporte_token" };
   const endpoint = `https://graph.facebook.com/${GRAPH_VERSION}/${SUPORTE_PHONE_ID}/messages`;
   const bodyText =
-    `Parabéns ${nome} 🎉 Sua matrícula no Medo de Dirigir Nunca Mais foi confirmada. ` +
+    `Parabéns ${nome} 🎉 Sua matrícula no Escola de Condutores foi confirmada. ` +
     `Eu sou o Balla, seu suporte por aqui, qualquer dúvida é só me chamar nesse número.\n\n` +
     `Pra começar, é só tocar no botão pra criar sua senha e fazer o primeiro acesso. Bons estudos! 🚗`;
 

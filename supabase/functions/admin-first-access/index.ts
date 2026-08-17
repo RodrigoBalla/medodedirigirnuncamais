@@ -21,7 +21,7 @@ const CORS = {
 
 const APP_URL = Deno.env.get("APP_URL") || "https://medodedirigirnuncamais.netlify.app";
 const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@medodedirigirnuncamais.com.br";
-const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Carla · Medo de Dirigir Nunca Mais";
+const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Escola de Condutores";
 const BREVO_FIRST_ACCESS_TEMPLATE_ID = Deno.env.get("BREVO_FIRST_ACCESS_TEMPLATE_ID");
 
 function jsonResp(body: unknown, status = 200): Response {
@@ -42,7 +42,7 @@ function genPassword(): string {
 async function sendBrevoFirstAccessEmail(args: { toEmail: string; toName: string; courseTitle: string; firstAccessUrl: string }): Promise<{ ok: boolean; messageId?: string; reason?: string }> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
   if (!apiKey) return { ok: false, reason: "missing_brevo_key" };
-  const params = { NOME: firstName(args.toName), CURSO: args.courseTitle || "Medo de Dirigir Nunca Mais", LINK_PRIMEIRO_ACESSO: args.firstAccessUrl };
+  const params = { NOME: firstName(args.toName), CURSO: args.courseTitle || "Escola de Condutores", LINK_PRIMEIRO_ACESSO: args.firstAccessUrl };
   const payload: any = {
     sender: { email: BREVO_FROM_EMAIL, name: BREVO_FROM_NAME },
     to: [{ email: args.toEmail, name: args.toName || firstName(args.toName) }],
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     const r = await sendBrevoFirstAccessEmail({
       toEmail: row.email,
       toName: row.display_name || "Aluna",
-      courseTitle: row.course_title || "Medo de Dirigir Nunca Mais",
+      courseTitle: row.course_title || "Escola de Condutores",
       firstAccessUrl: link,
     });
 

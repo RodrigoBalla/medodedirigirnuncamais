@@ -32,7 +32,7 @@ export const WelcomeBackScreen = ({
             <span className="material-symbols-outlined text-primary text-xl">directions_car</span>
           </div>
           <h2 className="text-foreground text-sm md:text-base font-bold tracking-tight hidden sm:block">
-            Medo de dirigir nunca mais
+            Escola de Condutores
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export const WelcomeBackScreen = ({
       {/* Footer */}
       <footer className="border-t border-border bg-card px-4 py-3">
         <p className="text-center text-xs text-muted-foreground">
-          © 2024 Medo de dirigir nunca mais. Todos os direitos reservados.
+          © {new Date().getFullYear()} Escola de Condutores · Todo o conteúdo e a marca pertencem a Manda Balla Produções — CNPJ 24.858.692/0001-71.
         </p>
       </footer>
     </div>

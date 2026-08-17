@@ -200,7 +200,7 @@ export function GroupsManager() {
                   type="text"
                   value={draftNames}
                   onChange={(e) => setDraftNames(e.target.value)}
-                  placeholder="Ex: Medo de Dirigir Nunca Mais"
+                  placeholder="Ex: Escola de Condutores"
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-primary text-sm"
                 />
               </div>

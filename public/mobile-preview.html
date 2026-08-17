@@ -22,7 +22,7 @@
   </div>
   <script>
     const courses = [
-      { name: 'Medo de Dirigir Nunca Mais — Método Completo', cover: '/modulos/medo-de-dirigir-nunca-mais-9x16.jpg' },
+      { name: 'Escola de Condutores — Método Completo', cover: '/modulos/medo-de-dirigir-nunca-mais-9x16.jpg' },
       { name: 'Dominando as Balizas', cover: '/modulos/dominando-as-balizas-9x16.jpg' },
       { name: 'Dominando as Ladeiras', cover: '/modulos/dominando-as-ladeiras-9x16.jpg' },
       { name: 'Dominando as Marchas', cover: '/modulos/dominando-as-marchas-9x16.jpg' },
@@ -35,7 +35,7 @@
     }
     courses.forEach((c, i) => {
       const b = document.createElement('button');
-      b.textContent = c.name.replace(/^Bônus:\s*/, '').replace(/Medo de Dirigir Nunca Mais — /, '');
+      b.textContent = c.name.replace(/^Bônus:\s*/, '').replace(/Escola de Condutores — /, '');
       b.onclick = () => loadCourse(c);
       picker.appendChild(b);
     });

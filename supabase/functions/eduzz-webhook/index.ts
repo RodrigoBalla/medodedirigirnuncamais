@@ -29,7 +29,7 @@ const WHATSAPP_TEMPLATE_NAME = Deno.env.get("WHATSAPP_TEMPLATE_NAME") || "matric
 const WHATSAPP_TEMPLATE_LANG = Deno.env.get("WHATSAPP_TEMPLATE_LANG") || "pt_BR";
 const WHATSAPP_GRAPH_VERSION = "v21.0";
 const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@medodedirigirnuncamais.com.br";
-const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Carla · Medo de Dirigir Nunca Mais";
+const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Escola de Condutores";
 
 function pick(obj: any, ...paths: string[]): string { for (const p of paths) { const segs = p.split("."); let c: any = obj; for (const s of segs) { if (c == null) break; c = c[s]; } if (typeof c === "string" && c.trim()) return c.trim(); if (typeof c === "number") return String(c); } return ""; }
 function classify(s: string): "paid" | "cancel" | "ignore" { const l = s.toLowerCase(); if (PAID_HINTS.some(h => l.includes(h))) return "paid"; if (CANCEL_HINTS.some(h => l.includes(h))) return "cancel"; if (PAID_NUMERIC.has(l)) return "paid"; if (CANCEL_NUMERIC.has(l)) return "cancel"; return "ignore"; }
@@ -82,7 +82,7 @@ function getInvoiceItems(payload: any): Array<{ id: string; name: string }> {
 
 function firstAccessEmailHtml(a: { nome: string; curso: string; link: string }): string {
   const nome = esc(a.nome || "Aluna");
-  const curso = esc(a.curso || "Medo de Dirigir Nunca Mais");
+  const curso = esc(a.curso || "Escola de Condutores");
   const link = a.link;
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR"><head>
@@ -104,18 +104,18 @@ function firstAccessEmailHtml(a: { nome: string; curso: string; link: string }):
     <p style="margin:14px 0 0;font-size:11px;color:#8B92A8">🔒 Link único · válido por 7 dias</p>
   </td></tr>
   <tr><td class="px" style="padding:8px 40px 24px"><p style="margin:0 0 6px;font-size:12px;color:#8B92A8">Se o botão não funcionar, copie e cole este link no navegador:</p><p style="margin:0;word-break:break-all"><a href="${link}" target="_blank" style="font-size:12px;color:#FFD60A;text-decoration:underline;word-break:break-all">${link}</a></p></td></tr>
-  <tr><td class="px" style="padding:0 40px 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B1A38;border-radius:10px"><tr><td style="padding:14px 18px"><p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#8B92A8">💬 Suporte</p><p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:#C5C8D1">Travou? Fala no WhatsApp: <a href="https://wa.me/5521974703113" target="_blank" style="color:#FFD60A;font-weight:700;text-decoration:none">+55 21 97470-3113</a></p><p style="margin:8px 0 0;font-size:12px;line-height:1.45;color:#8B92A8">📵 Este é um e-mail automático — <strong style="color:#C5C8D1">não responda este e-mail</strong>. Pra falar com a gente, use o WhatsApp acima.</p></td></tr></table></td></tr>
+  <tr><td class="px" style="padding:0 40px 32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B1A38;border-radius:10px"><tr><td style="padding:14px 18px"><p style="margin:0;font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#8B92A8">💬 Suporte</p><p style="margin:6px 0 0;font-size:13px;line-height:1.5;color:#C5C8D1">Travou? Fala no WhatsApp: <a href="https://wa.me/5521993685289" target="_blank" style="color:#FFD60A;font-weight:700;text-decoration:none">+55 21 99368-5289</a></p><p style="margin:8px 0 0;font-size:12px;line-height:1.45;color:#8B92A8">📵 Este é um e-mail automático — <strong style="color:#C5C8D1">não responda este e-mail</strong>. Pra falar com a gente, use o WhatsApp acima.</p></td></tr></table></td></tr>
  </table>
- <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-top:20px"><tr><td align="center" style="padding:0 40px"><p style="margin:0;font-size:11px;color:#8B92A8">© 2026 Medo de Dirigir Nunca Mais · CFC Jó · CNPJ 16.826.768/0001-59</p></td></tr></table>
+ <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-top:20px"><tr><td align="center" style="padding:0 40px"><p style="margin:0;font-size:11px;color:#8B92A8">© 2026 Escola de Condutores · CFC Jó · CNPJ 16.826.768/0001-59</p></td></tr></table>
 </td></tr></table></body></html>`;
 }
 
-async function sendWhatsAppTemplate(to: string, name: string, productName: string) { const token = Deno.env.get("META_ACCESS_TOKEN"); if (!token) return { ok: false, reason: "missing_meta_token" }; if (!to) return { ok: false, reason: "missing_phone" }; const endpoint = `https://graph.facebook.com/${WHATSAPP_GRAPH_VERSION}/${WHATSAPP_PHONE_NUMBER_ID}/messages`; const body = { messaging_product: "whatsapp", to, type: "template", template: { name: WHATSAPP_TEMPLATE_NAME, language: { code: WHATSAPP_TEMPLATE_LANG }, components: [{ type: "body", parameters: [{ type: "text", text: (name || "aluna").slice(0, 60) }, { type: "text", text: (productName || "Medo de Dirigir Nunca Mais").slice(0, 120) }] }] } }; try { const r = await fetch(endpoint, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) }); const t = await r.text(); let p: any = t; try { p = JSON.parse(t); } catch {} return { ok: r.ok, status: r.status, body: p }; } catch (e) { return { ok: false, reason: `fetch_error: ${e instanceof Error ? e.message : String(e)}` }; } }
+async function sendWhatsAppTemplate(to: string, name: string, productName: string) { const token = Deno.env.get("META_ACCESS_TOKEN"); if (!token) return { ok: false, reason: "missing_meta_token" }; if (!to) return { ok: false, reason: "missing_phone" }; const endpoint = `https://graph.facebook.com/${WHATSAPP_GRAPH_VERSION}/${WHATSAPP_PHONE_NUMBER_ID}/messages`; const body = { messaging_product: "whatsapp", to, type: "template", template: { name: WHATSAPP_TEMPLATE_NAME, language: { code: WHATSAPP_TEMPLATE_LANG }, components: [{ type: "body", parameters: [{ type: "text", text: (name || "aluna").slice(0, 60) }, { type: "text", text: (productName || "Escola de Condutores").slice(0, 120) }] }] } }; try { const r = await fetch(endpoint, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) }); const t = await r.text(); let p: any = t; try { p = JSON.parse(t); } catch {} return { ok: r.ok, status: r.status, body: p }; } catch (e) { return { ok: false, reason: `fetch_error: ${e instanceof Error ? e.message : String(e)}` }; } }
 
 async function sendBrevoFirstAccessEmail(args: { toEmail: string; toName: string; courseTitle: string; firstAccessUrl: string }): Promise<{ ok: boolean; messageId?: string; reason?: string }> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
   if (!apiKey) return { ok: false, reason: "missing_brevo_key" };
-  const curso = args.courseTitle || "Medo de Dirigir Nunca Mais";
+  const curso = args.courseTitle || "Escola de Condutores";
   const payload: any = {
     sender: { email: BREVO_FROM_EMAIL, name: BREVO_FROM_NAME },
     to: [{ email: args.toEmail, name: args.toName || firstName(args.toName) }],
@@ -236,18 +236,18 @@ Deno.serve(async (req) => {
 
     let firstAccessEmail: any = { ok: false, reason: "not_attempted" };
     if (createdNewUser && userId) {
-      const { data: tokenRow } = await supabase.from("first_access_tokens").insert({ user_id: userId, email, course_title: productName || "Medo de Dirigir Nunca Mais" }).select("token").single();
+      const { data: tokenRow } = await supabase.from("first_access_tokens").insert({ user_id: userId, email, course_title: productName || "Escola de Condutores" }).select("token").single();
       if (tokenRow?.token) {
-        firstAccessEmail = await sendBrevoFirstAccessEmail({ toEmail: email, toName: name || firstName(email), courseTitle: productName || "Medo de Dirigir Nunca Mais", firstAccessUrl: `${APP_URL}/primeiro-acesso/${tokenRow.token}` });
+        firstAccessEmail = await sendBrevoFirstAccessEmail({ toEmail: email, toName: name || firstName(email), courseTitle: productName || "Escola de Condutores", firstAccessUrl: `${APP_URL}/primeiro-acesso/${tokenRow.token}` });
         await supabase.from("email_sends").insert({ user_id: userId, email, kind: "first_access", product_id: null, brevo_message_id: firstAccessEmail?.messageId || null });
       }
     }
 
     let whatsapp: any = { ok: false, reason: "not_attempted" };
-    if (phoneE164) { whatsapp = await sendWhatsAppTemplate(phoneE164, name, productName || "Medo de Dirigir Nunca Mais"); }
+    if (phoneE164) { whatsapp = await sendWhatsAppTemplate(phoneE164, name, productName || "Escola de Condutores"); }
 
     // CAPI: Purchase server-side (fire-and-forget; jamais derruba a criacao de conta acima).
-    await sendCapiPurchase({ email, phone: phoneE164, name, eventId: invoiceId || `mddnm_${email}`, value: capiVal, productName: productName || "Medo de Dirigir Nunca Mais" });
+    await sendCapiPurchase({ email, phone: phoneE164, name, eventId: invoiceId || `mddnm_${email}`, value: capiVal, productName: productName || "Escola de Condutores" });
 
     return new Response(JSON.stringify({ ok: true, action: "added", email, status, items: items.length, user_existed: !!userId && !createdNewUser, user_created: createdNewUser, groups_matched: groupIds.length, groups_applied_now: appliedDirect, groups_scheduled: scheduledCount, pending_total: mergedPending.length, first_access_email: firstAccessEmail.ok ? "sent" : (firstAccessEmail.reason || "failed"), brevo_message_id: firstAccessEmail?.messageId || null, whatsapp: whatsapp.ok ? "sent" : (whatsapp.reason || "failed"), phone_saved: !!phoneE164, capi_event_id: invoiceId || `mddnm_${email}`, capi_value: capiVal }), { status: 200, headers: { ...CORS, "Content-Type": "application/json" } });
   }

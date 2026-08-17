@@ -92,7 +92,7 @@ const Auth = () => {
               <span className="material-symbols-outlined text-primary text-base filled-icon">directions_car</span>
             </div>
             <div>
-              <p className="text-white font-black text-xs leading-tight drop-shadow-lg">Medo de Dirigir</p>
+              <p className="text-white font-black text-xs leading-tight drop-shadow-lg">Escola de Condutores</p>
               <p className="text-primary font-black text-xs leading-tight drop-shadow-lg">Nunca Mais</p>
             </div>
           </div>
@@ -126,7 +126,7 @@ const Auth = () => {
                 <span className="material-symbols-outlined text-primary text-2xl filled-icon">directions_car</span>
               </div>
               <div>
-                <p className="text-white font-black text-sm leading-tight">Medo de Dirigir</p>
+                <p className="text-white font-black text-sm leading-tight">Escola de Condutores</p>
                 <p className="text-primary font-black text-sm leading-tight">Nunca Mais</p>
               </div>
             </div>
@@ -158,7 +158,7 @@ const Auth = () => {
               </ul>
             </div>
             <p className="text-white/40 text-xs">
-              © 2026 Medo de Dirigir Nunca Mais. Feito pra você dirigir sem medo.
+              © 2026 Escola de Condutores. Feito pra você dirigir sem medo.
             </p>
           </div>
         </div>

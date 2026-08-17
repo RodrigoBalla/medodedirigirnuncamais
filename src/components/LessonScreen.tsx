@@ -410,7 +410,7 @@ export function LessonScreen({
       <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-primary filled-icon text-xl">directions_car</span>
-          <span className="font-bold text-sm text-foreground">Medo de dirigir nunca mais</span>
+          <span className="font-bold text-sm text-foreground">Escola de Condutores</span>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="material-symbols-outlined text-muted-foreground hover:text-foreground transition-colors text-xl">
@@ -1417,7 +1417,7 @@ export function LessonScreen({
 
       {/* Footer */}
       <footer className="bg-card border-t border-border px-4 py-3 text-center">
-        <p className="text-xs text-muted-foreground">© 2026 Medo de dirigir nunca mais - Sistema de Aprendizado Prático</p>
+        <p className="text-xs text-muted-foreground">© 2026 Escola de Condutores - Sistema de Aprendizado Prático</p>
       </footer>
     </div>
   );

@@ -450,7 +450,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
         }
         // DRM Watermark: o JWT vem da Edge Function panda-jwt (assinado
         // com a chave secreta do Panda no servidor). Carrega:
-        // string1="Medo de Dirigir Nunca Mais", string2=email do aluno,
+        // string1="Escola de Condutores", string2=email do aluno,
         // string3="ID: <user_id_short>". Renderizado dinamicamente sobre
         // o vídeo se o vídeo estiver no grupo DRM configurado no painel.
         if (watermarkJWT) {

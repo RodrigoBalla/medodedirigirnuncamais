@@ -88,7 +88,7 @@ export default function SalesPage() {
               Existe um caminho mais rápido para você assumir o volante.
             </h2>
             <p className="text-white/60 text-lg mb-8">
-              A metodologia <strong>Medo de Dirigir Nunca Mais</strong> não é apenas um curso. É uma plataforma interativa e gamificada projetada para reprogramar a sua mente e construir confiança prática, passo a passo. Sem risco e no seu próprio ritmo.
+              A metodologia <strong>Escola de Condutores</strong> não é apenas um curso. É uma plataforma interativa e gamificada projetada para reprogramar a sua mente e construir confiança prática, passo a passo. Sem risco e no seu próprio ritmo.
             </p>
             
             <ul className="space-y-4 mb-8">
@@ -191,7 +191,7 @@ export default function SalesPage() {
 
       {/* FOOTER */}
       <footer className="py-8 border-t border-white/5 text-center text-white/30 text-sm">
-        <p className="mb-4">© {new Date().getFullYear()} Medo de Dirigir Nunca Mais. Todos os direitos reservados.</p>
+        <p className="mb-4">© {new Date().getFullYear()} Escola de Condutores · Todo o conteúdo e a marca pertencem a Manda Balla Produções — CNPJ 24.858.692/0001-71.</p>
         <div className="flex justify-center gap-4">
           <a href="/termos" className="hover:text-white transition-colors">Termos de Uso</a>
           <a href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</a>

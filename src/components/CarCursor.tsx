@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
  * que rotaciona suave na direção do movimento. A cada ~28px de movimento,
  * deixa um par de marcas de pneu na tela que somem em 1 segundo.
  *
- * Vibe perfeita pra área de membros do "Medo de Dirigir Nunca Mais".
+ * Vibe perfeita pra área de membros do "Escola de Condutores".
  *
  * Detalhes:
  *  - Esconde o cursor padrão GLOBAL enquanto vive (injeta <style>; remove no unmount).

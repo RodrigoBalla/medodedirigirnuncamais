@@ -14,7 +14,7 @@ export function GameOverModal({ onReset, onBack }: Props) {
   }, []);
 
   const handleShare = () => {
-    const text = encodeURIComponent("Preciso de vidas no Medo de Dirigir Nunca Mais! Alguém me ajuda? 🚗💨");
+    const text = encodeURIComponent("Preciso de vidas no Escola de Condutores! Alguém me ajuda? 🚗💨");
     window.open(`https://wa.me/?text=${text}`, "_blank");
     toast.success("Link enviado! Peça para alguém clicar e você ganhará +1 vida.");
   };

@@ -133,7 +133,7 @@ export function CashbackCard() {
     const nome = (displayName || "Aluna").trim();
     const valor = valueBrl.toFixed(2).replace(".", ",");
     const texto =
-      `Oi! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
+      `Oi! Sou *${nome}*, do app Escola de Condutores.\n\n` +
       `Acabei de gerar um cupom de cashback de *R$ ${valor}* na área de membros.\n` +
       `Código: *${code}*\n\n` +
       `Pode ativar pra eu usar no checkout? 🪙`;

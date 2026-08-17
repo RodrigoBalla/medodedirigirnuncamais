@@ -80,7 +80,7 @@ export default function FirstAccess() {
         setInfo({
           email: data.email,
           display_name: data.display_name || "Aluna",
-          course_title: data.course_title || "Medo de Dirigir Nunca Mais",
+          course_title: data.course_title || "Escola de Condutores",
         });
         setStage("celebrating");
       } catch (e) {

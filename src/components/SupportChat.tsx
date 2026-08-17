@@ -85,7 +85,7 @@ export function SupportChat() {
         {
           id: newId(),
           from: "bot",
-          text: "Oi! 👋 Sou da equipe do Medo de Dirigir Nunca Mais. Em que posso te ajudar agora?",
+          text: "Oi! 👋 Sou da equipe do Escola de Condutores. Em que posso te ajudar agora?",
         },
       ]);
     }
@@ -135,7 +135,7 @@ export function SupportChat() {
       "Quero saber mais sobre o curso.",
       [
         "Eba! 🎉 Adoro falar sobre isso.",
-        "O Medo de Dirigir Nunca Mais é um treinamento gamificado, no seu ritmo, pra quem trava ao volante.",
+        "O Escola de Condutores é um treinamento gamificado, no seu ritmo, pra quem trava ao volante.",
         "Você aprende em fases curtas e práticas — começa eliminando a ansiedade do carro parado e vai evoluindo até dirigir no trânsito real, com confiança. 🚗💪",
         "Tudo no celular, quantas vezes precisar, com nosso 'instrutor virtual' do seu lado pra cada dúvida.",
         "Quer ver os detalhes e os depoimentos das alunas?",
@@ -244,7 +244,7 @@ export function SupportChat() {
                 <span className="material-symbols-outlined text-xl filled-icon">support_agent</span>
               </div>
               <div className="flex-1">
-                <p className="font-bold text-sm">Suporte — Medo de Dirigir</p>
+                <p className="font-bold text-sm">Suporte — Escola de Condutores</p>
                 <p className="text-[11px] flex items-center gap-1 opacity-90">
                   <span className="size-2 bg-green-400 rounded-full animate-pulse" />
                   online agora

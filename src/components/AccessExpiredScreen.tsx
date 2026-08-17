@@ -31,7 +31,7 @@ export function AccessExpiredScreen() {
   const whatsappUrl = (() => {
     const nome = (displayName || "Aluna").trim().split(/\s+/)[0];
     const texto =
-      `Oi! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
+      `Oi! Sou *${nome}*, do app Escola de Condutores.\n\n` +
       `Meu acesso ao curso expirou e quero ajuda pra renovar/entender o que aconteceu. 🙏`;
     return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(texto)}`;
   })();

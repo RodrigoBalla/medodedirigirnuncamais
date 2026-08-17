@@ -191,7 +191,7 @@ export function AppLayout({
           </motion.div>
           <div className="hidden sm:block">
             <h2 className="text-foreground text-sm font-bold leading-tight tracking-tight">
-              Medo de dirigir nunca mais
+              Escola de Condutores
             </h2>
             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{car.name} • Nv.{level}</p>
           </div>
@@ -493,8 +493,8 @@ export function AppLayout({
           {/* Rodapé da área de membros — direitos autorais Manda Balla Produções */}
           <footer className="mt-8 border-t border-border/60 px-4 py-6 text-center">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              © {new Date().getFullYear()} Medo de Dirigir Nunca Mais · Todo o conteúdo
-              pertence a <span className="font-semibold text-foreground/80">Manda Balla Produções</span>.
+              © {new Date().getFullYear()} Escola de Condutores · Todo o conteúdo e a marca
+              pertencem a <span className="font-semibold text-foreground/80">Manda Balla Produções</span> — CNPJ 24.858.692/0001-71.
             </p>
           </footer>
         </main>

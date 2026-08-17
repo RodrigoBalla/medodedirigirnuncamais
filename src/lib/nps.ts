@@ -30,7 +30,7 @@ export const NPS_QUESTIONS: NpsQuestion[] = [
   {
     id: "nps_score",
     type: "nps",
-    title: "De 0 a 10, o quanto você recomendaria o Medo de Dirigir Nunca Mais pra uma amiga que também sente medo de dirigir?",
+    title: "De 0 a 10, o quanto você recomendaria o Escola de Condutores pra uma amiga que também sente medo de dirigir?",
   },
   {
     id: "reason",

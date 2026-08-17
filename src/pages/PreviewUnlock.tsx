@@ -12,7 +12,7 @@ import { ModuleUnlockedOverlay } from "@/components/ModuleUnlockedOverlay";
 // =============================================================================
 
 const DEMO_COURSES = [
-  { name: "Medo de Dirigir Nunca Mais — Método Completo", cover: "/modulos/medo-de-dirigir-nunca-mais-9x16.jpg" },
+  { name: "Escola de Condutores — Método Completo", cover: "/modulos/medo-de-dirigir-nunca-mais-9x16.jpg" },
   { name: "Dominando as Balizas", cover: "/modulos/dominando-as-balizas-9x16.jpg" },
   { name: "Dominando as Ladeiras", cover: "/modulos/dominando-as-ladeiras-9x16.jpg" },
   { name: "Dominando as Marchas", cover: "/modulos/dominando-as-marchas-9x16.jpg" },

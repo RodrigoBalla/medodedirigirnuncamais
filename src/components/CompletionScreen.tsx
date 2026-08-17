@@ -237,7 +237,7 @@ export function CompletionScreen() {
       )}
 
       <footer className="bg-card border-t border-border px-4 py-3 text-center">
-        <p className="text-xs text-muted-foreground">© 2026 Medo de dirigir nunca mais - Sistema de Aprendizado Prático</p>
+        <p className="text-xs text-muted-foreground">© 2026 Escola de Condutores - Sistema de Aprendizado Prático</p>
       </footer>
     </div>
   );

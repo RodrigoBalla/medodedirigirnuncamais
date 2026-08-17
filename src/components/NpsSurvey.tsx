@@ -108,7 +108,7 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
   function waUrl(mod: LockedModuleLite): string {
     const nome = firstName || "Aluna";
     const txt =
-      `Oi! Sou *${nome}*, do app Medo de Dirigir Nunca Mais.\n\n` +
+      `Oi! Sou *${nome}*, do app Escola de Condutores.\n\n` +
       `Respondi a pesquisa e ganhei *R$ 10 em moedas* 🪙.\n` +
       `Quero usar pra comprar o *${mod.title}*. Como aplico o desconto? 💛`;
     return `https://wa.me/${NPS_WHATSAPP}?text=${encodeURIComponent(txt)}`;

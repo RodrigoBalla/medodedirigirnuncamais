@@ -185,7 +185,7 @@ export default function CourseInfo() {
               {/* Título + eyebrow + selos resumidos */}
               <div className="flex-1 min-w-0 flex flex-col gap-3">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">
-                  Curso · Medo de Dirigir Nunca Mais
+                  Curso · Escola de Condutores
                 </p>
                 <h1
                   className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.05] tracking-tight"

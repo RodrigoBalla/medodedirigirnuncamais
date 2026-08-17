@@ -178,7 +178,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
       <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-primary text-2xl">steering_wheel_heat</span>
-          <span className="font-bold text-foreground text-sm">Medo de Dirigir Nunca Mais</span>
+          <span className="font-bold text-foreground text-sm">Escola de Condutores</span>
         </div>
         <div className="flex items-center gap-3">
           <button className="w-9 h-9 rounded-full flex items-center justify-center bg-muted hover:bg-accent transition-colors">
@@ -203,7 +203,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
               <span className="material-symbols-outlined text-primary text-2xl">person</span>
             </div>
             <div>
-              <p className="font-semibold text-foreground text-sm">Medo de Dirigir Nunca Mais</p>
+              <p className="font-semibold text-foreground text-sm">Escola de Condutores</p>
               <p className="text-xs text-muted-foreground">Sua mentoria</p>
             </div>
           </div>
@@ -260,7 +260,7 @@ export const WelcomeScreen = ({ displayName, videoViews, onComplete, onWatchVide
       {/* ── Footer ── */}
       <footer className="text-center py-4 border-t border-border">
         <p className="text-xs text-muted-foreground">
-          © 2026 Medo de Dirigir Nunca Mais. Todos os direitos reservados.
+          © {new Date().getFullYear()} Escola de Condutores · Todo o conteúdo e a marca pertencem a Manda Balla Produções — CNPJ 24.858.692/0001-71.
         </p>
       </footer>
     </div>

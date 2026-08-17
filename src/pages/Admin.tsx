@@ -481,7 +481,7 @@ export default function Admin() {
       : rawLink;
     const saudacao = first ? `Parabéns, ${first}! 🎉` : "Parabéns! 🎉";
     return (
-      `${saudacao} Sua matrícula no Medo de Dirigir Nunca Mais foi confirmada. ` +
+      `${saudacao} Sua matrícula no Escola de Condutores foi confirmada. ` +
       `Eu sou o Balla, seu suporte por aqui — qualquer dúvida é só me chamar nesse número.\n\n` +
       `Pra começar, clique no link pra criar sua senha e fazer o primeiro acesso. Bons estudos! 🚗\n\n` +
       link
