@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B1A38"/>
+      <stop offset="1" stop-color="#060E20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.28" r="0.6">
+      <stop offset="0" stop-color="#FFD60A" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFD60A" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="tape" width="64" height="32" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="64" height="32" fill="#FFD60A"/>
+      <rect width="32" height="32" fill="#0B1A38"/>
+    </pattern>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <rect width="1080" height="1920" fill="url(#glow)"/>
+  <rect x="0" y="0" width="1080" height="26" fill="url(#tape)"/>
+  <rect x="0" y="1894" width="1080" height="26" fill="url(#tape)"/>
+
+  
+  <g stroke="#FFD60A" stroke-width="30" fill="none" stroke-linecap="round">
+    <circle cx="540" cy="600" r="150"/>
+    <line x1="540" y1="600" x2="540" y2="450"/>
+    <line x1="540" y1="600" x2="410.1" y2="675"/>
+    <line x1="540" y1="600" x2="669.9" y2="675"/>
+  </g>
+  <circle cx="540" cy="600" r="45" fill="#FFD60A"/>
+  <circle cx="540" cy="600" r="18.9" fill="#0B1A38"/>
+
+  <text x="540" y="1010" text-anchor="middle" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-weight="900" font-size="140" letter-spacing="-2" fill="#FFFFFF">O Mapa do</text>
+  <text x="540" y="1176" text-anchor="middle" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-weight="900" font-size="140" letter-spacing="-2" fill="#FFD60A">Condutor</text>
+
+  
+
+  <text x="540" y="1780" text-anchor="middle" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-weight="800" font-size="40" letter-spacing="8" fill="#FFD60A" opacity="0.9">ESCOLA DE CONDUTORES</text>
+</svg>
