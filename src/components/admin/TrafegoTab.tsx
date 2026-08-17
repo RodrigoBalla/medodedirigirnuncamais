@@ -145,21 +145,10 @@ export function TrafegoTab() {
       <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-card to-background p-5">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <p className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-primary">🏁 Vendas × tráfego</p>
-          {lucro != null ? (
-            lucro >= 0 ? (
-              <span className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--success))]/40 bg-[hsl(var(--success))]/10 px-4 py-1.5 text-sm font-black text-[hsl(var(--success))]">
-                ✅ POSITIVO · +{brl(lucro)}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-4 py-1.5 text-sm font-black text-destructive">
-                🔻 NEGATIVO · {brl(lucro)}
-              </span>
-            )
-          ) : (
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
-              ⏳ aguardando dados do Meta
-            </span>
-          )}
+          {/* Status fixo: campanha FINALIZADA (tráfego pausado no rebrand). */}
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-1.5 text-sm font-black text-muted-foreground">
+            🏁 FINALIZADO
+          </span>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
