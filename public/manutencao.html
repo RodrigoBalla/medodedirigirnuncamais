@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medo de Dirigir Nunca Mais | Em manutenção</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0B1A38" />
+  <meta name="description" content="Nossa plataforma está em manutenção. Vem aí uma nova forma de perder o medo de dirigir." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #FFD60A;
+      --bg:      #0B1A38;
+      --text:    #FFFFFF;
+      --muted:   #C5C8D1;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at 50% -10%, rgba(255, 214, 10, .12), transparent 62%);
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Fita de advertência (identidade de trânsito) */
+    .tape {
+      height: 8px;
+      width: 100%;
+      background: repeating-linear-gradient(45deg, #FFD60A 0 22px, #0B1A38 22px 44px);
+      flex-shrink: 0;
+    }
+    .wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 22px;
+      text-align: center;
+    }
+    .card { max-width: 640px; }
+    .icon-wrap {
+      width: 88px; height: 88px;
+      margin: 0 auto 28px;
+      border-radius: 24px;
+      background: rgba(255, 214, 10, .12);
+      border: 1px solid rgba(255, 214, 10, .30);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 20px 60px rgba(255, 214, 10, .12);
+    }
+    .icon-wrap .material-symbols-outlined { font-size: 46px; color: var(--primary); }
+    .eyebrow {
+      font-size: 12px; font-weight: 900;
+      letter-spacing: .22em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 5.2vw, 2.9rem);
+      font-weight: 900; line-height: 1.08; margin-bottom: 14px;
+    }
+    .status {
+      font-size: clamp(1rem, 2.4vw, 1.25rem);
+      color: var(--muted); margin-bottom: 30px;
+    }
+    .teaser {
+      font-size: clamp(1.15rem, 3.1vw, 1.65rem);
+      font-weight: 800; line-height: 1.25; margin-bottom: 22px;
+    }
+    .teaser strong { color: var(--primary); }
+    .ligado {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: clamp(1.05rem, 2.6vw, 1.3rem); font-weight: 900;
+      color: var(--primary);
+    }
+    .ligado .material-symbols-outlined { font-size: 24px; }
+    .brand {
+      padding: 18px; text-align: center;
+      font-size: 12px; color: rgba(255, 255, 255, .45);
+      flex-shrink: 0;
+    }
+    .brand strong { color: rgba(255, 255, 255, .72); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="tape" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <div class="card">
+      <div class="icon-wrap" aria-hidden="true">
+        <span class="material-symbols-outlined">directions_car</span>
+      </div>
+      <p class="eyebrow">Medo de Dirigir Nunca Mais</p>
+      <h1>Opa! Que bom te ver por aqui!</h1>
+      <p class="status">Toda a nossa plataforma está em manutenção.</p>
+      <p class="teaser">Vem aí uma <strong>nova forma de perder o medo de dirigir</strong>.</p>
+      <p class="ligado">
+        <span class="material-symbols-outlined">notifications_active</span>
+        Fique ligado!
+      </p>
+    </div>
+  </main>
+
+  <div class="tape" aria-hidden="true"></div>
+  <footer class="brand">© <span id="y"></span> <strong>Manda Balla Digital</strong> · Todos os direitos reservados.</footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

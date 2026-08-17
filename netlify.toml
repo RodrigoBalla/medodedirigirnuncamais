@@ -8,14 +8,22 @@
   # node_bundler = "esbuild" — REMOVIDO de propósito.
   # @netlify/blobs precisa do auto-detect de contexto que esbuild quebra.
 
-# Página de vendas estática — servida diretamente, fora do SPA.
+# MANUTENÇÃO (2026-08-17): a página de vendas pública está temporariamente
+# substituída pela página de manutenção. A sales.html continua acessível
+# DIRETO em /sales.html (não-listada) pro Balla editar. A raiz deslogada faz
+# window.location.replace('/vendas') (Index.tsx), então isto também cobre a raiz.
+# Pra REVERTER: apontar /vendas e /sales de volta pra /sales.html.
 [[redirects]]
   from   = "/vendas"
-  to     = "/sales.html"
+  to     = "/manutencao.html"
   status = 200
 [[redirects]]
   from   = "/sales"
-  to     = "/sales.html"
+  to     = "/manutencao.html"
+  status = 200
+[[redirects]]
+  from   = "/manutencao"
+  to     = "/manutencao.html"
   status = 200
 
 # Página de OBRIGADO pós-compra (estática, fora do SPA). É pra onde a Eduzz
