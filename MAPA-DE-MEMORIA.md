@@ -8,7 +8,7 @@
 > Complementa (não substitui): [`CLAUDE.md`](CLAUDE.md) (instruções pro agente),
 > [`ESCOPO.md`](ESCOPO.md) (escopo formal) e [`README.md`](README.md).
 >
-> **Última atualização:** 2026-08-17.
+> **Última atualização:** 2026-08-18.
 
 ---
 
@@ -33,6 +33,57 @@
   (JPG 1080×1080, geradas via sharp) entregues ao Balla p/ upload manual no painel da Eduzz.
 - **Pendências:** renomear produtos na Eduzz + template WhatsApp `matricula_confirmada` (Meta);
   sales.html ainda tem Carla (Balla mexe depois); docs CLAUDE.md/ESCOPO.md ainda com nome antigo.
+
+---
+
+## 🌐 Domínio removido (2026-08-18) — TUDO roda só no link do Netlify
+
+**O que foi feito:**
+- O domínio custom **`medodedirigirnuncamais.com.br` foi REMOVIDO do Netlify**: `custom_domain`
+  apagado do site + **zona DNS deletada** no Netlify (site id `0b7e64e1-7dc1-44c1-9db2-dd8cf1f1bd4a`).
+- **Hospedagem única agora:** `https://medodedirigirnuncamais.netlify.app` (o `.netlify.app` é o
+  domínio grátis padrão do Netlify e não pode ser removido — é onde tudo roda).
+- **Referências de URL do site trocadas** de `.com.br` → `.netlify.app` em: `src/pages/Admin.tsx`
+  (link de primeiro acesso copiado pro WhatsApp), `whatsapp-suporte` (fallback APP_URL),
+  `eduzz-webhook` (event_source_url do Meta CAPI), `meta-capi` (removidas origens `.com.br` do CORS),
+  `public/console-api.html`.
+- **Secret `APP_URL` re-setado** pra `https://medodedirigirnuncamais.netlify.app` (conserta na hora
+  os e-mails automáticos de primeiro acesso — antes provavelmente apontava pro `.com.br`).
+- **Fallbacks de `BREVO_FROM_EMAIL`** no código trocados pra placeholder `naoresponda@example.com`
+  (o valor REAL vem do **secret** `BREVO_FROM_EMAIL`, que NÃO foi alterado — ver pendência 2).
+
+**⚠️ PENDÊNCIAS pra quando retomar (ajustes fora do que o código/Netlify controlam):**
+
+1. **Registrador (BomDomínio) — liberar o domínio de vez.** O DNS real do `.com.br` provavelmente
+   está no **BomDomínio** com um **registro A → IP do Netlify**. Enquanto ele existir, o domínio
+   ainda "aponta" pro Netlify (que agora responde erro, pois não serve mais esse host). Pra soltar
+   o domínio (ou usar em outro lugar): **remover/alterar o registro A no painel do BomDomínio**.
+   *(Claude não tem acesso ao BomDomínio.)*
+
+2. **E-mail remetente (Brevo) — o mais importante.** O secret **`BREVO_FROM_EMAIL` ainda =
+   `naoresponda@medodedirigirnuncamais.com.br`** (remetente LIVE dos e-mails transacionais:
+   primeiro acesso, avisos etc.). Isso é **identidade de e-mail verificada no Brevo** (via SPF/DKIM
+   no DNS do domínio), NÃO hospedagem — por isso não troquei pra `.netlify.app` (quebraria o envio).
+   - ✅ Enquanto o **DNS do domínio (SPF/DKIM) continuar no BomDomínio**, os e-mails seguem saindo
+     normalmente, mesmo com o site fora do Netlify.
+   - 🔴 **Se liberar o domínio de vez (pendência 1), o SPF/DKIM cai** → e-mails vão bouncar/pra spam.
+     Antes disso: configurar **remetente verificado do domínio novo** no Brevo e **atualizar o secret
+     `BREVO_FROM_EMAIL`** (`npx supabase secrets set BREVO_FROM_EMAIL="..." --project-ref qkvinhzwiptfobdvsdtr`).
+
+3. **Eduzz — página de obrigado.** Cada produto na Eduzz aponta pra uma "página de obrigado". Se
+   estiver como `medodedirigirnuncamais.com.br/obrigado`, agora quebrou → trocar pra
+   **`https://medodedirigirnuncamais.netlify.app/obrigado`** no painel da Eduzz (por produto).
+
+4. **Panda Video — restrição de domínio.** O player usa restrição de domínio (anti-pirataria).
+   **Verificar se `medodedirigirnuncamais.netlify.app` está na allowlist** do Panda — senão os
+   vídeos das aulas não tocam. (Se estava só o `.com.br`, adicionar o netlify.app.)
+
+5. **Meta / WhatsApp (painel Meta).** O app "MDNM Mensagens" e configs de webhook/domínio podem
+   citar o domínio antigo. Verificar no painel da Meta ao retomar.
+
+6. **Quando tiver o domínio NOVO** (ex. da "Escola de Condutores"): apontar tudo pra ele de uma vez —
+   código (`APP_URL` secret + fallbacks), Eduzz (obrigado + checkout), Brevo (remetente), Panda
+   (allowlist) e Meta. Aí é só me pedir que eu faço a troca completa + deploy.
 
 ---
 

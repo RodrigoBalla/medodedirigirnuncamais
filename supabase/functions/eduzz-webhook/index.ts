@@ -28,7 +28,9 @@ const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "11
 const WHATSAPP_TEMPLATE_NAME = Deno.env.get("WHATSAPP_TEMPLATE_NAME") || "matricula_confirmada";
 const WHATSAPP_TEMPLATE_LANG = Deno.env.get("WHATSAPP_TEMPLATE_LANG") || "pt_BR";
 const WHATSAPP_GRAPH_VERSION = "v21.0";
-const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@medodedirigirnuncamais.com.br";
+// Remetente REAL vem do secret BREVO_FROM_EMAIL (hoje ainda no dominio antigo).
+// TODO(rebrand): trocar por remetente verificado do dominio novo. Ver MAPA-DE-MEMORIA.md.
+const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@example.com";
 const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Escola de Condutores";
 
 function pick(obj: any, ...paths: string[]): string { for (const p of paths) { const segs = p.split("."); let c: any = obj; for (const s of segs) { if (c == null) break; c = c[s]; } if (typeof c === "string" && c.trim()) return c.trim(); if (typeof c === "number") return String(c); } return ""; }

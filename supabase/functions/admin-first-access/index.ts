@@ -20,7 +20,9 @@ const CORS = {
 };
 
 const APP_URL = Deno.env.get("APP_URL") || "https://medodedirigirnuncamais.netlify.app";
-const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@medodedirigirnuncamais.com.br";
+// Remetente REAL vem do secret BREVO_FROM_EMAIL (hoje ainda no dominio antigo).
+// TODO(rebrand): trocar por remetente verificado do dominio novo. Ver MAPA-DE-MEMORIA.md.
+const BREVO_FROM_EMAIL = Deno.env.get("BREVO_FROM_EMAIL") || "naoresponda@example.com";
 const BREVO_FROM_NAME = Deno.env.get("BREVO_FROM_NAME") || "Escola de Condutores";
 const BREVO_FIRST_ACCESS_TEMPLATE_ID = Deno.env.get("BREVO_FIRST_ACCESS_TEMPLATE_ID");
 

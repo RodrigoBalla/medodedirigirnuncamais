@@ -26,8 +26,6 @@ const GRAPH_VERSION = "v21.0";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 const ALLOWED_ORIGINS = [
-  "https://medodedirigirnuncamais.com.br",
-  "https://www.medodedirigirnuncamais.com.br",
   "https://medodedirigirnuncamais.netlify.app",
 ];
 
