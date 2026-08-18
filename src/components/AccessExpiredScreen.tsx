@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { CheckoutModal } from "@/components/lms/CheckoutModal";
+import { FULL_PLATFORM_CHECKOUT_ID } from "@/hooks/useHasFullPlatformAccess";
 
 // ─── AccessExpiredScreen ─────────────────────────────────────────────────────
 // Tela mostrada pra alunas com profiles.access_status = 'expired'. Bloqueia
@@ -11,16 +12,18 @@ import { CheckoutModal } from "@/components/lms/CheckoutModal";
 // Dados, progresso e grupos continuam INTACTOS no banco. Quando o admin
 // reativar (status='active'), tudo volta como estava.
 //
-// Renovação: abre checkout Eduzz do Método Completo em NOVA ABA. O webhook
-// (após pagamento) detecta que a aluna já tem conta → mantém os grupos
-// existentes → admin manualmente troca status pra 'active' no painel.
+// Renovação: abre o MESMO checkout do banner fixo da área de membros — o
+// produto "Acesso completo à plataforma" (Eduzz 6W4GVO430Z / produto 3084222),
+// que libera TODOS os cursos por 12 meses. O popup padrão (CheckoutModal) abre
+// o checkout da Eduzz por cima da tela — mesma experiência do resto do app.
+// O webhook (após pagamento) detecta que a aluna já tem conta → concede o grupo
+// de acesso completo → admin troca status pra 'active' no painel.
 //
 // (Futuro: webhook pode auto-reativar quando reconhecer a compra dela.)
 // =============================================================================
 
-// Slug do checkout de renovação (Método Completo). O popup padrão (CheckoutModal)
-// abre o checkout da Eduzz por cima da tela — mesma experiência do resto do app.
-const CHECKOUT_RENOVACAO_CONTENT_ID = "E05NOV749X";
+// Checkout de renovação = o mesmo do banner fixo (acesso completo à plataforma).
+const CHECKOUT_RENOVACAO_CONTENT_ID = FULL_PLATFORM_CHECKOUT_ID;
 const WHATSAPP_SUPORTE = "5521993685289";
 
 export function AccessExpiredScreen() {
