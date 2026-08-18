@@ -69,8 +69,9 @@ suporte direto.
 | Ads / Tracking | Meta Pixel + CAPI (server-side via edge function `meta-capi`) |
 
 ### URLs e identificadores
-- **Produção:** https://medodedirigirnuncamais.com.br (migrou de `.netlify.app`; registro A no
-  bomdominio). Também responde em `medodedirigirnuncamais.netlify.app`.
+- **Produção:** https://medodedirigirnuncamais.netlify.app (hospedagem única). O domínio custom
+  `medodedirigirnuncamais.com.br` foi REMOVIDO do Netlify em 2026-08-18 (custom_domain + zona DNS
+  deletados) — tudo roda só no link `.netlify.app` agora.
 - **Repositório:** https://github.com/RodrigoBalla/medodedirigirnuncamais (branch `main`).
 - **Supabase project_id:** `qkvinhzwiptfobdvsdtr` (org "RodrigoBalla's Org").
 - **Netlify site_id:** `0b7e64e1-7dc1-44c1-9db2-dd8cf1f1bd4a`.

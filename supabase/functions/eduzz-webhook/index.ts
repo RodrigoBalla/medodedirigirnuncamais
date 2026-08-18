@@ -46,7 +46,7 @@ async function sendCapiPurchase(args: { email: string; phone: string | null; nam
     const base = Deno.env.get("SUPABASE_URL"); const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!base || !key) return;
     const parts = (args.name || "").trim().split(/\s+/).filter(Boolean);
-    const body: Record<string, unknown> = { event_name: "Purchase", event_id: args.eventId, action_source: "website", event_source_url: "https://medodedirigirnuncamais.com.br/obrigado", email: args.email, currency: "BRL", content_name: args.productName };
+    const body: Record<string, unknown> = { event_name: "Purchase", event_id: args.eventId, action_source: "website", event_source_url: "https://medodedirigirnuncamais.netlify.app/obrigado", email: args.email, currency: "BRL", content_name: args.productName };
     if (args.phone) body.phone = args.phone;
     if (parts[0]) body.first_name = parts[0];
     if (parts.length > 1) body.last_name = parts[parts.length - 1];

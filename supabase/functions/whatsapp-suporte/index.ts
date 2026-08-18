@@ -28,7 +28,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 //
 // Secrets usados: WHATSAPP_SUPORTE_TOKEN (obrigatório, envio),
 //   WHATSAPP_WEBHOOK_VERIFY_TOKEN (default abaixo), WHATSAPP_APP_SECRET (opcional),
-//   APP_URL (default .com.br), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+//   APP_URL (default .netlify.app), SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 // =============================================================================
 
 const CORS = {
@@ -40,7 +40,7 @@ const CORS = {
 const SUPORTE_PHONE_ID = Deno.env.get("WHATSAPP_SUPORTE_PHONE_ID") || "1199065219959557";
 const GRAPH_VERSION = "v21.0";
 const VERIFY_TOKEN = Deno.env.get("WHATSAPP_WEBHOOK_VERIFY_TOKEN") || "mddnm-suporte-verify-2026";
-const APP_URL = (Deno.env.get("APP_URL") || "https://medodedirigirnuncamais.com.br").replace(/\/+$/, "");
+const APP_URL = (Deno.env.get("APP_URL") || "https://medodedirigirnuncamais.netlify.app").replace(/\/+$/, "");
 
 function firstName(f: string): string {
   return (f || "").trim().split(/\s+/)[0] || "aluna";

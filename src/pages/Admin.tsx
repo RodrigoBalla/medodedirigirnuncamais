@@ -472,12 +472,12 @@ export default function Admin() {
   }
 
   // Monta a mensagem pronta de boas-vindas (personaliza nome + link).
-  // Normaliza o domínio pro .com.br mesmo se o link vier do .netlify.app.
+  // Usa o domínio do Netlify (hospedagem única após remoção do domínio custom).
   function buildFirstAccessMessage(displayName: string | null | undefined, rawLink: string): string {
     const first = (displayName || "").trim().split(/\s+/)[0] || "";
     const tokenMatch = rawLink.match(/token=([^&\s]+)/);
     const link = tokenMatch
-      ? `https://medodedirigirnuncamais.com.br/primeiro-acesso?token=${tokenMatch[1]}`
+      ? `https://medodedirigirnuncamais.netlify.app/primeiro-acesso?token=${tokenMatch[1]}`
       : rawLink;
     const saudacao = first ? `Parabéns, ${first}! 🎉` : "Parabéns! 🎉";
     return (
