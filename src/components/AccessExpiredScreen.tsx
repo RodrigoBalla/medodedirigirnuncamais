@@ -1,35 +1,29 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
-import { CheckoutModal } from "@/components/lms/CheckoutModal";
-import { FULL_PLATFORM_CHECKOUT_ID } from "@/hooks/useHasFullPlatformAccess";
+import { useWaitlist } from "@/hooks/useWaitlist";
 
 // ─── AccessExpiredScreen ─────────────────────────────────────────────────────
 // Tela mostrada pra alunas com profiles.access_status = 'expired'. Bloqueia
-// TODA a navegação interna — só permite renovar acesso ou falar com suporte.
+// TODA a navegação interna — só permite entrar na lista de espera da renovação
+// ou falar com suporte.
 //
 // Dados, progresso e grupos continuam INTACTOS no banco. Quando o admin
 // reativar (status='active'), tudo volta como estava.
 //
-// Renovação: abre o MESMO checkout do banner fixo da área de membros — o
-// produto "Acesso completo à plataforma" (Eduzz 6W4GVO430Z / produto 3084222),
-// que libera TODOS os cursos por 12 meses. O popup padrão (CheckoutModal) abre
-// o checkout da Eduzz por cima da tela — mesma experiência do resto do app.
-// O webhook (após pagamento) detecta que a aluna já tem conta → concede o grupo
-// de acesso completo → admin troca status pra 'active' no painel.
-//
-// (Futuro: webhook pode auto-reativar quando reconhecer a compra dela.)
+// SEM CHECKOUT (2026-08-19): a área de membros não vende mais. A renovação
+// entrou no mesmo fluxo do resto da plataforma — a aluna entra na LISTA DE
+// ESPERA (`waitlist_signups`, product_id NULL = plataforma completa) e o admin
+// faz o contato pela aba "Lista de Espera".
 // =============================================================================
 
-// Checkout de renovação = o mesmo do banner fixo (acesso completo à plataforma).
-const CHECKOUT_RENOVACAO_CONTENT_ID = FULL_PLATFORM_CHECKOUT_ID;
 const WHATSAPP_SUPORTE = "5521993685289";
 
 export function AccessExpiredScreen() {
   const { signOut } = useAuth();
   const displayName = useDisplayName("");
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const { joined, saving, join } = useWaitlist(null);
 
   const whatsappUrl = (() => {
     const nome = (displayName || "Aluna").trim().split(/\s+/)[0];
@@ -39,8 +33,11 @@ export function AccessExpiredScreen() {
     return `https://wa.me/${WHATSAPP_SUPORTE}?text=${encodeURIComponent(texto)}`;
   })();
 
-  function handleRenovar() {
-    setCheckoutOpen(true);
+  async function handleRenovar() {
+    if (joined) return;
+    const ok = await join("access-expired");
+    if (ok) toast.success("Pronto! Você está na lista de espera da renovação. 🎉");
+    else toast.error("Não deu pra te inscrever agora. Tenta de novo?");
   }
 
   return (
@@ -115,25 +112,40 @@ export function AccessExpiredScreen() {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleRenovar}
-              className="w-full bg-primary text-primary-foreground rounded-2xl p-5 md:p-6 flex items-center gap-4 shadow-xl shadow-primary/20 hover:brightness-110 transition-all text-left group"
+              disabled={saving || joined === true}
+              className={`w-full rounded-2xl p-5 md:p-6 flex items-center gap-4 shadow-xl transition-all text-left group ${
+                joined
+                  ? "bg-[hsl(var(--success))]/15 border border-[hsl(var(--success))]/30 text-foreground shadow-black/10"
+                  : "bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110"
+              } disabled:cursor-default`}
             >
-              <div className="size-12 md:size-14 rounded-2xl bg-black/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-2xl md:text-3xl">autorenew</span>
+              <div
+                className={`size-12 md:size-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                  joined ? "bg-[hsl(var(--success))]/20 text-[hsl(var(--success))]" : "bg-black/20"
+                }`}
+              >
+                <span className="material-symbols-outlined text-2xl md:text-3xl">
+                  {joined ? "check_circle" : "autorenew"}
+                </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-80">
-                  Recomendado
+                  {joined ? "Inscrição confirmada" : "Recomendado"}
                 </p>
                 <p className="text-base md:text-lg font-black leading-tight">
-                  Renovar acesso ao curso
+                  {joined ? "Você está na lista de espera" : "Entrar na lista de espera"}
                 </p>
                 <p className="text-xs md:text-sm opacity-80 mt-1 leading-snug">
-                  Checkout seguro Eduzz · acesso liberado na hora após pagar
+                  {joined
+                    ? "A gente te avisa assim que a renovação abrir."
+                    : "As inscrições estão fechadas · avisamos você em primeira mão"}
                 </p>
               </div>
-              <span className="material-symbols-outlined text-2xl md:text-3xl shrink-0 group-hover:translate-x-1 transition-transform">
-                arrow_forward
-              </span>
+              {!joined && (
+                <span className="material-symbols-outlined text-2xl md:text-3xl shrink-0 group-hover:translate-x-1 transition-transform">
+                  arrow_forward
+                </span>
+              )}
             </motion.button>
 
             {/* CTA secundário: suporte */}
@@ -177,13 +189,6 @@ export function AccessExpiredScreen() {
         </div>
       </div>
 
-      {/* Popup PADRÃO do checkout — mesmo do resto da plataforma. */}
-      <CheckoutModal
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        contentId={CHECKOUT_RENOVACAO_CONTENT_ID}
-        title="Renovar acesso ao curso"
-      />
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { CheckoutModal } from "@/components/lms/CheckoutModal";
 import {
   NPS_QUESTIONS, NPS_WHATSAPP, checkEmail, submitByEmail, lockedModulesByEmail, looksLikeEmail,
   type NpsQuestion, type LockedModuleLite,
@@ -41,7 +40,6 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
 
   const [lockedModules, setLockedModules] = useState<LockedModuleLite[]>([]);
   const [pickedModule, setPickedModule] = useState<LockedModuleLite | null>(null);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const awarded = useRef<Set<number>>(new Set());
   const total = NPS_QUESTIONS.length;
@@ -265,14 +263,11 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
                     <h3 className="font-black text-lg text-foreground mb-1 leading-tight" style={{ textWrap: "balance" }}>{pickedModule.title}</h3>
                     <div className="flex items-start gap-2 text-left text-[12px] text-primary bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 my-4">
                       <span className="material-symbols-outlined text-base mt-0.5">savings</span>
-                      <span>Você tem <strong>R$ {brl(reward)}</strong> de saldo. Fale com a nossa equipe no WhatsApp <strong>antes de pagar</strong> pra aplicar seu desconto no checkout. 💛</span>
+                      <span>Você tem <strong>R$ {brl(reward)}</strong> de saldo guardado. As inscrições estão fechadas no momento — fale com a nossa equipe no WhatsApp pra garantir seu lugar na lista de espera com o desconto. 💛</span>
                     </div>
                     <a href={waUrl(pickedModule)} target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-black px-4 py-3.5 rounded-2xl shadow-lg shadow-[#25D366]/30 uppercase tracking-wide text-xs transition-all mb-2">
-                      <span className="material-symbols-outlined text-base">chat</span>Pegar meu desconto no WhatsApp
+                      <span className="material-symbols-outlined text-base">chat</span>Falar no WhatsApp
                     </a>
-                    <button onClick={() => setCheckoutOpen(true)} className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-black text-sm uppercase tracking-wide hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2">
-                      <span className="material-symbols-outlined text-base">lock_open</span>Ir pro checkout
-                    </button>
                     <button onClick={() => setPickedModule(null)} className="w-full py-3 mt-1 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors">Voltar</button>
                   </div>
                 )}
@@ -291,9 +286,6 @@ export function NpsSurvey({ initialEmail = "" }: { initialEmail?: string }) {
         </div>
       </div>
 
-      {checkoutOpen && pickedModule?.checkout_slug && (
-        <CheckoutModal open={checkoutOpen} onClose={() => { setCheckoutOpen(false); nav("/"); toast.success("Quase lá! 🎉", { description: "Assim que sua compra confirmar, o novo módulo aparece na sua área.", duration: 6000 }); }} contentId={pickedModule.checkout_slug} title={pickedModule.title} />
-      )}
     </>
   );
 }

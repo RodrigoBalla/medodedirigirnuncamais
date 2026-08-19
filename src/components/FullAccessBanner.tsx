@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 // ─── FullAccessBanner ────────────────────────────────────────────────────────
 // Barra FIXA (sticky) no topo da área de membros — fica visível em todas as
 // abas mesmo com scroll. Texto rotativo com fade in/out (3 mensagens). Ao
-// clicar, leva pra página interna /acesso-completo (checkout embutido +
-// explicação da oferta).
+// clicar, leva pra página interna /acesso-completo.
+//
+// SEM CHECKOUT (2026-08-19): as inscrições estão fechadas — a barra agora
+// convida pra LISTA DE ESPERA, não pra compra.
 //
 // A visibilidade (só pra quem ainda NÃO tem o acesso completo) é decidida no
 // AppLayout via useHasFullPlatformAccess — aqui é só a apresentação. Fica
@@ -15,8 +17,8 @@ import { motion, AnimatePresence } from "framer-motion";
 // =============================================================================
 
 const MESSAGES = [
-  "Oportunidade única",
-  "Tudo o que a plataforma já tem",
+  "Quer acesso a tudo?",
+  "Entre na lista de espera",
   "Clique aqui e saiba mais",
 ];
 
@@ -39,14 +41,14 @@ export function FullAccessBanner({ stickyTopClass = "top-[53px]" }: Props) {
   return (
     <Link
       to="/acesso-completo"
-      title="Liberar acesso completo à plataforma — oferta especial"
+      title="Acesso completo à plataforma — entrar na lista de espera"
       className={`group sticky ${stickyTopClass} z-40 flex h-10 w-full items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-primary to-yellow-400 px-3 text-primary-foreground shadow-md md:gap-3`}
     >
       <span className="material-symbols-outlined shrink-0 text-xl filled-icon animate-pulse">
         bolt
       </span>
       <span className="shrink-0 rounded-full bg-black/85 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary md:text-[10px]">
-        Oferta especial
+        Lista de espera
       </span>
 
       {/* Texto rotativo com fade in/out */}

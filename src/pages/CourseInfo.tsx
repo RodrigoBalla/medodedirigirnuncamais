@@ -5,28 +5,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types/lms";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { extractEduzzContentId } from "@/components/lms/EduzzCheckoutEmbed";
-import { CheckoutModal } from "@/components/lms/CheckoutModal";
+import { WaitlistCard } from "@/components/WaitlistCard";
 
 // ─── /curso-info/:id ─────────────────────────────────────────────────────────
 // Página de "saiba mais" — destino do botão dos cards TRANCADOS no grid de
-// cursos. Layout otimizado pra conversão:
+// cursos.
+//
+// SEM CHECKOUT (2026-08-19): a área de membros não vende mais nada. No lugar do
+// checkout Eduzz, a aluna entra na LISTA DE ESPERA (`waitlist_signups`), que o
+// admin acompanha na aba "Lista de Espera".
 //
 // DESKTOP (lg+):
-//   • 2 colunas: descrição à ESQUERDA (col 7), checkout à DIREITA (col 5)
-//   • Checkout é STICKY — acompanha o scroll enquanto a aluna lê a descrição
-//   • Thumb 9:16 compacta dentro da coluna de descrição (não domina mais a tela)
+//   • 2 colunas: descrição à ESQUERDA (col 7), lista de espera à DIREITA (col 5)
+//   • O card da lista é STICKY — acompanha o scroll enquanto a aluna lê
 //
 // MOBILE (<lg):
-//   • Tudo empilhado verticalmente
-//   • Thumb grande no topo, descrição depois, checkout no fim
-//
-// Sem duplicação de info: o nome do curso aparece no topo da nossa página E
-// dentro do checkout (vem da Eduzz). Os selos do nosso lado foram removidos
-// porque a Eduzz já mostra "Compra segura / Privacidade protegida / Eduzz
-// verificada / 7 dias garantia" no rodapé do próprio checkout.
-//
-// Após a compra, o webhook da Eduzz libera o grupo de acesso automaticamente.
+//   • Tudo empilhado; barra fixa no rodapé com o botão da lista de espera
 // =============================================================================
 
 export default function CourseInfo() {
@@ -37,8 +31,6 @@ export default function CourseInfo() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  // Modal "popup" do checkout — abre por cima da página (não é aba nova).
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -103,9 +95,8 @@ export default function CourseInfo() {
 
   if (!product) return null;
 
-  const contentId = extractEduzzContentId(product.checkout_url);
-  const showCheckout = !hasAccess;
-  const canCheckout = showCheckout && !!contentId;
+  // Sem acesso ao curso → mostra a lista de espera (não há mais checkout).
+  const showWaitlist = !hasAccess;
 
   return (
     <div className="min-h-screen bg-background overflow-x-clip">
@@ -218,115 +209,27 @@ export default function CourseInfo() {
             </div>
           </motion.div>
 
-          {/* CHECKOUT (direita, sticky no desktop) ──────────────────────── */}
-          {showCheckout && (
+          {/* LISTA DE ESPERA (direita, sticky no desktop) ────────────────── */}
+          {showWaitlist && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, delay: 0.08 }}
               className="lg:col-span-5 lg:sticky lg:top-24"
             >
-              {canCheckout ? (
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-xl shadow-black/20">
-                  {/* Header curto do checkout */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-primary text-lg">shopping_bag</span>
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-foreground">
-                      Finalize sua inscrição
-                    </p>
-                  </div>
-
-                  {/* Reforços rápidos de confiança */}
-                  <ul className="space-y-2 mb-5 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">bolt</span>
-                      Acesso liberado na hora após o pagamento
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">credit_card</span>
-                      Cartão, Pix ou boleto
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-                      Checkout seguro Eduzz · 7 dias de garantia
-                    </li>
-                  </ul>
-
-                  {/* COMPRAR AGORA — abre o checkout num MODAL popup por cima da
-                      página (não abre aba nova). */}
-                  <button
-                    type="button"
-                    onClick={() => setCheckoutOpen(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-base px-4 py-4 rounded-xl hover:brightness-110 active:scale-[0.99] transition shadow-lg shadow-primary/20"
-                  >
-                    <span className="material-symbols-outlined">lock</span>
-                    Comprar agora
-                  </button>
-
-                  {/* Segundo botão: abre o checkout numa NOVA GUIA (externo). */}
-                  <a
-                    href={`https://chk.eduzz.com/${contentId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 w-full flex items-center justify-center gap-2 border border-border text-foreground font-bold uppercase tracking-widest text-xs px-4 py-3 rounded-xl hover:bg-accent hover:border-primary/40 transition"
-                  >
-                    <span className="material-symbols-outlined text-base">open_in_new</span>
-                    Abrir checkout externo
-                  </a>
-
-                  <p className="text-[11px] text-muted-foreground mt-3 text-center leading-relaxed">
-                    Use o <strong className="text-foreground">e-mail dessa conta</strong> no checkout pra liberação imediata.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-card border border-border rounded-2xl p-6 text-center">
-                  <span className="material-symbols-outlined text-muted-foreground text-3xl mb-2 block">
-                    link_off
-                  </span>
-                  <p className="text-sm font-bold text-muted-foreground">Checkout ainda não configurado</p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">
-                    Fale com o suporte pra liberar a compra deste curso.
-                  </p>
-                </div>
-              )}
+              <WaitlistCard productId={product.id} title={product.title} source="course-info" />
             </motion.div>
           )}
         </div>
       </div>
 
-      {/* ─── MOBILE: barra fixa "Comprar agora" no rodapé ─────────────────
-          Sempre acessível enquanto a aluna lê a página, sem precisar rolar até
-          o card. Some no desktop (lá o card fica sticky ao lado). */}
-      {showCheckout && canCheckout && (
+      {/* ─── MOBILE: barra fixa da lista de espera no rodapé ───────────────
+          Sempre acessível enquanto a aluna lê a página. Some no desktop (lá o
+          card fica sticky ao lado). */}
+      {showWaitlist && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={() => setCheckoutOpen(true)}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm px-4 py-3.5 rounded-xl active:scale-[0.99] transition shadow-lg shadow-primary/20"
-          >
-            <span className="material-symbols-outlined text-base">lock</span>
-            Comprar agora
-          </button>
-          <a
-            href={`https://chk.eduzz.com/${contentId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">open_in_new</span>
-            Abrir checkout externo
-          </a>
+          <WaitlistCard productId={product.id} title={product.title} source="course-info" variant="inline" />
         </div>
-      )}
-
-      {/* Popup PADRÃO do checkout (mesmo componente usado em toda a plataforma). */}
-      {contentId && (
-        <CheckoutModal
-          open={checkoutOpen}
-          onClose={() => setCheckoutOpen(false)}
-          contentId={contentId}
-          title={product.title}
-        />
       )}
     </div>
   );

@@ -398,9 +398,9 @@ function CourseCard({
             <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
               Curso adicional
             </span>
-            {/* Copy direta: aluna sabe que vai ver o que tem e como comprar. */}
+            {/* Sem checkout: leva pra página do curso, onde ela entra na lista de espera. */}
             <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              <span className="material-symbols-outlined text-sm">shopping_bag</span>
+              <span className="material-symbols-outlined text-sm">notifications_active</span>
               Quero esse curso
             </span>
           </>

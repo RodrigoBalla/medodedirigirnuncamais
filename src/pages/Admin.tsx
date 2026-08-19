@@ -21,8 +21,9 @@ import { NpsTab } from "@/components/admin/NpsTab";
 import { getLevelInfo } from "@/lib/levels";
 import { TrafegoTab } from "@/components/admin/TrafegoTab";
 import { AproveitamentoTab } from "@/components/admin/AproveitamentoTab";
+import { ListaEsperaTab } from "@/components/admin/ListaEsperaTab";
 
-type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego" | "aproveitamento";
+type AdminTab = "dashboard" | "students" | "reports" | "analytics" | "products" | "comments" | "groups" | "notifications" | "messages" | "nps" | "trafego" | "aproveitamento" | "lista_espera";
 
 interface AccessGroup {
   id: string;
@@ -737,6 +738,7 @@ export default function Admin() {
     { key: "groups", icon: "lock_open", label: "Grupos" },
     { key: "notifications", icon: "campaign", label: "Notificações" },
     { key: "messages", icon: "chat", label: "Mensagens" },
+    { key: "lista_espera", icon: "hourglass_top", label: "Lista de Espera" },
     { key: "nps", icon: "insights", label: "Pesquisa NPS" },
     { key: "aproveitamento", icon: "school", label: "Aproveitamento" },
     { key: "comments", icon: "forum", label: "Comentários" },
@@ -1829,6 +1831,7 @@ export default function Admin() {
           {tab === "nps" && <NpsTab />}
           {tab === "trafego" && <TrafegoTab />}
           {tab === "aproveitamento" && <AproveitamentoTab />}
+          {tab === "lista_espera" && <ListaEsperaTab />}
 
           {tab === "comments" && <CommentsModeration />}
 

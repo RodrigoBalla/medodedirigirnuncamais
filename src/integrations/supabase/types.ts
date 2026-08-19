@@ -1153,6 +1153,7 @@ export type Database = {
         Row: {
           coin_expiry_days: number
           cycle_days: number
+          daily_coin_cap: number
           id: number
           max_coins_per_cycle: number
           missions_per_cycle: number
@@ -1161,6 +1162,7 @@ export type Database = {
         Insert: {
           coin_expiry_days?: number
           cycle_days?: number
+          daily_coin_cap?: number
           id?: number
           max_coins_per_cycle?: number
           missions_per_cycle?: number
@@ -1169,6 +1171,7 @@ export type Database = {
         Update: {
           coin_expiry_days?: number
           cycle_days?: number
+          daily_coin_cap?: number
           id?: number
           max_coins_per_cycle?: number
           missions_per_cycle?: number
@@ -1901,6 +1904,56 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_signups: {
+        Row: {
+          admin_notes: string | null
+          contacted_at: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          product_id: string | null
+          source: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          contacted_at?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          product_id?: string | null
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          contacted_at?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          product_id?: string | null
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_signups_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_plan_completions: {
         Row: {
           created_at: string
@@ -2141,6 +2194,7 @@ export type Database = {
           groups: Json
           is_blocked: boolean
           lives: number
+          pending_groups: Json
           phone: string
           refunded: boolean
           streak: number
@@ -2423,6 +2477,7 @@ export type Database = {
         Returns: boolean
       }
       inscritos_total: { Args: never; Returns: number }
+      is_staff: { Args: never; Returns: boolean }
       list_active_stories: {
         Args: never
         Returns: {
@@ -2546,7 +2601,7 @@ export type Database = {
       vagas_disponiveis: { Args: never; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "support"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2674,7 +2729,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "support"],
     },
   },
 } as const
