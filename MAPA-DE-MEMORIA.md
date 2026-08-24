@@ -87,6 +87,21 @@
 
 ---
 
+## 🎬 Vídeos migrados para o YouTube (2026-08-19)
+
+- **48 das 84 aulas** passaram do Panda Video para o **YouTube** (`lessons.video_url` agora
+  guarda `https://www.youtube.com/watch?v=<ID>`). As outras **36 continuam no Panda** e
+  funcionando — nada foi ocultado (decisão do Balla: não tirar conteúdo de quem pagou).
+- **Dominando as Balizas** segue 100% no Panda (não existe playlist dele no YouTube).
+- O player **já suportava YouTube** (`parseVideoUrl` em `VideoPlayer.tsx`) — nenhuma mudança
+  de código foi necessária. Como é mudança de dados, valeu na hora, sem deploy.
+- **Backup:** `public.lessons_video_url_backup_20260819` (os 84 URLs originais do Panda).
+- Detalhes, IDs de vídeo e pendências: [`YOUTUBE-MAPA-VIDEOS.md`](YOUTUBE-MAPA-VIDEOS.md).
+- ⚠️ **Anti-pirataria:** as playlists são "Não listadas" — sem DRM nem trava de domínio (o
+  Panda tinha). Quem tiver o link assiste fora da plataforma.
+
+---
+
 ## 1. Visão geral
 
 **Escola de Condutores (MDNM)** é uma **plataforma web gamificada / área de membros (LMS)**
