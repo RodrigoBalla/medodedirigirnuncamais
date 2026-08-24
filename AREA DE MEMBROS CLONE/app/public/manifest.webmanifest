@@ -1,0 +1,25 @@
+{
+  "name": "Escola de Condutores",
+  "short_name": "Escola de Condutores",
+  "description": "Sua área de membros: aulas, missões e a comunidade que te acompanha no volante.",
+  "id": "/",
+  "start_url": "/biblioteca",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B1A38",
+  "theme_color": "#0B1A38",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Meus Cursos", "url": "/biblioteca" },
+    { "name": "Comunidade", "url": "/comunidade" },
+    { "name": "Perfil", "url": "/perfil" }
+  ]
+}

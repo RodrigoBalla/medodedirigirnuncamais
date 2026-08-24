@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>MDNM Mensagens · Console da API do WhatsApp</title>
+<!--
+  PÁGINA INTERNA (demonstração pra Análise do App / Tech Provider da Meta).
+  Mostra o app "MDNM Mensagens" (2060588131561366) fazendo chamadas reais à
+  WhatsApp Cloud API: envio de mensagem (whatsapp_business_messaging) e criação
+  de modelo (whatsapp_business_management). O token fica no servidor (Supabase
+  edge function) — nunca aparece no navegador. Remover após a aprovação.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0B1A38;--navy2:#16264D;--yellow:#FFD60A;--ink:#EAF0FA;--ink2:#AEC0DC;--line:rgba(255,255,255,.1);--verde:#25D366;--mono:'JetBrains Mono',Consolas,monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lexend',system-ui,sans-serif;color:var(--ink);background:var(--navy);background-image:radial-gradient(120% 70% at 50% -10%,#12294d 0%,var(--navy) 55%);line-height:1.55;min-height:100dvh;padding:28px 18px 60px}
+  .wrap{max-width:900px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .logo{width:38px;height:38px;border-radius:11px;background:var(--yellow);color:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px}
+  h1{font-size:20px;font-weight:900}
+  .sub{color:var(--ink2);font-size:13px;margin-bottom:22px}
+  .sub b{color:#fff}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card h2{font-size:15px;font-weight:900;margin-bottom:4px}
+  .card .perm{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--navy);background:var(--yellow);border-radius:999px;padding:2px 9px;margin-bottom:10px;font-weight:600}
+  .card p{font-size:12.5px;color:var(--ink2);margin-bottom:14px}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--verde);color:#fff;font-weight:900;font-size:14px;padding:11px 18px;border:none;border-radius:11px;cursor:pointer;font-family:inherit;transition:filter .2s}
+  .btn:hover{filter:brightness(1.07)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .btn.alt{background:var(--yellow);color:var(--navy)}
+  .out{margin-top:14px;font-family:var(--mono);font-size:11px;line-height:1.5;color:#BFF5CF;background:#07101F;border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow:auto;display:none}
+  .out.err{color:#FFB4B4}
+  .curl{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--ink2);background:#07101F;border:1px dashed var(--line);border-radius:10px;padding:10px;white-space:pre-wrap;word-break:break-all}
+  .curl b{color:var(--yellow)}
+  footer{margin-top:26px;font-size:11px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🚗</div>
+    <div>
+      <h1>MDNM Mensagens — Console da API do WhatsApp</h1>
+    </div>
+  </header>
+  <p class="sub">App Meta: <b>MDNM Mensagens</b> (ID 2060588131561366) · Plataforma <b>medodedirigirnuncamais.netlify.app</b> · WhatsApp Business Cloud API <b>v21.0</b></p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1 · Enviar mensagem</h2>
+      <span class="perm">whatsapp_business_messaging</span>
+      <p>Envia o modelo <b>hello_world</b> do número de teste <b>+1 555 194 7183</b> para o número de destino verificado.</p>
+      <button class="btn" id="b1" onclick="run('send_test', 'out1', 'b1')">📤 Enviar mensagem de teste</button>
+      <div class="curl">$ curl -X POST "https://graph.facebook.com/v21.0/<b>1266712023187812</b>/messages" \
+  -H "Authorization: Bearer &lt;ACCESS_TOKEN&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"messaging_product":"whatsapp","to":"5511988124078","type":"template","template":{"name":"hello_world","language":{"code":"en_US"}}}'</div>
+      <div class="out" id="out1"></div>
+    </div>
+
+    <div class="card">
+      <h2>2 · Criar modelo de mensagem</h2>
+      <span class="perm">whatsapp_business_management</span>
+      <p>Cria o modelo <b>suporte_confirmacao_atendimento</b> (categoria Utilidade, pt_BR) na conta WhatsApp Business <b>Escola de Condutores</b>.</p>
+      <button class="btn alt" id="b2" onclick="run('create_template', 'out2', 'b2')">🧩 Criar modelo via API</button>
+      <div class="curl">$ curl -X POST "https://graph.facebook.com/v21.0/<b>1621001048954880</b>/message_templates" \
+  -H "Authorization: Bearer &lt;ACCESS_TOKEN&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"suporte_confirmacao_atendimento","language":"pt_BR","category":"UTILITY","components":[...]}'</div>
+      <div class="out" id="out2"></div>
+    </div>
+  </div>
+
+  <footer>Escola de Condutores · Manda Balla BM01 · O token de acesso (usuário do sistema) fica armazenado com segurança no servidor e nunca é exposto no navegador.</footer>
+</div>
+
+<script>
+  async function run(action, outId, btnId) {
+    const out = document.getElementById(outId);
+    const btn = document.getElementById(btnId);
+    btn.disabled = true;
+    out.style.display = 'block';
+    out.classList.remove('err');
+    out.textContent = '⏳ Chamando a Graph API…';
+    try {
+      const r = await fetch('https://SEU_PROJECT_REF.supabase.co/functions/v1/wa-debug?action=' + action);
+      const j = await r.json();
+      out.textContent = JSON.stringify(j, null, 2);
+      if (j.status && j.status >= 400) out.classList.add('err');
+    } catch (e) {
+      out.classList.add('err');
+      out.textContent = 'Erro: ' + e;
+    }
+    btn.disabled = false;
+  }
+</script>
+</body>
+</html>

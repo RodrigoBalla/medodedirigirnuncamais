@@ -1,0 +1,147 @@
+[build]
+  command   = "npm run build"
+  publish   = "dist"
+
+# Netlify Functions (analytics tracking endpoint /.netlify/functions/events)
+[functions]
+  directory = "netlify/functions"
+  # node_bundler = "esbuild" — REMOVIDO de propósito.
+  # @netlify/blobs precisa do auto-detect de contexto que esbuild quebra.
+
+# MANUTENÇÃO (2026-08-17): a página de vendas pública está temporariamente
+# substituída pela página de manutenção. A sales.html continua acessível
+# DIRETO em /sales.html (não-listada) pro Balla editar. A raiz deslogada faz
+# window.location.replace('/vendas') (Index.tsx), então isto também cobre a raiz.
+# Pra REVERTER: apontar /vendas e /sales de volta pra /sales.html.
+[[redirects]]
+  from   = "/vendas"
+  to     = "/manutencao.html"
+  status = 200
+[[redirects]]
+  from   = "/sales"
+  to     = "/manutencao.html"
+  status = 200
+[[redirects]]
+  from   = "/manutencao"
+  to     = "/manutencao.html"
+  status = 200
+
+# Página de vendas publicada num LINK SEPARADO (a oficial /vendas está em
+# manutenção). Serve a mesma sales.html. Pra desativar: remover este bloco.
+[[redirects]]
+  from   = "/vendas-completo"
+  to     = "/sales.html"
+  status = 200
+
+# Página de OBRIGADO pós-compra (estática, fora do SPA). É pra onde a Eduzz
+# redireciona após o pagamento aprovado. Instrui a aluna a olhar o email
+# (e o spam) pra criar a senha de primeiro acesso.
+[[redirects]]
+  from   = "/obrigado"
+  to     = "/obrigado.html"
+  status = 200
+[[redirects]]
+  from   = "/obrigada"
+  to     = "/obrigado.html"
+  status = 200
+
+# Política de Privacidade e Termos de Uso (estáticas, fora do SPA).
+# URLs públicas usadas também no app oficial do WhatsApp (Meta) e no rodapé.
+[[redirects]]
+  from   = "/privacidade"
+  to     = "/privacidade.html"
+  status = 200
+[[redirects]]
+  from   = "/privacy"
+  to     = "/privacidade.html"
+  status = 200
+[[redirects]]
+  from   = "/termos"
+  to     = "/termos.html"
+  status = 200
+[[redirects]]
+  from   = "/terms"
+  to     = "/termos.html"
+  status = 200
+
+# Ferramenta interna pra Carla organizar conteúdos (estática, fora do SPA).
+[[redirects]]
+  from   = "/carla"
+  to     = "/carla.html"
+  status = 200
+
+# Página interna do Balla: Embedded Signup de coexistência do WhatsApp.
+[[redirects]]
+  from   = "/conectar-whatsapp"
+  to     = "/conectar-whatsapp.html"
+  status = 200
+
+# Página interna: console de demonstração da API (Análise do App / Tech Provider).
+[[redirects]]
+  from   = "/console-api"
+  to     = "/console-api.html"
+  status = 200
+
+# Painel de tráfego ao vivo (estático, fora do SPA; protegido por chave ?k=).
+[[redirects]]
+  from   = "/trafego"
+  to     = "/trafego.html"
+  status = 200
+
+# Painel admin de comportamento/analytics (estático, fora do SPA).
+# Permite acessar tanto /admin-dash quanto /admin-dash.html
+[[redirects]]
+  from   = "/admin-dash"
+  to     = "/admin-dash.html"
+  status = 200
+[[redirects]]
+  from   = "/dash"
+  to     = "/admin-dash.html"
+  status = 200
+
+# Fallback SPA (mesmo objetivo do public/_redirects, redundância proposital).
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Headers globais de segurança (aplicados a todas as respostas).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Força HTTPS por 2 anos, incluindo subdomínios.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # Bloqueia o app em iframes (anti clickjacking).
+    X-Frame-Options           = "DENY"
+    # Não tenta adivinhar Content-Type.
+    X-Content-Type-Options    = "nosniff"
+    # Política de referrer conservadora.
+    Referrer-Policy           = "strict-origin-when-cross-origin"
+    # Limita o que browsers modernos liberam por padrão.
+    Permissions-Policy        = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    # CSP — permitindo origens reais usadas pelo app:
+    # Supabase (auth, REST, realtime), Vimeo (vídeo welcome), Pexels (galeria
+    # de fundo no login), Google Fonts, Pixabay (assets antigos), R2 (OG image),
+    # Panda Video (player DRM), Eduzz (checkout embedado via bridge.js).
+    Content-Security-Policy   = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.eduzzcdn.com https://*.eduzz.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.eduzzcdn.com https://*.eduzz.com; script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.youtube.com https://s.ytimg.com https://player.vimeo.com https://player.pandavideo.com.br https://*.pandavideo.com.br https://cdn.eduzzcdn.com https://*.eduzz.com https://*.eduzzcdn.com; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://*.supabase.co wss://*.supabase.co https://api.pexels.com https://player.vimeo.com https://*.pandavideo.com.br https://*.eduzz.com https://*.eduzzcdn.com; frame-src https://player.vimeo.com https://www.youtube.com https://www.youtube-nocookie.com https://*.pandavideo.com.br https://*.eduzz.com https://*.eduzzcdn.com https://www.facebook.com https://web.facebook.com; media-src 'self' data: blob: https://videos.pexels.com https://cdn.pixabay.com https://*.r2.dev https://*.supabase.co https://*.pandavideo.com.br https://*.eduzz.com https://*.eduzzcdn.com; worker-src 'self' blob:;"
+
+# Cache agressivo para assets versionados (com hash no nome).
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# PWA — o manifest precisa do Content-Type correto, senão o Chrome ignora
+# (o padrão do Netlify pra .webmanifest é application/octet-stream).
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type  = "application/manifest+json; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+# Service worker NUNCA pode ficar preso em cache: é ele que controla as
+# atualizações do app. Sempre revalidar.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"

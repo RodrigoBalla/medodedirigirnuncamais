@@ -1,0 +1,421 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Product } from "@/types/lms";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ContinueWatchingBanner } from "./ContinueWatchingBanner";
+import { WeeklyPlanCard } from "./WeeklyPlanCard";
+import { CommunityHighlights } from "./CommunityHighlights";
+
+// =============================================================================
+// LibraryScreen — grid de cursos da área de membros
+//
+// O que mudou:
+//   • Era uma galeria 3D (CourseGallery), 1 card por vez, navegação com cursor.
+//     Removida porque o admin pode ter vários cursos publicados e o grid
+//     mostra todos de uma vez (igual Netflix/Hotmart Members).
+//   • Cursos LIBERADOS (aluna tem acesso via grupo) → thumbnail colorida,
+//     badge "Liberado", CTA "Acessar" → /curso/:id.
+//   • Cursos TRANCADOS (published mas sem acesso) → thumbnail preto-e-branco,
+//     lock central, CTA "Saiba mais" → /curso-info/:id (página de venda).
+//   • DRAFTS não aparecem pra aluna — só admin vê (badge "Oculto").
+// =============================================================================
+
+// Estado de cada card no grid:
+//   • unlocked → aluna tem acesso (via grupo) → "Acessar" → /curso/:id
+//   • pending  → comprou mas está represado (drip 7 dias) → "Libera em X dias" (não navega)
+//   • locked   → publicado sem acesso → "Quero esse curso" → /curso-info/:id
+type CardState = "unlocked" | "pending" | "locked";
+
+// Rótulo curto pra tooltip/acessibilidade (não fica na tela). Dias arredondados.
+function releaseLabel(iso?: string): string {
+  if (!iso) return "Em breve";
+  const days = Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+  if (days <= 0) return "Libera hoje";
+  if (days === 1) return "Libera amanhã";
+  return `Libera em ${days} dias`;
+}
+
+// Contagem regressiva AO VIVO (dias · horas · minutos · segundos), atualiza a cada
+// 1s. Componente próprio pra só o texto re-renderizar (não a biblioteca inteira).
+function Countdown({ iso, className }: { iso?: string; className?: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (!iso) return <span className={className}>Em breve</span>;
+  const diff = new Date(iso).getTime() - now;
+  if (diff <= 0) return <span className={className}>Liberando…</span>;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return (
+    <span className={className}>
+      {d}d {p(h)}h {p(m)}m {p(s)}s
+    </span>
+  );
+}
+
+export function LibraryScreen() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  // Cursos publicados aos quais a aluna NÃO tem acesso ainda — mostrados
+  // como "trancados" com CTA pra desbloquear (entrar em contato).
+  const [lockedProducts, setLockedProducts] = useState<Product[]>([]);
+  // Upsells comprados mas ainda represados (drip de 7 dias): productId -> release_at (ISO).
+  const [pendingMap, setPendingMap] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  // Admin vê TODOS os cursos (inclusive ocultos/draft) e ignora grupos de acesso.
+  // Alunas só veem cursos `published` aos quais têm acesso via grupo.
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkAdminAndLoad();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  async function checkAdminAndLoad() {
+    // Detecta se é admin via user_roles
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user!.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    const admin = !!role;
+    setIsAdmin(admin);
+    await loadAllowedProducts(admin);
+  }
+
+  async function loadAllowedProducts(admin: boolean) {
+    setLoading(true);
+    try {
+      // ── ADMIN: vê todos os cursos (published + draft), sem filtro de grupo ──
+      // REGRA IMUTÁVEL (Balla 2026-05-11): cursos disponíveis SEMPRE aparecem
+      // antes dos ocultos. Pra admin "disponível" = published; "oculto" = draft.
+      if (admin) {
+        const { data: prodData } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
+        const all = prodData || [];
+        const sorted = [
+          ...all.filter((p) => p.status === "published"),
+          ...all.filter((p) => p.status !== "published"),
+        ];
+        setProducts(sorted);
+        setLockedProducts([]);
+        setPendingMap({});
+        setLoading(false);
+        return;
+      }
+
+      // ── ALUNA: filtra por grupo + status published ──
+      const { data: userGroups } = await supabase
+        .from("access_group_users")
+        .select("group_id")
+        .eq("user_id", user!.id);
+
+      const groupIds = userGroups?.map(ug => ug.group_id) || [];
+      let allowedProductIds: string[] = [];
+
+      if (groupIds.length > 0) {
+        const { data: productLinks } = await supabase
+          .from("access_group_products")
+          .select("product_id")
+          .in("group_id", groupIds);
+
+        allowedProductIds = productLinks?.map(p => p.product_id) || [];
+      }
+
+      // Carrega TODOS os cursos publicados — separa em "liberados" e "trancados"
+      // pra aluna. Cursos em draft NUNCA aparecem aqui.
+      const { data: allPublished } = await supabase
+        .from("products")
+        .select("*")
+        .eq("status", "published")
+        .order("created_at", { ascending: false });
+
+      const published = allPublished || [];
+      const allowed = published.filter((p) => allowedProductIds.includes(p.id));
+      const locked = published.filter((p) => !allowedProductIds.includes(p.id));
+
+      // ── Drip: upsells comprados mas ainda represados (libera em X dias) ──
+      // scheduled_group_grants pendentes → mapeia grupo → produto → guarda o
+      // release_at mais próximo por produto. Esses produtos são "trancados" hoje
+      // (não estão em access_group_users), mas a aluna JÁ pagou — então mostramos
+      // "Libera em X dias" em vez de "Quero esse curso".
+      const pending: Record<string, string> = {};
+      const { data: sched } = await supabase
+        .from("scheduled_group_grants")
+        .select("group_id, release_at")
+        .is("granted_at", null)
+        .eq("user_id", user!.id);
+      if (sched && sched.length > 0) {
+        const relByGroup: Record<string, string> = {};
+        for (const s of sched) relByGroup[s.group_id as string] = s.release_at as string;
+        const { data: schedLinks } = await supabase
+          .from("access_group_products")
+          .select("product_id, group_id")
+          .in("group_id", sched.map((s) => s.group_id));
+        for (const link of schedLinks || []) {
+          const rel = relByGroup[link.group_id as string];
+          if (!rel) continue;
+          const pid = link.product_id as string;
+          if (!pending[pid] || new Date(rel) < new Date(pending[pid])) pending[pid] = rel;
+        }
+      }
+
+      setProducts(allowed);
+      setLockedProducts(locked);
+      setPendingMap(pending);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  }
+
+  // ─── REGRA IMUTÁVEL (Balla 2026-05-11) ──────────────────────────────────
+  // Cursos LIBERADOS aparecem SEMPRE em primeiro lugar no grid, antes dos
+  // trancados. Vale pra TODA tela onde a lista de cursos aparece (não só
+  // aqui). Aluna abre a biblioteca e a primeira coisa que vê é o que ela
+  // pode acessar agora — depois o que pode comprar. Esse spread garante isso.
+  // ─────────────────────────────────────────────────────────────────────────
+  // Separa os "trancados" em: represados (comprados, liberando em X dias) e
+  // realmente trancados (não comprados). Ordem do grid (regra imutável Balla):
+  // liberados → chegando (comprados) → trancados (comprar).
+  const pendingIds = new Set(Object.keys(pendingMap));
+  const pendingList = lockedProducts.filter((p) => pendingIds.has(p.id));
+  const trueLocked = lockedProducts.filter((p) => !pendingIds.has(p.id));
+
+  const allItems: Array<{ product: Product; state: CardState; releaseAt?: string }> = [
+    ...products.map((p) => ({ product: p, state: "unlocked" as CardState })),
+    ...pendingList.map((p) => ({ product: p, state: "pending" as CardState, releaseAt: pendingMap[p.id] })),
+    ...trueLocked.map((p) => ({ product: p, state: "locked" as CardState })),
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-4 min-h-[calc(100vh-53px)] flex flex-col">
+      {/* Prévia da Comunidade — stories + posts do dia, pra puxar participação. */}
+      {!loading && <CommunityHighlights />}
+
+      {/* Plano semanal — "Esta semana você vai..." (1 prática + 1 aula + 1 missão). */}
+      {!loading && <WeeklyPlanCard />}
+
+      {/* Continue de onde parou — banner discreto que some se não houver progresso */}
+      {!loading && <ContinueWatchingBanner />}
+
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 text-primary">
+          <div className="animate-spin size-10 border-4 border-primary border-t-transparent rounded-full mb-4" />
+          <p className="font-bold">Carregando seus cursos...</p>
+        </div>
+      ) : allItems.length > 0 ? (
+        <div>
+          {/* Cabeçalho discreto da seção de cursos */}
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <h2 className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">
+              Cursos
+            </h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+              {products.length} liberado{products.length === 1 ? "" : "s"}
+              {pendingList.length > 0 && ` · ${pendingList.length} chegando`}
+              {" · "}{trueLocked.length} para desbloquear
+            </p>
+          </div>
+
+          {/* Grid responsivo: 1 col mobile / 2 cols sm / 3 cols lg */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {allItems.map(({ product, state, releaseAt }) => (
+              <CourseCard
+                key={product.id}
+                product={product}
+                state={state}
+                releaseAt={releaseAt}
+                isAdmin={isAdmin}
+                onClick={() => {
+                  if (state === "unlocked") navigate(`/curso/${product.id}`);
+                  else if (state === "locked") navigate(`/curso-info/${product.id}`);
+                  // pending: não navega — o conteúdo ainda não liberou (drip de 7 dias)
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Sem cursos disponíveis no catálogo todo (caso muito raro: nenhum
+           curso publicado no banco). */
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <span className="material-symbols-outlined text-muted-foreground text-5xl mb-3">video_library</span>
+          <p className="text-sm font-bold text-muted-foreground">Nenhum curso disponível no momento</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Volte em breve.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CourseCard ──────────────────────────────────────────────────────────────
+// Card individual do grid de cursos. Três estados:
+//
+//   • unlocked → thumbnail COLORIDA, badge "Liberado", CTA "Acessar" → /curso/:id
+//   • pending  → COMPRADO mas represado (drip 7 dias): thumb colorida + relógio,
+//                badge "Chegando", rodapé "Libera em X dias". NÃO navega.
+//   • locked   → thumbnail P&B, cadeado, CTA "Quero esse curso" → /curso-info/:id
+//
+// Admin extra: vê tudo, inclusive draft (badge "Oculto (só admin)" no canto).
+// =============================================================================
+function CourseCard({
+  product,
+  state,
+  releaseAt,
+  isAdmin,
+  onClick,
+}: {
+  product: Product;
+  state: CardState;
+  releaseAt?: string;
+  isAdmin: boolean;
+  onClick: () => void;
+}) {
+  const isDraft = (product as { status?: string }).status !== "published";
+  const locked = state === "locked";
+  const pending = state === "pending";
+
+  return (
+    <motion.button
+      type="button"
+      whileTap={pending ? undefined : { scale: 0.98 }}
+      onClick={onClick}
+      className={`group relative bg-black border border-white/10 rounded-2xl overflow-hidden transition-all flex flex-col text-left ${
+        pending ? "cursor-default" : "hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
+      }`}
+      title={pending ? `${releaseLabel(releaseAt)} — você já garantiu "${product.title}"` : locked ? `Saiba mais sobre "${product.title}"` : `Acessar ${product.title}`}
+    >
+      {/* Thumbnail — 9:16 (formato vertical reels/stories) */}
+      <div className="relative w-full aspect-[9/16] bg-muted overflow-hidden">
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.title}
+            loading="lazy"
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+              pending ? "brightness-[0.7]" : "group-hover:scale-105"
+            } ${locked ? "grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100" : ""}`}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`material-symbols-outlined text-6xl ${locked || pending ? "text-white/20" : "text-border"}`}>
+              movie
+            </span>
+          </div>
+        )}
+
+        {/* Overlay sutil pra contraste do título sobre a thumb */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+
+        {/* Centro do card represado: relógio + selo "Comprado". O CONTADOR ao vivo
+            fica no rodapé (sempre visível, inclusive no mobile). */}
+        {pending && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-2 pointer-events-none">
+            <div className="size-14 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl">schedule</span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white bg-black/55 backdrop-blur-md rounded-full px-3 py-1">
+              Comprado · a caminho
+            </span>
+          </div>
+        )}
+
+        {/* Ícone de cadeado central — só quando trancado */}
+        {locked && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="size-14 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-colors">
+              <span className="material-symbols-outlined text-white text-2xl group-hover:text-primary-foreground transition-colors">
+                lock
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Badges no topo */}
+        <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 z-10">
+          {/* Badge esquerda: status */}
+          {pending ? (
+            <span className="bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
+              Chegando
+            </span>
+          ) : locked ? (
+            <span className="bg-black/70 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
+              Trancado
+            </span>
+          ) : (
+            <span className="bg-[hsl(var(--success)/0.9)] text-[hsl(var(--success-foreground))] text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
+              Liberado
+            </span>
+          )}
+
+          {/* Badge direita: só admin vendo draft */}
+          {isAdmin && isDraft && (
+            <span className="bg-amber-500/90 text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
+              Oculto
+            </span>
+          )}
+        </div>
+
+        {/* Título sobreposto na parte inferior da thumb */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+          <h3 className="font-black text-base md:text-lg leading-tight tracking-tight text-white line-clamp-2" style={{ textWrap: "balance" }}>
+            {product.title}
+          </h3>
+        </div>
+      </div>
+
+      {/* Rodapé do card — CTA / status */}
+      <div className="p-3 md:p-4 flex items-center justify-between gap-2 bg-card/60">
+        {pending ? (
+          <div className="w-full">
+            <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-[hsl(var(--success))]">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              Você já comprou
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2">
+              <span className="material-symbols-outlined text-primary text-base">schedule</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Libera em</span>
+              <Countdown iso={releaseAt} className="text-primary font-black text-sm tabular-nums ml-auto" />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Abre sozinho — você não precisa fazer nada.</p>
+          </div>
+        ) : locked ? (
+          <>
+            <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
+              Curso adicional
+            </span>
+            {/* Sem checkout: leva pra página do curso, onde ela entra na lista de espera. */}
+            <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              <span className="material-symbols-outlined text-sm">notifications_active</span>
+              Quero esse curso
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
+              Pronto pra continuar
+            </span>
+            <span className="shrink-0 inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-widest px-3 py-2 rounded-lg group-hover:brightness-110 transition-all">
+              <span className="material-symbols-outlined text-sm">play_arrow</span>
+              Acessar
+            </span>
+          </>
+        )}
+      </div>
+    </motion.button>
+  );
+}

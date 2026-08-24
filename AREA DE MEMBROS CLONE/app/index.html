@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://player.vimeo.com" />
+    <link rel="preconnect" href="https://i.vimeocdn.com" />
+    <link rel="preconnect" href="https://f.vimeocdn.com" />
+    <link rel="dns-prefetch" href="https://player.vimeo.com" />
+    <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
+    <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
+    <!-- Eduzz checkout (bridge.js + iframe do checkout embedado na area de membros).
+         Preconnect aquece DNS/TLS pra esses dominios desde o load, deixando o
+         checkout dos cursos trancados bem mais rapido. -->
+    <link rel="preconnect" href="https://cdn.eduzzcdn.com" crossorigin />
+    <link rel="preconnect" href="https://elements2.eduzz.com" crossorigin />
+    <link rel="preconnect" href="https://elements-api.eduzz.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.eduzzcdn.com" />
+    <link rel="dns-prefetch" href="https://elements2.eduzz.com" />
+    <link rel="dns-prefetch" href="https://elements-api.eduzz.com" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- PWA: instalável no celular (Adicionar à tela de início) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0B1A38" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Escola de Condutores" />
+
+    <title>Escola de Condutores</title>
+    <meta name="description" content="Aprenda a dirigir com facilidade.">
+    <meta name="author" content="Escola de Condutores" />
+
+    <!-- TODO: Update og:title to match your application name -->
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/486d1849-a4f9-4b2e-9c3a-76d6e6be789c/id-preview-fa830121--d2ee8dfd-dfad-411b-9da7-8cfffe9add7c.lovable.app-1772395509494.png">
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@MedoDeDirigirNuncaMais" />
+    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/486d1849-a4f9-4b2e-9c3a-76d6e6be789c/id-preview-fa830121--d2ee8dfd-dfad-411b-9da7-8cfffe9add7c.lovable.app-1772395509494.png">
+    <meta property="og:title" content="Escola de Condutores">
+  <meta name="twitter:title" content="Escola de Condutores">
+  <meta property="og:description" content="Aprenda a dirigir com facilidade.">
+  <meta name="twitter:description" content="Aprenda a dirigir com facilidade.">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Registra o service worker (PWA). Só em produção: em dev atrapalharia o
+         hot-reload. Falha silenciosa — o app funciona igual sem ele. -->
+    <script>
+      if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
+  </body>
+</html>

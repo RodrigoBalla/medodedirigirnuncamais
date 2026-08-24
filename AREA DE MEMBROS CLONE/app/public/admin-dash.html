@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin · Escola de Condutores</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Painel interno de analytics e comportamento dos visitantes." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;700;800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <style>
+    /* ─── TOKENS (mesma identidade do sales.html) ─────────── */
+    :root {
+      --primary:        #FFD60A;
+      --primary-2:      #FFC700;
+      --primary-dark:   #C9A800;
+      --primary-soft:   rgba(255, 214, 10, .14);
+      --primary-glow:   rgba(255, 214, 10, .38);
+      --on-primary:     #0A1F5C;
+
+      --bg:             #0B1A38;
+      --bg-2:           #0F2148;
+      --bg-3:           #14285A;
+      --surface:        #1A2F66;
+
+      --text:           #FFFFFF;
+      --text-mute:      rgba(255, 255, 255, .72);
+      --text-subtle:    rgba(255, 255, 255, .5);
+
+      --border:         rgba(255, 214, 10, .12);
+      --border-strong:  rgba(255, 214, 10, .28);
+
+      --success:        #10b981;
+      --success-soft:   rgba(16, 185, 129, .14);
+      --warn:           #f59e0b;
+      --warn-soft:      rgba(245, 158, 11, .14);
+      --danger:         #ef4444;
+      --danger-soft:    rgba(239, 68, 68, .14);
+
+      --shadow-1:       0 4px 18px rgba(0, 0, 0, .45);
+      --shadow-2:       0 12px 40px rgba(0, 0, 0, .65);
+
+      --font-h:         'Lexend', system-ui, -apple-system, sans-serif;
+      --font-b:         'Inter',  system-ui, -apple-system, sans-serif;
+      --font-mono:      ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+      --radius:         12px;
+      --radius-lg:      18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    /* IMPORTANTE: força [hidden] a funcionar mesmo com display: flex/grid em classes
+       (sem isso, .login { display: flex } ganha do user-agent [hidden] { display: none }) */
+    [hidden] { display: none !important; }
+    body {
+      font-family: var(--font-b);
+      background: radial-gradient(ellipse 90% 70% at 50% 0%, #16264E 0%, #0B1A38 55%, #061027 100%);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input  { font-family: inherit; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+
+    /* ─── LOGIN SCREEN ────────────────────────────────────── */
+    .login {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .login__card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      box-shadow: var(--shadow-2);
+      position: relative;
+      overflow: hidden;
+    }
+    .login__card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+    }
+    .login__brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .login__brand-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 18px var(--primary-glow);
+    }
+    .login__brand-icon .material-symbols-outlined { color: var(--on-primary); font-size: 22px; }
+    .login__brand-text {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .92rem;
+      letter-spacing: -.01em;
+      line-height: 1.2;
+    }
+    .login__brand-text small {
+      display: block;
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .login__title {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 1.5rem;
+      color: var(--text);
+      letter-spacing: -.02em;
+      margin-bottom: 6px;
+    }
+    .login__sub {
+      font-size: .88rem;
+      color: var(--text-mute);
+      margin-bottom: 24px;
+    }
+    .login__field { margin-bottom: 16px; }
+    .login__label {
+      display: block;
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+    }
+    .login__input {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: .95rem;
+      transition: border .2s, background .2s;
+    }
+    .login__input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 214, 10, .04);
+    }
+    .login__btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2));
+      color: var(--on-primary);
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .95rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border-radius: var(--radius);
+      margin-top: 8px;
+      transition: transform .15s, box-shadow .25s;
+      box-shadow: 0 8px 22px rgba(255, 214, 10, .28);
+    }
+    .login__btn:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(255, 214, 10, .42); }
+    .login__btn:active { transform: translateY(0); }
+    .login__error {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: var(--danger-soft);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: var(--radius);
+      color: #fca5a5;
+      font-size: .82rem;
+      display: none;
+    }
+    .login__error.is-visible { display: block; }
+    .login__hint {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+      font-size: .72rem;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+    .login__hint code {
+      background: rgba(255, 255, 255, .06);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      color: var(--primary);
+    }
+
+    /* ─── DASHBOARD ───────────────────────────────────────── */
+    .dash { padding: 24px; min-height: 100vh; }
+    .dash__inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
+      overflow: hidden;
+    }
+
+    .dash__header {
+      padding: 22px 28px;
+      background: linear-gradient(135deg, rgba(255, 214, 10, .1), rgba(255, 214, 10, .02));
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .dash__header-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .dash__brand-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 18px var(--primary-glow);
+      flex-shrink: 0;
+    }
+    .dash__brand-icon .material-symbols-outlined { color: var(--on-primary); font-size: 24px; }
+    .dash__title {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: var(--primary);
+      letter-spacing: -.02em;
+      line-height: 1.1;
+    }
+    .dash__sub {
+      font-size: .78rem;
+      color: var(--text-subtle);
+      margin-top: 2px;
+    }
+    .dash__header-right { display: flex; gap: 8px; align-items: center; }
+    .dash__icon-btn {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 10px;
+      color: var(--text-mute);
+      transition: all .2s;
+    }
+    .dash__icon-btn:hover {
+      color: var(--primary);
+      border-color: var(--border-strong);
+      background: var(--primary-soft);
+    }
+    .dash__icon-btn .material-symbols-outlined { font-size: 20px; }
+
+    .dash__body { padding: 24px 28px 28px; }
+
+    /* Live pill */
+    .live {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      margin-bottom: 22px;
+      background: var(--success-soft);
+      border: 1px solid rgba(16, 185, 129, .25);
+      border-radius: 100px;
+      font-size: .82rem;
+      color: var(--text-mute);
+      font-family: var(--font-h);
+      font-weight: 600;
+    }
+    .live__dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: livePulse 1.6s ease-out infinite;
+    }
+    @keyframes livePulse {
+      0%   { box-shadow: 0 0 0 0    rgba(16, 185, 129, .55); }
+      70%  { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);   }
+      100% { box-shadow: 0 0 0 0    rgba(16, 185, 129, 0);   }
+    }
+    .live--error {
+      background: var(--danger-soft);
+      border-color: rgba(239, 68, 68, .3);
+      color: #fca5a5;
+    }
+    .live--error .live__dot { background: var(--danger); animation: none; }
+
+    /* Grid principal */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    .grid__col {
+      background: rgba(255, 255, 255, .02);
+      border: 1px solid rgba(255, 214, 10, .08);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .grid__col--full { grid-column: 1 / -1; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Bloco título */
+    .block-h { margin-bottom: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .block-h__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .block-h__sub {
+      font-size: .78rem;
+      color: var(--text-subtle);
+      line-height: 1.4;
+    }
+    .block-h__pill {
+      flex-shrink: 0;
+      font-family: var(--font-h);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .empty {
+      font-size: .86rem;
+      color: var(--text-subtle);
+      font-style: italic;
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    /* Stats grid (KPIs) — auto-fit pra evitar cards estreitos demais */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    @media (min-width: 1100px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 480px)  { .stats { grid-template-columns: 1fr; } }
+    .stat {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 214, 10, .12);
+      border-radius: 14px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border .25s, transform .25s;
+    }
+    .stat:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 60px; height: 60px;
+      background: radial-gradient(circle at top right, var(--primary-glow), transparent 70%);
+      opacity: .35;
+      pointer-events: none;
+    }
+    .stat__icon {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--primary-soft);
+      border-radius: 8px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .stat__icon .material-symbols-outlined { font-size: 18px; }
+    .stat__num {
+      font-family: var(--font-h);
+      font-weight: 900;
+      font-size: 2rem;
+      color: var(--primary);
+      line-height: 1.05;
+      letter-spacing: -.02em;
+    }
+    .stat__lbl {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .72rem;
+      color: var(--text-subtle);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+    .stat__delta {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: var(--font-h);
+      font-size: .7rem;
+      font-weight: 700;
+      margin-top: 8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .stat__delta--up   { color: var(--success); background: var(--success-soft); }
+    .stat__delta--down { color: var(--danger);  background: var(--danger-soft); }
+    .stat__delta .material-symbols-outlined { font-size: 12px; flex-shrink: 0; }
+    .stat__delta-suffix { opacity: .7; }
+    /* Em viewports estreitos esconde o "vs período anterior" pra não quebrar feio */
+    @media (max-width: 1099px) { .stat__delta-suffix { display: none; } }
+
+    /* Bars chart (componente reusável) */
+    .bars { display: flex; flex-direction: column; gap: 12px; }
+    .bar { font-size: .85rem; }
+    .bar__top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .bar__label {
+      color: var(--text-mute);
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar__num {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .9rem;
+      color: var(--primary);
+      min-width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .bar__num small {
+      font-weight: 600;
+      font-size: .7rem;
+      color: var(--text-subtle);
+      margin-left: 4px;
+    }
+    .bar__track {
+      height: 8px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 60%, #FF9D00 100%);
+      border-radius: 4px;
+      transition: width .45s cubic-bezier(.32, 1, .36, 1);
+      box-shadow: 0 0 8px rgba(255, 214, 10, .35);
+    }
+    .bar--success .bar__fill { background: linear-gradient(90deg, var(--success), #34d399); box-shadow: 0 0 8px rgba(16, 185, 129, .35); }
+    .bar--danger  .bar__fill { background: linear-gradient(90deg, var(--danger),  #f87171); box-shadow: 0 0 8px rgba(239, 68, 68, .35); }
+
+    /* Web Vitals */
+    .vitals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 600px) { .vitals { grid-template-columns: 1fr; } }
+    .vital {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 214, 10, .08);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .vital__name {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .72rem;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+    }
+    .vital__value {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--text);
+      letter-spacing: -.02em;
+      margin: 8px 0;
+    }
+    .vital__rating {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-family: var(--font-h);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .vital__rating .material-symbols-outlined { font-size: 12px; }
+    .vital__rating--good { background: var(--success-soft); color: #34d399; }
+    .vital__rating--ni   { background: var(--warn-soft);    color: var(--warn); }
+    .vital__rating--poor { background: var(--danger-soft);  color: #f87171; }
+    .vital__rating--none { background: rgba(255, 255, 255, .05); color: var(--text-subtle); }
+
+    /* Diagnóstico */
+    .diag { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 36px; }
+    @media (max-width: 800px) { .diag { grid-template-columns: 1fr; gap: 22px; } }
+    .diag-q { display: flex; flex-direction: column; gap: 10px; }
+    .diag-q__text {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .85rem;
+      color: var(--primary);
+      letter-spacing: .01em;
+    }
+    .diag-q__total {
+      font-family: var(--font-b);
+      font-size: .72rem;
+      color: var(--text-subtle);
+      font-weight: 400;
+      margin-left: 6px;
+    }
+
+    /* Jornada das sessões — agrupado por stage final, ordenado por quantidade */
+    .journey {
+      display: flex; flex-direction: column;
+      gap: 10px;
+    }
+    .journey-empty {
+      font-size: .86rem;
+      color: var(--text-subtle);
+      font-style: italic;
+      text-align: center;
+      padding: 24px 0;
+    }
+    /* Insight de cabeçalho (% que ficou em cada stage) */
+    .journey-summary {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      padding: 12px 14px;
+      background: rgba(255, 214, 10, .06);
+      border: 1px solid rgba(255, 214, 10, .12);
+      border-radius: 10px;
+      margin-bottom: 6px;
+      font-size: .78rem;
+      color: var(--text-mute);
+    }
+    .journey-summary__item { display: flex; gap: 6px; align-items: center; }
+    .journey-summary__item strong { color: var(--text); font-family: var(--font-h); font-weight: 800; }
+    .journey-summary__item--win  strong { color: var(--success); }
+    .journey-summary__item--warn strong { color: var(--warn); }
+
+    /* Cada grupo (stage + count) */
+    .journey-group {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 214, 10, .08);
+      border-left: 3px solid var(--stage-color, var(--text-subtle));
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: background .2s;
+    }
+    .journey-group:hover { background: rgba(255, 255, 255, .05); }
+    .journey-group__head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .journey-group__label {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .92rem;
+      color: var(--stage-color, var(--text));
+      letter-spacing: -.01em;
+    }
+    .journey-group__count {
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .82rem;
+      color: var(--text-mute);
+    }
+    .journey-group__count strong {
+      color: var(--text);
+      font-size: 1.1rem;
+      margin-right: 4px;
+    }
+    .journey-group__count-pct {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-subtle);
+      margin-left: 6px;
+    }
+    .journey-group__bar {
+      height: 8px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .journey-group__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--stage-color, var(--primary)) 0%, var(--stage-color, var(--primary-2)) 100%);
+      border-radius: 4px;
+      box-shadow: 0 0 8px var(--stage-color, var(--primary-glow));
+      transition: width .45s cubic-bezier(.32, 1, .36, 1);
+    }
+    .journey-group__toggle {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-h);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+      padding: 2px 0;
+      transition: color .2s;
+    }
+    .journey-group__toggle:hover { color: var(--primary); }
+    .journey-group__toggle .material-symbols-outlined {
+      font-size: 14px;
+      transition: transform .2s ease;
+    }
+    .journey-group.is-open .journey-group__toggle .material-symbols-outlined { transform: rotate(180deg); }
+    .journey-group__sessions {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, margin-top .2s ease;
+    }
+    .journey-group.is-open .journey-group__sessions {
+      max-height: 600px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .journey-group__sessions::-webkit-scrollbar { width: 6px; }
+    .journey-group__sessions::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .08); border-radius: 3px; }
+    .journey-session {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px; align-items: center;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, .2);
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-mute);
+    }
+    .journey-session__id strong { color: var(--text); font-weight: 600; }
+    .journey-session__utm { color: var(--text-subtle); }
+    .journey-session__meta {
+      font-size: .68rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+    }
+    .journey-session__device {
+      padding: 1px 6px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--text-mute);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    @media (max-width: 600px) {
+      .journey-session {
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+      .journey-session__meta { grid-column: 2; }
+      .journey-session__device { grid-column: 1 / -1; justify-self: start; }
+    }
+
+    /* Recent activity */
+    .recent {
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 4px;
+      padding-right: 6px;
+    }
+    .recent::-webkit-scrollbar { width: 6px; }
+    .recent::-webkit-scrollbar-track { background: transparent; }
+    .recent::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .08); border-radius: 3px; }
+    .recent::-webkit-scrollbar-thumb:hover { background: rgba(255, 214, 10, .25); }
+    .recent-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: .82rem;
+      transition: background .15s ease;
+      animation: recentIn .35s ease;
+    }
+    @keyframes recentIn {
+      from { opacity: 0; transform: translateX(-4px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .recent-item:hover { background: rgba(255, 255, 255, .03); }
+    .recent-item__icon {
+      width: 26px; height: 26px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 6px;
+    }
+    .recent-item__icon .material-symbols-outlined { font-size: 14px; }
+    .recent-item__icon--lead    { background: var(--success-soft); color: var(--success); }
+    .recent-item__icon--cta     { background: var(--primary-soft);  color: var(--primary); }
+    .recent-item__icon--scroll  { background: rgba(99, 102, 241, .14); color: #818cf8; }
+    .recent-item__icon--exit    { background: var(--danger-soft);  color: var(--danger); }
+    .recent-item__name {
+      flex: 1;
+      min-width: 0;
+      color: var(--text-mute);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-item__name strong { color: var(--text); font-weight: 600; }
+    .recent-item__meta {
+      font-size: .72rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+
+    /* Tabs (filtros temporais) */
+    .tabs {
+      display: inline-flex;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 18px;
+      gap: 2px;
+    }
+    .tab {
+      padding: 7px 14px;
+      font-family: var(--font-h);
+      font-size: .76rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      border-radius: 8px;
+      letter-spacing: .04em;
+      transition: all .2s;
+    }
+    .tab.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      box-shadow: 0 4px 12px rgba(255, 214, 10, .35);
+    }
+    .tab:not(.is-active):hover { color: var(--text); }
+
+    /* Footer */
+    .dash__footer {
+      padding: 16px 28px;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+      font-size: .74rem;
+      color: var(--text-subtle);
+    }
+    .dash__footer code {
+      background: rgba(255, 255, 255, .06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      font-size: .72rem;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 640px) {
+      .dash { padding: 12px; }
+      .dash__header { padding: 18px 18px; }
+      .dash__body { padding: 18px; }
+      .dash__title { font-size: 1.1rem; }
+      .stat__num { font-size: 1.6rem; }
+      .grid__col { padding: 18px; }
+    }
+
+    /* ─── CONFIRM MODAL ───────────────────────────────────── */
+    /* Modal simples e blindado: position fixed com 100vw/vh, sem overflow no
+       container nem no card (o card é compacto, ~270px, cabe em qualquer
+       tela razoável). align-items: center centraliza vertical. */
+    .modal {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      background: rgba(0, 0, 0, .72);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .modal.is-open { opacity: 1; pointer-events: auto; }
+    .modal__card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-2);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 26px 24px 22px;
+      box-shadow: var(--shadow-2);
+      transform: scale(.95);
+      transition: transform .2s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .modal.is-open .modal__card { transform: scale(1); }
+    /* Body lock — quando modal abre, trava o scroll de fundo pra evitar
+       o card "rolar" junto com a página */
+    body.modal-locked { overflow: hidden; }
+    .modal__icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--danger-soft);
+      border-radius: 50%;
+      color: var(--danger);
+    }
+    .modal__icon .material-symbols-outlined { font-size: 32px; }
+    .modal__title {
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .modal__text {
+      font-size: .88rem;
+      color: var(--text-mute);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .modal__text strong { color: var(--text); }
+    .modal__actions {
+      display: flex; gap: 10px;
+    }
+    .modal__btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-family: var(--font-h);
+      font-weight: 700;
+      font-size: .88rem;
+      letter-spacing: .02em;
+      transition: all .15s ease;
+    }
+    .modal__btn--cancel {
+      background: rgba(255, 255, 255, .06);
+      color: var(--text-mute);
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+    .modal__btn--cancel:hover { background: rgba(255, 255, 255, .1); color: var(--text); }
+    .modal__btn--danger {
+      background: var(--danger);
+      color: #FFF;
+      box-shadow: 0 6px 18px rgba(239, 68, 68, .35);
+    }
+    .modal__btn--danger:hover { background: #dc2626; transform: translateY(-1px); }
+    .modal__btn--danger:active { transform: translateY(0); }
+
+    /* ─── TOAST ───────────────────────────────────────────── */
+    /* Esconde com visibility+opacity (mais robusto que transform sozinho —
+       evita pedacinho visível enquanto fonts carregam ou em telas estreitas) */
+    .toast {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      z-index: 9500;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px;
+      background: var(--bg-2);
+      border: 1px solid var(--border-strong);
+      border-radius: 100px;
+      box-shadow: var(--shadow-2);
+      font-family: var(--font-h);
+      font-weight: 600;
+      font-size: .88rem;
+      color: var(--text);
+      max-width: calc(100% - 48px);
+      visibility: hidden;
+      opacity: 0;
+      transform: translate(-50%, -16px);
+      pointer-events: none;
+      transition: opacity .22s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1), visibility 0s linear .35s;
+    }
+    .toast.is-visible {
+      visibility: visible;
+      opacity: 1;
+      transform: translate(-50%, 28px);
+      pointer-events: auto;
+      transition: opacity .22s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1), visibility 0s linear 0s;
+    }
+    .toast--success { border-color: rgba(16, 185, 129, .4); }
+    .toast--success .toast__icon { color: var(--success); }
+    .toast--error   { border-color: rgba(239, 68, 68, .4); }
+    .toast--error   .toast__icon { color: var(--danger); }
+    .toast--info    { border-color: rgba(255, 214, 10, .4); }
+    .toast--info    .toast__icon { color: var(--primary); }
+    .toast__icon { display: flex; align-items: center; }
+    .toast__icon .material-symbols-outlined { font-size: 20px; }
+
+    /* ─── EMPTY STATE BANNER (quando dados foram limpos) ── */
+    /* Usa classe is-hidden + display:flex !important pra evitar conflito com [hidden]
+       que tem mesma specificity de .cleared-banner. */
+    .cleared-banner {
+      display: flex !important;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(255, 214, 10, .12), rgba(255, 214, 10, .03));
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+    }
+    .cleared-banner.is-hidden { display: none !important; }
+    .cleared-banner__icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .cleared-banner__icon .material-symbols-outlined { font-size: 22px; }
+    .cleared-banner__text {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: .86rem;
+      color: var(--text-mute);
+      line-height: 1.45;
+    }
+    .cleared-banner__text strong { color: var(--text); }
+    .cleared-banner__btn {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: var(--primary) !important;
+      color: var(--on-primary) !important;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: .78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 100px;
+      flex-shrink: 0;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: transform .15s ease, box-shadow .25s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .cleared-banner__btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(255, 214, 10, .55);
+    }
+    .cleared-banner__btn:active { transform: translateY(0); }
+    .cleared-banner__btn .material-symbols-outlined { font-size: 16px; }
+    @media (max-width: 640px) {
+      .cleared-banner { flex-wrap: wrap; padding: 14px 16px; }
+      .cleared-banner__icon { order: 1; }
+      .cleared-banner__text { flex: 1 1 calc(100% - 60px); order: 2; font-size: .82rem; }
+      .cleared-banner__btn { order: 3; flex: 1 1 100%; margin-top: 6px; padding: 12px 18px; font-size: .82rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ LOGIN SCREEN ════════════════════════════════════════ -->
+  <div class="login" id="loginScreen">
+    <div class="login__card">
+      <div class="login__brand">
+        <div class="login__brand-icon">
+          <span class="material-symbols-outlined">shield_person</span>
+        </div>
+        <div class="login__brand-text">
+          Escola de Condutores
+          <small>Painel Admin</small>
+        </div>
+      </div>
+
+      <h1 class="login__title">Bem-vindo de volta</h1>
+      <p class="login__sub">Acesse o painel de comportamento e analytics em tempo real.</p>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="login__field">
+          <label class="login__label" for="loginEmail">E-mail</label>
+          <input class="login__input" type="email" id="loginEmail" required placeholder="seu@email.com" />
+        </div>
+        <div class="login__field">
+          <label class="login__label" for="loginPwd">Senha</label>
+          <input class="login__input" type="password" id="loginPwd" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="login__btn">Entrar no painel</button>
+        <div class="login__error" id="loginError">
+          <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">error</span>
+          Credenciais inválidas. Tente novamente.
+        </div>
+      </form>
+
+      <div class="login__hint">
+        <strong style="color: var(--text-mute);">Modo demo (mock):</strong><br/>
+        Email <code>balla@mandaballa.com</code> · Senha <code>mddnm2026</code>
+        <br/><br/>
+        Trocar credenciais: editar <code>ADMIN_EMAIL</code> e <code>ADMIN_PWD_HASH</code> no script.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST + MODAL ═══════════════════════════════════════ -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span class="toast__icon"><span class="material-symbols-outlined">check_circle</span></span>
+    <span class="toast__msg" id="toastMsg">Tudo certo</span>
+  </div>
+
+  <div class="modal" id="confirmModal" role="dialog" aria-modal="true">
+    <div class="modal__card">
+      <div class="modal__icon"><span class="material-symbols-outlined">warning</span></div>
+      <div class="modal__title">Limpar todos os dados?</div>
+      <div class="modal__text">
+        Essa ação <strong>não tem volta</strong>. Todos os eventos, visitas, leads,
+        respostas do diagnóstico e atividade recente serão zerados.
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="modal__btn modal__btn--cancel" id="confirmCancel">Cancelar</button>
+        <button type="button" class="modal__btn modal__btn--danger" id="confirmOk">Sim, limpar tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══════════════════════════════════════════ -->
+  <div class="dash" id="dashScreen" hidden>
+    <div class="dash__inner">
+
+      <!-- Header -->
+      <header class="dash__header">
+        <div class="dash__header-left">
+          <div class="dash__brand-icon">
+            <span class="material-symbols-outlined">monitoring</span>
+          </div>
+          <div>
+            <h1 class="dash__title">Painel Admin</h1>
+            <div class="dash__sub">Comportamento dos visitantes · em tempo real</div>
+          </div>
+        </div>
+        <div class="dash__header-right">
+          <button class="dash__icon-btn" id="btnPause" title="Pausar/retomar tracking nas suas próprias visitas">
+            <span class="material-symbols-outlined">visibility_off</span>
+          </button>
+          <button class="dash__icon-btn" id="btnRefresh" title="Atualizar agora">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+          <button class="dash__icon-btn" id="btnClear" title="Limpar dados (cuidado)">
+            <span class="material-symbols-outlined">delete_sweep</span>
+          </button>
+          <button class="dash__icon-btn" id="btnLogout" title="Sair">
+            <span class="material-symbols-outlined">logout</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="dash__body">
+
+        <!-- Banner de "dados limpos" (aparece só quando o estado está zerado) -->
+        <div class="cleared-banner is-hidden" id="clearedBanner">
+          <div class="cleared-banner__icon">
+            <span class="material-symbols-outlined">delete_sweep</span>
+          </div>
+          <div class="cleared-banner__text">
+            <strong>Dados limpos.</strong> O painel está zerado e vai começar a contar do zero
+            assim que o tracking gravar novos eventos.
+          </div>
+          <button type="button" class="cleared-banner__btn" id="restoreDemoBtn">
+            <span class="material-symbols-outlined">restart_alt</span>
+            Restaurar demo
+          </button>
+        </div>
+
+        <!-- Live pill -->
+        <div class="live" id="livePill">
+          <span class="live__dot"></span>
+          <span>Ao vivo · atualizado <span id="updatedAt">agora</span></span>
+        </div>
+
+        <!-- Tabs (filtro temporal) -->
+        <div class="tabs">
+          <button class="tab is-active" data-range="24h">Últimas 24h</button>
+          <button class="tab" data-range="7d">7 dias</button>
+          <button class="tab" data-range="30d">30 dias</button>
+          <button class="tab" data-range="all">Sempre</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="stats" id="statsGrid">
+          <!-- preenchido via JS -->
+        </div>
+
+        <!-- Grid principal -->
+        <div class="grid">
+
+          <!-- Funil de conversão -->
+          <div class="grid__col">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">Funil de conversão</h3>
+                <p class="block-h__sub">Quantos chegam em cada etapa da página de vendas.</p>
+              </div>
+              <span class="block-h__pill">Funil</span>
+            </div>
+            <div class="bars" id="funnelBars"></div>
+          </div>
+
+          <!-- Origem do tráfego (UTMs) -->
+          <div class="grid__col">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">Origem do tráfego</h3>
+                <p class="block-h__sub">De onde os visitantes estão chegando.</p>
+              </div>
+              <span class="block-h__pill">UTMs</span>
+            </div>
+            <div class="bars" id="utmBars"></div>
+          </div>
+
+          <!-- Web Vitals -->
+          <div class="grid__col grid__col--full">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">Performance da página (Web Vitals)</h3>
+                <p class="block-h__sub">Quanto mais verde, mais rápido o site carrega pra quem visita.</p>
+              </div>
+              <span class="block-h__pill">Velocidade</span>
+            </div>
+            <div class="vitals" id="vitalsGrid"></div>
+          </div>
+
+          <!-- CTAs clicados -->
+          <div class="grid__col">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">CTAs mais clicados</h3>
+                <p class="block-h__sub">Quais botões de ação geram mais cliques.</p>
+              </div>
+              <span class="block-h__pill">Cliques</span>
+            </div>
+            <div class="bars" id="ctaBars"></div>
+          </div>
+
+          <!-- Jornada de cada sessão (substitui Módulos + Diagnóstico) -->
+          <div class="grid__col grid__col--full">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">Jornada das sessões</h3>
+                <p class="block-h__sub">Cada visitante e até onde ele foi no funil. Ordenado por mais recente.</p>
+              </div>
+              <span class="block-h__pill"><span id="journeyCount">0</span> sessões</span>
+            </div>
+            <div class="journey" id="journeyList"></div>
+          </div>
+
+          <!-- Atividade recente -->
+          <div class="grid__col grid__col--full">
+            <div class="block-h">
+              <div>
+                <h3 class="block-h__title">Atividade recente</h3>
+                <p class="block-h__sub">Últimos eventos disparados no site (mais recentes em cima).</p>
+              </div>
+              <span class="block-h__pill">Live feed</span>
+            </div>
+            <div class="recent" id="recentList"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="dash__footer">
+        <div>
+          <strong>Modo:</strong> <code id="modeIndicator">mock data</code>
+          <span style="margin: 0 8px; opacity: .4;">·</span>
+          <span id="totalEvents">0</span> eventos
+        </div>
+        <div>
+          <span class="material-symbols-outlined" style="font-size:12px;vertical-align:-2px">person</span>
+          <span id="loggedAs">—</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+  // ═══════════════════════════════════════════════════════════════
+  // CONFIG · troque os valores abaixo quando for pra produção
+  // ═══════════════════════════════════════════════════════════════
+  const CONFIG = {
+    // Auth
+    ADMIN_EMAIL:     'balla@mandaballa.com',
+    ADMIN_SALT:      'mddnm-salt-v1',
+    // SHA-256 de (ADMIN_SALT + 'mddnm2026')
+    // Pra trocar a senha: rode no console do navegador:
+    //   sha256('mddnm-salt-v1' + 'NOVA_SENHA').then(console.log)
+    ADMIN_PWD_HASH:  '3c38b8be3648336c727ec09f088923caa8eb385745e38f2fff5c5103273d09bf',
+
+    // Tracking real ligado: lê do /.netlify/functions/events
+    // Pra rodar offline ou ver o demo: troque pra false
+    USE_SERVER:      true,
+    SERVER_URL:      '/.netlify/functions/events',
+
+    // Refresh do dashboard (ms) — 3s (saudável: nem stress no servidor, nem
+    // demora visível pro admin)
+    REFRESH_MS:      3000,
+
+    // Modo dev: aceita qualquer senha (use só localmente)
+    DEV_BYPASS:      false,
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // UTILS
+  // ═══════════════════════════════════════════════════════════════
+  async function sha256(text) {
+    const buf = new TextEncoder().encode(text);
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hashBuf))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  // expõe pro console pra Balla gerar novos hashes facilmente
+  window.sha256 = sha256;
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 5)      return 'agora';
+    if (s < 60)     return `há ${s}s`;
+    if (s < 3600)   return `há ${Math.floor(s / 60)} min`;
+    if (s < 86400)  return `há ${Math.floor(s / 3600)}h`;
+    return `há ${Math.floor(s / 86400)}d`;
+  }
+
+  function fmtNum(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(1).replace('.0', '') + 'K';
+    return String(n);
+  }
+
+  function pct(part, total) {
+    if (!total) return 0;
+    return Math.round((part / total) * 1000) / 10;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════════════════════
+  const SESSION_AUTH_KEY  = 'mddnm_admin_auth_v1';
+  const SESSION_TOKEN_KEY = 'mddnm_admin_token_v1';
+  const SESSION_EMAIL_KEY = 'mddnm_admin_email_v1';
+
+  function isAuthed() {
+    try { return sessionStorage.getItem(SESSION_AUTH_KEY) === '1'; }
+    catch { return false; }
+  }
+
+  async function tryLogin(email, pwd) {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const expected = (CONFIG.ADMIN_EMAIL || '').trim().toLowerCase();
+
+    if (CONFIG.DEV_BYPASS) {
+      sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+      sessionStorage.setItem(SESSION_TOKEN_KEY, 'dev-bypass');
+      sessionStorage.setItem(SESSION_EMAIL_KEY, normalizedEmail);
+      return true;
+    }
+
+    const hash = await sha256(CONFIG.ADMIN_SALT + pwd);
+    const ok = (normalizedEmail === expected) && (hash.toLowerCase() === CONFIG.ADMIN_PWD_HASH.toLowerCase());
+    if (ok) {
+      sessionStorage.setItem(SESSION_AUTH_KEY, '1');
+      sessionStorage.setItem(SESSION_TOKEN_KEY, hash);
+      sessionStorage.setItem(SESSION_EMAIL_KEY, normalizedEmail);
+    }
+    return ok;
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_AUTH_KEY);
+    sessionStorage.removeItem(SESSION_TOKEN_KEY);
+    sessionStorage.removeItem(SESSION_EMAIL_KEY);
+    location.reload();
+  }
+
+  // Login form handler
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const pwd   = document.getElementById('loginPwd').value;
+    const ok = await tryLogin(email, pwd);
+    if (!ok) {
+      loginError.classList.add('is-visible');
+      setTimeout(() => loginError.classList.remove('is-visible'), 2400);
+      return;
+    }
+    showDashboard();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ESTADO PERSISTIDO · flag de "dados limpos"
+  // ═══════════════════════════════════════════════════════════════
+  // Quando o admin clica em "Limpar dados", a gente seta essa flag.
+  // Enquanto a flag estiver ativa, getCurrentData() devolve estado vazio
+  // (em vez do mock demo). Persiste em localStorage pra sobreviver reload.
+  const CLEARED_FLAG_KEY  = 'mddnm_admin_data_cleared_v1';
+  const CLEARED_AT_KEY    = 'mddnm_admin_cleared_at_v1';
+
+  // Chaves do localStorage que podem ser povoadas pelo Track helper
+  // (quando Balla plugar o tracking no sales.html). Limpamos TODAS aqui.
+  const TRACK_KEYS_TO_PURGE = [
+    'mddnm_track_v1',          // Track helper futuro do MDDNM
+    'lobo_admin_v1',           // se Balla copiar o doc original do Lobo Studio
+    'mddnm_admin_recent_v1',   // qualquer cache local de eventos
+    'mddnm_admin_funnel_v1',
+    'mddnm_admin_diag_v1',
+  ];
+
+  function isDataCleared() {
+    try { return localStorage.getItem(CLEARED_FLAG_KEY) === '1'; }
+    catch { return false; }
+  }
+
+  function clearedAt() {
+    try {
+      const ts = parseInt(localStorage.getItem(CLEARED_AT_KEY) || '0', 10);
+      return ts > 0 ? ts : null;
+    } catch { return null; }
+  }
+
+  function setDataCleared() {
+    try {
+      localStorage.setItem(CLEARED_FLAG_KEY, '1');
+      localStorage.setItem(CLEARED_AT_KEY, String(Date.now()));
+      // Apaga TODOS os caches locais de eventos do Track, se existirem
+      TRACK_KEYS_TO_PURGE.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+    } catch {}
+  }
+
+  function unsetDataCleared() {
+    try {
+      localStorage.removeItem(CLEARED_FLAG_KEY);
+      localStorage.removeItem(CLEARED_AT_KEY);
+    } catch {}
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ESTADOS DE DADOS
+  //   defaultMockData() → demo bonito (pra ver o painel populado)
+  //   emptyMockData()   → tudo zerado (depois do "Limpar dados")
+  //   getCurrentData()  → escolhe um ou outro com base na flag
+  // ═══════════════════════════════════════════════════════════════
+  function emptyMockData() {
+    return {
+      stats: {
+        visits: 0, uniqueUsers: 0, leads: 0, purchases: 0,
+        deltas: { visits: 0, uniqueUsers: 0, leads: 0, purchases: 0 }
+      },
+      funnel:  [],
+      utms:    [],
+      ctas:    [],
+      modules: [],
+      vitals: {
+        LCP: { value: '—', rating: 'none' },
+        INP: { value: '—', rating: 'none' },
+        CLS: { value: '—', rating: 'none' },
+      },
+      diag:   [],
+      recent: [],
+      sessionsJourney: [],
+    };
+  }
+
+  function getCurrentData() {
+    if (isDataCleared()) return emptyMockData();
+    return defaultMockData();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MOCK DATA DEMO · gera dados realistas pra Balla ver o painel bonito
+  //          quando ligar o tracking, troque getCurrentData() pra usar
+  //          dados do servidor via fetchServerEvents()
+  // ═══════════════════════════════════════════════════════════════
+  function defaultMockData() {
+    const visits     = 1247 + Math.floor(Math.random() * 3);
+    const uniqueUsers = 893  + Math.floor(Math.random() * 2);
+    const leads      = 47   + (Math.random() < .15 ? 1 : 0);
+    const purchases  = 12   + (Math.random() < .05 ? 1 : 0);
+
+    return {
+      stats: {
+        visits, uniqueUsers, leads, purchases,
+        deltas: { visits: 18.3, uniqueUsers: 22.1, leads: -4.5, purchases: 31.7 }
+      },
+
+      // Funil de conversão
+      funnel: [
+        { name: 'Abriu a página',           value: visits },
+        { name: 'Rolou pra Trilha',         value: Math.floor(visits * 0.74) },
+        { name: 'Viu testimonials',         value: Math.floor(visits * 0.52) },
+        { name: 'Chegou na oferta',         value: Math.floor(visits * 0.38) },
+        { name: 'Clicou no CTA',            value: Math.floor(visits * 0.18) },
+        { name: 'Iniciou checkout',         value: Math.floor(visits * 0.08) },
+        { name: 'Comprou',                  value: purchases }
+      ],
+
+      // UTM sources
+      utms: [
+        { name: 'meta_ads / fb_video',      value: 412 },
+        { name: 'meta_ads / fb_carousel',   value: 287 },
+        { name: 'organic / google',         value: 198 },
+        { name: 'whatsapp / direct',        value: 134 },
+        { name: 'meta_ads / ig_reels',      value: 116 },
+        { name: 'youtube / video_organic',  value: 64  },
+        { name: '(direct) / —',             value: 36  }
+      ],
+
+      // CTAs
+      ctas: [
+        { name: 'Hero · "Quero começar agora"',         value: 187 },
+        { name: 'Oferta · "Quero minha vaga"',          value: 143 },
+        { name: 'Solução · "Me coloque nessa trilha"',  value: 89  },
+        { name: 'Sticky · "Garantir vaga"',             value: 67  },
+        { name: 'Final · "Me encaixo, quero entrar"',   value: 41  }
+      ],
+
+      // Módulos
+      modules: [
+        { name: 'M1 · Vencendo o pânico',           value: 568 },
+        { name: 'M2 · Direção defensiva',           value: 412 },
+        { name: 'M3 · Estacionamento sem medo',     value: 389 },
+        { name: 'M4 · Trânsito pesado',             value: 287 },
+        { name: 'M5 · Viagens longas',              value: 198 },
+        { name: 'M6 · Manutenção básica',           value: 154 }
+      ],
+
+      // Web Vitals
+      vitals: {
+        LCP: { value: '1.8s',  rating: 'good' },   // Largest Contentful Paint
+        INP: { value: '142ms', rating: 'good' },   // Interaction to Next Paint
+        CLS: { value: '0.04',  rating: 'good' },   // Cumulative Layout Shift
+      },
+
+      // Diagnóstico (perguntas do quiz/qualificação)
+      diag: [
+        {
+          q: '1. Quanto tempo faz que você tirou a CNH?',
+          options: [
+            { name: 'Menos de 1 ano',     value: 142 },
+            { name: '1 a 3 anos',         value: 89  },
+            { name: 'Mais de 3 anos',     value: 217 },
+            { name: 'Estou tirando agora',value: 38  }
+          ]
+        },
+        {
+          q: '2. Qual o seu maior medo no volante?',
+          options: [
+            { name: 'Trânsito pesado',         value: 198 },
+            { name: 'Estacionar',              value: 156 },
+            { name: 'Subidas e ladeiras',      value: 124 },
+            { name: 'Rodovia / velocidade',    value: 87  }
+          ]
+        },
+        {
+          q: '3. Você dirige sozinha hoje?',
+          options: [
+            { name: 'Quase nunca',             value: 234 },
+            { name: 'Só caminhos conhecidos',  value: 167 },
+            { name: 'Sim, mas com ansiedade',  value: 98  },
+            { name: 'Sim, sem problema',       value: 17  }
+          ]
+        },
+        {
+          q: '4. Quando você quer começar?',
+          options: [
+            { name: 'Agora · 100% pronta',     value: 187 },
+            { name: 'Próximas semanas',        value: 152 },
+            { name: 'Quando puder pagar',      value: 143 },
+            { name: 'Só pesquisando',          value: 64  }
+          ]
+        }
+      ],
+
+      // Atividade recente
+      recent: [
+        { name: 'lead_capturado',      meta: { plano: 'Lançamento' },  ts: Date.now() - 12_000,    type: 'lead' },
+        { name: 'clicou_cta_oferta',   meta: null,                     ts: Date.now() - 38_000,    type: 'cta'  },
+        { name: 'rolou_pra_trilha',    meta: null,                     ts: Date.now() - 1*60_000,  type: 'scroll' },
+        { name: 'pagina_visitada',     meta: { utm: 'fb_video' },      ts: Date.now() - 2*60_000,  type: 'visit' },
+        { name: 'viu_testimonials',    meta: null,                     ts: Date.now() - 3*60_000,  type: 'scroll' },
+        { name: 'pagina_visitada',     meta: { utm: 'organic' },       ts: Date.now() - 4*60_000,  type: 'visit' },
+        { name: 'compra_completa',     meta: { valor: 'R$ 197' },      ts: Date.now() - 6*60_000,  type: 'lead' },
+        { name: 'saiu_sem_comprar',    meta: { tempo: '3min' },        ts: Date.now() - 8*60_000,  type: 'exit' },
+        { name: 'clicou_cta_hero',     meta: null,                     ts: Date.now() - 12*60_000, type: 'cta' },
+        { name: 'pagina_visitada',     meta: { utm: 'whatsapp' },      ts: Date.now() - 18*60_000, type: 'visit' },
+        { name: 'iniciou_checkout',    meta: null,                     ts: Date.now() - 22*60_000, type: 'cta' },
+        { name: 'rolou_pra_oferta',    meta: null,                     ts: Date.now() - 26*60_000, type: 'scroll' },
+        { name: 'pagina_visitada',     meta: { utm: 'ig_reels' },      ts: Date.now() - 31*60_000, type: 'visit' },
+        { name: 'lead_capturado',      meta: { plano: 'Lançamento' },  ts: Date.now() - 45*60_000, type: 'lead' },
+        { name: 'pagina_visitada',     meta: { utm: 'fb_carousel' },   ts: Date.now() - 52*60_000, type: 'visit' },
+      ]
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SERVER FETCH · busca o agregado do /.netlify/functions/events
+  // ═══════════════════════════════════════════════════════════════
+  async function fetchServerEvents(range = '24h') {
+    if (!CONFIG.USE_SERVER) return null;
+    const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
+    if (!token) return null;
+    try {
+      // Cache-bust agressivo: ?range + ?_t (timestamp único) garantem que
+      // nenhum proxy/edge sirva resposta cacheada.
+      const url = CONFIG.SERVER_URL
+        + '?range=' + encodeURIComponent(range)
+        + '&_t=' + Date.now();
+      const res = await fetch(url, {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        cache: 'no-store',
+      });
+      if (!res.ok) return null;
+      const j = await res.json();
+      return j.ok ? j : null;
+    } catch { return null; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAP SERVER → VIEW
+  // Converte o agregado da Netlify Function pro shape que os render*()
+  // já consomem (mesmo formato do defaultMockData).
+  //
+  // Range: '24h' | '7d' | '30d' | 'all'
+  // ═══════════════════════════════════════════════════════════════
+  function mapServerToView(srv, range) {
+    if (!srv) return emptyMockData();
+
+    const bucket   = srv.buckets?.[range] || srv.buckets?.['24h'] || { events: {}, sessionsByEvent: {}, sessions: 0 };
+    const prev     = srv.prevBuckets?.[range] || null;
+    const ev       = bucket.events || {};
+    const evSess   = bucket.sessionsByEvent || {};      // count distinct session por evento
+    const sessions = bucket.sessions || 0;
+
+    // ── KPIs ───────────────────────────────────────────────
+    // Visitas no site = total de pageviews (inclui refreshes da mesma sessão)
+    // Visitantes únicos = sessions únicas (1 pessoa = 1 unit)
+    const visits      = ev['pagina_visitada'] || 0;
+    const uniqueUsers = sessions;
+    const leads       = ev['lead_capturado']  || 0;
+    const purchases   = ev['compra_completa'] || 0;
+
+    // Delta% comparando com período anterior (mesma duração)
+    function calcDelta(curr, prevVal) {
+      if (!prevVal) return curr > 0 ? 100 : 0;
+      const diff = ((curr - prevVal) / prevVal) * 100;
+      return Math.round(diff * 10) / 10;
+    }
+    const prevEv = prev?.events || {};
+    const deltas = {
+      visits:     calcDelta(visits,     prevEv['pagina_visitada'] || 0),
+      uniqueUsers: calcDelta(uniqueUsers, prev?.sessions || 0),
+      leads:      calcDelta(leads,      prevEv['lead_capturado']  || 0),
+      purchases:  calcDelta(purchases,  prevEv['compra_completa'] || 0),
+    };
+
+    // ── FUNIL ──────────────────────────────────────────────
+    // SEMÂNTICA: cada etapa = quantas SESSÕES ÚNICAS chegaram nela
+    // (não count de eventos brutos). Pra "Abriu a página" usamos
+    // `sessions` direto, garantindo que o topo do funil bate com o
+    // KPI "Visitantes únicos". Pra etapas seguintes, usamos count
+    // distinct de sessions que tiveram aquele evento.
+    const ctaSessSet = new Set();
+    for (const r of (srv.recent || [])) {
+      if (r.name?.startsWith('clicou_cta_') && r.session) ctaSessSet.add(r.session);
+    }
+    // Fallback se recent for limitado: soma sessões dos eventos clicou_cta_*
+    const ctaSessFromEvents = Object.keys(evSess)
+      .filter(k => k.startsWith('clicou_cta_'))
+      .reduce((max, k) => Math.max(max, evSess[k]), 0);
+    const ctaUniqueSessions = Math.max(ctaSessSet.size, ctaSessFromEvents);
+
+    const funnel = [
+      { name: 'Abriu a página',     value: sessions },
+      { name: 'Rolou pra Trilha',   value: evSess['scroll_25']        || 0 },
+      { name: 'Viu testimonials',   value: evSess['scroll_50']        || 0 },
+      { name: 'Chegou na oferta',   value: evSess['scroll_75']        || 0 },
+      { name: 'Clicou no CTA',      value: ctaUniqueSessions },
+      { name: 'Iniciou checkout',   value: evSess['iniciou_checkout'] || 0 },
+      { name: 'Comprou',            value: evSess['compra_completa']  || 0 },
+    ];
+
+    // ── UTMs (top 7) ───────────────────────────────────────
+    // srv.utmSources tem todas as sessões, não filtra por bucket.
+    // Pra MVP, usa total geral (faz sentido como visão global de origem).
+    const utms = Object.entries(srv.utmSources || {})
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7);
+
+    // ── CTAs (top 5) ───────────────────────────────────────
+    // Filtra do bucket atual (timeline-aware)
+    const ctaLabels = {
+      hero: 'Hero · "Quero começar"',
+      solucao: 'Solução · "Me coloque na trilha"',
+      for: 'Pra quem é · "Quero entrar"',
+      oferta: 'Oferta · "Quero minha vaga"',
+      sticky: 'Sticky · "Garantir vaga"',
+      exit_cupom: 'Exit modal · cupom',
+      desconhecido: '(sem origem)',
+    };
+    const ctas = Object.keys(ev)
+      .filter(k => k.startsWith('clicou_cta_'))
+      .map(k => {
+        const slug = k.replace('clicou_cta_', '');
+        return { name: ctaLabels[slug] || slug, value: ev[k] };
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    // ── MÓDULOS (não temos clicks em módulos no sales.html ainda) ──
+    const modules = Object.entries(srv.moduleHits || {})
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+
+    // ── WEB VITALS ─────────────────────────────────────────
+    function vitalRating(metric, p75) {
+      if (p75 == null) return { value: '—', rating: 'none' };
+      // Thresholds oficiais do web.dev
+      const thresholds = {
+        LCP: { good: 2500, ni: 4000, fmt: ms => (ms/1000).toFixed(1) + 's' },
+        INP: { good: 200,  ni: 500,  fmt: ms => Math.round(ms) + 'ms' },
+        CLS: { good: 0.1,  ni: 0.25, fmt: v  => v.toFixed(2) },
+      };
+      const t = thresholds[metric];
+      if (!t) return { value: String(p75), rating: 'none' };
+      let rating = 'good';
+      if (p75 > t.ni)        rating = 'poor';
+      else if (p75 > t.good) rating = 'ni';
+      return { value: t.fmt(p75), rating };
+    }
+    const vitals = {
+      LCP: vitalRating('LCP', srv.webVitals?.LCP?.p75),
+      INP: vitalRating('INP', srv.webVitals?.INP?.p75),
+      CLS: vitalRating('CLS', srv.webVitals?.CLS?.p75),
+    };
+
+    // ── DIAGNÓSTICO ────────────────────────────────────────
+    // O sales.html ainda não tem quiz. Quando tiver, srv.diagAns vem
+    // populado. Aqui só convertemos se houver dados.
+    const diag = Object.entries(srv.diagAns || {}).map(([q, opts]) => ({
+      q,
+      options: Object.entries(opts).map(([name, value]) => ({ name, value }))
+                                   .sort((a, b) => b.value - a.value),
+    }));
+
+    // ── ATIVIDADE RECENTE ──────────────────────────────────
+    function eventToType(name) {
+      if (name.startsWith('clicou_cta_'))    return 'cta';
+      if (name.startsWith('scroll_'))         return 'scroll';
+      if (name === 'lead_capturado')          return 'lead';
+      if (name === 'iniciou_checkout')        return 'lead';
+      if (name === 'compra_completa')         return 'lead';
+      if (name === 'tempo_na_pagina')         return 'exit';
+      return 'visit';
+    }
+    const recent = (srv.recent || []).slice(0, 30).map(it => ({
+      name: it.name,
+      meta: it.meta,
+      ts:   it.ts,
+      type: eventToType(it.name),
+    }));
+
+    return {
+      stats:   { visits, uniqueUsers, leads, purchases, deltas },
+      funnel,
+      utms,
+      ctas,
+      modules,
+      vitals,
+      diag,
+      recent,
+      sessionsJourney: srv.sessionsJourney || [],
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════
+  function renderStats(s) {
+    const el = document.getElementById('statsGrid');
+    const items = [
+      { icon: 'visibility',       lbl: 'Visitas no site',     val: s.visits,      delta: s.deltas.visits      },
+      { icon: 'group',            lbl: 'Visitantes únicos',   val: s.uniqueUsers, delta: s.deltas.uniqueUsers },
+      { icon: 'how_to_reg',       lbl: 'Leads capturados',    val: s.leads,       delta: s.deltas.leads       },
+      { icon: 'shopping_bag',     lbl: 'Vendas concluídas',   val: s.purchases,   delta: s.deltas.purchases   },
+    ];
+    el.innerHTML = items.map(it => {
+      // Quando tudo é zero (estado limpo) ou sem delta significativa, esconde o badge
+      const showDelta = it.val > 0 && Math.abs(it.delta) > 0.01;
+      const isUp = it.delta >= 0;
+      const deltaIcon = isUp ? 'trending_up' : 'trending_down';
+      const deltaCls  = isUp ? 'stat__delta--up' : 'stat__delta--down';
+      const sign      = isUp ? '+' : '';
+      const deltaHtml = showDelta
+        ? `<div class="stat__delta ${deltaCls}">
+             <span class="material-symbols-outlined">${deltaIcon}</span>
+             ${sign}${it.delta}%<span class="stat__delta-suffix"> vs período anterior</span>
+           </div>`
+        : `<div class="stat__delta" style="background:rgba(255,255,255,.04); color:var(--text-subtle);">
+             <span class="material-symbols-outlined">remove</span>
+             aguardando dados
+           </div>`;
+      return `
+        <div class="stat">
+          <div class="stat__icon"><span class="material-symbols-outlined">${it.icon}</span></div>
+          <div class="stat__num">${fmtNum(it.val)}</div>
+          <div class="stat__lbl">${it.lbl}</div>
+          ${deltaHtml}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderBars(elId, items, opts = {}) {
+    const el = document.getElementById(elId);
+    if (!items || !items.length) {
+      el.innerHTML = '<div class="empty">Sem dados ainda.</div>';
+      return;
+    }
+    const max   = Math.max(...items.map(i => i.value));
+    const total = opts.totalRef || items[0].value; // pra mostrar % relativa ao topo
+    el.innerHTML = items.map((it, i) => {
+      const widthPct = max ? (it.value / max) * 100 : 0;
+      const showPct  = opts.showPct ? `<small>${pct(it.value, total)}%</small>` : '';
+      const cls      = it.cls || '';
+      return `
+        <div class="bar ${cls}">
+          <div class="bar__top">
+            <span class="bar__label">${it.name}</span>
+            <span class="bar__num">${fmtNum(it.value)}${showPct}</span>
+          </div>
+          <div class="bar__track">
+            <div class="bar__fill" style="width:${widthPct}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderVitals(v) {
+    const el = document.getElementById('vitalsGrid');
+    const items = [
+      { key: 'LCP', name: 'Velocidade de carregar (LCP)',  ...v.LCP },
+      { key: 'INP', name: 'Resposta ao toque (INP)',       ...v.INP },
+      { key: 'CLS', name: 'Estabilidade visual (CLS)',     ...v.CLS },
+    ];
+    const ratingMap = {
+      good: { lbl: 'Bom',         icon: 'check_circle' },
+      ni:   { lbl: 'Pode melhorar', icon: 'warning' },
+      poor: { lbl: 'Ruim',        icon: 'error' },
+      none: { lbl: 'Sem dados',   icon: 'pending' }
+    };
+    el.innerHTML = items.map(it => {
+      const r = ratingMap[it.rating] || ratingMap.none;
+      return `
+        <div class="vital">
+          <div class="vital__name">${it.name}</div>
+          <div class="vital__value">${it.value}</div>
+          <div class="vital__rating vital__rating--${it.rating}">
+            <span class="material-symbols-outlined">${r.icon}</span>
+            ${r.lbl}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // RENDER JOURNEY · lista cada sessão com o stage máximo atingido
+  // ──────────────────────────────────────────────────────────
+  // Cores por stage (gradiente: cinza → amarelo → verde, conforme avança)
+  const JOURNEY_COLORS = {
+    8: '#10b981',  // Comprou — verde forte
+    7: '#34d399',  // Lead capturado — verde
+    6: '#84cc16',  // Iniciou checkout — lima
+    5: '#FFD60A',  // Clicou CTA — amarelo principal
+    4: '#FFC700',  // Rolou 100% — amarelo escuro
+    3: '#f59e0b',  // Chegou na oferta — laranja
+    2: '#fb923c',  // Viu testimonials — laranja claro
+    1: '#94a3b8',  // Rolou 25% — cinza
+    0: '#64748b',  // Apenas abriu — cinza escuro (bounce)
+  };
+  function fmtDuration(s) {
+    if (s < 60)    return `${s}s`;
+    if (s < 3600)  return `${Math.floor(s / 60)}m ${s % 60}s`;
+    return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+  }
+  function shortSession(sid) {
+    if (!sid) return '—';
+    // s_xxxxx_yyyyy → mostra os últimos 6 chars como "id"
+    const parts = sid.split('_');
+    return parts[parts.length - 1] || sid.slice(-6);
+  }
+  function renderJourney(sessions) {
+    const el = document.getElementById('journeyList');
+    const countEl = document.getElementById('journeyCount');
+    if (countEl) countEl.textContent = (sessions || []).length;
+    if (!sessions || !sessions.length) {
+      el.innerHTML = '<div class="journey-empty">Nenhuma sessão registrada ainda neste período.</div>';
+      return;
+    }
+
+    // ── 1. Agrupa por stage final ────────────────────────────
+    const groups = new Map();
+    sessions.forEach(s => {
+      const key = s.stage_label || 'Desconhecido';
+      if (!groups.has(key)) {
+        groups.set(key, {
+          label: key,
+          max_stage: s.max_stage ?? 0,
+          count: 0,
+          sessions: [],
+        });
+      }
+      const g = groups.get(key);
+      g.count++;
+      g.sessions.push(s);
+    });
+
+    // ── 2. Ordena por count desc (maior em cima) ─────────────
+    const sorted = [...groups.values()].sort((a, b) => b.count - a.count);
+    const total = sessions.length;
+    const maxCount = sorted[0]?.count || 1;
+
+    // ── 3. Insight summary (insights acionáveis pro Balla) ──
+    const bounceCount = sessions.filter(s => (s.max_stage ?? 0) === 0).length;
+    const reachedOffer = sessions.filter(s => (s.max_stage ?? 0) >= 3).length;
+    const clickedCTA   = sessions.filter(s => (s.max_stage ?? 0) >= 5).length;
+    const converted    = sessions.filter(s => (s.max_stage ?? 0) >= 7).length;
+    const bouncePct    = total ? Math.round(bounceCount / total * 100) : 0;
+    const offerPct     = total ? Math.round(reachedOffer / total * 100) : 0;
+    const ctaPct       = total ? Math.round(clickedCTA / total * 100) : 0;
+    const convPct      = total ? Math.round(converted / total * 100 * 10) / 10 : 0;
+
+    const summaryHtml = `
+      <div class="journey-summary">
+        <div class="journey-summary__item ${bouncePct > 40 ? 'journey-summary__item--warn' : ''}">
+          Bounce: <strong>${bouncePct}%</strong> <span style="opacity:.6">(${bounceCount} sessões)</span>
+        </div>
+        <div class="journey-summary__item">
+          Chegou na oferta: <strong>${offerPct}%</strong> <span style="opacity:.6">(${reachedOffer})</span>
+        </div>
+        <div class="journey-summary__item">
+          Clicou no CTA: <strong>${ctaPct}%</strong> <span style="opacity:.6">(${clickedCTA})</span>
+        </div>
+        <div class="journey-summary__item ${convPct >= 2 ? 'journey-summary__item--win' : ''}">
+          Conversão: <strong>${convPct}%</strong> <span style="opacity:.6">(${converted})</span>
+        </div>
+      </div>
+    `;
+
+    // ── 4. Renderiza grupos ordenados ────────────────────────
+    const groupsHtml = sorted.map((g, idx) => {
+      const color = JOURNEY_COLORS[g.max_stage] || '#64748b';
+      const widthPct = (g.count / maxCount) * 100;
+      const totalPct = total ? Math.round(g.count / total * 100 * 10) / 10 : 0;
+      const groupId = `journey-group-${idx}`;
+
+      // Lista das sessões do grupo
+      const sessionsHtml = g.sessions.map(s => {
+        const utm = s.utm ? `${s.utm.source || '?'}/${s.utm.medium || '?'}` : '(direct)';
+        const dur = fmtDuration(s.duration_s || 0);
+        const last = timeAgo(s.last_ts);
+        return `
+          <div class="journey-session">
+            <div class="journey-session__id">
+              <strong>${shortSession(s.session)}</strong>
+              <span class="journey-session__utm"> · ${utm}</span>
+            </div>
+            <div class="journey-session__meta">${s.events_count} ev · ${dur}</div>
+            <span class="journey-session__device">${s.device || '—'}</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="journey-group" style="--stage-color:${color}" data-group="${groupId}">
+          <div class="journey-group__head">
+            <span class="journey-group__label">${g.label}</span>
+            <span class="journey-group__count">
+              <strong>${g.count}</strong> ${g.count === 1 ? 'pessoa' : 'pessoas'}
+              <span class="journey-group__count-pct">${totalPct}% do total</span>
+            </span>
+          </div>
+          <div class="journey-group__bar">
+            <div class="journey-group__fill" style="width:${widthPct}%"></div>
+          </div>
+          <button type="button" class="journey-group__toggle" data-toggle="${groupId}">
+            Ver as ${g.count} ${g.count === 1 ? 'sessão' : 'sessões'}
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div class="journey-group__sessions">
+            ${sessionsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = summaryHtml + groupsHtml;
+
+    // Wire dos toggles (expandir/colapsar)
+    el.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.toggle;
+        const group = el.querySelector(`[data-group="${id}"]`);
+        group?.classList.toggle('is-open');
+      });
+    });
+  }
+
+  function renderDiag(diag) {
+    const el = document.getElementById('diagGrid');
+    if (!diag || !diag.length) {
+      el.innerHTML = '<div class="empty">Sem respostas ainda.</div>';
+      return;
+    }
+    el.innerHTML = diag.map((q, idx) => {
+      const total = q.options.reduce((a, b) => a + b.value, 0);
+      const max   = Math.max(...q.options.map(o => o.value));
+      const bars  = q.options.map(o => {
+        const w = max ? (o.value / max) * 100 : 0;
+        return `
+          <div class="bar">
+            <div class="bar__top">
+              <span class="bar__label">${o.name}</span>
+              <span class="bar__num">${o.value}<small>${pct(o.value, total)}%</small></span>
+            </div>
+            <div class="bar__track">
+              <div class="bar__fill" style="width:${w}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="diag-q">
+          <div class="diag-q__text">
+            ${q.q}
+            <span class="diag-q__total">(${total} respostas)</span>
+          </div>
+          <div class="bars">${bars}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderRecent(items) {
+    const el = document.getElementById('recentList');
+    if (!items || !items.length) {
+      el.innerHTML = '<div class="empty">Nenhuma atividade recente.</div>';
+      return;
+    }
+    const iconMap = {
+      lead:   { cls: 'lead',   icon: 'how_to_reg' },
+      cta:    { cls: 'cta',    icon: 'ads_click' },
+      scroll: { cls: 'scroll', icon: 'arrow_downward' },
+      exit:   { cls: 'exit',   icon: 'logout' },
+      visit:  { cls: '',       icon: 'visibility' },
+    };
+    el.innerHTML = items.map(it => {
+      const ico = iconMap[it.type] || iconMap.visit;
+      const meta = it.meta
+        ? ` · <span style="color:var(--text-subtle)">${Object.entries(it.meta).map(([k,v]) => `${k}: ${v}`).join(' · ')}</span>`
+        : '';
+      return `
+        <div class="recent-item">
+          <div class="recent-item__icon recent-item__icon--${ico.cls}">
+            <span class="material-symbols-outlined">${ico.icon}</span>
+          </div>
+          <div class="recent-item__name"><strong>${it.name}</strong>${meta}</div>
+          <div class="recent-item__meta">${timeAgo(it.ts)}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // REFRESH LOOP
+  // ═══════════════════════════════════════════════════════════════
+  let lastRender = Date.now();
+  let lastServerHit = null;   // timestamp da última fetch BEM-SUCEDIDA
+  const updatedAtEl = document.getElementById('updatedAt');
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function fmtClock(d) {
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function tickUpdatedLabel() {
+    const s = Math.floor((Date.now() - lastRender) / 1000);
+    let label;
+    if      (s < 5)  label = 'agora';
+    else if (s < 60) label = `há ${s}s`;
+    else             label = `há ${Math.floor(s/60)} min`;
+    // Adiciona hora exata da última fetch real (servidor bateu)
+    if (lastServerHit) {
+      label += ` · ${fmtClock(new Date(lastServerHit))}`;
+    }
+    updatedAtEl.textContent = label;
+  }
+  setInterval(tickUpdatedLabel, 1000);
+
+  let _refreshTimer = null;
+  let _currentRange = '24h';
+
+  async function renderAll() {
+    let data;
+    let serverError = null;
+
+    if (CONFIG.USE_SERVER) {
+      // Em modo server, a flag local de "cleared" não importa — o DELETE
+      // já limpou no Supabase, qualquer dado novo virá do servidor.
+      // Auto-limpa a flag pra não bagunçar futuros refreshes.
+      if (isDataCleared()) unsetDataCleared();
+
+      try {
+        const fresh = await fetchServerEvents(_currentRange);
+        if (fresh) {
+          data = mapServerToView(fresh, _currentRange);
+          lastServerHit = Date.now();   // marca a hora da última fetch boa
+        } else {
+          serverError = 'Sem resposta do servidor';
+          data = emptyMockData();
+        }
+      } catch (err) {
+        serverError = err.message;
+        data = emptyMockData();
+      }
+    } else {
+      data = getCurrentData();
+    }
+
+    // Atualiza a live pill com indicador de erro se houver
+    const livePill = document.getElementById('livePill');
+    if (livePill) {
+      if (serverError) livePill.classList.add('live--error');
+      else             livePill.classList.remove('live--error');
+    }
+
+    renderStats(data.stats);
+    renderBars('funnelBars',  data.funnel,  { showPct: true });
+    renderBars('utmBars',     data.utms);
+    renderBars('ctaBars',     data.ctas);
+    renderVitals(data.vitals);
+    renderJourney(data.sessionsJourney);
+    renderRecent(data.recent);
+
+    document.getElementById('totalEvents').textContent = fmtNum(
+      data.stats.visits + data.stats.leads + data.stats.purchases
+    );
+
+    // Indicador de modo no footer
+    const cleared = isDataCleared();
+    const mode = cleared
+      ? 'limpo · aguardando eventos'
+      : (CONFIG.USE_SERVER ? 'live · server' : 'mock data');
+    document.getElementById('modeIndicator').textContent = mode;
+
+    // Banner "dados limpos" no topo (usa classe pra evitar conflito com [hidden])
+    const banner = document.getElementById('clearedBanner');
+    if (banner) banner.classList.toggle('is-hidden', !cleared);
+
+    lastRender = Date.now();
+    tickUpdatedLabel();
+  }
+
+  function startRefreshLoop() {
+    if (_refreshTimer) clearInterval(_refreshTimer);
+    _refreshTimer = setInterval(renderAll, CONFIG.REFRESH_MS);
+  }
+
+  // Refresh em diversos eventos pra garantir que dados não fiquem defasados:
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && isAuthed()) renderAll();
+  });
+  window.addEventListener('focus', () => { if (isAuthed()) renderAll(); });
+  // pageshow é disparado quando o navegador restaura a página da bfcache
+  // (botão voltar/avançar). Sem isso, dados viajam no tempo. event.persisted=true
+  // = veio da bfcache.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted && isAuthed()) renderAll();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // SCREEN MGMT
+  // ═══════════════════════════════════════════════════════════════
+  function showDashboard() {
+    document.getElementById('loginScreen').hidden = true;
+    document.getElementById('dashScreen').hidden  = false;
+    document.getElementById('loggedAs').textContent = sessionStorage.getItem(SESSION_EMAIL_KEY) || '—';
+    renderAll();
+    startRefreshLoop();
+  }
+  function showLogin() {
+    document.getElementById('loginScreen').hidden = false;
+    document.getElementById('dashScreen').hidden  = true;
+    if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TOAST + MODAL (UX feedback)
+  // ═══════════════════════════════════════════════════════════════
+  const toastEl    = document.getElementById('toast');
+  const toastMsgEl = document.getElementById('toastMsg');
+  const toastIconEl= toastEl.querySelector('.toast__icon .material-symbols-outlined');
+  let _toastTimer = null;
+
+  function showToast(msg, kind = 'success') {
+    toastMsgEl.textContent = msg;
+    toastIconEl.textContent = kind === 'error' ? 'error' : (kind === 'info' ? 'info' : 'check_circle');
+    toastEl.classList.remove('toast--success', 'toast--error', 'toast--info');
+    toastEl.classList.add('toast--' + kind);
+    toastEl.classList.add('is-visible');
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 3200);
+  }
+
+  const confirmModal = document.getElementById('confirmModal');
+  let _confirmResolver = null;
+  function openConfirm() {
+    return new Promise((resolve) => {
+      _confirmResolver = resolve;
+      confirmModal.classList.add('is-open');
+      document.body.classList.add('modal-locked');
+      // Foca o botão de cancelar (mais seguro que ok no autofocus)
+      setTimeout(() => document.getElementById('confirmCancel')?.focus(), 50);
+    });
+  }
+  function closeConfirm(result) {
+    confirmModal.classList.remove('is-open');
+    document.body.classList.remove('modal-locked');
+    if (_confirmResolver) {
+      const r = _confirmResolver;
+      _confirmResolver = null;
+      r(result);
+    }
+  }
+  document.getElementById('confirmCancel').addEventListener('click', () => closeConfirm(false));
+  document.getElementById('confirmOk').addEventListener('click',     () => closeConfirm(true));
+  // ESC fecha o modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && confirmModal.classList.contains('is-open')) closeConfirm(false);
+  });
+  // Click no backdrop fecha
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) closeConfirm(false);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // CLEAR DATA · função principal · funciona em modo mock E server
+  // ═══════════════════════════════════════════════════════════════
+  async function clearAllData() {
+    const ok = await openConfirm();
+    if (!ok) return;
+
+    // 1. Servidor (quando USE_SERVER) — DELETE no endpoint Supabase
+    if (CONFIG.USE_SERVER) {
+      try {
+        const token = sessionStorage.getItem(SESSION_TOKEN_KEY) || '';
+        const res = await fetch(CONFIG.SERVER_URL, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('server returned ' + res.status);
+      } catch (err) {
+        showToast('Falhou ao limpar no servidor: ' + err.message, 'error');
+        return;
+      }
+      // Limpa flag local que pudesse estar sobrando (modo legacy mock)
+      unsetDataCleared();
+      // Re-render: vai buscar do server (que agora está vazio)
+      await renderAll();
+      showToast('Todos os dados foram limpos.', 'success');
+      return;
+    }
+
+    // 2. Modo MOCK: só persiste flag e limpa caches do Track helper
+    setDataCleared();
+    renderAll();
+    showToast('Todos os dados foram limpos.', 'success');
+  }
+
+  function restoreDemo() {
+    if (CONFIG.USE_SERVER) {
+      // Em modo server, "restaurar demo" não faz sentido — só re-busca dados
+      unsetDataCleared();
+      renderAll();
+      showToast('Buscando dados do servidor...', 'info');
+      return;
+    }
+    unsetDataCleared();
+    renderAll();
+    showToast('Dados de demonstração restaurados.', 'info');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // HEADER BUTTONS
+  // ═══════════════════════════════════════════════════════════════
+  document.getElementById('btnRefresh').addEventListener('click', () => {
+    renderAll();
+    showToast('Atualizado agora.', 'info');
+  });
+  document.getElementById('btnLogout').addEventListener('click', logout);
+  document.getElementById('btnClear').addEventListener('click', clearAllData);
+  document.getElementById('restoreDemoBtn').addEventListener('click', restoreDemo);
+
+  // ── Pausar/retomar tracking nas próprias visitas do admin ─────
+  // Liga a flag em localStorage, lida pelo /track.js no sales.html.
+  const PAUSE_KEY = 'mddnm_track_paused_v1';
+  const btnPause = document.getElementById('btnPause');
+  function syncPauseBtn() {
+    const paused = localStorage.getItem(PAUSE_KEY) === '1';
+    const icon = btnPause.querySelector('.material-symbols-outlined');
+    if (paused) {
+      btnPause.style.background = 'var(--primary-soft)';
+      btnPause.style.borderColor = 'var(--border-strong)';
+      btnPause.style.color = 'var(--primary)';
+      btnPause.title = 'Tracking PAUSADO nas suas visitas. Clique pra retomar.';
+      icon.textContent = 'visibility_off';
+    } else {
+      btnPause.style.background = '';
+      btnPause.style.borderColor = '';
+      btnPause.style.color = '';
+      btnPause.title = 'Pausar tracking nas suas próprias visitas (não polui métricas)';
+      icon.textContent = 'visibility';
+    }
+  }
+  btnPause.addEventListener('click', () => {
+    const paused = localStorage.getItem(PAUSE_KEY) === '1';
+    if (paused) {
+      localStorage.removeItem(PAUSE_KEY);
+      showToast('Tracking retomado nas suas visitas.', 'info');
+    } else {
+      localStorage.setItem(PAUSE_KEY, '1');
+      showToast('Tracking pausado. Suas visitas não contam mais.', 'success');
+    }
+    syncPauseBtn();
+  });
+  syncPauseBtn();
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('is-active'));
+      t.classList.add('is-active');
+      _currentRange = t.dataset.range;
+      renderAll();
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // BOOT
+  // ═══════════════════════════════════════════════════════════════
+  if (isAuthed()) showDashboard();
+  else            showLogin();
+  </script>
+</body>
+</html>

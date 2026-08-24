@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '998127153121640');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=998127153121640&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+
+  <title>Compra confirmada! · Escola de Condutores</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0B1A38;
+      --navy-2: #1B2D54;       /* um pouco mais claro pra dar contraste aos cards */
+      --amarelo: #FFD60A;
+      --texto: #FFFFFF;
+      --muted: #B9C0D4;        /* era #8B92A8 — clareado pra melhor legibilidade */
+      --suave: #E4E7EF;        /* era #C5C8D1 — quase branco, lê fácil sobre navy */
+      --verde: #25D366;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--navy);
+      color: var(--texto);
+      min-height: 100dvh;       /* min, não fixo — deixa crescer se precisar */
+      overflow-x: hidden;
+      overflow-y: auto;          /* nunca CORTA: se a tela for baixa, rola */
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+    .caution {
+      flex-shrink: 0;
+      height: 6px;
+      width: 100%;
+      background-image: repeating-linear-gradient(-45deg, #000 0, #000 12px, var(--amarelo) 12px, var(--amarelo) 24px);
+      background-color: var(--amarelo);
+    }
+    /* Container central que ocupa todo o espaço e centraliza verticalmente */
+    .wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* "safe center": centraliza quando cabe, mas NÃO corta o topo/baixo
+         quando o conteúdo é maior que a tela (deixa rolar). */
+      justify-content: safe center;
+      gap: clamp(4px, 0.8vh, 10px);
+      max-width: 540px;
+      width: 100%;
+      margin: 0 auto;
+      padding: clamp(8px, 1.5vh, 20px) 20px;
+      text-align: center;
+    }
+
+    /* Check de sucesso */
+    .check-circle {
+      flex-shrink: 0;
+      width: clamp(54px, 9vh, 76px);
+      height: clamp(54px, 9vh, 76px);
+      border-radius: 50%;
+      background: rgba(37, 211, 102, 0.12);
+      border: 3px solid var(--verde);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pop 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      position: relative;
+    }
+    .check-circle::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 2px solid var(--verde);
+      opacity: 0;
+      animation: ring 1.6s ease-out infinite;
+    }
+    @keyframes ring { 0% { transform: scale(0.9); opacity: 0.6; } 100% { transform: scale(1.4); opacity: 0; } }
+    @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    .check-mark {
+      width: 48%; height: 48%;
+      stroke: var(--verde); stroke-width: 4; fill: none;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 50; stroke-dashoffset: 50;
+      animation: draw 0.5s 0.3s forwards ease-out;
+    }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    .tag {
+      font-size: clamp(9px, 1.4vh, 11px);
+      font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--verde);
+    }
+    h1 {
+      font-size: clamp(22px, 4.2vh, 32px);
+      font-weight: 900; line-height: 1.08; letter-spacing: -0.02em;
+    }
+    h1 .hl { color: var(--amarelo); }
+    .sub {
+      font-size: clamp(14px, 2.1vh, 16px);
+      font-weight: 500;
+      line-height: 1.5; color: var(--suave);
+      max-width: 440px;
+    }
+    .sub strong { color: #fff; font-weight: 700; }
+
+    /* Card de alerta com countdown */
+    .alert {
+      width: 100%;
+      max-width: 440px;
+      background: linear-gradient(135deg, rgba(255,214,10,0.14), rgba(255,214,10,0.04));
+      border: 1.5px solid rgba(255,214,10,0.4);
+      border-radius: 16px;
+      padding: clamp(12px, 2vh, 18px);
+    }
+    .alert .big { font-size: clamp(16px, 2.3vh, 18px); font-weight: 900; margin-bottom: 5px; }
+    .alert .desc { font-size: clamp(13px, 1.9vh, 14.5px); font-weight: 500; color: var(--suave); line-height: 1.45; }
+    .clock {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--amarelo); color: var(--navy);
+      font-weight: 900; font-size: clamp(12px, 1.8vh, 14px);
+      padding: 7px 16px; border-radius: 999px; margin-top: 10px;
+    }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--navy); animation: blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+    /* Passos compactos — em coluna, densos */
+    .steps {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(5px, 0.8vh, 8px);
+    }
+    .step {
+      display: flex; gap: 11px; align-items: center; text-align: left;
+      background: var(--navy-2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: clamp(7px, 1.2vh, 11px) 14px;
+    }
+    .step .num {
+      flex-shrink: 0;
+      width: clamp(26px, 4vh, 32px); height: clamp(26px, 4vh, 32px);
+      border-radius: 50%; background: var(--amarelo); color: var(--navy);
+      font-weight: 900; font-size: clamp(13px, 2vh, 15px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step .txt h3 { font-size: clamp(14px, 2vh, 16px); font-weight: 700; line-height: 1.2; }
+    .step .txt p { font-size: clamp(12px, 1.7vh, 13.5px); font-weight: 500; line-height: 1.4; color: var(--suave); margin-top: 2px; }
+    .step .txt strong { color: var(--amarelo); font-weight: 700; }
+
+    /* Bloco "já é nosso aluno?" — pra quem comprou upsell (já tem conta) */
+    .returning {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(37, 211, 102, 0.10);
+      border: 1.5px solid rgba(37, 211, 102, 0.45);
+      border-radius: 16px;
+      padding: clamp(11px, 1.8vh, 15px) clamp(14px, 2vh, 18px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .returning .ico {
+      flex-shrink: 0;
+      font-size: clamp(22px, 3.4vh, 28px);
+      line-height: 1;
+    }
+    .returning .body { flex: 1; min-width: 0; }
+    .returning .body p {
+      font-size: clamp(12px, 1.8vh, 13.5px);
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--suave);
+    }
+    .returning .body b { color: #fff; font-weight: 700; }
+    .returning .body strong { color: var(--verde); font-weight: 700; }
+    .enter-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--verde);
+      color: #fff;
+      font-weight: 700;
+      font-size: clamp(12px, 1.7vh, 13.5px);
+      padding: 9px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: filter 0.2s;
+    }
+    .enter-btn:hover { filter: brightness(1.08); }
+    @media (max-width: 480px) {
+      .returning { flex-direction: column; text-align: center; gap: 9px; }
+    }
+
+    /* Linha "de quem vem" — compacta, inline */
+    .from-line {
+      font-size: clamp(12px, 1.7vh, 13.5px);
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .from-line b { color: #fff; font-weight: 700; }
+    .from-line .subj { color: var(--amarelo); font-weight: 700; }
+
+    /* Suporte */
+    .support { font-size: clamp(12px, 1.6vh, 13.5px); font-weight: 500; color: var(--muted); }
+    .wa-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--verde); color: #fff; font-weight: 700;
+      font-size: clamp(12px, 1.8vh, 14px);
+      padding: 10px 20px; border-radius: 999px; text-decoration: none;
+      margin-top: 6px; transition: filter 0.2s;
+    }
+    .wa-btn:hover { filter: brightness(1.08); }
+
+    /* CTA PRIMÁRIA: liberar acesso na hora pelo WhatsApp (não depende de e-mail) */
+    .liberar { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .liberar-btn {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      background: var(--verde); color: #fff;
+      font-weight: 900; font-size: clamp(15px, 2.3vh, 18px); letter-spacing: .01em;
+      padding: clamp(13px, 2.1vh, 17px) 22px; border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.32);
+      transition: filter .2s, transform .2s;
+    }
+    .liberar-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .liberar-hint { font-size: clamp(12px, 1.7vh, 13.5px); font-weight: 500; color: var(--suave); line-height: 1.4; }
+    .liberar-hint b { color: #fff; font-weight: 700; }
+
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+
+    /* ─── Blindagem contra extensões de "scroll animation" ──────────────────
+       Algumas extensões (Motion, WOW-like, certos screenshot tools) injetam
+       `animation: fade-in` + `opacity: 0` nos elementos e disparam o fade só
+       quando entram no viewport. Se o trigger falha, o conteúdo fica preso
+       invisível (foi o que escondia o card do countdown).
+       Forçamos os elementos de CONTEÚDO a ficarem sempre visíveis. Os
+       decorativos (.check-circle, .pulse-dot) mantêm suas animações próprias. */
+    .wrap, .tag, h1, .sub, .alert, .alert *, .steps, .step, .step *,
+    .returning, .returning *, .enter-btn, .liberar, .liberar-btn, .liberar-hint,
+    .from-line, .support, .wa-btn, .clock {
+      opacity: 1 !important;
+      animation: none !important;
+      transition: none !important;
+      visibility: visible !important;
+    }
+    /* Reexpõe a animação do ponto pulsante do relógio (foi pega pelo seletor acima) */
+    .pulse-dot { animation: blink 1s ease-in-out infinite !important; }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="caution"></div>
+
+  <div class="wrap">
+    <div class="check-circle">
+      <svg class="check-mark" viewBox="0 0 52 52"><path d="M14 27 L22 35 L38 18" /></svg>
+    </div>
+
+    <p class="tag">✅ Pagamento confirmado</p>
+    <h1>Sua matrícula está <span class="hl">confirmada!</span></h1>
+    <p class="sub">
+      Falta só <strong>1 passo</strong>: criar sua senha pra entrar. Escolha o jeito mais fácil 👇
+    </p>
+
+    <!-- CAMINHO PRINCIPAL: liberar acesso na hora pelo WhatsApp (não depende de e-mail) -->
+    <div class="liberar">
+      <a class="liberar-btn" href="https://wa.me/5521993685289?text=Oi!%20Quero%20liberar%20meu%20acesso%20%C3%A0%20plataforma%20%F0%9F%9A%97" target="_blank" rel="noopener noreferrer">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm5.52 11.99c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+        🔓 Liberar acesso à plataforma
+      </a>
+      <p class="liberar-hint">Clique, mande a mensagem e a gente te devolve seu acesso <b>na hora</b> pelo WhatsApp. ✅</p>
+    </div>
+
+    <div class="alert">
+      <p class="big">📩 Ou olhe seu e-mail</p>
+      <p class="desc">Também te mandamos o link pra <strong style="color:#fff">criar sua senha</strong> por e-mail (chega em até <strong style="color:#fff">5 minutos</strong>).</p>
+      <div class="clock">
+        <span class="pulse-dot"></span>
+        <span id="countdown">Chega em até 5:00</span>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div class="txt"><h3>Abra sua caixa de entrada</h3><p>Procure pelo e-mail de matrícula confirmada.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div class="txt"><h3>Não achou? Olhe o SPAM</h3><p>Confira também <strong>Promoções</strong> e <strong>Lixo eletrônico</strong>.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div class="txt"><h3>Clique em "Criar senha e entrar"</h3><p>Cria sua senha e cai direto na 1ª aula. 💛</p></div>
+      </div>
+    </div>
+
+    <p class="from-line">
+      📧 O e-mail vem de <b>Escola de Condutores</b> · assunto <span class="subj">"🎉 Sua matrícula foi confirmada"</span>
+    </p>
+
+    <!-- Caminho pra quem JÁ É ALUNO e comprou um módulo novo (upsell) -->
+    <div class="returning">
+      <span class="ico">🎓</span>
+      <div class="body">
+        <p><b>Já é nossa aluna?</b> Seu <b>módulo novo</b> <strong>já está liberado</strong> na área de membros. É só entrar com a senha que você já usa. 😉</p>
+      </div>
+      <a class="enter-btn" href="/login">Entrar na área &rarr;</a>
+    </div>
+
+    <div class="support">
+      Passou de 5 min e não chegou (nem no spam)?
+      <br>
+      <a class="wa-btn" href="https://wa.me/5521993685289?text=Oi!%20Acabei%20de%20comprar%20e%20n%C3%A3o%20recebi%20o%20e-mail%20de%20primeiro%20acesso." target="_blank" rel="noopener noreferrer">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.15h-.01c-1.52 0-3.01-.41-4.31-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.16 8.16 0 01-1.26-4.36c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 012.41 5.82c0 4.54-3.69 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+        Falar com o suporte
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Countdown 5 min
+    (function () {
+      var total = 5 * 60;
+      var el = document.getElementById('countdown');
+      var t = setInterval(function () {
+        total--;
+        if (total <= 0) { clearInterval(t); el.textContent = 'Já deve ter chegado! Olhe o spam 👀'; return; }
+        var m = Math.floor(total / 60), s = total % 60;
+        el.textContent = 'Chega em até ' + m + ':' + (s < 10 ? '0' : '') + s;
+      }, 1000);
+    })();
+
+    // Confetti leve
+    (function () {
+      var canvas = document.getElementById('confetti'), ctx = canvas.getContext('2d');
+      function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+      resize(); addEventListener('resize', resize);
+      var colors = ['#FFD60A', '#FFC700', '#FFFFFF', '#25D366'], pieces = [];
+      for (var i = 0; i < 110; i++) pieces.push({
+        x: Math.random() * canvas.width, y: Math.random() * -canvas.height,
+        w: 6 + Math.random() * 6, h: 8 + Math.random() * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.2,
+        vy: 1.5 + Math.random() * 3, vx: (Math.random() - 0.5) * 1.5, sway: Math.random() * 2
+      });
+      var stopped = false;
+      setTimeout(function () { stopped = true; }, 5000);
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var alive = false;
+        pieces.forEach(function (p) {
+          if (p.y > canvas.height + 20) { if (!stopped) { p.y = -20; p.x = Math.random() * canvas.width; } else return; }
+          alive = true;
+          p.y += p.vy; p.x += p.vx + Math.sin(p.y / 40) * p.sway * 0.3; p.rot += p.vr;
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+          ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+        });
+        if (alive) requestAnimationFrame(draw); else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      draw();
+    })();
+  </script>
+</body>
+</html>
