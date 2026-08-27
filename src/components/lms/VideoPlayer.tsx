@@ -59,7 +59,10 @@ export type VideoEmbed =
   | { kind: "youtube"; videoId: string }
   | { kind: "vimeo"; videoId: string }
   | { kind: "panda"; videoId: string; pullzone: string }
-  | { kind: "native"; src: string };
+  | { kind: "native"; src: string }
+  // Aula cujo vídeo saiu do ar durante a migração do Panda para o YouTube.
+  // Em vez de tentar carregar e falhar, o player mostra "conteúdo em atualização".
+  | { kind: "updating" };
 
 interface VideoPlayerProps {
   embed: VideoEmbed | null;
@@ -101,8 +104,13 @@ export function parseVideoUrl(url: string | null | undefined): VideoEmbed | null
   if (vimeo) return { kind: "vimeo", videoId: vimeo[1] };
   // Panda Video: https://player-vz-<pullzone>.tv.pandavideo.com.br/embed/?v=<UUID>
   // Pullzone tem múltiplos hífens (ex: vz-438412f4-a64), então usa [a-z0-9-]+
+  //
+  // MIGRAÇÃO (2026-08-19): os vídeos do Panda saíram do ar. Enquanto não forem
+  // republicados, essas aulas mostram "conteúdo em atualização" em vez de um
+  // player quebrado. Pra voltar a tocar pelo Panda, basta devolver o return
+  // original: { kind: "panda", pullzone: panda[1], videoId: panda[2] }.
   const panda = url.match(/player-(vz-[a-z0-9-]+)\.tv\.pandavideo\.com\.br\/embed\/\?v=([0-9a-f-]{36})/i);
-  if (panda) return { kind: "panda", pullzone: panda[1], videoId: panda[2] };
+  if (panda) return { kind: "updating" };
   return { kind: "native", src: url };
 }
 
@@ -606,6 +614,27 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [embed?.kind, (embed as any)?.videoId, (embed as any)?.src]);
+
+  // Aula em migração (vídeo antigo fora do ar): avisa em vez de mostrar player
+  // quebrado. O progresso e os comentários da aula continuam intactos.
+  if (embed?.kind === "updating") {
+    return (
+      <div
+        className={`flex flex-col items-center justify-center text-center px-6 ${className ?? ""}`}
+      >
+        <span className="material-symbols-outlined text-5xl md:text-6xl mb-4 text-primary animate-pulse">
+          update
+        </span>
+        <p className="text-base md:text-lg font-black text-white leading-tight">
+          Conteúdo em atualização
+        </p>
+        <p className="mt-2 max-w-sm text-xs md:text-sm text-white/60 leading-relaxed">
+          Estamos atualizando esta aula com uma versão nova. Ela volta pra cá em breve,
+          e o seu progresso está guardado. 🚗
+        </p>
+      </div>
+    );
+  }
 
   if (!embed) {
     return (
