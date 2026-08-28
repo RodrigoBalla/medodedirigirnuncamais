@@ -1,0 +1,13 @@
+@echo off
+cd /d "%~dp0"
+echo Removendo lock travado...
+del /F /Q ".git\index.lock" 2>nul
+echo Stageando Admin.tsx...
+git add src/pages/Admin.tsx
+echo Commitando...
+git commit -m "fix(admin/alunos): copiar link de primeiro acesso estava colando vazio"
+echo Pushando pra main...
+git push origin main
+echo.
+echo === DONE === Confere o Netlify pra ver o deploy.
+pause

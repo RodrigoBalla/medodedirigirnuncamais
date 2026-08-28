@@ -6,9 +6,9 @@
 > relevante for feita.
 >
 > Complementa (não substitui): [`CLAUDE.md`](CLAUDE.md) (instruções pro agente),
-> [`ESCOPO.md`](ESCOPO.md) (escopo formal) e [`README.md`](README.md).
+> [`ESCOPO.md`](_documentos/guias/ESCOPO.md) (escopo formal) e [`README.md`](README.md).
 >
-> **Última atualização:** 2026-08-18.
+> **Última atualização:** 2026-08-19.
 
 ---
 
@@ -96,9 +96,112 @@
 - O player **já suportava YouTube** (`parseVideoUrl` em `VideoPlayer.tsx`) — nenhuma mudança
   de código foi necessária. Como é mudança de dados, valeu na hora, sem deploy.
 - **Backup:** `public.lessons_video_url_backup_20260819` (os 84 URLs originais do Panda).
-- Detalhes, IDs de vídeo e pendências: [`YOUTUBE-MAPA-VIDEOS.md`](YOUTUBE-MAPA-VIDEOS.md).
+- Detalhes, IDs de vídeo e pendências: [`YOUTUBE-MAPA-VIDEOS.md`](_documentos/guias/YOUTUBE-MAPA-VIDEOS.md).
 - ⚠️ **Anti-pirataria:** as playlists são "Não listadas" — sem DRM nem trava de domínio (o
   Panda tinha). Quem tiver o link assiste fora da plataforma.
+
+---
+
+## 🗂️ Organização das pastas (2026-08-19)
+
+A raiz tinha 25 pastas e 36 arquivos soltos misturando código, mídia bruta, documentos e
+scripts. Foi reorganizada por tema. **Nada de código foi movido** — `src/`, `public/`,
+`supabase/`, `netlify/` e os arquivos de configuração continuam onde estavam, justamente
+para não quebrar build nem deploy (verificado: `tsc` 0 e `npm run build` 0 depois da mudança).
+
+| Pasta | O que guarda | Versionada? |
+|---|---|---|
+| `_midia/` | Vídeos e áudios brutos: `CURSO ONLINE`, `AULAS`, `ANUNCIOS META`, `VIDEOS DOWNLOAD INSTAGRAM`, `AUDIOS DE HISTÓRIAS`, `NOVAS IMAGENS SITE` | ❌ (gitignore) |
+| `_privado/` | `CONTRATO` — documento jurídico com dados pessoais | ❌ (gitignore) |
+| `_assets/` | Imagens leves: `marca`, `capas-eduzz`, `imagens-carla`, `imagens-depoimentos`, `thumbs-modulos` | ✅ |
+| `_documentos/` | `guias/` (ESCOPO, CAMPOS-PRODUTOS-EDUZZ, YOUTUBE-MAPA-VIDEOS, DASHBOARD-INSTRUCTIONS), `fluxogramas/`, `emails/` (templates Brevo), `pdr/`, `sobre-o-projeto/`, `legado/` | ✅ |
+| `_scripts/` | `.bat` de push e logs antigos | ✅ (logs ignorados) |
+
+**Na raiz ficaram só** os três documentos centrais (`CLAUDE.md`, `README.md`,
+`MAPA-DE-MEMORIA.md`), as pastas de código e os arquivos de configuração.
+
+> ⚠️ **Por que `_midia/` e `_privado/` ficaram fora do git:** essas pastas tinham **zero
+> arquivos rastreados** e somam gigabytes de vídeo. Sem a entrada no `.gitignore`, um
+> `git add -A` mandaria tudo isso pro repositório. O contrato ficou de fora por conter dados
+> pessoais e jurídicos.
+
+---
+
+## 💸 Checkouts removidos → Lista de Espera (2026-08-19)
+
+**A área de membros não vende mais nada.** Todo botão de compra virou inscrição em lista de espera.
+
+**O que saiu:**
+- `CourseInfo` (`/curso-info/:id`): os 4 CTAs (2× "Comprar agora" + 2× "Abrir checkout externo")
+- `AcessoCompleto` (`/acesso-completo`): o checkout Eduzz embutido
+- `AccessExpiredScreen`: a renovação que abria checkout
+- `NpsSurvey` (`/pesquisa`): o botão "Ir pro checkout" (o CTA de WhatsApp ficou)
+- Os componentes `CheckoutModal.tsx` e `EduzzCheckoutEmbed.tsx` foram **apagados** (ficaram sem
+  nenhum consumidor) — assim não tem como um checkout voltar por descuido.
+
+**O que entrou:**
+- Tabela `waitlist_signups` com RLS (aluna insere/lê só a dela; admin gerencia). Índice único
+  impede inscrição duplicada por produto.
+- `useWaitlist.ts` (hook) + `WaitlistCard.tsx` (card e versão inline pra barra mobile)
+- Aba **"Lista de Espera"** no admin: KPIs, filtro por status, atalho de WhatsApp e export CSV
+  (com BOM, pra acento não quebrar no Excel)
+- `product_id = NULL` significa interesse na plataforma inteira (banner e acesso expirado)
+
+> Verificado no bundle de produção: **zero `chk.eduzz` na área de membros**. A `sales.html`
+> (página de vendas pública) não foi tocada, a pedido do Balla.
+
+---
+
+## 🔄 Aulas sem vídeo mostram "conteúdo em atualização" (2026-08-19)
+
+As 36 aulas que ainda apontam pro Panda tiveram os vídeos tirados do ar. Em vez de apagá-las
+(o que levaria junto **progresso e comentários** das alunas — a tabela `lessons` não tem campo
+de "ocultar"), o **player** passou a avisar:
+
+- `parseVideoUrl` classifica URLs do Panda como `{ kind: "updating" }`
+- `VideoPlayer` renderiza um card "Conteúdo em atualização — o seu progresso está guardado"
+- **Nada foi apagado nem escondido**; quando o `video_url` receber o vídeo novo, a aula volta a
+  tocar sozinha, sem mexer em código
+- Reverter é uma linha: devolver o `return { kind: "panda", ... }` em `parseVideoUrl`
+
+---
+
+## 📦 Clone reutilizável da área de membros (2026-08-19)
+
+Pasta **`AREA DE MEMBROS CLONE/`** — a estrutura inteira preparada pra ser reaproveitada em
+outro negócio (265 arquivos, 2,9 MB).
+
+- `app/` (todo o `src/` + configs + `public/` estrutural), `supabase/` (30 migrations + 8 edge
+  functions), `netlify/functions`
+- **`README-CLONE.md`**: passo a passo pra subir num Supabase novo
+- **`VALORES-PARA-TROCAR.md`**: mapa gerado por varredura do código, com todo valor específico
+  deste negócio (marca, WhatsApp, e-mails, checkout, UUIDs, pixel)
+- **Higiene:** sem `.env` real, sem mídia. As chaves anon e o project ref que estavam
+  **hardcoded como fallback em 10 arquivos** viraram `SEU_PROJECT_REF` e
+  `COLOQUE_AQUI_SUA_CHAVE_ANON` — senão o clone conversaria com o banco DESTE projeto.
+
+---
+
+## 🌐 Página de vendas em link separado (2026-08-18)
+
+- `/vendas` e a raiz deslogada mostram a **manutenção** (`public/manutencao.html`)
+- A página de vendas continua acessível em **`/vendas-completo`** (e em `/sales.html`)
+- Foi gerado também um **clone da página num arquivo único** (~11 MB) com todos os assets
+  embutidos em base64 (imagens, galeria, fontes Google, `track.js`) — abre sem depender de
+  servidor. Só os links de WhatsApp/Instagram e o pixel da Meta seguem apontando pra fora.
+
+---
+
+## ⚖️ Encerramento da parceria (2026-08-19)
+
+Foi redigido um **Termo de Acordo e Compromisso** (documento jurídico, guardado em `_privado/`,
+fora do git) formalizando: propriedade exclusiva da plataforma pela Manda Balla, fim da
+comercialização dos cursos com a imagem da ex-parceira, manutenção do acesso de quem já havia
+comprado, transferência do domínio condicionada à assinatura via gov.br, e cláusula de cessação
+de contato citando o art. 147-A do Código Penal.
+
+> Os dados pessoais da outra parte ficam **apenas** no documento em `_privado/` — não são
+> replicados aqui de propósito.
 
 ---
 
@@ -438,7 +541,7 @@ Tudo o que foi feito nesta data, em ordem:
 
 ## 11. Referências rápidas
 
-- **Regras pro agente:** [`CLAUDE.md`](CLAUDE.md). **Escopo formal:** [`ESCOPO.md`](ESCOPO.md).
+- **Regras pro agente:** [`CLAUDE.md`](CLAUDE.md). **Escopo formal:** [`ESCOPO.md`](_documentos/guias/ESCOPO.md).
 - **Fluxogramas:** `DOCS/` e `docs/` (geral, operação, suporte).
 - **Deploy:** `.github/workflows/deploy.yml`.
 - **Checkout embedado:** `src/components/lms/EduzzCheckoutEmbed.tsx` (helper `extractEduzzContentId`).

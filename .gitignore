@@ -42,3 +42,9 @@ build_output.txt
 
 # Mídia bruta — host em Vimeo/Pexels/Supabase Storage, não no repo
 AUDIOS DE HISTÓRIAS/
+
+# ── Organização (2026-08-19) ────────────────────────────────────────────────
+# Mídia bruta (vídeos/áudios/imagens originais): pesada demais pro repositório.
+_midia/
+# Documentos privados (contrato, dados pessoais/jurídicos).
+_privado/

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fluxograma — Suporte MDNM</title>
+<style>
+  :root {
+    --navy: #0B1A38;
+    --navy-2: #16264D;
+    --amarelo: #FFD60A;
+    --texto: #FFFFFF;
+    --muted: #8B92A8;
+    --aluno: #FFD60A;
+    --backend: #6366F1;
+    --db: #10B981;
+    --email: #F472B6;
+    --admin: #25D366;
+    --erro: #EF4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--texto);
+    font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 40px 20px 80px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed rgba(255,214,10,.3);
+  }
+  .header .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--amarelo);
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+  .header p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .caution {
+    height: 6px;
+    width: 100%;
+    background-image: repeating-linear-gradient(-45deg,#000 0,#000 12px,var(--amarelo) 12px,var(--amarelo) 24px);
+    border-radius: 4px;
+    margin-bottom: 32px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 48px;
+    font-size: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .node {
+    background: var(--navy-2);
+    border: 2px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    min-width: 220px;
+    max-width: 280px;
+    position: relative;
+    transition: transform .2s;
+  }
+  .node:hover { transform: translateY(-2px); }
+  .node-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+  .node-title {
+    font-weight: 900;
+    font-size: 14px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .node-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .node code {
+    background: rgba(0,0,0,.4);
+    color: var(--amarelo);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+  }
+  /* Cores por tipo de ator */
+  .actor-aluno { border-color: var(--aluno); }
+  .actor-aluno .node-title { color: var(--aluno); }
+  .actor-backend { border-color: var(--backend); }
+  .actor-backend .node-title { color: #A5B4FC; }
+  .actor-db { border-color: var(--db); }
+  .actor-db .node-title { color: #6EE7B7; }
+  .actor-email { border-color: var(--email); }
+  .actor-email .node-title { color: #FBCFE8; }
+  .actor-admin { border-color: var(--admin); }
+  .actor-admin .node-title { color: #4ADE80; }
+
+  /* Seta vertical */
+  .arrow-down {
+    text-align: center;
+    color: var(--amarelo);
+    font-size: 32px;
+    line-height: 1;
+    margin: -12px 0;
+  }
+
+  /* Branching */
+  .branch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .branch { grid-template-columns: 1fr; }
+  }
+  .branch-label {
+    text-align: center;
+    color: var(--amarelo);
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* Bloco de email */
+  .email-block {
+    background: linear-gradient(135deg, rgba(244,114,182,.1), rgba(244,114,182,.02));
+    border: 2px solid var(--email);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+  }
+  .email-block::before {
+    content: "📧";
+    position: absolute;
+    top: -16px;
+    left: 24px;
+    background: var(--navy);
+    padding: 4px 12px;
+    font-size: 20px;
+    border-radius: 6px;
+    border: 1px solid var(--email);
+  }
+  .email-block h3 {
+    color: #FBCFE8;
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    letter-spacing: .02em;
+  }
+  .email-block .preview {
+    background: rgba(0,0,0,.3);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .email-block .preview strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .email-block .cta {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background: var(--admin);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  /* Step number badge */
+  .step-num {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    background: var(--amarelo);
+    color: var(--navy);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(255,214,10,.4);
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px dashed rgba(255,214,10,.2);
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .footer code {
+    background: rgba(255,255,255,.06);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--amarelo);
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+  }
+  .tech-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .tech-pill {
+    background: var(--navy-2);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,.06);
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: white; color: var(--navy); padding: 0; }
+    .node { background: white; border-color: var(--navy); }
+    .node-title { color: var(--navy) !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="caution"></div>
+
+  <div class="header">
+    <span class="tag">🟢 Fluxograma de operação</span>
+    <h1>Chat de Suporte — Medo de Dirigir Nunca Mais</h1>
+    <p>Como o pedido de ajuda da aluna chega até a Carla / Balla com dois e-mails automáticos</p>
+  </div>
+
+  <!-- Legenda -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--aluno)"></span> Aluna (cliente)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--backend)"></span> Backend (edge function)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--db)"></span> Banco de dados</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--email)"></span> E-mail (Brevo)</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--admin)"></span> Admin / Carla</div>
+  </div>
+
+  <!-- 1. Aluna abre a tela de login -->
+  <div class="row">
+    <div class="node actor-aluno">
+      <div class="step-num">1</div>
+      <div class="node-icon">👩</div>
+      <div class="node-title">Aluna entra em /login</div>
+      <div class="node-desc">Não consegue acessar a área de membros — esqueceu senha, não recebeu email de primeiro acesso, ou conta nova ainda não liberada</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 2. Aluna clica no botão de chat -->
+  <div class="row">
+    <div class="node actor-aluno">
+      <div class="step-num">2</div>
+      <div class="node-icon">💬</div>
+      <div class="node-title">Clica no botão verde flutuante</div>
+      <div class="node-desc">Bolinha 💬 no canto inferior direito da tela, com badge vermelho pulsando — bem visível</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 3. Escolhe opção -->
+  <div class="row">
+    <div class="node actor-aluno">
+      <div class="step-num">3</div>
+      <div class="node-icon">🧭</div>
+      <div class="node-title">"Já sou aluna e não consigo acessar"</div>
+      <div class="node-desc">Bot pede nome, email da compra e telefone</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 4. Preenche formulário -->
+  <div class="row">
+    <div class="node actor-aluno">
+      <div class="step-num">4</div>
+      <div class="node-icon">📝</div>
+      <div class="node-title">Preenche o formulário</div>
+      <div class="node-desc">
+        • Nome completo<br>
+        • Email da compra<br>
+        • Telefone com DDD
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 5. POST -->
+  <div class="row">
+    <div class="node actor-backend">
+      <div class="step-num">5</div>
+      <div class="node-icon">⚡</div>
+      <div class="node-title">POST → Edge Function</div>
+      <div class="node-desc"><code>submit-support-request</code><br>Roda no Supabase em Deno. Sem auth (aluna está deslogada)</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 6. Validação -->
+  <div class="row">
+    <div class="node actor-backend">
+      <div class="step-num">6</div>
+      <div class="node-icon">🛡️</div>
+      <div class="node-title">Valida campos</div>
+      <div class="node-desc">Nome ≥ 2 chars · Telefone ≥ 8 dígitos · Email com formato válido<br>Trunca tamanhos pra evitar abuso</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 7. Salva no banco -->
+  <div class="row">
+    <div class="node actor-db">
+      <div class="step-num">7</div>
+      <div class="node-icon">💾</div>
+      <div class="node-title">Grava no banco</div>
+      <div class="node-desc">Tabela <code>support_requests</code><br>RLS bloqueia leitura por outros usuários — só admin lê</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 8. Disparo paralelo de 2 emails -->
+  <div class="row">
+    <div class="node actor-backend">
+      <div class="step-num">8</div>
+      <div class="node-icon">🚀</div>
+      <div class="node-title">Dispara DOIS e-mails em paralelo</div>
+      <div class="node-desc">Brevo API · <code>Promise.all</code> · falha em um não bloqueia o outro</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- Branching: 2 emails -->
+  <div class="branch">
+
+    <!-- Email pra Carla / Balla -->
+    <div>
+      <div class="branch-label">↙ Para a equipe (admin)</div>
+      <div class="email-block">
+        <h3>📧 ocriativomarketing@gmail.com</h3>
+        <div class="node-desc">
+          Notificação interna pra quem responde os chamados
+        </div>
+        <div class="preview">
+          <strong>🟢 Novo chamado de suporte — [Nome]</strong>
+          • Nome, email, telefone, motivo<br>
+          • Página de onde veio + User Agent<br>
+          • ID do chamado pra rastrear<br>
+          <div class="cta">Responder no WhatsApp →</div>
+          <div style="margin-top:8px;font-size:10px;color:var(--muted)">
+            Reply-to vai pro email da aluna (responde direto)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email pra aluna -->
+    <div>
+      <div class="branch-label">↘ Para a aluna (confirmação)</div>
+      <div class="email-block">
+        <h3>📧 Email da aluna</h3>
+        <div class="node-desc">
+          Confirmação visual em identidade MDNM
+        </div>
+        <div class="preview">
+          <strong>✅ Recebemos seu pedido, [Nome]!</strong>
+          • Mensagem calorosa de tranquilização<br>
+          • Card com os dados do chamado<br>
+          • ID do chamado<br>
+          <div class="cta">Falar agora no WhatsApp →</div>
+          <div style="margin-top:8px;font-size:10px;color:var(--muted)">
+            Reply-to vai pra Carla (se ela responder)
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 9. Aluna vê confirmação no chat -->
+  <div class="row">
+    <div class="node actor-aluno">
+      <div class="step-num">9</div>
+      <div class="node-icon">✅</div>
+      <div class="node-title">Aluna recebe confirmação no chat</div>
+      <div class="node-desc">"Pronto! Mandei um email de confirmação pra [email]. A gente já vai te chamar no WhatsApp."</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 10. Carla recebe e responde -->
+  <div class="row">
+    <div class="node actor-admin">
+      <div class="step-num">10</div>
+      <div class="node-icon">📱</div>
+      <div class="node-title">Carla / Balla abre o e-mail</div>
+      <div class="node-desc">Clica no botão verde <strong>"Responder no WhatsApp"</strong> → abre wa.me com mensagem pronta no número da aluna</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- 11. Atendimento -->
+  <div class="row">
+    <div class="node actor-admin">
+      <div class="step-num">11</div>
+      <div class="node-icon">🎯</div>
+      <div class="node-title">Conversa no WhatsApp resolve o acesso</div>
+      <div class="node-desc">Envia link de primeiro acesso, redefine senha, libera grupo — o que precisar</div>
+    </div>
+  </div>
+
+  <!-- Footer técnico -->
+  <div class="footer">
+    <p><strong style="color:#fff">Stack técnico do fluxo</strong></p>
+    <div class="tech-row">
+      <span class="tech-pill">React + Vite (frontend)</span>
+      <span class="tech-pill">Supabase Edge Function (Deno)</span>
+      <span class="tech-pill">Postgres + RLS</span>
+      <span class="tech-pill">Brevo Transactional API</span>
+      <span class="tech-pill">WhatsApp wa.me</span>
+    </div>
+    <p style="margin-top:24px">
+      Tudo automatizado · <strong style="color:var(--amarelo)">nenhum lead se perde</strong><br>
+      Mesmo se o Brevo cair, o lead fica salvo em <code>support_requests</code> pra recuperação manual via Painel Admin
+    </p>
+    <p style="margin-top:16px;font-size:10px">
+      Atualizado em 13/05/2026 · medodedirigirnuncamais.netlify.app
+    </p>
+  </div>
+
+  <div class="caution" style="margin-top:32px;margin-bottom:0"></div>
+</div>
+
+</body>
+</html>

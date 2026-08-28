@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Compra confirmada — Medo de Dirigir Nunca Mais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy: '#0B1A38',
+          'navy-deep': '#070F22',
+          primary: '#FFD60A',
+          'primary-hover': '#FFE03D',
+        },
+        fontFamily: { sans: ['Lexend', 'system-ui', 'sans-serif'] },
+        animation: {
+          'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+          'fade-up': 'fadeUp 0.7s ease-out both',
+          'spin-slow': 'spin 6s linear infinite',
+        },
+        keyframes: {
+          pulseSoft: { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.65 } },
+          fadeUp: { '0%': { opacity: 0, transform: 'translateY(20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    font-family: 'Lexend', system-ui, sans-serif;
+    background: #0B1A38;
+    background-image:
+      radial-gradient(ellipse at top, rgba(255, 214, 10, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(255, 214, 10, 0.04) 0%, transparent 50%);
+    color: #fff;
+    min-height: 100vh;
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .caution-tape {
+    background: repeating-linear-gradient(
+      45deg,
+      #FFD60A 0 18px,
+      #0B1A38 18px 36px
+    );
+  }
+  .asphalt {
+    background-color: #0B1A38;
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(255,255,255,0.025) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .glow {
+    box-shadow: 0 0 60px rgba(255, 214, 10, 0.2), 0 0 120px rgba(255, 214, 10, 0.08);
+  }
+  .step-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .step-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 214, 10, 0.4);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,214,10,0.2);
+  }
+  .ring-anim {
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 214, 10, 0.6); }
+    50% { box-shadow: 0 0 0 16px rgba(255, 214, 10, 0); }
+  }
+  .timer-digit {
+    background: linear-gradient(180deg, #FFD60A 0%, #E5B800 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>
+</head>
+<body class="asphalt">
+
+<!-- Caution tape no topo -->
+<div class="caution-tape h-3 w-full"></div>
+
+<!-- Container principal -->
+<main class="max-w-3xl mx-auto px-5 py-10 md:py-16">
+
+  <!-- Hero -->
+  <section class="text-center animate-fade-up">
+    <div class="inline-flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-full bg-primary text-navy glow ring-anim mb-6">
+      <span class="material-symbols-outlined" style="font-size:64px; font-variation-settings: 'FILL' 1, 'wght' 700;">check</span>
+    </div>
+    <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-3">
+      Compra confirmada!
+    </h1>
+    <p class="text-base md:text-lg text-white/70 max-w-xl mx-auto">
+      Seja muito bem-vindo(a) ao <span class="text-primary font-semibold">Medo de Dirigir Nunca Mais</span>. Falta um único passo pra você liberar seu acesso.
+    </p>
+  </section>
+
+  <!-- Alerta de prazo -->
+  <section class="mt-10 animate-fade-up" style="animation-delay:0.15s">
+    <div class="rounded-2xl border-2 border-primary/50 bg-primary/10 p-5 md:p-6 flex items-start gap-4">
+      <div class="shrink-0 w-12 h-12 rounded-full bg-primary text-navy flex items-center justify-center">
+        <span class="material-symbols-outlined" style="font-size:28px; font-variation-settings: 'FILL' 1;">schedule</span>
+      </div>
+      <div>
+        <p class="font-bold text-lg md:text-xl text-primary mb-1">Olhe seu e-mail nos próximos 5 minutos</p>
+        <p class="text-white/80 text-sm md:text-base">
+          Em instantes você receberá o e-mail de <strong>primeiro acesso</strong> com o botão pra cadastrar sua senha e entrar na área de membros.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Passos -->
+  <section class="mt-10 grid gap-4 md:gap-5">
+
+    <div class="step-card rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-6 flex items-start gap-4 animate-fade-up" style="animation-delay:0.3s">
+      <div class="shrink-0 w-12 h-12 rounded-xl bg-primary text-navy flex items-center justify-center font-extrabold text-xl">1</div>
+      <div>
+        <h3 class="font-bold text-lg md:text-xl mb-1 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">mail</span>
+          Abra sua caixa de entrada
+        </h3>
+        <p class="text-white/70 text-sm md:text-base">
+          Procure por um e-mail do <strong class="text-white">Medo de Dirigir Nunca Mais</strong>. Ele chega em até 5 minutos.
+        </p>
+      </div>
+    </div>
+
+    <div class="step-card rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-6 flex items-start gap-4 animate-fade-up" style="animation-delay:0.45s">
+      <div class="shrink-0 w-12 h-12 rounded-xl bg-primary text-navy flex items-center justify-center font-extrabold text-xl">2</div>
+      <div>
+        <h3 class="font-bold text-lg md:text-xl mb-1 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">folder_supervised</span>
+          Confira o SPAM e promoções
+        </h3>
+        <p class="text-white/70 text-sm md:text-base">
+          Se não estiver na caixa de entrada, dá uma olhada nas pastas <strong class="text-white">Spam</strong>, <strong class="text-white">Lixo eletrônico</strong> ou <strong class="text-white">Promoções</strong>. Acontece de cair lá.
+        </p>
+      </div>
+    </div>
+
+    <div class="step-card rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-6 flex items-start gap-4 animate-fade-up" style="animation-delay:0.6s">
+      <div class="shrink-0 w-12 h-12 rounded-xl bg-primary text-navy flex items-center justify-center font-extrabold text-xl">3</div>
+      <div>
+        <h3 class="font-bold text-lg md:text-xl mb-1 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">key</span>
+          Clique no botão e crie sua senha
+        </h3>
+        <p class="text-white/70 text-sm md:text-base">
+          Dentro do e-mail tem um botão para cadastrar sua senha. Após isso, seu acesso à área de membros tá liberado.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Bloco de suporte -->
+  <section class="mt-10 animate-fade-up" style="animation-delay:0.75s">
+    <div class="rounded-2xl border border-white/10 bg-navy-deep p-6 text-center">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/15 text-primary mb-3">
+        <span class="material-symbols-outlined" style="font-size:32px;">support_agent</span>
+      </div>
+      <h3 class="text-xl font-bold mb-1">Não recebeu o e-mail?</h3>
+      <p class="text-white/70 text-sm md:text-base mb-5 max-w-md mx-auto">
+        Aguarde até 10 minutos. Se mesmo assim não chegar, me chama no WhatsApp que eu te resolvo na hora.
+      </p>
+      <a
+        href="https://wa.me/5521993685289?text=Oi%20Balla%2C%20acabei%20de%20comprar%20o%20Medo%20de%20Dirigir%20Nunca%20Mais%20e%20n%C3%A3o%20recebi%20o%20e-mail%20de%20acesso."
+        target="_blank"
+        rel="noopener"
+        class="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-navy font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-primary/20"
+      >
+        <span class="material-symbols-outlined">chat</span>
+        Falar no WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer class="mt-12 text-center text-white/40 text-xs">
+    <p>© Medo de Dirigir Nunca Mais — Todos os direitos reservados</p>
+  </footer>
+
+</main>
+
+<!-- Caution tape no rodapé -->
+<div class="caution-tape h-3 w-full mt-6"></div>
+
+</body>
+</html>
